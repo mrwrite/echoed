@@ -1,2 +1,104 @@
-# echoed
-EchoEd – An interactive web &amp; mobile platform for learning African &amp; African-American history through engaging lessons, storytelling, and gamification
+# EchoEd
+
+**Echoing the Past, Educating the Future**
+
+EchoEd is an interactive web and mobile platform designed to educate all ages on African and African-American history. Featuring engaging lessons, gamification, and an interactive timeline, EchoEd makes learning history immersive and accessible.
+
+---
+
+## 🚀 Features
+- **Curated Lessons & Modules** – Short, digestible lessons with media-rich content.
+- **Interactive Timeline** – Explore key historical events dynamically.
+- **Gamification & Achievements** – Earn badges, track progress, and compete on leaderboards.
+- **Community Forum** – Discuss historical topics and engage in "Ask a Historian" sessions.
+- **Oral Storytelling** – Audio narratives to preserve historical traditions.
+- **Future AR Features** – Experience history through augmented reality.
+
+---
+
+## 🛠 Tech Stack
+### **Frontend:**
+- **Framework:** Angular
+- **Styling:** TailwindCSS / Material UI
+
+### **Backend:**
+- **Framework:** FastAPI (Python)
+- **Database:** PostgreSQL
+- **Authentication:** JWT-based authentication
+
+### **Infrastructure:**
+- **Hosting:** AWS / DigitalOcean
+- **CI/CD:** GitHub Actions (Planned)
+
+---
+
+## 📦 Project Structure
+```bash
+EchoEd/
+│── frontend/        # Angular Web & Mobile UI
+│── backend/         # FastAPI API & Database
+│── docs/            # Pitch Deck, Branding Assets, UI Mockups
+│── assets/          # Logos, Icons, Images
+│── tests/           # Automated tests
+│── README.md        # Overview & instructions
+│── .gitignore       # Ignore unnecessary files
+│── LICENSE          # Open-source license
+```
+
+---
+
+## 🔧 Installation & Setup
+### **1️⃣ Clone the Repository**
+```sh
+git clone https://github.com/YOUR_USERNAME/EchoEd.git
+cd EchoEd
+```
+
+### **2️⃣ Backend Setup (FastAPI)**
+```sh
+cd backend
+python -m venv venv
+source venv/bin/activate  # (Windows: venv\Scripts\activate)
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### **3️⃣ Frontend Setup (Angular)**
+```sh
+cd frontend
+npm install
+ng serve
+```
+
+---
+
+## 🚀 Usage
+- **Run Frontend:** Open [http://localhost:4200](http://localhost:4200)
+- **Run Backend API:** Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API documentation
+
+---
+
+## 🤝 Contributing
+We welcome contributions! To contribute:
+1. Fork the repository.
+2. Create a new branch (`feature-branch`).
+3. Commit your changes and push to your fork.
+4. Open a Pull Request (PR).
+
+---
+
+## 📜 License
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📬 Contact & Community
+- **Website:** [Coming Soon]
+- **Email:** support@echoed.com
+- **GitHub Issues:** Report bugs or request features in the [Issues tab](https://github.com/YOUR_USERNAME/EchoEd/issues).
+- **Follow Us:** [Twitter](#) | [LinkedIn](#)
+
+---
+
+Let's **Echo the Past & Educate the Future** together! 🌍📚
+

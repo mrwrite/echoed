@@ -1,0 +1,38 @@
+# ---- Python (FastAPI) ----
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.log
+instance/
+.env
+.vscode/
+venv/
+virtualenv/
+Pipfile
+Pipfile.lock
+*.sqlite
+*.db
+
+# ---- Node.js / Angular ----
+node_modules/
+dist/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.vscode/
+.idea/
+.DS_Store
+angular.json
+package-lock.json
+yarn.lock
+
+# ---- General IDE / System ----
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+Thumbs.db

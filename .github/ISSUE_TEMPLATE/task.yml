@@ -1,0 +1,51 @@
+name: Task
+description: Standard task template for MrWrite.dev project
+title: "[Task] <Task Name Here>"
+labels: 
+  - task
+  - to-do
+assignees: [awright]
+body:
+  - type: markdown
+    attributes:
+      value: "### 🏗 Task Summary"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Provide a clear explanation of the task."
+      placeholder: "What needs to be done?"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "Select the priority level of this task."
+      options:
+        - "🔴 High"
+        - "🟡 Medium"
+        - "🟢 Low"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: "Status"
+      description: "Current progress status of this task."
+      options:
+        - "📝 Open"
+        - "🚀 In Progress"
+        - "✅ Done"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Additional Notes"
+      description: "Include references, dependencies, or extra context."
+      placeholder: "Any additional context or links?"

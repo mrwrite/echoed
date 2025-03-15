@@ -1,0 +1,118 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "[Bug] <Short Description>"
+labels: ["bug"]
+assignees: [mrwrite]
+body:
+  - type: markdown
+    attributes:
+      value: "### 🐞 Bug Report"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe the bug"
+      description: "A clear and concise description of what the bug is."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "Steps to Reproduce"
+      description: "List the steps to reproduce the bug."
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Expected Behavior"
+      description: "A clear and concise description of what you expected to happen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots"
+      description: "If applicable, add screenshots to help explain your problem."
+      placeholder: "Drag and drop images here or paste a link."
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity Level"
+      description: "How severe is this issue?"
+      options:
+        - "🔥 Critical (App crashes, data loss, security issue)"
+        - "⚠️ Major (Affects core functionality, no workaround)"
+        - "🟡 Minor (UI bug, small inconvenience)"
+        - "🔵 Trivial (Cosmetic issue, low impact)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: desktop-os
+    attributes:
+      label: "Desktop OS"
+      description: "Select the operating system where you encountered the bug."
+      options:
+        - "Windows"
+        - "macOS"
+        - "Linux"
+        - "Other"
+
+  - type: dropdown
+    id: desktop-browser
+    attributes:
+      label: "Desktop Browser"
+      description: "Which browser were you using?"
+      options:
+        - "Chrome"
+        - "Firefox"
+        - "Safari"
+        - "Edge"
+        - "Other"
+
+  - type: dropdown
+    id: mobile-device
+    attributes:
+      label: "Smartphone Model (If applicable)"
+      description: "What device were you using?"
+      options:
+        - "iPhone"
+        - "Android"
+        - "Other"
+
+  - type: dropdown
+    id: mobile-os
+    attributes:
+      label: "Smartphone OS"
+      description: "Select your mobile OS (if applicable)."
+      options:
+        - "iOS"
+        - "Android"
+        - "Other"
+
+  - type: dropdown
+    id: mobile-browser
+    attributes:
+      label: "Mobile Browser"
+      description: "Which browser were you using?"
+      options:
+        - "Chrome"
+        - "Safari"
+        - "Firefox"
+        - "Other"
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional Context"
+      description: "Add any other context about the problem here."

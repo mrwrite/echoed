@@ -11,7 +11,9 @@ jobs:
     steps:
       - name: "Checkout Repository"
         uses: actions/checkout@v4
-
+        with:
+          repository: mrwrite/echoed
+          token: ${{ secrets.PAT_GITHUB_TOKEN }}
       - name: "Find Matching Epic"
         uses: actions/github-script@v6
         id: find-epic

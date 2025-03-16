@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: "## 🎯 Epic Overview"
-  
+
   - type: input
     id: epic-title
     attributes:
@@ -20,15 +20,17 @@ body:
       description: "Describe the objective, goals, and expected outcome of this epic."
       placeholder: "Example: Implement a user dashboard to manage profile settings, notifications, and security options."
 
-  - type: checkboxes
+  - type: markdown
+    attributes:
+      value: "### 🔗 Related Issues / Tasks (Auto-updated)"
+  
+  - type: textarea
     id: epic-tasks
     attributes:
-      label: "🔗 Related Issues / Tasks"
-      description: "List the issues related to this epic. Check them off as they are completed."
-      options:
-        - label: "Task 1 - [ ] #ISSUE_NUMBER"
-        - label: "Task 2 - [ ] #ISSUE_NUMBER"
-        - label: "Task 3 - [ ] #ISSUE_NUMBER"
+      label: "Task List"
+      description: "This list will be updated automatically as new tasks are linked. DO NOT manually edit this section."
+      value: |
+        - [ ] Placeholder for dynamically added tasks
 
   - type: textarea
     id: acceptance-criteria
@@ -69,4 +71,3 @@ body:
     attributes:
       label: "📝 Additional Notes"
       description: "Any extra information relevant to this epic."
-

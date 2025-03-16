@@ -1,0 +1,86 @@
+name: "Update Epic Issues"
+on:
+  issues:
+    types: [opened, labeled, closed]
+
+jobs:
+  update-epic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Get Epic Issue"
+        uses: actions/github-script@v6
+        id: find-epic
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { issue } = context.payload;
+
+            // Only proceed if the issue is labeled as an epic task
+            if (!issue.labels.some(label => label.name === 'epic-task')) {
+              console.log("Not an epic-task, skipping...");
+              return;
+            }
+
+            // Get all issues with the label 'epic'
+            const epics = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: 'epic',
+              state: 'open',
+              per_page: 100
+            });
+
+            if (epics.data.length === 0) {
+              console.log("No open epics found.");
+              return;
+            }
+
+            // Select the first epic (or filter based on title/description)
+            const epic = epics.data[0];
+            console.log(`Found Epic: ${epic.title} (#${epic.number})`);
+
+            // Add the new issue to the epic's task list
+            let updatedBody = epic.body + `\n- [ ] #${issue.number}`;
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: epic.number,
+              body: updatedBody
+            });
+
+      - name: "Mark Task as Completed"
+        uses: actions/github-script@v6
+        if: github.event.action == 'closed'
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { issue } = context.payload;
+
+            // Get all issues with the label 'epic'
+            const epics = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              labels: 'epic',
+              state: 'open',
+              per_page: 100
+            });
+
+            if (epics.data.length === 0) {
+              console.log("No open epics found.");
+              return;
+            }
+
+            const epic = epics.data[0];
+
+            // Replace task with checked version
+            let updatedBody = epic.body.replace(`- [ ] #${issue.number}`, `- [x] #${issue.number}`);
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: epic.number,
+              body: updatedBody
+            });

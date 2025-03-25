@@ -1,0 +1,60 @@
+@use '@angular/material' as mat;
+
+@mixin echoed-component-styles($theme) {
+  $primary: map.get(map.get($theme, color), primary);
+  $accent: map.get(map.get($theme, color), accent);
+  $warn: map.get(map.get($theme, color), warn);
+
+  // 🟡 Buttons
+  .mat-mdc-raised-button, .mat-mdc-outlined-button, .mat-mdc-flat-button {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .mat-mdc-button.mat-primary {
+    background-color: mat.get-color-from-palette($primary);
+    color: mat.get-contrast-color-from-palette($primary);
+  }
+
+  .mat-mdc-button.mat-accent {
+    background-color: mat.get-color-from-palette($accent);
+    color: mat.get-contrast-color-from-palette($accent);
+  }
+
+  // 🟩 Cards
+  .mat-mdc-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(46, 41, 78, 0.15);
+    padding: 1rem;
+    font-family: 'Inter', sans-serif;
+  }
+
+  // 🧾 Form Fields
+  .mat-mdc-form-field {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background-color: #F8E9D2;
+    border-radius: 10px;
+  }
+
+  .mat-mdc-form-field-label {
+    font-weight: 600;
+    color: mat.get-color-from-palette($primary);
+  }
+
+  // 🛠️ Toolbar
+  .mat-toolbar {
+    background-color: mat.get-color-from-palette($primary);
+    color: mat.get-contrast-color-from-palette($primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.75px;
+  }
+}

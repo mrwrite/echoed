@@ -1,0 +1,69 @@
+// Responsive Typography Utilities for EchoEd
+@use 'sass:map';
+
+$breakpoints: (
+  sm: 480px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px
+);
+
+// Mixin to apply font size and line height across breakpoints
+@mixin responsive-type($property, $sizes) {
+  #{$property}: map.get($sizes, base);
+
+  @media (min-width: map.get($breakpoints, sm)) {
+    #{$property}: map.get($sizes, sm);
+  }
+  @media (min-width: map.get($breakpoints, md)) {
+    #{$property}: map.get($sizes, md);
+  }
+  @media (min-width: map.get($breakpoints, lg)) {
+    #{$property}: map.get($sizes, lg);
+  }
+  @media (min-width: map.get($breakpoints, xl)) {
+    #{$property}: map.get($sizes, xl);
+  }
+}
+
+// EchoEd typography classes
+@mixin echoed-typography {
+  // Headings
+  h1 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    @include responsive-type(font-size, (base: 2rem, sm: 2.5rem, md: 3rem, lg: 3.5rem, xl: 4rem));
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    @include responsive-type(font-size, (base: 1.5rem, sm: 2rem, md: 2.5rem, lg: 3rem, xl: 3.5rem));
+  }
+
+  h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    @include responsive-type(font-size, (base: 1.25rem, sm: 1.5rem, md: 1.75rem, lg: 2rem, xl: 2.25rem));
+  }
+
+  // Body text
+  p, body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    @include responsive-type(font-size, (base: 1rem, sm: 1.125rem, md: 1.25rem, lg: 1.375rem, xl: 1.5rem));
+    line-height: 1.6;
+  }
+
+  // Quotes and storytelling
+  blockquote, cite {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: #2E294E;
+    border-left: 4px solid #EFB700;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    @include responsive-type(font-size, (base: 1.25rem, sm: 1.5rem, md: 1.75rem, lg: 2rem, xl: 2.25rem));
+  }
+}

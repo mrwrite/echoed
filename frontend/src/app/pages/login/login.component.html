@@ -1,0 +1,22 @@
+<div class="login-container">
+    <div class="login-card">
+        <form #loginForm="ngForm" (submit)="login($event)">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" [(ngModel)]="username" required placeholder="Username">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="Password">
+            </div>
+
+            <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <button type="submit" class="login-button">Login</button>
+        </form> 
+        <p class="register-link">
+            Don't have an account?
+            <a routerLink="/registration">Register here</a>
+          </p>      
+    </div>
+</div>

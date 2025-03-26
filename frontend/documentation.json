@@ -222,8 +222,67 @@
             }
         },
         {
+            "name": "EchoBadgeComponent",
+            "id": "component-EchoBadgeComponent-13a1dd61264595ea9ecffed51716750c1365ed02ee957bb59fda6b476efd6e2887aff1e98b7b6f18a73082c6b563fc3a4198e54e1811ed6e224cfddf1e6403e0",
+            "file": "src/app/components/echo-badge/echo-badge.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-badge",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<span\n  [ngClass]=\"[\n    'inline-block px-2 py-0.5 text-xs font-semibold rounded-full',\n    variant === 'primary' ? 'bg-primary text-white' :\n    variant === 'accent' ? 'bg-accent text-black' :\n    variant === 'warn' ? 'bg-warn text-white' :\n    'bg-gray-200 text-gray-800'\n  ]\"\n>\n  {{ label }}\n</span>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "label",
+                    "defaultValue": "'Badge'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "variant",
+                    "defaultValue": "'primary'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "\"primary\" | \"accent\" | \"warn\" | \"neutral\"",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'app-echo-badge',\r\n  imports: [CommonModule],\r\n  standalone: true,\r\n  template: `\r\n    <span\r\n      [ngClass]=\"[\r\n        'inline-block px-2 py-0.5 text-xs font-semibold rounded-full',\r\n        variant === 'primary' ? 'bg-primary text-white' :\r\n        variant === 'accent' ? 'bg-accent text-black' :\r\n        variant === 'warn' ? 'bg-warn text-white' :\r\n        'bg-gray-200 text-gray-800'\r\n      ]\"\r\n    >\r\n      {{ label }}\r\n    </span>\r\n  `,\r\n})\r\nexport class EchoBadgeComponent {\r\n  @Input() label: string = 'Badge';\r\n  @Input() variant: 'primary' | 'accent' | 'warn' | 'neutral' = 'primary';\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
             "name": "EchoButtonComponent",
-            "id": "component-EchoButtonComponent-766da2639a9330f26f290c79db9e4450f8113842d6554d9d272fb22dc41101009309f747245ceeb58cd0fd5ee98398bd603f5c168e527112acb9c8bb11c82a60",
+            "id": "component-EchoButtonComponent-7cb36504af0690c31cde567c2c8ce19c589a5c25f5768e14e16e6bbc6ac4f57ce2bb0a273982d9e56bc1afaf677a2f24d195a61727a004debfe9bb26a989bf0b",
             "file": "src/app/components/echo-button/echo-button.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -233,7 +292,7 @@
             "selector": "app-echo-button",
             "styleUrls": [],
             "styles": [],
-            "template": "<button\n  [ngClass]=\"[\n    'rounded-lg px-4 py-2 font-bold tracking-wide text-white transition',\n    color === 'primary' ? 'bg-primary hover:bg-primary/90' :\n    color === 'accent' ? 'bg-accent hover:bg-accent/90 text-black' :\n    color === 'warn' ? 'bg-warn hover:bg-warn/90' : '',\n    disabled ? 'opacity-50 cursor-not-allowed' : ''\n  ]\"\n  [disabled]=\"disabled\"\n>\n  {{ label }}\n</button>\n",
+            "template": "<button\n  [ngClass]=\"[\n    'rounded-lg px-4 py-2 font-bold tracking-wide text-white transition',\n    color === 'primary' ? 'bg-primary hover:bg-primary/90' :\n    color === 'accent' ? 'bg-accent hover:bg-accent/90 text-black' :\n    color === 'tertiary' ? 'bg-tertiary hover:bg-tertiary/90' :\n    color === 'warn' ? 'bg-warn hover:bg-warn/90' : '',\n    disabled ? 'opacity-50 cursor-not-allowed' : ''\n  ]\"\n  [disabled]=\"disabled\"\n>\n  {{ label }}\n</button>\n",
             "templateUrl": [],
             "viewProviders": [],
             "hostDirectives": [],
@@ -243,8 +302,8 @@
                     "defaultValue": "'primary'",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 26,
-                    "type": "\"primary\" | \"accent\" | \"warn\"",
+                    "line": 27,
+                    "type": "\"primary\" | \"accent\" | \"warn\" | \"tertiary\"",
                     "decorators": []
                 },
                 {
@@ -252,7 +311,7 @@
                     "defaultValue": "false",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 27,
+                    "line": 28,
                     "type": "boolean",
                     "decorators": []
                 },
@@ -261,7 +320,7 @@
                     "defaultValue": "'Echo Button'",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "line": 25,
+                    "line": 26,
                     "type": "string",
                     "decorators": []
                 }
@@ -283,7 +342,930 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  standalone: true,\r\n  selector: 'app-echo-button',\r\n  imports: [CommonModule],\r\n  template: `\r\n    <button\r\n      [ngClass]=\"[\r\n        'rounded-lg px-4 py-2 font-bold tracking-wide text-white transition',\r\n        color === 'primary' ? 'bg-primary hover:bg-primary/90' :\r\n        color === 'accent' ? 'bg-accent hover:bg-accent/90 text-black' :\r\n        color === 'warn' ? 'bg-warn hover:bg-warn/90' : '',\r\n        disabled ? 'opacity-50 cursor-not-allowed' : ''\r\n      ]\"\r\n      [disabled]=\"disabled\"\r\n    >\r\n      {{ label }}\r\n    </button>\r\n  `,\r\n})\r\nexport class EchoButtonComponent {\r\n  @Input() label: string = 'Echo Button';\r\n  @Input() color: 'primary' | 'accent' | 'warn' = 'primary';\r\n  @Input() disabled = false;\r\n}\r\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  standalone: true,\r\n  selector: 'app-echo-button',\r\n  imports: [CommonModule],\r\n  template: `\r\n    <button\r\n      [ngClass]=\"[\r\n        'rounded-lg px-4 py-2 font-bold tracking-wide text-white transition',\r\n        color === 'primary' ? 'bg-primary hover:bg-primary/90' :\r\n        color === 'accent' ? 'bg-accent hover:bg-accent/90 text-black' :\r\n        color === 'tertiary' ? 'bg-tertiary hover:bg-tertiary/90' :\r\n        color === 'warn' ? 'bg-warn hover:bg-warn/90' : '',\r\n        disabled ? 'opacity-50 cursor-not-allowed' : ''\r\n      ]\"\r\n      [disabled]=\"disabled\"\r\n    >\r\n      {{ label }}\r\n    </button>\r\n  `,\r\n})\r\nexport class EchoButtonComponent {\r\n  @Input() label: string = 'Echo Button';\r\n  @Input() color: 'primary' | 'accent' | 'warn' | 'tertiary' = 'primary';\r\n  @Input() disabled = false;\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoCheckboxComponent",
+            "id": "component-EchoCheckboxComponent-960a0907e9c34f9a79c46261db665d37f92e603e6cc6aacbddf44632878246373b05a47154642468b98a7ef74eb44cc34429425cb86cc14b74ce462fbca409e7",
+            "file": "src/app/components/echo-checkbox/echo-checkbox.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-checkbox",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<label class=\"inline-flex items-center cursor-pointer\">\n  <input\n    type=\"checkbox\"\n    class=\"form-checkbox w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary\"\n    [checked]=\"checked\"\n    (change)=\"onToggle($event)\"\n  />\n  <span class=\"ml-2 text-sm font-medium\">{{ label }}</span>\n</label>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "checked",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 20,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "defaultValue": "'Checkbox'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 19,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "checkedChange",
+                    "defaultValue": "new EventEmitter<boolean>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 21,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "onToggle",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 23,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-echo-checkbox',\r\n  standalone: true,\r\n  template: `\r\n    <label class=\"inline-flex items-center cursor-pointer\">\r\n      <input\r\n        type=\"checkbox\"\r\n        class=\"form-checkbox w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary\"\r\n        [checked]=\"checked\"\r\n        (change)=\"onToggle($event)\"\r\n      />\r\n      <span class=\"ml-2 text-sm font-medium\">{{ label }}</span>\r\n    </label>\r\n  `,\r\n})\r\nexport class EchoCheckboxComponent {\r\n  @Input() label: string = 'Checkbox';\r\n  @Input() checked: boolean = false;\r\n  @Output() checkedChange = new EventEmitter<boolean>();\r\n\r\n  onToggle(event: Event) {\r\n    const input = event.target as HTMLInputElement;\r\n    this.checkedChange.emit(input.checked);\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoInputComponent",
+            "id": "component-EchoInputComponent-b9cd124df93233049bc5558aec35108b1ecde2a454336d81fa0666857ce0502473e97fcc8834c9944e3d8072f72faf47bee205d02e37cc3cc8bc9182d3c16578",
+            "file": "src/app/components/echo-input/echo-input.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-input",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<input\n  [type]=\"type\"\n  [placeholder]=\"placeholder\"\n  [value]=\"value\"\n  [disabled]=\"disabled\"\n  (input)=\"onInput($event)\"\n  class=\"w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary transition\"\n/>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "disabled",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 21,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "placeholder",
+                    "defaultValue": "'Enter text'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 19,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "type",
+                    "defaultValue": "'text'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 18,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 20,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "valueChange",
+                    "defaultValue": "new EventEmitter<string>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 22,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "onInput",
+                    "args": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 24,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "event",
+                            "type": "Event",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, EventEmitter, Input, Output } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-echo-input',\r\n  standalone: true,\r\n  template: `\r\n    <input\r\n      [type]=\"type\"\r\n      [placeholder]=\"placeholder\"\r\n      [value]=\"value\"\r\n      [disabled]=\"disabled\"\r\n      (input)=\"onInput($event)\"\r\n      class=\"w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary transition\"\r\n    />\r\n  `,\r\n})\r\nexport class EchoInputComponent {\r\n  @Input() type: string = 'text';\r\n  @Input() placeholder: string = 'Enter text';\r\n  @Input() value: string = '';\r\n  @Input() disabled = false;\r\n  @Output() valueChange = new EventEmitter<string>();\r\n\r\n  onInput(event: Event) {\r\n    const input = event.target as HTMLInputElement;\r\n    this.valueChange.emit(input.value);\r\n  }\r\n}",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoModalComponent",
+            "id": "component-EchoModalComponent-84e37d7fe3be3f8875cf396ba17c97ee52ec152581ddb3c7c8e55c1cb83f7bab295bb4b5f44e460a4d16926e6cb7d4c7afe1d2959c7b53bd137ea08a6810b8b3",
+            "file": "src/app/components/echo-modal/echo-modal.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-modal",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<div\n  class=\"fixed inset-0 z-50 flex items-center justify-center bg-black/50\"\n  *ngIf=\"open\"\n  (click)=\"handleBackdropClick()\"\n>\n  <div\n    class=\"bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-6\"\n    (click)=\"$event.stopPropagation()\"\n  >\n    <div class=\"text-xl font-bold mb-4\">{{ title }}</div>\n    <div class=\"text-sm text-gray-600 dark:text-gray-300 mb-6\">\n      {{ description }}\n    </div>\n    <div class=\"flex justify-end space-x-2\">\n      <button\n        class=\"bg-warn text-white px-4 py-2 rounded hover:bg-warn/90\"\n        (click)=\"cancel.emit()\"\n      >\n        Cancel\n      </button>\n      <button\n        class=\"bg-primary text-white px-4 py-2 rounded hover:bg-primary/90\"\n        (click)=\"confirm.emit()\"\n      >\n        Confirm\n      </button>\n    </div>\n  </div>\n</div>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "description",
+                    "defaultValue": "'This action cannot be undone.'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 43,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "open",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 41,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "title",
+                    "defaultValue": "'Are you sure?'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 42,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "cancel",
+                    "defaultValue": "new EventEmitter<void>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 44,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "confirm",
+                    "defaultValue": "new EventEmitter<void>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 45,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "handleBackdropClick",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 47,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'app-echo-modal',\r\n  standalone: true,\r\n  imports: [CommonModule],\r\n  template: `\r\n    <div\r\n      class=\"fixed inset-0 z-50 flex items-center justify-center bg-black/50\"\r\n      *ngIf=\"open\"\r\n      (click)=\"handleBackdropClick()\"\r\n    >\r\n      <div\r\n        class=\"bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full p-6\"\r\n        (click)=\"$event.stopPropagation()\"\r\n      >\r\n        <div class=\"text-xl font-bold mb-4\">{{ title }}</div>\r\n        <div class=\"text-sm text-gray-600 dark:text-gray-300 mb-6\">\r\n          {{ description }}\r\n        </div>\r\n        <div class=\"flex justify-end space-x-2\">\r\n          <button\r\n            class=\"bg-warn text-white px-4 py-2 rounded hover:bg-warn/90\"\r\n            (click)=\"cancel.emit()\"\r\n          >\r\n            Cancel\r\n          </button>\r\n          <button\r\n            class=\"bg-primary text-white px-4 py-2 rounded hover:bg-primary/90\"\r\n            (click)=\"confirm.emit()\"\r\n          >\r\n            Confirm\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  `,\r\n})\r\nexport class EchoModalComponent {\r\n  @Input() open = false;\r\n  @Input() title = 'Are you sure?';\r\n  @Input() description = 'This action cannot be undone.';\r\n  @Output() cancel = new EventEmitter<void>();\r\n  @Output() confirm = new EventEmitter<void>();\r\n\r\n  handleBackdropClick() {\r\n    this.cancel.emit();\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoRadioComponent",
+            "id": "component-EchoRadioComponent-d922f820b879d931baf14735f57fa2003d95057c8cf46dd4f0db33ca4b434fdf1da1d999ca3239fa1eedd322546d151bd8d0aab37dc2f046dbfad371c23865f0",
+            "file": "src/app/components/echo-radio/echo-radio.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-radio",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<label class=\"inline-flex items-center cursor-pointer\">\n  <input\n    type=\"radio\"\n    class=\"form-radio w-5 h-5 text-primary border-gray-300 focus:ring-primary\"\n    [value]=\"value\"\n    [checked]=\"checked\"\n    (change)=\"onSelectionChange()\"\n    name=\"{{ name }}\"\n  />\n  <span class=\"ml-2 text-sm font-medium\">{{ label }}</span>\n</label>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "checked",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "defaultValue": "'Option'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 21,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "name",
+                    "defaultValue": "'radio-group'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 22,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "valueChange",
+                    "defaultValue": "new EventEmitter<string>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 25,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "onSelectionChange",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 27,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-echo-radio',\r\n  standalone: true,\r\n  template: `\r\n    <label class=\"inline-flex items-center cursor-pointer\">\r\n      <input\r\n        type=\"radio\"\r\n        class=\"form-radio w-5 h-5 text-primary border-gray-300 focus:ring-primary\"\r\n        [value]=\"value\"\r\n        [checked]=\"checked\"\r\n        (change)=\"onSelectionChange()\"\r\n        name=\"{{ name }}\"\r\n      />\r\n      <span class=\"ml-2 text-sm font-medium\">{{ label }}</span>\r\n    </label>\r\n  `,\r\n})\r\nexport class EchoRadioComponent {\r\n  @Input() label: string = 'Option';\r\n  @Input() value!: string;\r\n  @Input() checked: boolean = false;\r\n  @Input() name: string = 'radio-group';\r\n  @Output() valueChange = new EventEmitter<string>();\r\n\r\n  onSelectionChange() {\r\n    this.valueChange.emit(this.value);\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoRadioGroupComponent",
+            "id": "component-EchoRadioGroupComponent-2d0423ca58b6bb75140dfebb0f4c15d4b76300038227a4695cadb043a86e8f54aa571fad96ca276919b0e96d393c5b0cf67edf03fc0fb93fa92b33a36f26d963",
+            "file": "src/app/components/echo-radio-group/echo-radio-group.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-radio-group",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<div class=\"flex flex-col gap-2\">\n  <app-echo-radio\n    *ngFor=\"let option of options\"\n    [label]=\"option.label\"\n    [value]=\"option.value\"\n    [checked]=\"option.value === selectedValue\"\n    [name]=\"name\"\n    (valueChange)=\"onValueChange($event)\"\n  ></app-echo-radio>\n</div>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "name",
+                    "defaultValue": "'radio-group'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 25,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "options",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "literal type[]",
+                    "decorators": []
+                },
+                {
+                    "name": "selectedValue",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "selectedValueChange",
+                    "defaultValue": "new EventEmitter<string>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 26,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "onValueChange",
+                    "args": [
+                        {
+                            "name": "value",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 28,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "value",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "EchoRadioComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "NgFor"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { EchoRadioComponent } from '../echo-radio/echo-radio.component';\r\nimport { NgFor } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'app-echo-radio-group',\r\n  standalone: true,\r\n  imports: [EchoRadioComponent, NgFor],\r\n  template: `\r\n    <div class=\"flex flex-col gap-2\">\r\n      <app-echo-radio\r\n        *ngFor=\"let option of options\"\r\n        [label]=\"option.label\"\r\n        [value]=\"option.value\"\r\n        [checked]=\"option.value === selectedValue\"\r\n        [name]=\"name\"\r\n        (valueChange)=\"onValueChange($event)\"\r\n      ></app-echo-radio>\r\n    </div>\r\n  `,\r\n})\r\nexport class EchoRadioGroupComponent {\r\n  @Input() options: { label: string; value: string }[] = [];\r\n  @Input() selectedValue: string = '';\r\n  @Input() name: string = 'radio-group';\r\n  @Output() selectedValueChange = new EventEmitter<string>();\r\n\r\n  onValueChange(value: string) {\r\n    this.selectedValue = value;\r\n    this.selectedValueChange.emit(value);\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoSelectComponent",
+            "id": "component-EchoSelectComponent-9e5e0fb2768f2c45aba9385318dd73c0330e9e76b4e225c6332d0a5024288554cbd7127957d73c242592c4dc0ad0578eb4c74eb4b3d33e584ca0494f3e86ae93",
+            "file": "src/app/components/echo-select/echo-select.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-select",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<label *ngIf=\"label\" class=\"block mb-1 font-semibold text-sm text-gray-700\">{{ label }}</label>\n<select\n  class=\"w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition\"\n  [disabled]=\"disabled\"\n  [ngModel]=\"value\"\n  (ngModelChange)=\"valueChange.emit($event)\"\n>\n  <option *ngFor=\"let opt of options\" [value]=\"getValue(opt)\">\n    {{ getLabel(opt) }}\n  </option>\n</select>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "disabled",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 27,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "options",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 25,
+                    "type": "(string | literal type)[]",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 26,
+                    "type": "any",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "valueChange",
+                    "defaultValue": "new EventEmitter<any>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 29,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "getLabel",
+                    "args": [
+                        {
+                            "name": "option",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "string",
+                    "typeParameters": [],
+                    "line": 31,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "option",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "getValue",
+                    "args": [
+                        {
+                            "name": "option",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "any",
+                    "typeParameters": [],
+                    "line": 35,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "option",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "FormsModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\nimport { FormsModule } from '@angular/forms';\r\n\r\n@Component({\r\n  selector: 'app-echo-select',\r\n  standalone: true,\r\n  template: `\r\n    <label *ngIf=\"label\" class=\"block mb-1 font-semibold text-sm text-gray-700\">{{ label }}</label>\r\n    <select\r\n      class=\"w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition\"\r\n      [disabled]=\"disabled\"\r\n      [ngModel]=\"value\"\r\n      (ngModelChange)=\"valueChange.emit($event)\"\r\n    >\r\n      <option *ngFor=\"let opt of options\" [value]=\"getValue(opt)\">\r\n        {{ getLabel(opt) }}\r\n      </option>\r\n    </select>\r\n  `,\r\n  imports: [CommonModule, FormsModule],\r\n})\r\nexport class EchoSelectComponent {\r\n  @Input() label?: string;\r\n  @Input() options: (string | { label: string; value: any })[] = [];\r\n  @Input() value: any;\r\n  @Input() disabled = false;\r\n\r\n  @Output() valueChange = new EventEmitter<any>();\r\n\r\n  getLabel(option: any): string {\r\n    return typeof option === 'string' ? option : option.label;\r\n  }\r\n\r\n  getValue(option: any): any {\r\n    return typeof option === 'string' ? option : option.value;\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoTextareaComponent",
+            "id": "component-EchoTextareaComponent-75ad0ccb2911397e21f4ee212b3c4b32fa8ccd327fd15db8ed8ab896ee7f457a79669ad1ccfa0c4c7426f0b70988a3260a6035067c97ca8cd1bfe063cd46fdef",
+            "file": "src/app/components/echo-textarea/echo-textarea.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-textarea",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<label *ngIf=\"label\" class=\"block mb-1 font-semibold text-sm text-gray-700\">{{ label }}</label>\n<textarea\n  class=\"w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition resize-none\"\n  [placeholder]=\"placeholder\"\n  [rows]=\"rows\"\n  [disabled]=\"disabled\"\n  [ngModel]=\"value\"\n  (ngModelChange)=\"valueChange.emit($event)\"\n></textarea>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "disabled",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 26,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 22,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "placeholder",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "rows",
+                    "defaultValue": "4",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 25,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "valueChange",
+                    "defaultValue": "new EventEmitter<string>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 28,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "FormsModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\nimport { FormsModule } from '@angular/forms';\r\n\r\n@Component({\r\n  selector: 'app-echo-textarea',\r\n  standalone: true,\r\n  imports: [CommonModule, FormsModule],\r\n  template: `\r\n    <label *ngIf=\"label\" class=\"block mb-1 font-semibold text-sm text-gray-700\">{{ label }}</label>\r\n    <textarea\r\n      class=\"w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary transition resize-none\"\r\n      [placeholder]=\"placeholder\"\r\n      [rows]=\"rows\"\r\n      [disabled]=\"disabled\"\r\n      [ngModel]=\"value\"\r\n      (ngModelChange)=\"valueChange.emit($event)\"\r\n    ></textarea>\r\n  `,\r\n})\r\nexport class EchoTextareaComponent {\r\n  @Input() label?: string;\r\n  @Input() placeholder: string = '';\r\n  @Input() value: string = '';\r\n  @Input() rows: number = 4;\r\n  @Input() disabled = false;\r\n\r\n  @Output() valueChange = new EventEmitter<string>();\r\n}",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "EchoToastComponent",
+            "id": "component-EchoToastComponent-6169eb809b567dc11c36f9eb55b3e34d92c627d522276ff96753f58bf1fc3959ebf5fba8a5d3d9b485c48e28735d043e45df982b28264e13b4db3ebadae6b905",
+            "file": "src/app/components/echo-toast/echo-toast.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-toast",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<div\n  *ngIf=\"visible\"\n  class=\"relative fixed bottom-4 right-4 px-4 py-3 pr-10 rounded-lg shadow-lg text-white transition-opacity duration-300\"\n  [ngClass]=\"{\n    'bg-primary': type === 'info',\n    'bg-warn': type === 'warn',\n    'bg-tertiary': type === 'error',\n    'bg-accent text-black': type === 'success'\n  }\"\n>\n  {{ message }}\n  <button\n    class=\"absolute top-1 right-1 text-white/70 hover:text-white text-sm font-bold\"\n    (click)=\"dismiss()\"\n    aria-label=\"Close\"\n  >\n    &times;\n  </button>\n</div>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "duration",
+                    "defaultValue": "3000",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 33,
+                    "type": "number",
+                    "decorators": []
+                },
+                {
+                    "name": "message",
+                    "defaultValue": "'This is a toast message'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 31,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "type",
+                    "defaultValue": "'info'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 32,
+                    "type": "\"info\" | \"warn\" | \"error\" | \"success\"",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "visible",
+                    "defaultValue": "true",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 35
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "dismiss",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 43,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "ngOnInit",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 37,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, OnInit } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'app-echo-toast',\r\n  standalone: true,\r\n  imports: [CommonModule],\r\n  template: `\r\n    <div\r\n      *ngIf=\"visible\"\r\n      class=\"relative fixed bottom-4 right-4 px-4 py-3 pr-10 rounded-lg shadow-lg text-white transition-opacity duration-300\"\r\n      [ngClass]=\"{\r\n        'bg-primary': type === 'info',\r\n        'bg-warn': type === 'warn',\r\n        'bg-tertiary': type === 'error',\r\n        'bg-accent text-black': type === 'success'\r\n      }\"\r\n    >\r\n      {{ message }}\r\n      <button\r\n        class=\"absolute top-1 right-1 text-white/70 hover:text-white text-sm font-bold\"\r\n        (click)=\"dismiss()\"\r\n        aria-label=\"Close\"\r\n      >\r\n        &times;\r\n      </button>\r\n    </div>\r\n  `\r\n})\r\nexport class EchoToastComponent implements OnInit {\r\n  @Input() message: string = 'This is a toast message';\r\n  @Input() type: 'info' | 'warn' | 'error' | 'success' = 'info';\r\n  @Input() duration: number = 3000; // milliseconds\r\n\r\n  visible = true;\r\n\r\n  ngOnInit() {\r\n    if (this.duration > 0) {\r\n      setTimeout(() => this.dismiss(), this.duration);\r\n    }\r\n  }\r\n\r\n  dismiss() {\r\n    this.visible = false;\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "implements": [
+                "OnInit"
+            ]
+        },
+        {
+            "name": "EchoToggleComponent",
+            "id": "component-EchoToggleComponent-693fa9283b7d348a6e41d93bbd24e778a2ab7fff35b560290b9a7d17dd7f481ff15b35c32f70a7d9d789acf859bb3cbf40421c0be9cbb335e65c1ada716cc09a",
+            "file": "src/app/components/echo-toggle/echo-toggle.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-echo-toggle",
+            "styleUrls": [],
+            "styles": [],
+            "template": "<label class=\"flex items-center gap-2 cursor-pointer select-none\">\n  <div\n    class=\"relative w-12 h-6 rounded-full transition-colors duration-200\"\n    [ngClass]=\"checked ? 'bg-primary' : 'bg-gray-300'\"\n  >\n    <div\n      class=\"absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200\"\n      [ngClass]=\"{ 'translate-x-6': checked }\"\n    ></div>\n  </div>\n  <input\n    type=\"checkbox\"\n    class=\"hidden\"\n    [checked]=\"checked\"\n    (change)=\"toggle()\"\n  />\n  <span *ngIf=\"label\">{{ label }}</span>\n</label>\n",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "checked",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 30,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 31,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "checkedChange",
+                    "defaultValue": "new EventEmitter<boolean>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 32,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "toggle",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 34,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "NgClass"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { NgClass } from '@angular/common';\r\n\r\n@Component({\r\n  selector: 'app-echo-toggle',\r\n  standalone: true,\r\n  imports: [NgClass],\r\n  template: `\r\n    <label class=\"flex items-center gap-2 cursor-pointer select-none\">\r\n      <div\r\n        class=\"relative w-12 h-6 rounded-full transition-colors duration-200\"\r\n        [ngClass]=\"checked ? 'bg-primary' : 'bg-gray-300'\"\r\n      >\r\n        <div\r\n          class=\"absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200\"\r\n          [ngClass]=\"{ 'translate-x-6': checked }\"\r\n        ></div>\r\n      </div>\r\n      <input\r\n        type=\"checkbox\"\r\n        class=\"hidden\"\r\n        [checked]=\"checked\"\r\n        (change)=\"toggle()\"\r\n      />\r\n      <span *ngIf=\"label\">{{ label }}</span>\r\n    </label>\r\n  `,\r\n})\r\nexport class EchoToggleComponent {\r\n  @Input() checked = false;\r\n  @Input() label = '';\r\n  @Output() checkedChange = new EventEmitter<boolean>();\r\n\r\n  toggle() {\r\n    this.checked = !this.checked;\r\n    this.checkedChange.emit(this.checked);\r\n  }\r\n}",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
@@ -507,7 +1489,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 11,
+        "count": 4,
         "status": "low",
         "files": [
             {
@@ -530,12 +1512,102 @@
                 "status": "low"
             },
             {
+                "filePath": "src/app/components/echo-badge/echo-badge.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoBadgeComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
                 "filePath": "src/app/components/echo-button/echo-button.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "EchoButtonComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-checkbox/echo-checkbox.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoCheckboxComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-input/echo-input.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoInputComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-modal/echo-modal.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoModalComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-radio-group/echo-radio-group.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoRadioGroupComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-radio/echo-radio.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoRadioComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-select/echo-select.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoSelectComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/8",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-textarea/echo-textarea.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoTextareaComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-toast/echo-toast.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoToastComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/components/echo-toggle/echo-toggle.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EchoToggleComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
                 "status": "low"
             },
             {

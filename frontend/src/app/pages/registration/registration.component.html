@@ -1,0 +1,40 @@
+<div class="registration-container">
+    <div class="registration-card">
+        <h2>Ceate Account</h2>
+        <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+            <div class="input-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" formControlName="firstName" required placeholder="First Name">
+            </div>
+
+            <div class="input-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" formControlName="lastName" required placeholder="Last Name">
+            </div>
+
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" formControlName="email" required placeholder="Email">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" formControlName="password" required placeholder="Password">
+            </div>
+
+            <div class="input-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" formControlName="confirmPassword" required placeholder="Confirm Password">
+                <p class="error-message" *ngIf="registrationForm.get('confirmPassword')?.errors?.['mismatch'] && registrationForm.get('confirmPassword')?.touched">
+                    Passwords do not match.
+                </p>
+            </div>
+
+            <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <button type="submit" class="registration-button" [disabled]="registrationForm.invalid">Register</button>
+            <p class="login-link">
+                Already have an account?
+                <a routerLink="/login">Login here</a>
+        </form>
+    </div>
+</div>

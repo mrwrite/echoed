@@ -15,7 +15,7 @@ const meta: Meta<EchoButtonComponent> = {
   argTypes: {
     color: {
       control: 'select',
-      options: ['primary', 'accent', 'warn'],
+      options: ['primary', 'accent', 'tertiary', 'warn'],
     },
     disabled: {
       control: 'boolean',
@@ -37,6 +37,13 @@ export const Accent: Story = {
   args: {
     label: 'Accent Button',
     color: 'accent',
+  },
+};
+
+export const Tertiary: Story = {
+  args: {
+    label: 'Tertiary Button',
+    color: 'tertiary',
   },
 };
 

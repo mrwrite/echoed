@@ -18,6 +18,15 @@
             </div>
 
             <div class="input-group">
+                <label for="role">Role</label>
+                <select id="role" formControlName="role" required>
+                    <option value="" disabled>Select Role</option>
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                </select>
+            </div>           
+
+            <div class="input-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" formControlName="password" required placeholder="Password">
             </div>

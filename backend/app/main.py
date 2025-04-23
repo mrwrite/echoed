@@ -39,7 +39,7 @@ def register_user(user: UserDto, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     
-    new_user = User(username=user.username, firstname=user.firstname, lastname=user.lastname, email=user.email, hashed_password=hash_password(user.password))
+    new_user = User(username=user.username, firstname=user.firstname, lastname=user.lastname, email=user.email, role=user.role.lower(), hashed_password=hash_password(user.password))
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -50,7 +50,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token = create_access_token(data={"sub": user.username})
+    access_token = create_access_token(data={"sub": user.username, "user_id": str(user.id), "fullname": f"{user.firstname} {user.lastname}", "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/auth/protected")

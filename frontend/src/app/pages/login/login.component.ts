@@ -27,7 +27,7 @@ export class LoginComponent {
       (response) => {
         console.log('Login successful');
         localStorage.setItem('token', response.access_token);
-        this.router.navigate(['/user-dashboard']);
+        this.router.navigate(['/home']);
       },
       (error) => {
         console.log('Login failed');

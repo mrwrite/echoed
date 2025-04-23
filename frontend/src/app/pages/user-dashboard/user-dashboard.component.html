@@ -1,1 +1,3 @@
-<p>user-dashboard works!</p>
+<echoed-admin-view *ngIf="userInfo.role === 'admin'" [userInfo]="userInfo"> </echoed-admin-view>
+<echoed-student-view *ngIf="userInfo.role === 'student'" [userInfo]="userInfo"> </echoed-student-view>
+<echoed-teacher-view *ngIf="userInfo.role === 'teacher'" [userInfo]="userInfo"> </echoed-teacher-view>

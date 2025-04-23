@@ -47,6 +47,44 @@ class Unit(Base):
     course = relationship("Course", back_populates="units")
     completed_by = relationship("User", secondary="user_units", back_populates="completed_units")
 
+    lessons = relationship("Lesson", back_populates="unit", cascade="all, delete-orphan")
+
+class Lesson(Base):
+    __tablename__ = 'lessons'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
+    title = Column(String, nullable=False)
+    objective = Column(String)
+    order = Column(Integer)
+    duration_minutes = Column(Integer)
+
+    # Relationships
+    unit = relationship("Unit", back_populates="lessons")
+    activities = relationship("Activity", back_populates="lesson", cascade="all, delete-orphan")
+
+
+class Activity(Base):
+    __tablename__ = 'activities'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    lesson_id = Column(UUID(as_uuid=True), ForeignKey('lessons.id'), nullable=False)
+    type = Column(String)  # e.g., 'video', 'song', 'story', 'coloring', 'discussion'
+    title = Column(String)
+    content = Column(String)  # URL, description, or script
+    order = Column(Integer)
+    media_id = Column(UUID(as_uuid=True), ForeignKey('media.id'), nullable=True)
+    
+    media = relationship("Media")
+    lesson = relationship("Lesson", back_populates="activities")
+
+
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    type = Column(String)  # 'image', 'video', 'audio', etc.
+    title = Column(String)
+    url = Column(String)
+    description = Column(String)
+
 
 user_courses = Table(
     "user_courses",
@@ -61,3 +99,4 @@ user_units = Table(
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
     Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
 )
+

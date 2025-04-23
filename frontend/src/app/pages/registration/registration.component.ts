@@ -23,7 +23,8 @@ export class RegistrationComponent implements OnInit{
       confirmPassword: new FormControl('', [Validators.required]),
       email: new FormControl('', [Validators.required, Validators.email]),
       firstName: new FormControl('', [Validators.required]),
-      lastName: new FormControl('', [Validators.required])
+      lastName: new FormControl('', [Validators.required]),
+      role: new FormControl('', [Validators.required]),
     });
    }
 
@@ -51,7 +52,8 @@ export class RegistrationComponent implements OnInit{
       password: formValue.password,
       email: formValue.email,
       firstname: formValue.firstName,
-      lastname: formValue.lastName
+      lastname: formValue.lastName,
+      role: formValue.role,
     };
 
     this.authService.register(user).subscribe(

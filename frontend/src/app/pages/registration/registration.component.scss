@@ -46,6 +46,14 @@
       }
     }
   }
+
+  .input-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
   
   // Sign Up Button
   .registration-button {

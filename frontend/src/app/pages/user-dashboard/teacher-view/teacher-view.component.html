@@ -1,0 +1,42 @@
+<div class="grid gap-4 grid-rows-[auto,1fr,1fr] grid-cols-4">
+    <div class="bg-white col-span-5 rounded-xl shadow">    
+        <div class="flex justify-between items-center p-6">
+            <div>
+                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}} </h2>
+                <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Course Management</h3>
+        <p class="text-xs text-gray-500">Manage your courses and track student progress.</p>
+        <div class="flex flex-col gap-2 mt-4">
+            <button class="bg-blue-600 text-white py-2 px-4 rounded">Create New Course</button>
+            <button class="bg-green-600 text-white py-2 px-4 rounded">View All Courses</button>
+        </div>
+    </div>
+    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Recent Activity</h3>
+        <ul class="list-disc pl-5 text-gray-700">
+            <li>New student enrolled in "History 101"</li>
+            <li>Assignment "Math Homework" submitted by John Doe</li>
+            <li>Course "Science 202" updated with new materials</li>
+        </ul>
+    </div>
+    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Upcoming Events</h3>
+        <ul class="list-disc pl-5 text-gray-700">
+            <li>Parent-Teacher Conference on March 15</li>
+            <li>Final Exams Week: April 10 - April 14</li>
+            <li>Course Feedback Survey: April 20 - April 30</li>
+        </ul>
+    </div>
+       <div class="bg-white p-6 col-span-2 rounded-xl shadow">
+            <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Notifications</h3>
+            <ul class="list-disc pl-5 text-gray-700">
+                <li>New message from student: "Can I get extra credit?"</li>
+                <li>Course materials updated for "History 101"</li>
+                <li>Reminder: Grade assignments by March 20</li>
+            </ul>
+       </div>      
+</div>

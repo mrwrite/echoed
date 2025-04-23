@@ -22,7 +22,7 @@ export class AuthService {
     body.set('password', password);
 
     return this.http.post<TokenResponse>(`${this.apiUrl}/token`, body.toString(), {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+      headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
     }).pipe (
 
       tap(response => {
@@ -45,5 +45,23 @@ export class AuthService {
 
   getToken(): string | null{
     return localStorage.getItem(this.authTokenKey);
+  }
+
+  getTokenPayload(token: string): any {
+    if (!token) {
+      return null;
+    }
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) {
+      return null;
+    }
+
+    try {
+      const decodedPayload = atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decodedPayload);
+    } catch (err) {
+      console.error('Error parsing token payload:', err);
+      return null;
+    }
   }
 }

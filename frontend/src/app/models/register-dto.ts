@@ -4,4 +4,5 @@ export interface RegisterDto {
     email: string;
     firstname: string;
     lastname: string;
+    role: string;
 }

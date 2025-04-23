@@ -1,0 +1,85 @@
+<div class="grid gap-4 grid-rows-[auto,auto,auto,auto] grid-cols-4">
+    <!-- Row 1: full width (1 column spanning all 4) -->
+    <div class="bg-white col-span-4 rounded-xl shadow">
+        <div class="flex justify-between items-center p-6">
+            <div>
+                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}}</h2>
+                <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
+            </div>           
+        </div>
+    </div>
+  
+    
+    <div class="bg-white p-6 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Active Students</p>
+      <p class="text-xl font-bold text-[#1A1A40]">245</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Instructors</p>
+      <p class="text-xl font-bold text-[#1A1A40]">18</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Courses</p>
+      <p class="text-xl font-bold text-[#1A1A40]">32</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Pending Enrollments</p>
+      <p class="text-xl font-bold text-[#1A1A40]">154</p>
+    </div>
+      
+  
+    <div class="bg-white p-6 rounded-xl shadow col-span-2">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Recent User Signups</h3>
+        <table class="w-full text-sm text-gray-700">
+          <thead>
+            <tr class="text-left border-b">
+              <th class="pb-2">Name</th>
+              <th class="pb-2">Role</th>
+              <th class="pb-2">Signup Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>William Brown</td><td>Student</td><td>Apr 23, 2024</td></tr>
+            <tr><td>Olivia Taylor</td><td>Instructor</td><td>Apr 23, 2024</td></tr>
+            <tr><td>James Wilson</td><td>Student</td><td>Apr 23, 2024</td></tr>
+            <tr><td>Emma Johnson</td><td>Student</td><td>Apr 23, 2024</td></tr>
+            <tr><td>Michael Clark</td><td>Student</td><td>Apr 23, 2024</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Usage Chart Placeholder -->
+      <div class="bg-white p-4 rounded-xl shadow col-span-2">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Usage Statistics</h3>
+        <div class="h-48 bg-[#ECEEF3] rounded-lg flex items-center justify-center text-gray-500">
+          📊 Chart placeholder (Lessons Completed / Assignments Submitted)
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Course Management</h3>
+        <ul class="space-y-2">
+          <li class="flex justify-between">
+            <span>Algebra I</span>
+            <button class="text-sm text-blue-600 hover:underline">Manage</button>
+          </li>
+          <li class="flex justify-between">
+            <span>World History</span>
+            <button class="text-sm text-blue-600 hover:underline">Manage</button>
+          </li>
+          <li class="flex justify-between">
+            <span>Chemistry</span>
+            <button class="text-sm text-blue-600 hover:underline">Manage</button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Announcements</h3>
+        <ul class="space-y-3 text-sm text-gray-700">
+          <li><span class="font-semibold">Apr 7, 2024:</span> Don't forget the summit tomorrow!</li>
+          <li><span class="font-semibold">Apr 4, 2024:</span> New Course: Web Development</li>
+        </ul>
+      </div>    
+  </div>
+  

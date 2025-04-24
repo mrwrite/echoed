@@ -11,3 +11,11 @@ class UserDto(BaseModel):
     
     class Config:
         from_attributes = True
+        
+
+class CourseDto(BaseModel):
+    title: str
+    description: str
+    
+    class Config:
+        from_attributes = True

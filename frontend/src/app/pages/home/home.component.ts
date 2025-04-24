@@ -17,14 +17,12 @@ export class HomeComponent implements OnInit {
   sidebarCollapsed = false;
   userInfo!: UserInfo;
 
-
   constructor(private authService: AuthService) { }
-
 
   ngOnInit(): void {
     var access_token = localStorage.getItem('token');
     if (access_token) {
-      this.userInfo = this.authService.getTokenPayload(access_token);
+      this.userInfo = this.authService.getTokenPayload(access_token);      
       console.log(this.userInfo);
     }
   }

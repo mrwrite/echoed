@@ -12,11 +12,11 @@
     
     <div class="bg-white p-6 rounded-xl shadow">
       <p class="text-xs text-gray-500">Active Students</p>
-      <p class="text-xl font-bold text-[#1A1A40]">245</p>
+      <p class="text-xl font-bold text-[#1A1A40]">{{ studentCount }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow">
       <p class="text-xs text-gray-500">Instructors</p>
-      <p class="text-xl font-bold text-[#1A1A40]">18</p>
+      <p class="text-xl font-bold text-[#1A1A40]">{{ teacherCount }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow">
       <p class="text-xs text-gray-500">Courses</p>
@@ -39,11 +39,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td>William Brown</td><td>Student</td><td>Apr 23, 2024</td></tr>
-            <tr><td>Olivia Taylor</td><td>Instructor</td><td>Apr 23, 2024</td></tr>
-            <tr><td>James Wilson</td><td>Student</td><td>Apr 23, 2024</td></tr>
-            <tr><td>Emma Johnson</td><td>Student</td><td>Apr 23, 2024</td></tr>
-            <tr><td>Michael Clark</td><td>Student</td><td>Apr 23, 2024</td></tr>
+            <tr *ngFor="let user of users">
+              <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
+              <td class="py-2">{{ user.role }}</td>
+              <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
+            </tr>            
           </tbody>
         </table>
       </div>

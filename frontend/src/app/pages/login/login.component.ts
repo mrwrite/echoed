@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { RoleService } from '../../services/role.service';
+import { UserInfo } from '../../models/user-info';
 
 @Component({
   selector: 'echo-login',
@@ -18,14 +20,19 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
+  userInfo!: UserInfo;
+  userRoles: string[] = [];
 
-  constructor(private router: Router, private authService: AuthService) { }
+  constructor(private router: Router, private authService: AuthService, private roleService: RoleService) { }
 
   login(event: Event) {
     event.preventDefault();
     this.authService.login(this.username, this.password).subscribe(
       (response) => {
         console.log('Login successful');
+        this.userInfo = this.authService.getTokenPayload(response.access_token);
+        this.userRoles.push(this.userInfo.role);
+        this.roleService.setUserRoles(this.userRoles);
         localStorage.setItem('token', response.access_token);
         this.router.navigate(['/home']);
       },

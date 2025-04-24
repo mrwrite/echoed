@@ -11,8 +11,8 @@
     </div>
     <nav class="flex-1 px-2 space-y-2">
       <a href="#" class="block p-2 rounded hover:bg-blue-700">Dashboard</a>
-      <a href="#" class="block p-2 rounded hover:bg-blue-700">Users</a>
-      <a href="#" class="block p-2 rounded hover:bg-blue-700">Students</a>
+      <a *ngIf="roleService.hasAccess('viewUsers')" href="#" class="block p-2 rounded hover:bg-blue-700">Users</a>
+      <a *ngIf="roleService.hasAccess('viewStudents')" href="#" class="block p-2 rounded hover:bg-blue-700">Students</a>
       <a href="#" class="block p-2 rounded hover:bg-blue-700">Courses</a>
       <a *ngIf="roleService.hasAccess('viewReports')" href="#" class="block p-2 rounded hover:bg-blue-700">Reports</a>
       <a href="#" class="block p-2 rounded hover:bg-blue-700">Settings</a>

@@ -1,0 +1,20 @@
+<div class="space-y-4">
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Course Title</label>
+      <input
+        type="text"
+        class="w-full border rounded p-2"
+        [(ngModel)]="courseWizardService.draftValue.title"
+      />
+    </div>
+  
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Short Description</label>
+      <textarea
+        class="w-full border rounded p-2"
+        rows="3"
+        [(ngModel)]="courseWizardService.draftValue.description"
+      ></textarea>
+    </div>
+  </div>
+  

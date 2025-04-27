@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
+import { CourseDto } from '../models/course-dto';
+import { CourseDraft } from '../pages/admin/course-wizard/models/course-draft.model';
 
 @Injectable({
   providedIn: 'root'
@@ -28,5 +30,17 @@ export class CoursesService {
 
   getCourses(): Observable<Course[]> {
     return this.http.get<Course[]>(`${this.apiUrl}`, { headers: this.getHeaders() });
+  }
+
+  getCourseById(courseId: string): Observable<CourseDraft> {
+    return this.http.get<CourseDraft>(`${this.apiUrl}/${courseId}`, { headers: this.getHeaders() });
+  }
+
+  updateCourse(courseId: string, course: CourseDraft): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${courseId}`, course, { headers: this.getHeaders() });
+  }
+
+  createCourse(course: CourseDraft): Observable<any> {
+    return this.http.post(`${this.apiUrl}`, course, { headers: this.getHeaders() });
   }
 }

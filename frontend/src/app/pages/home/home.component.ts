@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../components/echo-sidebar/echo-sidebar.component';
 import { EchoHeaderComponent } from '../../components/echo-header/echo-header.component';
@@ -9,7 +10,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, EchoHeaderComponent,UserDashboardComponent],
+  imports: [CommonModule, SidebarComponent, EchoHeaderComponent,RouterOutlet],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

@@ -15,6 +15,9 @@ module.exports = {
         success: "#00A86B",
         info: "#00A8FF",
       },
+      fontFamily: {
+        sans: ['Inter','ui-sans-serif', 'system-ui'],
+      }
     },
   },
   plugins: [],

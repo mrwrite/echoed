@@ -1,0 +1,121 @@
+<div class="space-y-6">
+  <!-- Course Info -->
+  <div class="p-6 bg-white rounded-xl shadow">
+    <h2 class="text-2xl font-bold text-[#1A1A40] mb-2">{{ courseWizardService.draftValue.title }}</h2>
+    <p class="text-gray-600">{{ courseWizardService.draftValue.description }}</p>
+  </div>
+
+  <!-- Units and Lessons Overview -->
+  <div *ngIf="courseWizardService.draftValue.units.length > 0" class="space-y-4">
+    <h3 class="text-xl font-semibold text-[#1A1A40]">Course Structure:</h3>
+
+    <div *ngFor="let unit of courseWizardService.draftValue.units" class="p-4 bg-gray-100 rounded-lg space-y-2">
+      <!-- Unit Info -->
+      <div>
+        <h4 class="text-lg font-bold">{{ unit.title }}</h4>
+        <p class="text-sm text-gray-600" *ngIf="unit.content">{{ unit.content }}</p>
+      </div>
+
+      <!-- Lessons Inside Unit -->
+      <ul *ngIf="unit.lessons.length > 0" class="ml-4 list-disc space-y-4">
+        <li *ngFor="let lesson of unit.lessons">
+          <div class="space-y-2">
+            <!-- Lesson Info -->
+            <div>
+              <span class="font-semibold">{{ lesson.title }}</span> — 
+              <span class="text-sm text-gray-500">{{ lesson.duration_minutes }} min</span>
+            </div>
+            <div *ngIf="lesson.objective" class="text-sm text-gray-500 italic ml-2">
+              Objective: {{ lesson.objective }}
+            </div>
+
+            <!-- Activities Inside Lesson -->
+            <div class="ml-6 space-y-2">
+              <h5 *ngIf="lesson.activities.length > 0 || (addingActivityUnitId === unit.id && addingActivityLessonId === lesson.id)" class="font-semibold text-gray-700">
+                Activities:
+              </h5>
+
+              <ul *ngIf="lesson.activities.length > 0" class="space-y-1">
+                <li *ngFor="let activity of lesson.activities" class="flex justify-between items-center">
+                  <div>
+                    <span class="font-semibold">{{ activity.type | titlecase }}</span> - {{ activity.title }}
+                  </div>
+                  <button (click)="removeActivity(unit.id, lesson.id, activity.id)" class="text-red-500 text-sm hover:underline">
+                    Remove
+                  </button>
+                </li>
+              </ul>
+
+              <!-- Add Activity Button -->
+              <button (click)="startAddingActivity(unit.id, lesson.id)" class="text-blue-600 text-sm mt-2 hover:underline">
+                + Add Activity
+              </button>
+
+              <!-- Add Activity Form -->
+              <div *ngIf="addingActivityUnitId === unit.id && addingActivityLessonId === lesson.id" class="space-y-2 mt-2">
+                <div>
+                  <select [(ngModel)]="newActivityType" class="w-full border rounded p-2">
+                    <option value="video">Video</option>
+                    <option value="story">Story</option>
+                    <option value="song">Song</option>
+                    <option value="coloring">Coloring</option>
+                    <option value="discussion">Discussion</option>
+                    <option value="text">Text</option>
+                  </select>
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    [(ngModel)]="newActivityTitle"
+                    class="w-full border rounded p-2"
+                    placeholder="Activity Title"
+                  />
+                </div>
+
+                <div>
+                  <textarea
+                    [(ngModel)]="newActivityContent"
+                    class="w-full border rounded p-2"
+                    rows="2"
+                    placeholder="Activity Content or Link"
+                  ></textarea>
+                </div>
+
+                <div class="flex space-x-2">
+                  <button (click)="confirmAddActivity()" class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700">
+                    Add Activity
+                  </button>
+                  <button (click)="cancelAddActivity()" class="text-gray-500 text-sm hover:underline">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- End Activities Section -->
+          </div>
+        </li>
+      </ul>
+
+      <p *ngIf="unit.lessons.length === 0" class="text-sm text-gray-500 italic ml-4">No lessons added yet.</p>
+    </div>
+  </div>
+
+  <!-- Save Section -->
+  <div class="flex flex-col items-end space-y-2 mt-6">
+    <p *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
+
+    <button
+      (click)="saveCourse()"
+      [disabled]="isSaving"
+      class="bg-green-600 text-white text-sm px-6 py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
+    >
+      <ng-container *ngIf="!isSaving; else loading">
+        Save Course
+      </ng-container>
+      <ng-template #loading>
+        Saving...
+      </ng-template>
+    </button>
+  </div>
+</div>

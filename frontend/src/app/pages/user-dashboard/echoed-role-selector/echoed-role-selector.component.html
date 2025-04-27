@@ -1,0 +1,8 @@
+<ng-container *ngIf="userInfo">
+    <echoed-admin-view *ngIf="userInfo.role === 'admin'" [userInfo]="userInfo"></echoed-admin-view>
+    <echoed-student-view *ngIf="userInfo.role === 'student'" [userInfo]="userInfo"></echoed-student-view>
+    <echoed-teacher-view *ngIf="userInfo.role === 'teacher'" [userInfo]="userInfo"></echoed-teacher-view>
+  </ng-container>
+  
+  <p *ngIf="!userInfo" class="text-center text-gray-500">Loading user information...</p>
+  

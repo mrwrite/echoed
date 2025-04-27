@@ -1,0 +1,71 @@
+<div class="max-w-4xl mx-auto p-6">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center min-h-[400px]">
+    <div class="text-center">
+      <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      <p class="text-gray-500">Loading course...</p>
+    </div>
+  </div>
+
+  <!-- Wizard Content -->
+  <div *ngIf="!isLoading">
+    <!-- Progress Info -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-[#1A1A40]">Step {{ currentStep }} of {{ totalSteps }}</h2>
+      <button
+        class="text-sm text-gray-500 hover:text-blue-500"
+        (click)="saveDraft()"
+      >
+        Save as Draft
+      </button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+      <div
+        class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+        [style.width.%]="(currentStep / totalSteps) * 100"
+      ></div>
+    </div>
+
+    <!-- Step Rendering -->
+    <div class="bg-white p-6 rounded-xl shadow">
+      <ng-container [ngSwitch]="currentStep">
+        <step1-course-info *ngSwitchCase="1"></step1-course-info>
+        <step2-add-units *ngSwitchCase="2"></step2-add-units>
+        <step3-add-lessons *ngSwitchCase="3"></step3-add-lessons>
+        <step4-review-save *ngSwitchCase="4"></step4-review-save>
+      </ng-container>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between mt-6">
+      <button
+        (click)="previousStep()"
+        class="text-sm text-gray-600 hover:text-blue-600"
+        [disabled]="currentStep === 1"
+      >
+        ← Back
+      </button>
+
+      <button
+        (click)="nextStep()"
+        class="bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition"
+        *ngIf="currentStep < totalSteps"
+      >
+        Next →
+      </button>
+
+      <button
+        (click)="saveDraft()"
+        class="bg-green-600 text-white text-sm px-4 py-2 rounded hover:bg-green-700 transition"
+        *ngIf="currentStep === totalSteps"
+      >
+        Save Course
+      </button>
+    </div>
+  </div>
+</div>

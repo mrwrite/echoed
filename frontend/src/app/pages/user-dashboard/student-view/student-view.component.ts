@@ -19,7 +19,7 @@ export class StudentViewComponent implements OnInit {
     this.loadStudentCourses();
   }
 
-  loadStudentCourses(){
+  loadStudentCourses(): void {
     this.studentCourses = [
       {
         id: 'enroll-1',

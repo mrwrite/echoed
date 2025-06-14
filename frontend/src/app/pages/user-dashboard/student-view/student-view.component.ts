@@ -37,6 +37,7 @@ export class StudentViewComponent implements OnInit {
 
   startCourse(course: StudentCourse){
     // TODO: Implement navigation or business logic for starting a course.
-    throw new Error('startCourse method not implemented.');
+    console.error('startCourse method not implemented.');
+    alert('This feature is not yet implemented. Please check back later.');
   }
 }

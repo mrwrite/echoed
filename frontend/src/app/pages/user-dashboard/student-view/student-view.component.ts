@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserInfo } from '../../../models/user-info';
-import { Course } from '../../../models/course';
 import { StudentCourse } from '../../../models/student-course';
 
 @Component({

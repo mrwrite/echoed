@@ -8,3 +8,5 @@ python-jose
 bcrypt
 python-multipart
 python-dotenv
+pytest
+pytest-cov

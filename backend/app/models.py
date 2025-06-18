@@ -19,7 +19,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    enrolled_courses = relationship("Course", secondary="user_courses", back_populates="students")
+    student_courses = relationship("StudentCourse", back_populates="student", cascade="all, delete-orphan")
     completed_units = relationship("Unit", secondary="user_units", back_populates="completed_by")
 
 
@@ -32,7 +32,7 @@ class Course(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    students = relationship("User", secondary="user_courses", back_populates="enrolled_courses")
+    student_courses = relationship("StudentCourse", back_populates="course", cascade="all, delete-orphan")
     units = relationship("Unit", back_populates="course", cascade="all, delete-orphan")
 
 class Unit(Base):
@@ -86,12 +86,18 @@ class Media(Base):
     description = Column(String)
 
 
-user_courses = Table(
-    "user_courses",
-    Base.metadata,
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
-    Column("course_id", UUID(as_uuid=True), ForeignKey("courses.id"), primary_key=True),
-)
+class StudentCourse(Base):
+    __tablename__ = 'student_courses'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
+    enrolled_on = Column(DateTime, default=datetime.timezone.utc)
+    status = Column(String, default="active")  # optional: active, completed, withdrawn
+
+    student = relationship("User", back_populates="student_courses")
+    course = relationship("Course", back_populates="student_courses")
+
+
 
 user_units = Table(
     "user_units",

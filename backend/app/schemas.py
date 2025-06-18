@@ -79,3 +79,7 @@ class CourseResponse(BaseModel):
     title: str
     description: str
     units: List[UnitResponse] = []
+
+class EnrollRequest(BaseModel):
+    course_id: UUID
+

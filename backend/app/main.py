@@ -5,7 +5,7 @@ from app.auth import create_access_token, authenticate_user, get_current_user, h
 from app.database import SessionLocal, engine, Base
 from app.models import User, Course, Unit, Lesson, Activity, Media
 from app.schemas import UserDto, CourseDto, CourseResponse, UnitDto, LessonDto, ActivityDto, MediaResponse, ActivityResponse, LessonResponse, UnitResponse
-from app.api.routes import progress
+from app.api.routes import progress, enroll
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -14,6 +14,11 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
+def configure_routes():
+    from app.api.routes import enroll
+    app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
+
+configure_routes()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

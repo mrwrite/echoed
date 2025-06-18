@@ -96,6 +96,33 @@ class StudentCourse(Base):
 
     student = relationship("User", back_populates="student_courses")
     course = relationship("Course", back_populates="student_courses")
+    unit_progress = relationship("StudentUnitProgress", back_populates="student_course", cascade="all, delete-orphan")
+
+
+class StudentUnitProgress(Base):
+    __tablename__ = 'student_unit_progress'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_course_id = Column(UUID(as_uuid=True), ForeignKey('student_courses.id'), nullable=False)
+    unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
+    status = Column(String, default='not_started')  # values: not_started, in_progress, completed
+    last_updated = Column(DateTime, default=datetime.utcnow)
+
+    student_course = relationship("StudentCourse", back_populates="unit_progress")
+    unit = relationship("Unit")
+
+    segments = relationship("SegmentProgress", back_populates="student_unit", cascade="all, delete-orphan")
+
+class SegmentProgress(Base):
+    __tablename__ = 'segment_progress'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_unit_id = Column(UUID(as_uuid=True), ForeignKey('student_unit_progress.id'), nullable=False)
+    lesson_id = Column(UUID(as_uuid=True), ForeignKey('lessons.id'), nullable=False)
+    status = Column(String, default='not_started')  # values: not_started, delivered, skipped
+    last_updated = Column(DateTime, default=datetime.utcnow)
+
+    student_unit = relationship("StudentUnitProgress", back_populates="segments")
+    lesson = relationship("Lesson")
+
 
 
 

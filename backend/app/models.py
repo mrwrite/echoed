@@ -91,7 +91,7 @@ class StudentCourse(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
-    enrolled_on = Column(DateTime, default=datetime.timezone.utc)
+    enrolled_on = Column(DateTime, nullable=False, default=datetime.utcnow)
     status = Column(String, default="active")  # optional: active, completed, withdrawn
 
     student = relationship("User", back_populates="student_courses")

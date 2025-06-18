@@ -25,8 +25,8 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('student_id', sa.UUID(), nullable=False),
     sa.Column('course_id', sa.UUID(), nullable=False),
-    sa.Column('enrolled_on', sa.DateTime(), nullable=True),
-    sa.Column('status', sa.String(), nullable=True),
+    sa.Column('enrolled_on', sa.DateTime(), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
+    sa.Column('status', sa.String(), nullable=False, server_default='active'),
     sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')

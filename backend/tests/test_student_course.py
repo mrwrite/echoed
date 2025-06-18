@@ -20,8 +20,8 @@ def test_create_student_course(db_session):
     db_session.add(course)
     db_session.commit()
 
-    sc = StudentCourse(student_id=user.id, course_id=course.id)
-    db_session.add(sc)
+    student_course = StudentCourse(student_id=user.id, course_id=course.id)
+    db_session.add(student_course)
     db_session.commit()
 
     result = db_session.query(StudentCourse).filter_by(student_id=user.id).first()

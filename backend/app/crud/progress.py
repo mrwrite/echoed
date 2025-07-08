@@ -1,3 +1,4 @@
+from app.enum import ProgressStatus
 from sqlalchemy.orm import Session
 from app.models import StudentUnitProgress, SegmentProgress
 from uuid import UUID
@@ -23,6 +24,15 @@ def update_student_unit_progress_status(db: Session, progress_id: UUID, new_stat
         progress.last_updated = datetime.utcnow()
         db.commit()
     return progress
+
+def get_current_segment_for_unit(db: Session, student_unit_id: UUID):
+    return (
+        db.query(SegmentProgress)
+        .filter_by(student_unit_id=student_unit_id)
+        .order_by(SegmentProgress.status != ProgressStatus.COMPLETED, SegmentProgress.id)
+        .first()
+    )
+
 
 def get_student_unit_progress(db: Session, student_course_id: UUID, unit_id: UUID):
     return db.query(StudentUnitProgress).filter_by(

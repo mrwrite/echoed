@@ -9,20 +9,17 @@
     </div>
    <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">My Courses</h2>
    
-    <ng-container *ngFor="let sc of studentCourses">
-      <div class="bg-white p-6 rounded-xl shadow col-span-2">
-        <p class="text-xl font-bold text-[#1A1A40]">Course ID: {{ sc.courseId }}</p>
-        <p class="text-xs text-gray-500">Current Unit: {{ sc.currentUnitId || 'Not started' }}</p>
-    
-        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-          <div class="bg-orange-500 h-2.5 rounded-full" [style.width]="sc.progress + '%'"></div>
-        </div>
-    
-        <p class="text-xs text-gray-500 text-right">{{ sc.progress }}% Complete</p>
-    
-        <button class="mt-2 text-white bg-[#1A1A40] px-4 py-2 rounded-lg" (click)="startCourse(sc)">Start / Continue</button>
-      </div>
-    </ng-container>
+   <ng-container *ngFor="let sc of studentCourses">
+  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+    <p class="text-xl font-bold text-[#1A1A40]">{{ sc.course.title }}</p>
+    <p class="text-xs text-gray-500">{{ sc.course.description }}</p>
+    <button
+      class="mt-2 text-white bg-[#1A1A40] px-4 py-2 rounded-lg"
+      (click)="startCourse(sc)">
+      Start / Resume
+    </button>
+  </div>
+</ng-container>
   
   <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Achievements Unlocked</h2>
     <div class="bg-white p-4 rounded-xl shadow">    
@@ -70,8 +67,28 @@
             </div>
           </div>
     </div>
-</div>    
+    <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Available Courses</h2>
 
-    
+<ng-container *ngFor="let course of availableCourses">
+  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+    <p class="text-xl font-bold text-[#1A1A40]">{{ course.title }}</p>
+    <p class="text-xs text-gray-500">{{ course.description }}</p>
+
+    <button
+      class="mt-2 text-white bg-green-600 px-4 py-2 rounded-lg"
+      (click)="enrollInCourse(course.id)">
+      Enroll
+    </button>
+  </div>
+</ng-container>
+
+</div>
+
+<echoed-lesson-viewer 
+  *ngIf="showLesson && currentLesson"
+  [lesson]="currentLesson"
+  (segmentCompleted)="onLessonCompleted()"
+/>
+
        
   

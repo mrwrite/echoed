@@ -78,5 +78,6 @@ def start_course(
     first_segment = segment_progress_list[0]
     return SegmentResponse(
         lesson_id=first_segment.lesson_id,
-        status=first_segment.status
+        status=first_segment.status,
+        unit_progress_id=unit_progress.id
     )

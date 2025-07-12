@@ -96,11 +96,7 @@ enrollInCourse(courseId: string): void {
 
   startCourse(course: StudentCourseWithDetails): void {
     this.coursesService.startCourse({ course_id: course.course.id }).subscribe(segment => {
-      this.coursesService.getLessonById(segment.lesson_id).subscribe(lesson => {
-        this.currentLesson = lesson;
-        this.showLesson = true;
-        this.activeStudentCourse = course;
-      });
+      this.router.navigate(['/home/lesson', segment.unit_progress_id || '']);
     });
   }
 }

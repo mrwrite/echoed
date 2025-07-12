@@ -108,6 +108,7 @@ class StartCourseRequest(BaseModel):
 class SegmentResponse(BaseModel):
     lesson_id: UUID
     status: ProgressStatus
+    unit_progress_id: Optional[UUID] = None
 
 class CompleteSegmentRequest(BaseModel):
     student_unit_id: UUID

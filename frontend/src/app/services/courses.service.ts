@@ -49,7 +49,7 @@ export class CoursesService {
 
 getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
   return this.http.get<SegmentResponse>(
-    `${environment.apiUrl}/api/segment?student_unit_id=${studentUnitId}`,
+    `${environment.apiUrl}/api/progress/segment?student_unit_id=${studentUnitId}`,
     { headers: this.getHeaders() }
   );
 }
@@ -90,7 +90,7 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
     lesson_id: lessonId
   };
 
-  return this.http.post(`${environment.apiUrl}/api/complete-segment`, payload, {
+  return this.http.post(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
     headers: this.getHeaders()
   });
 }

@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Path
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.auth import create_access_token, authenticate_user, get_current_user, hash_password
 from app.database import SessionLocal, engine, Base
-from app.models import User, Course, Unit, Lesson, Activity, Media
-from app.schemas import UserDto, CourseDto, CourseResponse, UnitDto, LessonDto, ActivityDto, MediaResponse, ActivityResponse, LessonResponse, UnitResponse
-from app.api.routes import progress, enroll
+from app.models import User, Course, Unit, Lesson, Activity, Media, StudentCourse
+from app.schemas import UserDto, CourseDto, CourseResponse, UnitDto, LessonDto, ActivityDto, MediaResponse, ActivityResponse, LessonResponse, UnitResponse, StudentCourseResponse, StudentCourseWithDetails
+from app.api.routes import progress
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -15,8 +15,9 @@ app = FastAPI()
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 def configure_routes():
-    from app.api.routes import enroll
+    from app.api.routes import enroll, start_course
     app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
+    app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
 
 configure_routes()
 
@@ -24,7 +25,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=["http://localhost:4200",
+                   "http://127.0.0.1:4200"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -110,6 +112,34 @@ def delete_user(user_id: str, db: Session = Depends(get_db), current_user: User 
 def get_courses(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     courses = db.query(Course).all()
     return courses
+
+@app.get("/api/student-courses", response_model=list[StudentCourseWithDetails])
+def get_student_courses(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    student_courses = (
+        db.query(StudentCourse)
+        .options(joinedload(StudentCourse.course).joinedload(Course.units))  # eager load course units
+        .filter(StudentCourse.student_id == current_user.id)
+        .all()
+    )
+
+    # Convert to pydantic-compatible dicts with nested course details
+    results = []
+    for sc in student_courses:
+        results.append({
+            "id": sc.id,
+            "student_id": sc.student_id,
+            "course_id": sc.course_id,
+            "enrolled_on": sc.enrolled_on,
+            "status": sc.status,
+            "course": CourseResponse.from_orm(sc.course),
+            "unitProgressId": sc.unit_progress[0].id if sc.unit_progress else None,
+        })
+
+    return results
+
 
 @app.get("/api/courses/{course_id}", response_model=CourseResponse)
 def get_course_by_id(course_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -253,3 +283,40 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
 
     return {"message": "Course updated successfully"}
 
+@app.get("/api/lessons/{lesson_id}", response_model=LessonResponse)
+def get_lesson_by_id(
+    lesson_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    activities = []
+    for activity in lesson.activities:
+        media = MediaResponse(
+            id=activity.media.id,
+            type=activity.media.type,
+            title=activity.media.title,
+            url=activity.media.url,
+            description=activity.media.description
+        ) if activity.media else None
+        
+        activities.append(ActivityResponse(
+            id=activity.id,
+            type=activity.type,
+            title=activity.title,
+            content=activity.content,
+            order=activity.order,
+            media=media
+        ))
+
+    return LessonResponse(
+        id=lesson.id,
+        title=lesson.title,
+        order=lesson.order,
+        objective=lesson.objective,       
+        duration_minutes=lesson.duration_minutes,
+        activities=activities
+    )

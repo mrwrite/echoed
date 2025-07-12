@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+from app.enum import ProgressStatus 
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 
 class UserDto(BaseModel):
     firstname: str
@@ -10,8 +12,7 @@ class UserDto(BaseModel):
     password: str
     role: str
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ActivityDto(BaseModel):
@@ -39,8 +40,7 @@ class CourseDto(BaseModel):
     description: str
     units: List[UnitDto] = []
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -51,6 +51,10 @@ class MediaResponse(BaseModel):
     url: Optional[str]
     description: Optional[str]
 
+    class Config:
+        from_attributes = True
+
+
 class ActivityResponse(BaseModel):
     id: UUID
     type: str
@@ -58,6 +62,10 @@ class ActivityResponse(BaseModel):
     content: str
     order: Optional[int]
     media: Optional[MediaResponse]
+
+    class Config:
+        from_attributes = True
+
 
 class LessonResponse(BaseModel):
     id: UUID
@@ -67,6 +75,10 @@ class LessonResponse(BaseModel):
     duration_minutes: Optional[int]
     activities: List[ActivityResponse] = []
 
+    class Config:
+        from_attributes = True
+
+
 class UnitResponse(BaseModel):
     id: UUID
     title: str
@@ -74,12 +86,55 @@ class UnitResponse(BaseModel):
     order: Optional[int]
     lessons: List[LessonResponse] = []
 
+    class Config:
+        from_attributes = True
+
+
 class CourseResponse(BaseModel):
     id: UUID
     title: str
     description: str
     units: List[UnitResponse] = []
 
+    class Config:
+        from_attributes = True
+
 class EnrollRequest(BaseModel):
     course_id: UUID
+
+class StartCourseRequest(BaseModel):
+    course_id: UUID
+
+class SegmentResponse(BaseModel):
+    lesson_id: UUID
+    status: ProgressStatus
+    unit_progress_id: Optional[UUID] = None
+
+class CompleteSegmentRequest(BaseModel):
+    student_unit_id: UUID
+    lesson_id: UUID
+
+class StudentCourseResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+    course_id: UUID
+    enrolled_on: datetime
+    status: str
+
+    class Config:
+        from_attributes = True
+
+
+class StudentCourseWithDetails(BaseModel):
+    id: UUID
+    student_id: UUID
+    course_id: UUID
+    enrolled_on: datetime
+    status: str
+    course: CourseResponse
+    unit_progress_id: Optional[UUID] = None
+
+    class Config:
+        from_attributes = True
+
 

@@ -1,7 +1,9 @@
 export interface Activity {
-    type: string; // Type of activity (e.g., "quiz", "video", "discussion")
-    description: string; // Description of the activity
-    duration_minutes?: number; // Optional duration for the activity
+    id: string;
+    type: string;
+    title: string;
+    content: string;
+    order?: number;
 }
 
 export interface Lesson {

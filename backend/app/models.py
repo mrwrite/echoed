@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.types import Enum as SqlEnum
+from app.enum import ProgressStatus 
 from datetime import datetime
 import uuid
 
@@ -104,7 +106,7 @@ class StudentUnitProgress(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_course_id = Column(UUID(as_uuid=True), ForeignKey('student_courses.id'), nullable=False)
     unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
-    status = Column(String, default='not_started')  # values: not_started, in_progress, completed
+    status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
     student_course = relationship("StudentCourse", back_populates="unit_progress")
@@ -117,7 +119,7 @@ class SegmentProgress(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_unit_id = Column(UUID(as_uuid=True), ForeignKey('student_unit_progress.id'), nullable=False)
     lesson_id = Column(UUID(as_uuid=True), ForeignKey('lessons.id'), nullable=False)
-    status = Column(String, default='not_started')  # values: not_started, delivered, skipped
+    status = Column(SqlEnum(ProgressStatus, name="segment_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
     student_unit = relationship("StudentUnitProgress", back_populates="segments")

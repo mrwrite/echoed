@@ -5,6 +5,7 @@ import { RegistrationComponent } from './pages/registration/registration.compone
 import { HomeComponent } from './pages/home/home.component';
 import { CourseWizardComponent } from './pages/admin/course-wizard/course-wizard.component';
 import { EchoedRoleSelectorComponent } from './pages/user-dashboard/echoed-role-selector/echoed-role-selector.component';
+import { LessonViewComponent } from './pages/lesson-view.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -19,7 +20,8 @@ export const routes: Routes = [
           children: [
             { path: '', component: EchoedRoleSelectorComponent },  // <<=== NEW default child
             { path: 'courses/new', component: CourseWizardComponent },
-            { path: 'courses/:courseId/edit', component: CourseWizardComponent }
+            { path: 'courses/:courseId/edit', component: CourseWizardComponent },
+            { path: 'lesson/:id', component: LessonViewComponent }, // <<=== NEW lesson view route
           ]
         }
       ]

@@ -4,7 +4,8 @@ from uuid import UUID
 
 from app.models import StudentCourse
 from app.database import SessionLocal
-from app.deps import get_db, get_current_user
+from app.auth import get_current_user
+from app.database import get_db
 from app.schemas import EnrollRequest
 
 router = APIRouter()

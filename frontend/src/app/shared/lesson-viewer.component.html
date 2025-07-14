@@ -10,7 +10,17 @@
     <div class="text-sm">
       <ng-container [ngSwitch]="activity.type">
         <div *ngSwitchCase="'video'">
-          <video class="w-full rounded" controls [src]="activity.content"></video>
+          <ng-container *ngIf="isYouTubeLink(activity.content); else standardVideo">
+            <iframe
+              class="w-full rounded"
+              [src]="getYouTubeEmbedUrl(activity.content)"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </ng-container>
+          <ng-template #standardVideo>
+            <video class="w-full rounded" controls [src]="activity.content"></video>
+          </ng-template>
         </div>
         <div *ngSwitchCase="'image'">
           <img class="rounded shadow" [src]="activity.content" alt="{{ activity.title }}">

@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 import { Lesson } from '../../../models/lesson';
 import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
 import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
+import { StudentCourseCardComponent } from '../../../components/student-course-card/student-course-card.component';
+import { AchievementItemComponent } from '../../../components/achievement-item/achievement-item.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
 import { ToastService } from '../../../services/toast.service';
@@ -14,7 +16,13 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'echoed-student-view',
   standalone: true,
-  imports: [CommonModule, LessonViewerComponent, EchoButtonComponent],
+  imports: [
+    CommonModule,
+    LessonViewerComponent,
+    EchoButtonComponent,
+    StudentCourseCardComponent,
+    AchievementItemComponent,
+  ],
   templateUrl: './student-view.component.html',
   styleUrl: './student-view.component.scss'
 })

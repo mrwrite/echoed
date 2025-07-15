@@ -2,31 +2,32 @@
     <div class="bg-white col-span-5 rounded-xl shadow">    
         <div class="flex justify-between items-center p-6">
             <div>
-                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}} </h2>
+                <h2 class="text-2xl font-bold text-primary"> Welcome, {{userInfo.fullname}} </h2>
                 <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
             </div>
         </div>
     </div>
-   <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">My Courses</h2>
+   <h2 class="text-2xl font-bold text-primary col-span-5">My Courses</h2>
    
    <ng-container *ngFor="let sc of studentCourses">
   <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <p class="text-xl font-bold text-[#1A1A40]">{{ sc.course.title }}</p>
+    <p class="text-xl font-bold text-primary">{{ sc.course.title }}</p>
     <p class="text-xs text-gray-500">{{ sc.course.description }}</p>
-    <button
-      class="mt-2 text-white bg-[#1A1A40] px-4 py-2 rounded-lg"
-      (click)="startCourse(sc)">
-      Start / Resume
-    </button>
+    <app-echo-button
+      class="mt-2"
+      color="primary"
+      label="Start / Resume"
+      (click)="startCourse(sc)"
+    ></app-echo-button>
   </div>
 </ng-container>
   
-  <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Achievements Unlocked</h2>
+  <h2 class="text-2xl font-bold text-primary col-span-5">Achievements Unlocked</h2>
     <div class="bg-white p-4 rounded-xl shadow">    
         <div class="flex items-center gap-3 p-3 rounded-lg">
             <div class="text-2xl">🧠</div>
                 <div>
-                    <p class="font-semibold text-[#1A1A40] text-sm">Memory Master</p>
+                    <p class="font-semibold text-primary text-sm">Memory Master</p>
                     <p class="text-xs text-gray-500">Completed 10 quizzes</p>
                 </div>
             </div>
@@ -35,7 +36,7 @@
       <div class="flex items-center gap-3 p-3 rounded-lg">
         <div class="text-2xl">📚</div>
         <div>
-          <p class="font-semibold text-[#1A1A40] text-sm">Knowledge Seeker</p>
+            <p class="font-semibold text-primary text-sm">Knowledge Seeker</p>
           <p class="text-xs text-gray-500">Completed 5 lessons</p>
         </div>
       </div>
@@ -44,7 +45,7 @@
         <div class="flex items-center gap-3 p-3 rounded-lg">
             <div class="text-2xl">🌍</div>
                 <div>
-                  <p class="font-semibold text-[#1A1A40] text-sm">Explorer</p>
+                  <p class="font-semibold text-primary text-sm">Explorer</p>
                   <p class="text-xs text-gray-500">Finished 3 Geography units</p>
                 </div>            
         </div>
@@ -53,7 +54,7 @@
         <div class="flex items-center gap-3 p-3 rounded-lg">
             <div class="text-2xl">🎯</div>
             <div>
-              <p class="font-semibold text-[#1A1A40] text-sm">Precision Pro</p>
+              <p class="font-semibold text-primary text-sm">Precision Pro</p>
               <p class="text-xs text-gray-500">Scored 100% on a quiz</p>
             </div>
           </div>
@@ -62,23 +63,24 @@
         <div class="flex items-center gap-3 p-3 rounded-lg">
             <div class="text-2xl">🏆</div>
             <div>
-              <p class="font-semibold text-[#1A1A40] text-sm">Streak Champ</p>
+              <p class="font-semibold text-primary text-sm">Streak Champ</p>
               <p class="text-xs text-gray-500">5 days of login streak</p>
             </div>
           </div>
     </div>
-    <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Available Courses</h2>
+    <h2 class="text-2xl font-bold text-primary col-span-5">Available Courses</h2>
 
 <ng-container *ngFor="let course of availableCourses">
   <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <p class="text-xl font-bold text-[#1A1A40]">{{ course.title }}</p>
+    <p class="text-xl font-bold text-primary">{{ course.title }}</p>
     <p class="text-xs text-gray-500">{{ course.description }}</p>
 
-    <button
-      class="mt-2 text-white bg-green-600 px-4 py-2 rounded-lg"
-      (click)="enrollInCourse(course.id)">
-      Enroll
-    </button>
+    <app-echo-button
+      class="mt-2"
+      color="accent"
+      label="Enroll"
+      (click)="enrollInCourse(course.id)"
+    ></app-echo-button>
   </div>
 </ng-container>
 

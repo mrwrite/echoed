@@ -6,13 +6,14 @@ import { CoursesService } from '../../../services/courses.service';
 import { Router } from '@angular/router';
 import { Lesson } from '../../../models/lesson';
 import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
+import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
 
 @Component({
   selector: 'echoed-student-view',
   standalone: true,
-  imports: [CommonModule, LessonViewerComponent],
+  imports: [CommonModule, LessonViewerComponent, EchoButtonComponent],
   templateUrl: './student-view.component.html',
   styleUrl: './student-view.component.scss'
 })

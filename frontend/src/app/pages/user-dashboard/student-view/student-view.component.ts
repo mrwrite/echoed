@@ -9,6 +9,7 @@ import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
 import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'echoed-student-view',
@@ -27,7 +28,8 @@ export class StudentViewComponent implements OnInit {
   
 
   constructor(private coursesService: CoursesService,
-              private router: Router
+              private router: Router,
+              private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -68,12 +70,12 @@ export class StudentViewComponent implements OnInit {
     this.currentLesson.id
   ).subscribe({
     next: () => {
-      alert('Lesson completed! Progress saved.');
+      this.toastService.show('Lesson completed! Progress saved.', 'success');
       this.showLesson = false;
       this.currentLesson = undefined;
     },
     error: () => {
-      alert('There was an error saving your progress.');
+      this.toastService.show('There was an error saving your progress.', 'error');
     }
   });
   }
@@ -83,13 +85,13 @@ export class StudentViewComponent implements OnInit {
 enrollInCourse(courseId: string): void {
   this.coursesService.enrollInCourse(courseId).subscribe({
     next: () => {
-      alert('Enrollment successful!');
+      this.toastService.show('Enrollment successful!', 'success');
       this.loadStudentCourses();
       this.loadAvailableCourses();
     },
     error: (err) => {
       console.error('Enrollment failed', err);
-      alert('Enrollment failed. You may already be enrolled.');
+      this.toastService.show('Enrollment failed. You may already be enrolled.', 'error');
     }
   });
 }

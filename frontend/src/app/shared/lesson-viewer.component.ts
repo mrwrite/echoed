@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Lesson } from '../models/lesson';
@@ -10,12 +10,30 @@ import { Lesson } from '../models/lesson';
   templateUrl: './lesson-viewer.component.html',
   styleUrl: './lesson-viewer.component.scss'
 })
-export class LessonViewerComponent {
+export class LessonViewerComponent implements OnChanges {
   constructor(private sanitizer: DomSanitizer) {}
 
   @Input() lesson!: Lesson;
   @Input() isTeacherLed: boolean = false;
   @Output() segmentCompleted = new EventEmitter<void>();
+
+  currentActivityIndex = 0;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['lesson']) {
+      this.currentActivityIndex = 0;
+    }
+  }
+
+  get currentActivity() {
+    return this.lesson?.activities[this.currentActivityIndex];
+  }
+
+  goToNextActivity(): void {
+    if (this.lesson && this.currentActivityIndex < this.lesson.activities.length - 1) {
+      this.currentActivityIndex++;
+    }
+  }
 
   isYouTubeLink(url: string): boolean {
     return url.includes('youtube.com') || url.includes('youtu.be');

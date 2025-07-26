@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserInfo } from '../../../models/user-info';
-import { StudentCourse } from '../../../models/student-course';
 import { CoursesService } from '../../../services/courses.service';
 import { Router } from '@angular/router';
 import { Lesson } from '../../../models/lesson';
@@ -40,12 +39,9 @@ export class StudentViewComponent implements OnInit {
     return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
   }
 
-  toggleAvailableCoursesView(): void {
-    if (this.availableCoursesVisibleCount >= this.availableCourses.length) {
-      this.availableCoursesVisibleCount = 4;
-    } else {
-      this.availableCoursesVisibleCount = this.availableCourses.length;
-    }
+  /** Navigate to the full available courses page */
+  goToAvailableCourses(): void {
+    this.router.navigate(['/home/courses']);
   }
   
 

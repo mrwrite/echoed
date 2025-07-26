@@ -75,13 +75,13 @@
   </app-student-course-card>
 </ng-container>
 
-<button
+<a
   *ngIf="availableCourses.length > 4"
-  class="col-span-5 text-primary underline"
-  (click)="toggleAvailableCoursesView()"
+  class="col-span-5 text-primary underline cursor-pointer"
+  (click)="goToAvailableCourses()"
 >
-  {{ availableCoursesVisibleCount >= availableCourses.length ? 'View Less' : 'View More' }}
-</button>
+  View More
+</a>
 
 </div>
 

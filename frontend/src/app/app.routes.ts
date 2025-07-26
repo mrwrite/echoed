@@ -7,6 +7,7 @@ import { CourseWizardComponent } from './pages/admin/course-wizard/course-wizard
 import { EchoedRoleSelectorComponent } from './pages/user-dashboard/echoed-role-selector/echoed-role-selector.component';
 import { LessonViewComponent } from './pages/lesson-view.component';
 import { LandingComponent } from './pages/landing/landing.component';
+import { AvailableCoursesComponent } from './pages/available-courses/available-courses.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -23,6 +24,7 @@ export const routes: Routes = [
           { path: '', component: EchoedRoleSelectorComponent },
           { path: 'courses/new', component: CourseWizardComponent },
           { path: 'courses/:courseId/edit', component: CourseWizardComponent },
+          { path: 'courses', component: AvailableCoursesComponent },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]
       }

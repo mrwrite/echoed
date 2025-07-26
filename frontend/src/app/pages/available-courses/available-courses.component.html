@@ -1,0 +1,19 @@
+<h2 class="text-2xl font-bold text-primary mb-4">Available Courses</h2>
+<div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+  <app-student-course-card
+    *ngFor="let course of availableCourses"
+    [title]="course.title"
+    [description]="course.description"
+    [thumbnailUrl]="course.thumbnailUrl"
+    [instructor]="course.instructor"
+    [rating]="course.rating"
+    [ratingCount]="course.ratingCount"
+  >
+    <app-echo-button
+      class="mt-2"
+      color="accent"
+      label="Enroll"
+      (click)="enrollInCourse(course.id)"
+    ></app-echo-button>
+  </app-student-course-card>
+</div>

@@ -51,6 +51,12 @@ class Unit(Base):
 
     lessons = relationship("Lesson", back_populates="unit", cascade="all, delete-orphan")
 
+    student_progress = relationship(
+        "StudentUnitProgress",
+        back_populates="unit",
+        cascade="all, delete-orphan",
+    )
+
 class Lesson(Base):
     __tablename__ = 'lessons'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -105,12 +111,16 @@ class StudentUnitProgress(Base):
     __tablename__ = 'student_unit_progress'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_course_id = Column(UUID(as_uuid=True), ForeignKey('student_courses.id'), nullable=False)
-    unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
+    unit_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('units.id', ondelete='CASCADE'),
+        nullable=False,
+    )
     status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
     student_course = relationship("StudentCourse", back_populates="unit_progress")
-    unit = relationship("Unit")
+    unit = relationship("Unit", back_populates="student_progress")
 
     segments = relationship("SegmentProgress", back_populates="student_unit", cascade="all, delete-orphan")
 

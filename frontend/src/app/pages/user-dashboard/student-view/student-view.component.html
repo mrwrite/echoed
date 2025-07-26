@@ -56,7 +56,7 @@
   ></app-achievement-item>
     <h2 class="text-2xl font-bold text-primary col-span-5">Available Courses</h2>
 
-<ng-container *ngFor="let course of availableCourses">
+<ng-container *ngFor="let course of visibleAvailableCourses">
   <app-student-course-card
     class="col-span-1 md:col-span-2"
     [title]="course.title"
@@ -74,6 +74,14 @@
     ></app-echo-button>
   </app-student-course-card>
 </ng-container>
+
+<button
+  *ngIf="availableCourses.length > 4"
+  class="col-span-5 text-primary underline"
+  (click)="toggleAvailableCoursesView()"
+>
+  {{ availableCoursesVisibleCount >= availableCourses.length ? 'View Less' : 'View More' }}
+</button>
 
 </div>
 

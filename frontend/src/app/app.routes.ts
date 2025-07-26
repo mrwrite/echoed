@@ -6,27 +6,27 @@ import { HomeComponent } from './pages/home/home.component';
 import { CourseWizardComponent } from './pages/admin/course-wizard/course-wizard.component';
 import { EchoedRoleSelectorComponent } from './pages/user-dashboard/echoed-role-selector/echoed-role-selector.component';
 import { LessonViewComponent } from './pages/lesson-view.component';
+import { LandingComponent } from './pages/landing/landing.component';
 
 export const routes: Routes = [
-    { path: 'login', component: LoginComponent },
-    { path: 'registration', component: RegistrationComponent },
-    {
-      path: 'home',
-      component: HomeComponent,
-      children: [
-        {
-          path: '',
-          component: UserDashboardComponent,
-          children: [
-            { path: '', component: EchoedRoleSelectorComponent },  // <<=== NEW default child
-            { path: 'courses/new', component: CourseWizardComponent },
-            { path: 'courses/:courseId/edit', component: CourseWizardComponent },
-            { path: 'lesson/:id', component: LessonViewComponent }, // <<=== NEW lesson view route
-          ]
-        }
-      ]
-    },
-    { path: '', redirectTo: '/login', pathMatch: 'full' },
-    { path: '**', redirectTo: '/login' }
-  ];
-  
+  { path: '', component: LandingComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'registration', component: RegistrationComponent },
+  {
+    path: 'home',
+    component: HomeComponent,
+    children: [
+      {
+        path: '',
+        component: UserDashboardComponent,
+        children: [
+          { path: '', component: EchoedRoleSelectorComponent },
+          { path: 'courses/new', component: CourseWizardComponent },
+          { path: 'courses/:courseId/edit', component: CourseWizardComponent },
+          { path: 'lesson/:id', component: LessonViewComponent },
+        ]
+      }
+    ]
+  },
+  { path: '**', redirectTo: '' }
+];

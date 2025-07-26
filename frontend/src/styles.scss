@@ -1,9 +1,9 @@
+@use 'styles/typography';
+
 @import '@angular/cdk/overlay-prebuilt.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@use 'styles/typography';
 
 @include typography.echoed-typography;
 

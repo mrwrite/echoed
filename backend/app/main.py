@@ -242,8 +242,9 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
     existing_course.title = course_dto.title
     existing_course.description = course_dto.description
 
-    # Clear existing units (and lessons/activities) - simplest approach
-    existing_course.units.clear()
+    # Remove existing units along with their lessons/activities
+    for unit in list(existing_course.units):
+        db.delete(unit)
     db.commit()
 
     # Rebuild Units, Lessons, Activities fresh

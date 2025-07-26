@@ -118,7 +118,11 @@ class SegmentProgress(Base):
     __tablename__ = 'segment_progress'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_unit_id = Column(UUID(as_uuid=True), ForeignKey('student_unit_progress.id'), nullable=False)
-    lesson_id = Column(UUID(as_uuid=True), ForeignKey('lessons.id'), nullable=False)
+    lesson_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('lessons.id', ondelete='CASCADE'),
+        nullable=False
+    )
     status = Column(SqlEnum(ProgressStatus, name="segment_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 

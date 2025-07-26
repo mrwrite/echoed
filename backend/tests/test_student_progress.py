@@ -154,3 +154,27 @@ def test_crud_update_segment_progress_status(db_session, test_user, test_course,
     assert isinstance(updated.last_updated, datetime)
 
 
+def test_delete_lesson_cascades_segment_progress(db_session, test_user, test_course, test_unit):
+    lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Temp Lesson",
+        unit_id=test_unit.id,
+        duration_minutes=5,
+    )
+    db_session.add(lesson)
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=test_course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = crud.create_student_unit_progress(db_session, student_course.id, test_unit.id)
+    segment = crud.create_segment_progress(db_session, unit_progress.id, lesson.id)
+
+    db_session.delete(lesson)
+    db_session.commit()
+
+    result = db_session.query(SegmentProgress).filter_by(id=segment.id).first()
+    assert result is None
+
+

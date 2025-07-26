@@ -178,3 +178,38 @@ def test_delete_lesson_cascades_segment_progress(db_session, test_user, test_cou
     assert result is None
 
 
+def test_delete_unit_cascades_progress_and_segments(db_session, test_user, test_course):
+    unit = Unit(
+        id=uuid.uuid4(),
+        title="Temp Unit",
+        course_id=test_course.id,
+    )
+    db_session.add(unit)
+    db_session.commit()
+
+    lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Temp Lesson",
+        unit_id=unit.id,
+        duration_minutes=5,
+    )
+    db_session.add(lesson)
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=test_course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = crud.create_student_unit_progress(db_session, student_course.id, unit.id)
+    segment = crud.create_segment_progress(db_session, unit_progress.id, lesson.id)
+
+    db_session.delete(unit)
+    db_session.commit()
+
+    progress_result = db_session.query(StudentUnitProgress).filter_by(id=unit_progress.id).first()
+    seg_result = db_session.query(SegmentProgress).filter_by(id=segment.id).first()
+
+    assert progress_result is None
+    assert seg_result is None
+
+

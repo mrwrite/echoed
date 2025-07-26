@@ -38,6 +38,7 @@ EchoEd/
 │── frontend/        # Angular Web & Mobile UI
 │── backend/         # FastAPI API & Database
 │── docs/            # Pitch Deck, Branding Assets, UI Mockups
+│   └── design-guidelines.md  # UI inspiration notes
 │── assets/          # Logos, Icons, Images
 │── tests/           # Automated tests
 │── README.md        # Overview & instructions
@@ -89,6 +90,11 @@ We welcome contributions! To contribute:
 
 ## 📜 License
 This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎨 Design Inspiration
+Looking for styling tips? Check out [docs/design-guidelines.md](docs/design-guidelines.md) for notes on giving EchoEd a look similar to popular course platforms like Udemy or Pluralsight.
 
 ---
 

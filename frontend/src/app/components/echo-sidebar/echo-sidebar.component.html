@@ -1,4 +1,4 @@
-<div [ngClass]="collapsed ? 'w-20' : 'w-64'" class="bg-blue-900 text-white h-screen transition-all duration-300 flex flex-col">
+<div [ngClass]="collapsed ? 'w-20' : 'w-64'" class="bg-blue-900 text-white h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col">
     <div class="flex items-center justify-between p-4">
       <span *ngIf="!collapsed" class="text-xl font-bold">Dashboard</span>
       <button (click)="toggle.emit()" class="text-white">

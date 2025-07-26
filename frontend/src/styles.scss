@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@use 'styles/typography';
+
+@include typography.echoed-typography;
+
 
 html, body {
   height: 100%;

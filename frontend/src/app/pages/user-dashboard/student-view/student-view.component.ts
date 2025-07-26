@@ -33,6 +33,20 @@ export class StudentViewComponent implements OnInit {
   currentLesson?: Lesson;
   showLesson = false;
   availableCourses: Course[] = [];
+  /** Number of courses shown initially before "View More" is clicked */
+  availableCoursesVisibleCount = 4;
+
+  get visibleAvailableCourses(): Course[] {
+    return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
+  }
+
+  toggleAvailableCoursesView(): void {
+    if (this.availableCoursesVisibleCount >= this.availableCourses.length) {
+      this.availableCoursesVisibleCount = 4;
+    } else {
+      this.availableCoursesVisibleCount = this.availableCourses.length;
+    }
+  }
   
 
   constructor(private coursesService: CoursesService,

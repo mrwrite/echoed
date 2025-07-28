@@ -46,7 +46,7 @@ export class Step4ReviewSaveComponent implements OnInit {
           this.isSaving = false;
           console.log('Course updated successfully!');
           // ✅ Redirect to course management page (or success screen)
-          this.router.navigate(['/home']);
+          //this.router.navigate(['/home']);
         },
         error: (error) => {
           this.isSaving = false;

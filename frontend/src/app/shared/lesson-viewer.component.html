@@ -5,7 +5,7 @@
     <p class="text-xs text-gray-500" *ngIf="lesson.duration_minutes">Duration: {{ lesson.duration_minutes }} minutes</p>
   </div>
 
-  <div *ngIf="currentActivity" class="border-t pt-4 space-y-2">
+  <div *ngIf="currentActivity" class="border-t pt-2 space-y-2">
     <h3 class="font-semibold text-lg">{{ currentActivity.title }}</h3>
     <div class="text-sm">
       <ng-container [ngSwitch]="currentActivity.type">
@@ -15,7 +15,7 @@
               class="w-full rounded"
               [src]="getYouTubeEmbedUrl(currentActivity.content)"
               width="640"
-              height="360"
+              height="400"
               frameborder="0"
               allowfullscreen>
             </iframe>

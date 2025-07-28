@@ -27,6 +27,9 @@
         <div *ngSwitchCase="'image'">
           <img class="rounded shadow" [src]="currentActivity.content" alt="{{ currentActivity.title }}">
         </div>
+        <div *ngSwitchCase="'coloring'">
+          <app-coloring-canvas [imageUrl]="currentActivity.content"></app-coloring-canvas>
+        </div>
         <div *ngSwitchDefault>
           <p>{{ currentActivity.content }}</p>
         </div>

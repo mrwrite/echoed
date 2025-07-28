@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Path
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Path, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.auth import create_access_token, authenticate_user, get_current_user, hash_password
+import os
+import uuid
+import shutil
 from app.database import SessionLocal, engine, Base
 from app.models import User, Course, Unit, Lesson, Activity, Media, StudentCourse
 from app.schemas import UserDto, CourseDto, CourseResponse, UnitDto, LessonDto, ActivityDto, MediaResponse, ActivityResponse, LessonResponse, UnitResponse, StudentCourseResponse, StudentCourseWithDetails
@@ -12,6 +15,10 @@ from pydantic import BaseModel
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Directory for uploaded coloring pages
+COLORINGS_PATH = os.getenv("COLORINGS_PATH", "./colorings")
+os.makedirs(COLORINGS_PATH, exist_ok=True)
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 def configure_routes():
@@ -317,7 +324,22 @@ def get_lesson_by_id(
         id=lesson.id,
         title=lesson.title,
         order=lesson.order,
-        objective=lesson.objective,       
+        objective=lesson.objective,
         duration_minutes=lesson.duration_minutes,
         activities=activities
     )
+
+
+# --- File upload endpoint for coloring pages ---
+@app.post("/api/upload/coloring")
+def upload_coloring(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload a coloring page and return the stored file path."""
+    extension = os.path.splitext(file.filename)[1]
+    filename = f"{uuid.uuid4()}{extension}"
+    file_path = os.path.join(COLORINGS_PATH, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"file_path": file_path}

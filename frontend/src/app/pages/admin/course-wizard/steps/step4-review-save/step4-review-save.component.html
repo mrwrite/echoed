@@ -73,13 +73,16 @@
                   />
                 </div>
 
-                <div>
+                <div *ngIf="newActivityType !== 'coloring'">
                   <textarea
                     [(ngModel)]="newActivityContent"
                     class="w-full border rounded p-2"
                     rows="2"
                     placeholder="Activity Content or Link"
                   ></textarea>
+                </div>
+                <div *ngIf="newActivityType === 'coloring'">
+                  <input type="file" (change)="onColoringFileSelected($event)" class="w-full border rounded p-2" />
                 </div>
 
                 <div class="flex space-x-2">

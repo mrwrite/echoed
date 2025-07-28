@@ -56,11 +56,15 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
   private loadImage() {
     const canvas = this.canvasRef.nativeElement;
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.src = this.imageUrl;
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       this.ctx.drawImage(img, 0, 0, img.width, img.height);
+    };
+    img.onerror = (err) => {
+      console.error('Failed to load image', err);
     };
   }
 

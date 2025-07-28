@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Path, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.auth import create_access_token, authenticate_user, get_current_user, hash_password
@@ -19,6 +20,9 @@ app = FastAPI()
 # Directory for uploaded coloring pages
 COLORINGS_PATH = os.getenv("COLORINGS_PATH", "./colorings")
 os.makedirs(COLORINGS_PATH, exist_ok=True)
+
+# Serve uploaded coloring pages as static files
+app.mount("/colorings", StaticFiles(directory=COLORINGS_PATH), name="colorings")
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 def configure_routes():
@@ -333,13 +337,15 @@ def get_lesson_by_id(
 # --- File upload endpoint for coloring pages ---
 @app.post("/api/upload/coloring")
 def upload_coloring(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    """Upload a coloring page and return the stored file path."""
+    """Upload a coloring page and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]
     filename = f"{uuid.uuid4()}{extension}"
     file_path = os.path.join(COLORINGS_PATH, filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    return {"file_path": file_path}
+    file_url = request.url_for("colorings", path=filename)
+    return {"file_path": str(file_url)}

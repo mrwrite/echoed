@@ -47,6 +47,26 @@ export class CoursesService {
   });
 }
 
+  uploadColoring(file: File): Observable<{ file_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let token = this.authService.getToken();
+    if (token && !token.startsWith('Bearer ')) {
+      token = `Bearer ${token}`;
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: token || ''
+    });
+
+    return this.http.post<{ file_path: string }>(
+      `${environment.apiUrl}/api/upload/coloring`,
+      formData,
+      { headers }
+    );
+  }
+
 getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
   return this.http.get<SegmentResponse>(
     `${environment.apiUrl}/api/progress/segment?student_unit_id=${studentUnitId}`,

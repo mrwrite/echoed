@@ -34,7 +34,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['imageUrl'] && !changes['imageUrl'].firstChange) {
+    if (changes['imageUrl'] && changes['imageUrl'].currentValue) {
       this.loadImage();
     }
   }

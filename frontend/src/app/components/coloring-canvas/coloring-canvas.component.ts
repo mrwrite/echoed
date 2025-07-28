@@ -1,5 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-coloring-canvas',
@@ -29,6 +30,18 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
   private ctx!: CanvasRenderingContext2D;
   private drawing = false;
 
+  private resolveUrl(url: string): string {
+    if (!url) {
+      return '';
+    }
+    const hasProtocol = /^https?:\/\//i.test(url);
+    if (hasProtocol) {
+      return url;
+    }
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    return `${environment.apiUrl}${normalized}`;
+  }
+
   ngAfterViewInit() {
     this.initCanvas();
   }
@@ -57,7 +70,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
     const canvas = this.canvasRef.nativeElement;
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = this.imageUrl;
+    img.src = this.resolveUrl(this.imageUrl);
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;

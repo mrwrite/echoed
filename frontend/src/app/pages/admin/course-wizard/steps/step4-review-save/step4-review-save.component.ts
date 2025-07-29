@@ -19,10 +19,11 @@ export class Step4ReviewSaveComponent implements OnInit {
   courseId: string | null = null; // For editing an existing course
   addingActivityUnitId: string | null = null;
   addingActivityLessonId: string | null = null;
-  newActivityType: 'video' | 'story' | 'song' | 'coloring' | 'discussion' | 'text' = 'text';
+  newActivityType: 'video' | 'story' | 'storybook' | 'song' | 'coloring' | 'discussion' | 'text' = 'text';
   newActivityTitle: string = '';
   newActivityContent: string = '';
   newColoringFile: File | null = null;
+  storybookPages: { id: string; imageUrl: string; order: number }[] = [];
 
   constructor(public courseWizardService: CourseWizardService,
               private coursesService: CoursesService,
@@ -81,17 +82,27 @@ export class Step4ReviewSaveComponent implements OnInit {
     this.newActivityTitle = '';
     this.newActivityContent = '';
     this.newColoringFile = null;
+    this.storybookPages = [];
   }
   
   cancelAddActivity() {
     this.addingActivityUnitId = null;
     this.addingActivityLessonId = null;
     this.newColoringFile = null;
+    this.storybookPages = [];
   }
 
   onColoringFileSelected(event: any) {
     const file = event.target.files && event.target.files.length > 0 ? event.target.files[0] : null;
     this.newColoringFile = file;
+  }
+
+  addStorybookPage() {
+    this.storybookPages.push({ id: uuidv4(), imageUrl: '', order: this.storybookPages.length + 1 });
+  }
+
+  removeStorybookPage(id: string) {
+    this.storybookPages = this.storybookPages.filter(p => p.id !== id);
   }
   
   confirmAddActivity() {
@@ -103,12 +114,13 @@ export class Step4ReviewSaveComponent implements OnInit {
         if (unit.id === this.addingActivityUnitId) {
           const updatedLessons = unit.lessons.map(lesson => {
             if (lesson.id === this.addingActivityLessonId) {
-              const newActivity = {
+              const newActivity: any = {
                 id: uuidv4(),
                 type: this.newActivityType,
                 title: this.newActivityTitle.trim(),
                 content: content,
-                order: lesson.activities.length + 1
+                order: lesson.activities.length + 1,
+                pages: this.storybookPages.map(p => ({ image_url: p.imageUrl, order: p.order }))
               };
               return { ...lesson, activities: [...lesson.activities, newActivity] };
             }
@@ -132,6 +144,8 @@ export class Step4ReviewSaveComponent implements OnInit {
           this.errorMessage = 'Failed to upload coloring page.';
         }
       });
+    } else if (this.newActivityType === 'storybook') {
+      addActivity('');
     } else {
       addActivity(this.newActivityContent.trim());
     }

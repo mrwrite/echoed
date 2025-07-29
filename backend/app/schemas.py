@@ -20,6 +20,15 @@ class ActivityDto(BaseModel):
     title: str
     content: str
     order: Optional[int]
+    pages: List['StorybookPageDto'] = []
+
+
+class StorybookPageDto(BaseModel):
+    image_url: str
+    order: Optional[int]
+
+    class Config:
+        from_attributes = True
 
 class LessonDto(BaseModel):
     title: str
@@ -55,6 +64,15 @@ class MediaResponse(BaseModel):
         from_attributes = True
 
 
+class StorybookPageResponse(BaseModel):
+    id: UUID
+    image_url: str
+    order: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+
 class ActivityResponse(BaseModel):
     id: UUID
     type: str
@@ -62,6 +80,7 @@ class ActivityResponse(BaseModel):
     content: str
     order: Optional[int]
     media: Optional[MediaResponse]
+    pages: List[StorybookPageResponse] = []
 
     class Config:
         from_attributes = True

@@ -26,13 +26,20 @@ export interface LessonDraft {
     units: UnitDraft[];
   }
 
-  export interface ActivityDraft {
+export interface ActivityDraft {
     id: string;
-    type: 'video' | 'story' | 'coloring' | 'song' | 'quiz' | 'text' | 'discussion';
+    type: 'video' | 'story' | 'storybook' | 'coloring' | 'song' | 'quiz' | 'text' | 'discussion';
     title: string;
     content: string; // URL for video, text for story, etc.
     order: number; // Order of the activity within the lesson
-    mediaId?: string;            
-    
+    mediaId?: string;
+    pages?: StorybookPageDraft[];
+
   }
+
+export interface StorybookPageDraft {
+    id: string;
+    imageUrl: string;
+    order: number;
+}
   

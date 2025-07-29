@@ -11,13 +11,13 @@ export interface StorybookPage {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="space-y-2" *ngIf="pages && pages.length">
-      <img [src]="pages[currentIndex].image_url" class="w-full rounded max-h-[60vh] object-contain" />
-      <div class="flex justify-between">
-        <button *ngIf="currentIndex > 0" class="px-2 py-1 bg-gray-200 rounded" (click)="prev()">Prev</button>
-        <button *ngIf="currentIndex < pages.length - 1" class="px-2 py-1 bg-gray-200 rounded" (click)="next()">Next</button>
+      <div class="space-y-2" *ngIf="pages && pages.length">
+        <img [src]="pages[currentIndex].image_url" class="w-full rounded max-h-[60vh] object-contain" />
+        <div class="flex" [ngClass]="currentIndex > 0 ? 'justify-between' : 'justify-end'">
+          <button *ngIf="currentIndex > 0" class="px-2 py-1 bg-gray-200 rounded" (click)="prev()">Prev</button>
+          <button *ngIf="currentIndex < pages.length - 1" class="px-2 py-1 bg-gray-200 rounded" (click)="next()">Next</button>
+        </div>
       </div>
-    </div>
   `
 })
 export class StorybookViewerComponent {

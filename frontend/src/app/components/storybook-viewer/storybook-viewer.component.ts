@@ -12,10 +12,10 @@ export interface StorybookPage {
   imports: [CommonModule],
   template: `
     <div class="space-y-2" *ngIf="pages && pages.length">
-      <img [src]="pages[currentIndex].image_url" class="w-full rounded" />
+      <img [src]="pages[currentIndex].image_url" class="w-full rounded max-h-[70vh] object-contain" />
       <div class="flex justify-between">
         <button class="px-2 py-1 bg-gray-200 rounded" (click)="prev()" [disabled]="currentIndex === 0">Prev</button>
-        <button class="px-2 py-1 bg-gray-200 rounded" (click)="next()" [disabled]="currentIndex >= pages.length - 1">Next</button>
+        <button *ngIf="currentIndex < pages.length - 1" class="px-2 py-1 bg-gray-200 rounded" (click)="next()">Next</button>
       </div>
     </div>
   `

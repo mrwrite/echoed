@@ -10,10 +10,10 @@ import { environment } from '../../../environments/environment';
     <div class="space-y-2">
       <canvas
         #canvas
-        class="border rounded touch-none max-h-[80vh]"
+        class="border rounded touch-none max-h-[60vh]"
         style="max-width: 100%;"
       ></canvas>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <button *ngFor="let c of colors"
           class="w-6 h-6 rounded-full border"
           [style.background]="c"

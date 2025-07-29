@@ -7,13 +7,13 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="space-y-2">
+    <div class="space-y-2 flex flex-col items-center">
       <canvas
         #canvas
         class="border rounded touch-none max-h-[60vh]"
         style="max-width: 100%;"
       ></canvas>
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap justify-center">
         <button *ngFor="let c of colors"
           class="w-6 h-6 rounded-full border"
           [style.background]="c"

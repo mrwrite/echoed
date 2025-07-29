@@ -10,7 +10,8 @@ import { environment } from '../../environments/environment';
     <div class="space-y-2">
       <canvas
         #canvas
-        class="border rounded w-full touch-none max-h-[80vh]"
+        class="border rounded touch-none max-h-[80vh]"
+        style="max-width: 100%;"
       ></canvas>
       <div class="flex items-center gap-2">
         <button *ngFor="let c of colors"
@@ -90,6 +91,8 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
 
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
+      canvas.style.width = `${canvas.width}px`;
+      canvas.style.height = `${canvas.height}px`;
 
       this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };

@@ -1,14 +1,16 @@
 <div class="min-h-screen">
   <echo-sidebar
+    *ngIf="!lessonMode"
     [userInfo]="userInfo"
     [collapsed]="sidebarCollapsed"
     (toggle)="sidebarCollapsed = !sidebarCollapsed"
+    @fade
   ></echo-sidebar>
   <div
-    [ngClass]="sidebarCollapsed ? 'ml-20' : 'ml-64'"
-    class="flex flex-col h-screen"
+    [ngClass]="lessonMode ? 'ml-0' : (sidebarCollapsed ? 'ml-20' : 'ml-64')"
+    class="flex flex-col h-screen transition-all duration-500"
   >
-    <echo-header [userinfo]="userInfo"></echo-header>
+    <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" @fade></echo-header>
     <main class="flex-1 overflow-y-auto bg-gray-100 p-6">
       <router-outlet></router-outlet>
     </main>

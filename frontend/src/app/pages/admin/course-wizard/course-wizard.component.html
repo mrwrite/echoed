@@ -42,11 +42,11 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-between mt-6">
+    <div class="flex mt-6" [ngClass]="{ 'justify-between': currentStep > 1, 'justify-end': currentStep === 1 }">
       <button
+        *ngIf="currentStep > 1"
         (click)="previousStep()"
         class="text-sm text-gray-600 hover:text-blue-600"
-        [disabled]="currentStep === 1"
       >
         ← Back
       </button>

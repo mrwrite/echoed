@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { CourseWizardService } from '../../course-wizard.service';
+import { ActivityDraft } from '../../models/course-draft.model';
 import { CoursesService } from '../../../../../services/courses.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { v4 as uuidv4 } from 'uuid';
@@ -123,6 +124,27 @@ export class Step4ReviewSaveComponent implements OnInit {
     moveItemInArray(this.storybookPages, event.previousIndex, event.currentIndex);
     this.storybookPages.forEach((p, idx) => p.order = idx + 1);
   }
+
+  dropActivity(event: CdkDragDrop<ActivityDraft[]>, unitId: string, lessonId: string) {
+    const draft = this.courseWizardService.draftValue;
+    const updatedUnits = draft.units.map(unit => {
+      if (unit.id === unitId) {
+        const updatedLessons = unit.lessons.map(lesson => {
+          if (lesson.id === lessonId) {
+            const updatedActivities = [...lesson.activities];
+            moveItemInArray(updatedActivities, event.previousIndex, event.currentIndex);
+            updatedActivities.forEach((a, idx) => a.order = idx + 1);
+            return { ...lesson, activities: updatedActivities };
+          }
+          return lesson;
+        });
+        return { ...unit, lessons: updatedLessons };
+      }
+      return unit;
+    });
+
+    this.courseWizardService.updateDraft({ units: updatedUnits });
+  }
   
   confirmAddActivity() {
     if (!this.newActivityTitle.trim()) return;
@@ -169,7 +191,7 @@ export class Step4ReviewSaveComponent implements OnInit {
       addActivity(this.newActivityContent.trim());
     }
   }
-  
+
   removeActivity(unitId: string, lessonId: string, activityId: string) {
     const draft = this.courseWizardService.draftValue;
   

@@ -35,9 +35,10 @@
                 Activities:
               </h5>
 
-              <ul *ngIf="lesson.activities.length > 0" class="space-y-1">
-                <li *ngFor="let activity of lesson.activities" class="flex justify-between items-center">
-                  <div>
+              <ul *ngIf="lesson.activities.length > 0" cdkDropList (cdkDropListDropped)="dropActivity($event, unit.id, lesson.id)" class="space-y-1">
+                <li *ngFor="let activity of lesson.activities" cdkDrag class="flex justify-between items-center">
+                  <div class="flex items-center space-x-2">
+                    <span class="cursor-move" cdkDragHandle>☰</span>
                     <span class="font-semibold">{{ activity.type | titlecase }}</span> - {{ activity.title }}
                   </div>
                   <button (click)="removeActivity(unit.id, lesson.id, activity.id)" class="text-red-500 text-sm hover:underline">

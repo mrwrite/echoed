@@ -28,7 +28,16 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
   @Input() imageUrl: string = '';
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  colors = ['#ff0000', '#00a652', '#0057ff', '#ffc800', '#000000'];
+  // Palette tailored for common safari animals
+  colors = [
+    '#ffe8a3', // light yellow for giraffe body
+    '#b5651d', // brown for giraffe spots
+    '#c68642', // tan for lion fur
+    '#8b4513', // dark brown for lion mane
+    '#808080', // grey for elephant skin
+    '#f4f4f4', // light grey/white for tusks
+    '#000000'  // black for details and outlines
+  ];
   currentColor = this.colors[0];
 
   private ctx!: CanvasRenderingContext2D;

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { CourseWizardService } from '../../course-wizard.service';
 import { CoursesService } from '../../../../../services/courses.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Component({
   selector: 'step4-review-save',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './step4-review-save.component.html',
   styleUrl: './step4-review-save.component.scss'
 })
@@ -23,7 +24,7 @@ export class Step4ReviewSaveComponent implements OnInit {
   newActivityTitle: string = '';
   newActivityContent: string = '';
   newColoringFile: File | null = null;
-  storybookPages: { id: string; imageUrl: string; order: number }[] = [];
+  storybookPages: { id: string; imageUrl: string; order: number; file?: File | null }[] = [];
 
   constructor(public courseWizardService: CourseWizardService,
               private coursesService: CoursesService,
@@ -97,12 +98,30 @@ export class Step4ReviewSaveComponent implements OnInit {
     this.newColoringFile = file;
   }
 
+  onStorybookFileSelected(event: any, page: { id: string; imageUrl: string; order: number; file?: File | null }) {
+    const file = event.target.files && event.target.files.length > 0 ? event.target.files[0] : null;
+    if (file) {
+      this.coursesService.uploadStorybookPage(file).subscribe({
+        next: res => page.imageUrl = res.file_path,
+        error: err => {
+          console.error('Error uploading storybook page:', err);
+          this.errorMessage = 'Failed to upload storybook page.';
+        }
+      });
+    }
+  }
+
   addStorybookPage() {
-    this.storybookPages.push({ id: uuidv4(), imageUrl: '', order: this.storybookPages.length + 1 });
+    this.storybookPages.push({ id: uuidv4(), imageUrl: '', order: this.storybookPages.length + 1, file: null });
   }
 
   removeStorybookPage(id: string) {
     this.storybookPages = this.storybookPages.filter(p => p.id !== id);
+  }
+
+  dropPage(event: CdkDragDrop<{ id: string; imageUrl: string; order: number }[]>) {
+    moveItemInArray(this.storybookPages, event.previousIndex, event.currentIndex);
+    this.storybookPages.forEach((p, idx) => p.order = idx + 1);
   }
   
   confirmAddActivity() {

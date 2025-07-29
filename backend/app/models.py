@@ -83,6 +83,21 @@ class Activity(Base):
     
     media = relationship("Media")
     lesson = relationship("Lesson", back_populates="activities")
+    storybook_pages = relationship(
+        "StorybookPage",
+        back_populates="activity",
+        cascade="all, delete-orphan",
+    )
+
+
+class StorybookPage(Base):
+    __tablename__ = "storybook_pages"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=False)
+    image_url = Column(String, nullable=False)
+    order = Column(Integer)
+
+    activity = relationship("Activity", back_populates="storybook_pages")
 
 
 class Media(Base):

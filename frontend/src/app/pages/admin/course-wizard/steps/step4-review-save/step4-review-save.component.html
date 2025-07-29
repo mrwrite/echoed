@@ -57,6 +57,7 @@
                   <select [(ngModel)]="newActivityType" class="w-full border rounded p-2">
                     <option value="video">Video</option>
                     <option value="story">Story</option>
+                    <option value="storybook">Storybook</option>
                     <option value="song">Song</option>
                     <option value="coloring">Coloring</option>
                     <option value="discussion">Discussion</option>
@@ -83,6 +84,14 @@
                 </div>
                 <div *ngIf="newActivityType === 'coloring'">
                   <input type="file" (change)="onColoringFileSelected($event)" class="w-full border rounded p-2" />
+                </div>
+                <div *ngIf="newActivityType === 'storybook'" class="space-y-2">
+                  <div *ngFor="let page of storybookPages; let i = index" class="flex items-center space-x-2">
+                    <input type="text" [(ngModel)]="page.imageUrl" placeholder="Image URL" class="flex-1 border rounded p-1" />
+                    <input type="number" [(ngModel)]="page.order" class="w-20 border rounded p-1" />
+                    <button type="button" (click)="removeStorybookPage(page.id)" class="text-red-500">X</button>
+                  </div>
+                  <button type="button" (click)="addStorybookPage()" class="text-blue-600 text-sm hover:underline">+ Add Page</button>
                 </div>
 
                 <div class="flex space-x-2">

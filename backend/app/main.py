@@ -7,8 +7,31 @@ import os
 import uuid
 import shutil
 from app.database import SessionLocal, engine, Base
-from app.models import User, Course, Unit, Lesson, Activity, Media, StudentCourse
-from app.schemas import UserDto, CourseDto, CourseResponse, UnitDto, LessonDto, ActivityDto, MediaResponse, ActivityResponse, LessonResponse, UnitResponse, StudentCourseResponse, StudentCourseWithDetails
+from app.models import (
+    User,
+    Course,
+    Unit,
+    Lesson,
+    Activity,
+    Media,
+    StudentCourse,
+    StorybookPage,
+)
+from app.schemas import (
+    UserDto,
+    CourseDto,
+    CourseResponse,
+    UnitDto,
+    LessonDto,
+    ActivityDto,
+    MediaResponse,
+    ActivityResponse,
+    LessonResponse,
+    UnitResponse,
+    StudentCourseResponse,
+    StudentCourseWithDetails,
+    StorybookPageResponse,
+)
 from app.api.routes import progress
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -188,7 +211,11 @@ def get_course_by_id(course_id: str, db: Session = Depends(get_db), current_user
                                     title=activity.media.title,
                                     url=activity.media.url,
                                     description=activity.media.description
-                                ) if activity.media else None
+                                ) if activity.media else None,
+                                pages=[
+                                    StorybookPageResponse.from_orm(p)
+                                    for p in activity.storybook_pages
+                                ],
                             )
                             for activity in lesson.activities
                         ]
@@ -238,6 +265,17 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
                     lesson_id=new_lesson.id
                 )
                 db.add(new_activity)
+                db.flush()
+
+                if activity_data.type == "storybook":
+                    for page in getattr(activity_data, "pages", []):
+                        db.add(
+                            StorybookPage(
+                                activity_id=new_activity.id,
+                                image_url=page.image_url,
+                                order=page.order,
+                            )
+                        )
 
     db.commit()
 
@@ -289,6 +327,17 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
                     lesson_id=new_lesson.id
                 )
                 db.add(new_activity)
+                db.flush()
+
+                if activity_dto.type == "storybook":
+                    for page in getattr(activity_dto, "pages", []):
+                        db.add(
+                            StorybookPage(
+                                activity_id=new_activity.id,
+                                image_url=page.image_url,
+                                order=page.order,
+                            )
+                        )
 
     db.commit()
     db.refresh(existing_course)
@@ -321,7 +370,11 @@ def get_lesson_by_id(
             title=activity.title,
             content=activity.content,
             order=activity.order,
-            media=media
+            media=media,
+            pages=[
+                StorybookPageResponse.from_orm(p)
+                for p in activity.storybook_pages
+            ]
         ))
 
     return LessonResponse(

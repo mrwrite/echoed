@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../environments/environment';
 
@@ -20,7 +20,7 @@ import { environment } from '../../environments/environment';
     </div>
   `
 })
-export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
+export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() imageUrl: string = '';
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -29,6 +29,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
 
   private ctx!: CanvasRenderingContext2D;
   private drawing = false;
+  private resizeHandler = () => this.loadImage();
 
   private resolveUrl(url: string): string {
     if (!url) {
@@ -44,12 +45,17 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit() {
     this.initCanvas();
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['imageUrl'] && changes['imageUrl'].currentValue) {
       this.loadImage();
     }
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.resizeHandler);
   }
 
   private initCanvas() {
@@ -72,9 +78,12 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges {
     img.crossOrigin = 'anonymous';
     img.src = this.resolveUrl(this.imageUrl);
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      this.ctx.drawImage(img, 0, 0, img.width, img.height);
+      const containerWidth = canvas.parentElement?.clientWidth || img.width;
+      const targetWidth = Math.min(containerWidth, img.width);
+      const scale = targetWidth / img.width;
+      canvas.width = targetWidth;
+      canvas.height = img.height * scale;
+      this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.onerror = (err) => {
       console.error('Failed to load image', err);

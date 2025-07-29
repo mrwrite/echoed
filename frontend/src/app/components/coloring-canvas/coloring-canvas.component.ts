@@ -43,6 +43,8 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
   private ctx!: CanvasRenderingContext2D;
   private drawing = false;
   private baseImg: HTMLImageElement | null = null;
+  private baseImgCanvas?: HTMLCanvasElement;
+  private baseImgCtx?: CanvasRenderingContext2D;
   private resizeHandler = () => this.loadImage();
 
   private resolveUrl(url: string): string {
@@ -106,6 +108,12 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
 
       this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       this.baseImg = img;
+
+      this.baseImgCanvas = document.createElement('canvas');
+      this.baseImgCanvas.width = canvas.width;
+      this.baseImgCanvas.height = canvas.height;
+      this.baseImgCtx = this.baseImgCanvas.getContext('2d') ?? undefined;
+      this.baseImgCtx?.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.onerror = (err) => {
       console.error('Failed to load image', err);
@@ -113,7 +121,6 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
   }
 
   private startDrawing(event: PointerEvent) {
-    this.drawing = true;
     this.ctx.strokeStyle = this.currentColor;
     this.ctx.lineWidth = 4;
     this.ctx.lineCap = 'round';
@@ -122,6 +129,11 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     const scaleY = this.canvasRef.nativeElement.height / rect.height;
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
+    if (!this.isWhitePixel(x, y)) {
+      this.drawing = false;
+      return;
+    }
+    this.drawing = true;
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
   }
@@ -133,6 +145,10 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     const scaleY = this.canvasRef.nativeElement.height / rect.height;
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
+    if (!this.isWhitePixel(x, y)) {
+      this.ctx.moveTo(x, y);
+      return;
+    }
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
     if (this.baseImg) {
@@ -154,5 +170,13 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     const canvas = this.canvasRef.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.loadImage();
+  }
+
+  private isWhitePixel(x: number, y: number): boolean {
+    if (!this.baseImgCtx) {
+      return true;
+    }
+    const data = this.baseImgCtx.getImageData(x, y, 1, 1).data;
+    return data[0] > 240 && data[1] > 240 && data[2] > 240 && data[3] > 0;
   }
 }

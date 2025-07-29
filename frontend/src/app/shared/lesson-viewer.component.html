@@ -31,7 +31,7 @@
           <app-coloring-canvas [imageUrl]="currentActivity.content"></app-coloring-canvas>
         </div>
         <div *ngSwitchCase="'storybook'">
-          <app-storybook-viewer [pages]="currentActivity.pages"></app-storybook-viewer>
+          <app-storybook-viewer [pages]="currentActivity.pages ?? []"></app-storybook-viewer>
         </div>
         <div *ngSwitchDefault>
           <p>{{ currentActivity.content }}</p>

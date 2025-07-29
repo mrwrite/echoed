@@ -79,10 +79,15 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     img.src = this.resolveUrl(this.imageUrl);
     img.onload = () => {
       const containerWidth = canvas.parentElement?.clientWidth || img.width;
-      const targetWidth = Math.min(containerWidth, img.width);
-      const scale = targetWidth / img.width;
-      canvas.width = targetWidth;
+      const containerHeight = window.innerHeight;
+
+      const widthScale = containerWidth / img.width;
+      const heightScale = containerHeight / img.height;
+      const scale = Math.min(1, widthScale, heightScale);
+
+      canvas.width = img.width * scale;
       canvas.height = img.height * scale;
+
       this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.onerror = (err) => {

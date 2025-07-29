@@ -42,6 +42,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
 
   private ctx!: CanvasRenderingContext2D;
   private drawing = false;
+  private baseImg: HTMLImageElement | null = null;
   private resizeHandler = () => this.loadImage();
 
   private resolveUrl(url: string): string {
@@ -104,6 +105,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
       canvas.style.height = `${canvas.height}px`;
 
       this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      this.baseImg = img;
     };
     img.onerror = (err) => {
       console.error('Failed to load image', err);
@@ -133,6 +135,13 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     const y = (event.clientY - rect.top) * scaleY;
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
+    if (this.baseImg) {
+      const canvas = this.canvasRef.nativeElement;
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = 'destination-over';
+      this.ctx.drawImage(this.baseImg, 0, 0, canvas.width, canvas.height);
+      this.ctx.restore();
+    }
   }
 
   private stopDrawing() {

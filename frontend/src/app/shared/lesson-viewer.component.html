@@ -12,14 +12,14 @@
         <div *ngSwitchCase="'video'">
           <ng-container *ngIf="isYouTubeLink(currentActivity.content); else standardVideo">
             <iframe
-              class="w-full rounded aspect-video"
+              class="w-full rounded aspect-video max-h-[60vh]"
               [src]="getYouTubeEmbedUrl(currentActivity.content)"
               frameborder="0"
               allowfullscreen>
             </iframe>
           </ng-container>
           <ng-template #standardVideo>
-            <video class="w-full rounded max-h-[80vh]" controls [src]="currentActivity.content"></video>
+            <video class="w-full rounded max-h-[60vh]" controls [src]="currentActivity.content"></video>
           </ng-template>
         </div>
         <div *ngSwitchCase="'image'">

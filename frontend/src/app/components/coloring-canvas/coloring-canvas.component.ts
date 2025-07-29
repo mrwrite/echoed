@@ -116,14 +116,22 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     this.ctx.lineWidth = 4;
     this.ctx.lineCap = 'round';
     const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    const scaleX = this.canvasRef.nativeElement.width / rect.width;
+    const scaleY = this.canvasRef.nativeElement.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
     this.ctx.beginPath();
-    this.ctx.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+    this.ctx.moveTo(x, y);
   }
 
   private draw(event: PointerEvent) {
     if (!this.drawing) return;
     const rect = this.canvasRef.nativeElement.getBoundingClientRect();
-    this.ctx.lineTo(event.clientX - rect.left, event.clientY - rect.top);
+    const scaleX = this.canvasRef.nativeElement.width / rect.width;
+    const scaleY = this.canvasRef.nativeElement.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+    this.ctx.lineTo(x, y);
     this.ctx.stroke();
   }
 

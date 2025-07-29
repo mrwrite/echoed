@@ -14,6 +14,10 @@ module.exports = {
         warn: "#FF4C4C",
         success: "#00A86B",
         info: "#00A8FF",
+        // Animal coloring palette
+        giraffe: "#D2B48C",   // tan shade for giraffe body
+        elephant: "#808080", // gray shade for elephant
+        lion: "#C19A6B",     // brownish gold for lion fur
       },
       fontFamily: {
         sans: ['Inter','ui-sans-serif', 'system-ui'],

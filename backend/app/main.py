@@ -40,6 +40,13 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# Directory for uploaded storybook pages
+STORYBOOK_PATH = os.getenv("STORYBOOK_PATH", "./storybook")
+os.makedirs(STORYBOOK_PATH, exist_ok=True)
+
+# Serve uploaded storybook pages as static files
+app.mount("/storybook", StaticFiles(directory=STORYBOOK_PATH), name="storybook")
+
 # Directory for uploaded coloring pages
 COLORINGS_PATH = os.getenv("COLORINGS_PATH", "./colorings")
 os.makedirs(COLORINGS_PATH, exist_ok=True)
@@ -401,4 +408,21 @@ def upload_coloring(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     file_url = request.url_for("colorings", path=filename)
+    return {"file_path": str(file_url)}
+
+
+# --- File upload endpoint for storybook pages ---
+@app.post("/api/upload/storybook")
+def upload_storybook_page(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload a storybook page and return the accessible file URL."""
+    extension = os.path.splitext(file.filename)[1]
+    filename = f"{uuid.uuid4()}{extension}"
+    file_path = os.path.join(STORYBOOK_PATH, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    file_url = request.url_for("storybook", path=filename)
     return {"file_path": str(file_url)}

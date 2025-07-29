@@ -8,7 +8,10 @@ import { environment } from '../../environments/environment';
   imports: [CommonModule],
   template: `
     <div class="space-y-2">
-      <canvas #canvas class="border rounded w-full touch-none"></canvas>
+      <canvas
+        #canvas
+        class="border rounded w-full touch-none max-h-[80vh]"
+      ></canvas>
       <div class="flex items-center gap-2">
         <button *ngFor="let c of colors"
           class="w-6 h-6 rounded-full border"
@@ -79,7 +82,7 @@ export class ColoringCanvasComponent implements AfterViewInit, OnChanges, OnDest
     img.src = this.resolveUrl(this.imageUrl);
     img.onload = () => {
       const containerWidth = canvas.parentElement?.clientWidth || img.width;
-      const containerHeight = window.innerHeight;
+      const containerHeight = window.innerHeight * 0.8; // fit within viewport
 
       const widthScale = containerWidth / img.width;
       const heightScale = containerHeight / img.height;

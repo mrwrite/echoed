@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EchoSidebarComponent } from './echo-sidebar.component';
+import { SidebarComponent } from './echo-sidebar.component';
 
-describe('EchoSidebarComponent', () => {
-  let component: EchoSidebarComponent;
-  let fixture: ComponentFixture<EchoSidebarComponent>;
+describe('SidebarComponent', () => {
+  let component: SidebarComponent;
+  let fixture: ComponentFixture<SidebarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EchoSidebarComponent]
+      imports: [SidebarComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EchoSidebarComponent);
+    fixture = TestBed.createComponent(SidebarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -8,6 +8,8 @@ import { EchoedRoleSelectorComponent } from './pages/user-dashboard/echoed-role-
 import { LessonViewComponent } from './pages/lesson-view.component';
 import { LandingComponent } from './pages/landing/landing.component';
 import { AvailableCoursesComponent } from './pages/available-courses/available-courses.component';
+import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
+import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -25,6 +27,8 @@ export const routes: Routes = [
           { path: 'courses/new', component: CourseWizardComponent },
           { path: 'courses/:courseId/edit', component: CourseWizardComponent },
           { path: 'courses', component: AvailableCoursesComponent },
+          { path: 'admin/courses', component: AdminCoursesComponent },
+          { path: 'admin/users', component: AdminUsersComponent },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]
       }

@@ -27,6 +27,9 @@ export class AdminViewComponent {
   users: User[] = [];
   courses: Course[] = [];
 
+  /** Number of items visible in dashboard */
+  readonly visibleCount = 5;
+
   studentCount = 0;
   teacherCount = 0;
   coursesCount = 0;
@@ -71,5 +74,23 @@ export class AdminViewComponent {
 
   onManageCourse(courseId: string) {
     this.router.navigate(['/home/courses', courseId, 'edit']);
+  }
+
+  /** Users displayed on dashboard */
+  get visibleUsers(): User[] {
+    return this.users.slice(0, this.visibleCount);
+  }
+
+  /** Courses displayed on dashboard */
+  get visibleCourses(): Course[] {
+    return this.courses.slice(0, this.visibleCount);
+  }
+
+  viewAllUsers() {
+    this.router.navigate(['/home/admin/users']);
+  }
+
+  viewAllCourses() {
+    this.router.navigate(['/home/admin/courses']);
   }
 }

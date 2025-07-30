@@ -10,12 +10,30 @@
       </button>
     </div>
     <nav class="flex-1 px-2 space-y-2">
-      <a href="#" class="block p-2 rounded hover:bg-blue-700">Dashboard</a>
-      <a *ngIf="roleService.hasAccess('viewUsers')" href="#" class="block p-2 rounded hover:bg-blue-700">Users</a>
-      <a *ngIf="roleService.hasAccess('viewStudents')" href="#" class="block p-2 rounded hover:bg-blue-700">Students</a>
-      <a href="#" class="block p-2 rounded hover:bg-blue-700">Courses</a>
-      <a *ngIf="roleService.hasAccess('viewReports')" href="#" class="block p-2 rounded hover:bg-blue-700">Reports</a>
-      <a href="#" class="block p-2 rounded hover:bg-blue-700">Settings</a>
+      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="Home" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Dashboard</span>
+      </a>
+      <a *ngIf="roleService.hasAccess('viewUsers')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="User" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Users</span>
+      </a>
+      <a *ngIf="roleService.hasAccess('viewStudents')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="BookMarked" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Students</span>
+      </a>
+      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="Book" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Courses</span>
+      </a>
+      <a *ngIf="roleService.hasAccess('viewReports')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="FileText" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Reports</span>
+      </a>
+      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
+        <lucide-icon name="Settings" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed">Settings</span>
+      </a>
     </nav>
   </div>
   

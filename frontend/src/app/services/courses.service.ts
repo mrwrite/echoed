@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
@@ -10,6 +10,7 @@ import { StartCourseRequest, SegmentResponse } from '../models/segment-response.
 import { Lesson } from '../models/lesson';
 import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -133,6 +134,37 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
   return this.http.post(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
     headers: this.getHeaders()
   });
-}
+  }
+
+  /**
+   * Calculate course progress as a percentage based on the current segment
+   * returned from the backend. If all segments are completed a value of 100 is returned.
+   */
+  getCourseProgress(sc: StudentCourseWithDetails): Observable<number> {
+    const unitProgressId = sc.unitProgressId;
+    const lessons = sc.course.units?.[0]?.lessons || [];
+    const total = lessons.length;
+
+    if (!unitProgressId || total === 0) {
+      return of(0);
+    }
+
+    return this.getCurrentSegment(unitProgressId).pipe(
+      map(segment => {
+        const index = lessons.findIndex(l => l.id === segment.lesson_id);
+        if (index === -1) {
+          return 0;
+        }
+        return (index / total) * 100;
+      }),
+      catchError(err => {
+        // If API returns 404 no segment found => all lessons completed
+        if (err.status === 404) {
+          return of(100);
+        }
+        return of(0);
+      })
+    );
+  }
 
 }

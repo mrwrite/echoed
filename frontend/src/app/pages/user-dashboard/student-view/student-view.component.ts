@@ -70,6 +70,14 @@ export class StudentViewComponent implements OnInit {
     this.coursesService.getStudentCourses().subscribe({
     next: (courses) => {
       this.studentCourses = courses;
+
+      // Calculate progress for each enrolled course
+      this.studentCourses.forEach(sc => {
+        this.coursesService.getCourseProgress(sc).subscribe(progress => {
+          sc.progress = progress;
+        });
+      });
+
       this.loadAvailableCourses(); // Refresh available courses after loading student courses
     },
     error: (err) => {

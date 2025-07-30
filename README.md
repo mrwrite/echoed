@@ -77,6 +77,29 @@ ng serve
 - **Run Frontend:** Open [http://localhost:4200](http://localhost:4200)
 - **Run Backend API:** Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API documentation
 
+## 🧪 Running Tests
+
+### **Backend**
+```sh
+cd backend
+pytest
+```
+
+Generate coverage:
+```sh
+pytest --cov=app --cov-report=term-missing
+```
+
+### **Frontend**
+```sh
+cd frontend
+ng test
+```
+
+Generate coverage:
+```sh
+ng test --code-coverage
+```
 ---
 
 ## 🤝 Contributing

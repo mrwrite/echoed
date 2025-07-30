@@ -27,6 +27,7 @@ yarn-error.log*
 .idea/
 .DS_Store
 angular.json
+!/frontend/angular.json
 package-lock.json
 yarn.lock
 

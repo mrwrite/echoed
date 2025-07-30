@@ -1,121 +1,72 @@
 <div class="grid gap-4 grid-rows-[auto,auto,auto,auto] grid-cols-4">
-    <!-- Row 1: full width (1 column spanning all 4) -->
-    <div class="bg-white col-span-4 rounded-xl shadow">
-        <div class="flex justify-between items-center p-6">
-            <div>
-                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}}</h2>
-                <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
-            </div>           
-        </div>
-    </div>
-  
-    
-    <div class="bg-white p-6 rounded-xl shadow flex flex-col space-y-1">
-      <!-- Top Row: Icon + Vertical Number/Label stack -->
-      <div class="flex items-start space-x-2">
-        <!-- Icon on the left -->
-        <lucide-icon name="User" class="text-gray-500 w-6 h-6 flex-shrink-0"></lucide-icon>
-    
-        <!-- Number + Label stacked vertically, aligned to number -->
-        <div class="flex flex-col">
-          <p class="text-2xl font-bold text-[#1A1A40]">{{ studentCount }}</p>
-          <p class="text-gray-500 tracking-tight leading-snug">Active Students</p>
-        </div>
+  <div class="bg-white col-span-4 rounded-xl shadow">
+    <div class="flex justify-between items-center p-6">
+      <div>
+        <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}}</h2>
+        <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
       </div>
     </div>
+  </div>
 
-   <div class="bg-white p-6 rounded-xl shadow flex flex-col space-y-1">
-  <div class="flex items-start space-x-2">
-    <lucide-icon name="User" class="text-gray-500 w-6 h-6 flex-shrink-0"></lucide-icon>
-    <div class="flex flex-col">
-      <p class="text-2xl font-bold text-[#1A1A40]">{{ teacherCount }}</p>
-      <p class="text-gray-500 tracking-tight leading-snug">Instructors</p>
+  <ng-container *ngFor="let m of metrics">
+    <app-stat-card class="col-span-1" [icon]="m.icon" [label]="m.label" [value]="m.value"></app-stat-card>
+  </ng-container>
+
+  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4 tracking-tight leading-snug">Recent User Signups</h3>
+    <ng-container *ngIf="users.length > 0; else noUsers">
+      <table class="w-full text-sm text-gray-700">
+        <thead>
+          <tr class="text-left border-b">
+            <th class="pb-2">Name</th>
+            <th class="pb-2">Role</th>
+            <th class="pb-2">Signup Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users" class="tracking-tight leading-snug">
+            <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
+            <td class="py-2">{{ user.role }}</td>
+            <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+    <ng-template #noUsers>
+      <p class="text-sm text-gray-500">No recent signups available.</p>
+    </ng-template>
+  </div>
+
+  <div class="bg-white p-4 rounded-xl shadow col-span-2">
+    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Usage Statistics</h3>
+    <div class="h-48 bg-[#ECEEF3] rounded-lg flex items-center justify-center text-gray-500">
+      📊 Chart placeholder (Lessons Completed / Assignments Submitted)
     </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-[#1A1A40] tracking-tight leading-snug">Course Management</h3>
+      <span class="text-sm hover:text-[#4A90E2] px-3 py-1 rounded-md transition-colors duration-200" (click)="onAddCourse()"><lucide-icon name="Plus"/></span>
+    </div>
+    <ng-container *ngIf="courses.length > 0; else noCourses">
+      <ul class="space-y-2">
+        <li *ngFor="let course of courses" class="flex justify-between tracking-tight leading-snug">
+          <span>{{ course.title }}</span>
+          <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
+        </li>
+      </ul>
+    </ng-container>
+    <ng-template #noCourses>
+      <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>
+    </ng-template>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Announcements</h3>
+    <ul class="space-y-3 text-sm text-gray-700">
+      <li><span class="font-semibold">Apr 7, 2024:</span> Don't forget the summit tomorrow!</li>
+      <li><span class="font-semibold">Apr 4, 2024:</span> New Course: Web Development</li>
+    </ul>
   </div>
 </div>
-
-<div class="bg-white p-6 rounded-xl shadow flex flex-col space-y-1">
-  <div class="flex items-start space-x-2">
-    <lucide-icon name="book-marked" class="text-gray-500 w-6 h-6 flex-shrink-0"></lucide-icon>
-    <div class="flex flex-col">
-      <p class="text-2xl font-bold text-[#1A1A40]">{{ coursesCount }}</p>
-      <p class="text-gray-500 tracking-tight leading-snug">Courses</p>
-    </div>
-  </div>
-</div>
-
-<div class="bg-white p-6 rounded-xl shadow flex flex-col space-y-1">
-  <div class="flex items-start space-x-2">
-    <lucide-icon name="clock" class="text-gray-500 w-6 h-6 flex-shrink-0"></lucide-icon>
-    <div class="flex flex-col">
-      <p class="text-2xl font-bold text-[#1A1A40]">154</p>
-      <p class="text-gray-500 tracking-tight leading-snug">Pending Enrollments</p>
-    </div>
-  </div>
-</div>
-      
-  
-    <div class="bg-white p-6 rounded-xl shadow col-span-2">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4 tracking-tight leading-snug">Recent User Signups</h3>
-
-        <ng-container *ngIf="users.length > 0; else noUsers">         
-        <table class="w-full text-sm text-gray-700">
-          <thead>
-            <tr class="text-left border-b">
-              <th class="pb-2">Name</th>
-              <th class="pb-2">Role</th>
-              <th class="pb-2">Signup Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of users" class="tracking-tight leading-snug">
-              <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
-              <td class="py-2">{{ user.role }}</td>
-              <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
-            </tr>            
-          </tbody>
-        </table>
-        </ng-container>
-        <ng-template #noUsers>
-          <p class="text-sm text-gray-500">No recent signups available.</p>
-        </ng-template>
-      </div>
-
-      <!-- Usage Chart Placeholder -->
-      <div class="bg-white p-4 rounded-xl shadow col-span-2">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Usage Statistics</h3>
-        <div class="h-48 bg-[#ECEEF3] rounded-lg flex items-center justify-center text-gray-500">
-          📊 Chart placeholder (Lessons Completed / Assignments Submitted)
-        </div>
-      </div>
-
-      <div class="bg-white p-6 rounded-xl shadow col-span-2">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold text-[#1A1A40] tracking-tight leading-snug">Course Management</h3>
-          <span class="text-sm hover:text-[#4A90E2] px-3 py-1 rounded-md transition-colors duration-200" (click)="onAddCourse()"><lucide-icon name="Plus"/></span>
-        </div>
-      
-        <ng-container *ngIf="courses.length > 0; else noCourses">
-          <ul class="space-y-2">
-            <li *ngFor="let course of courses" class="flex justify-between tracking-tight leading-snug">
-              <span>{{ course.title }}</span>
-              <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
-            </li>
-          </ul>
-        </ng-container>
-      
-        <ng-template #noCourses>
-          <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>
-        </ng-template>
-      </div>
-      
-
-      <div class="bg-white p-6 rounded-xl shadow col-span-2">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Announcements</h3>
-        <ul class="space-y-3 text-sm text-gray-700">
-          <li><span class="font-semibold">Apr 7, 2024:</span> Don't forget the summit tomorrow!</li>
-          <li><span class="font-semibold">Apr 4, 2024:</span> New Course: Web Development</li>
-        </ul>
-      </div>    
-  </div>
-  

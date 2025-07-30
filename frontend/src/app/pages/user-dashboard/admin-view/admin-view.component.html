@@ -24,13 +24,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users" class="tracking-tight leading-snug">
+          <tr *ngFor="let user of visibleUsers" class="tracking-tight leading-snug">
             <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
             <td class="py-2">{{ user.role }}</td>
             <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
           </tr>
         </tbody>
       </table>
+      <a *ngIf="users.length > visibleCount" class="text-primary underline cursor-pointer" (click)="viewAllUsers()">View More</a>
     </ng-container>
     <ng-template #noUsers>
       <p class="text-sm text-gray-500">No recent signups available.</p>
@@ -51,11 +52,12 @@
     </div>
     <ng-container *ngIf="courses.length > 0; else noCourses">
       <ul class="space-y-2">
-        <li *ngFor="let course of courses" class="flex justify-between tracking-tight leading-snug">
+        <li *ngFor="let course of visibleCourses" class="flex justify-between tracking-tight leading-snug">
           <span>{{ course.title }}</span>
           <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
         </li>
       </ul>
+      <a *ngIf="courses.length > visibleCount" class="text-primary underline cursor-pointer" (click)="viewAllCourses()">View More</a>
     </ng-container>
     <ng-template #noCourses>
       <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>

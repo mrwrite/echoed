@@ -8,4 +8,6 @@ export interface StudentCourseWithDetails {
   status: string;
   course: Course;
   unitProgressId?: string;
+  /** Progress percentage from 0 to 100 */
+  progress?: number;
 }

@@ -1,10 +1,15 @@
+import os
 import uuid
 import pytest
+
+# Use an in-memory SQLite database for tests
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+
 from fastapi.testclient import TestClient
 from app.main import app
 from app.models import User, Course, StudentCourse
 from app.database import SessionLocal
-from app import deps
+from app.auth import get_current_user
 
 client = TestClient(app)
 
@@ -43,7 +48,7 @@ def test_course(test_db):
     return course
 
 def test_student_can_enroll_in_course(test_db, student_user, test_course):
-    app.dependency_overrides[deps.get_current_user] = lambda: student_user
+    app.dependency_overrides[get_current_user] = lambda: student_user
 
     # re-import after override is applied
     from app.api.routes import enroll

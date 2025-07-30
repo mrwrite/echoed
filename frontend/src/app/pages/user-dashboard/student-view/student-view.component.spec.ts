@@ -1,3 +1,5 @@
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StudentViewComponent } from './student-view.component';
@@ -8,12 +10,12 @@ describe('StudentViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StudentViewComponent]
-    })
-    .compileComponents();
+      imports: [RouterTestingModule, HttpClientTestingModule, StudentViewComponent]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(StudentViewComponent);
     component = fixture.componentInstance;
+    component.userInfo = { fullname: 'Test User', role: 'student' } as any;
     fixture.detectChanges();
   });
 

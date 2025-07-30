@@ -1,3 +1,5 @@
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Step3AddLessonsComponent } from './step3-add-lessons.component';
@@ -8,7 +10,7 @@ describe('Step3AddLessonsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Step3AddLessonsComponent]
+      imports: [RouterTestingModule, HttpClientTestingModule, Step3AddLessonsComponent]
     })
     .compileComponents();
 

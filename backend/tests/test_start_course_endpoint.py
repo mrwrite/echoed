@@ -1,9 +1,13 @@
+import os
 import uuid
 import pytest
+
+# Use a file-based SQLite database for tests
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from app.api.routes import start_course
-from app import deps
+from app.auth import get_current_user
 from app.database import SessionLocal
 from app.models import (
     User,
@@ -70,7 +74,7 @@ def test_student_can_start_course(test_db, test_student, test_course_and_unit_an
     # Override and isolate router
     test_app = FastAPI()
     test_app.include_router(start_course.router, prefix="/api")
-    test_app.dependency_overrides[deps.get_current_user] = override_get_current_user(test_student)
+    test_app.dependency_overrides[get_current_user] = override_get_current_user(test_student)
     client = TestClient(test_app)
 
     response = client.post("/api/start-course", json={"course_id": str(course.id)})
@@ -102,7 +106,7 @@ def test_start_course_requires_enrollment(test_db, test_student, test_course_and
 
     test_app = FastAPI()
     test_app.include_router(start_course.router, prefix="/api")
-    test_app.dependency_overrides[deps.get_current_user] = override_get_current_user(test_student)
+    test_app.dependency_overrides[get_current_user] = override_get_current_user(test_student)
     client = TestClient(test_app)
 
     response = client.post("/api/start-course", json={"course_id": str(course.id)})

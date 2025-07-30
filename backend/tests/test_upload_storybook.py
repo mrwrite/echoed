@@ -1,11 +1,21 @@
 import os
 import uuid
+import shutil
 import pytest
+
+# Use an in-memory SQLite database for tests and a temp directory for uploads
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["STORYBOOK_PATH"] = "./test_storybook"
+
 from fastapi.testclient import TestClient
-from app.main import app, STORYBOOK_PATH
+from app import main as app_main
+from app.main import app
+
+STORYBOOK_PATH = os.environ["STORYBOOK_PATH"]
+app_main.STORYBOOK_PATH = STORYBOOK_PATH
 from app.models import User
 from app.database import SessionLocal
-from app import deps
+from app.auth import get_current_user
 
 client = TestClient(app)
 
@@ -34,7 +44,8 @@ def test_user(test_db):
 
 
 def test_upload_storybook_page(test_db, test_user):
-    app.dependency_overrides[deps.get_current_user] = lambda: test_user
+    app.dependency_overrides[get_current_user] = lambda: test_user
+    os.makedirs(STORYBOOK_PATH, exist_ok=True)
     content = b"\x89PNG\r\n\x1a\n"
     files = {"file": ("page.png", content, "image/png")}
     response = client.post("/api/upload/storybook", files=files)
@@ -47,4 +58,7 @@ def test_upload_storybook_page(test_db, test_user):
     assert os.path.exists(file_path)
 
     os.remove(file_path)
+    # Clean up temporary directory after test
+    if os.path.exists(STORYBOOK_PATH):
+        shutil.rmtree(STORYBOOK_PATH)
     app.dependency_overrides = {}

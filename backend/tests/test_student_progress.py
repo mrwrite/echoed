@@ -5,6 +5,7 @@ from app.models import (
     StudentCourse, StudentUnitProgress, SegmentProgress
 )
 from app.crud import progress as crud
+from app.enum import ProgressStatus
 from datetime import datetime
 
 
@@ -68,14 +69,14 @@ def test_create_student_unit_progress(db_session, test_user, test_course, test_u
     unit_progress = StudentUnitProgress(
         student_course_id=student_course.id,
         unit_id=test_unit.id,
-        status="in_progress"
+        status=ProgressStatus.IN_PROGRESS.name
     )
     db_session.add(unit_progress)
     db_session.commit()
 
     result = db_session.query(StudentUnitProgress).filter_by(unit_id=test_unit.id).first()
     assert result is not None
-    assert result.status == "in_progress"
+    assert result.status == ProgressStatus.IN_PROGRESS
     assert result.unit_id == test_unit.id
     assert result.student_course_id == student_course.id
 
@@ -94,14 +95,14 @@ def test_create_segment_progress(db_session, test_user, test_course, test_unit, 
     segment_progress = SegmentProgress(
         student_unit_id=unit_progress.id,
         lesson_id=test_lesson.id,
-        status="delivered"
+        status=ProgressStatus.DELIVERED.name
     )
     db_session.add(segment_progress)
     db_session.commit()
 
     result = db_session.query(SegmentProgress).filter_by(lesson_id=test_lesson.id).first()
     assert result is not None
-    assert result.status == "delivered"
+    assert result.status == ProgressStatus.DELIVERED
     assert result.student_unit_id == unit_progress.id
 
 
@@ -112,7 +113,7 @@ def test_crud_create_and_get_student_unit_progress(db_session, test_user, test_c
 
     created = crud.create_student_unit_progress(db_session, student_course.id, test_unit.id)
     assert created is not None
-    assert created.status == "not_started"
+    assert created.status == ProgressStatus.NOT_STARTED
 
     retrieved = crud.get_student_unit_progress(db_session, student_course.id, test_unit.id)
     assert retrieved.id == created.id
@@ -125,7 +126,7 @@ def test_crud_update_student_unit_progress_status(db_session, test_user, test_co
     progress_obj = crud.create_student_unit_progress(db_session, student_course.id, test_unit.id)
     updated = crud.update_student_unit_progress_status(db_session, progress_obj.id, "completed")
 
-    assert updated.status == "completed"
+    assert updated.status == ProgressStatus.COMPLETED
     assert isinstance(updated.last_updated, datetime)
 
 def test_crud_create_and_get_segment_progress(db_session, test_user, test_course, test_unit, test_lesson):
@@ -136,7 +137,7 @@ def test_crud_create_and_get_segment_progress(db_session, test_user, test_course
     unit_progress = crud.create_student_unit_progress(db_session, student_course.id, test_unit.id)
 
     created = crud.create_segment_progress(db_session, unit_progress.id, test_lesson.id)
-    assert created.status == "not_started"
+    assert created.status == ProgressStatus.NOT_STARTED
 
     retrieved = crud.get_segment_progress(db_session, unit_progress.id, test_lesson.id)
     assert retrieved.id == created.id
@@ -150,7 +151,7 @@ def test_crud_update_segment_progress_status(db_session, test_user, test_course,
     segment = crud.create_segment_progress(db_session, unit_progress.id, test_lesson.id)
 
     updated = crud.update_segment_progress_status(db_session, segment.id, "skipped")
-    assert updated.status == "skipped"
+    assert updated.status == ProgressStatus.SKIPPED
     assert isinstance(updated.last_updated, datetime)
 
 
@@ -170,11 +171,12 @@ def test_delete_lesson_cascades_segment_progress(db_session, test_user, test_cou
 
     unit_progress = crud.create_student_unit_progress(db_session, student_course.id, test_unit.id)
     segment = crud.create_segment_progress(db_session, unit_progress.id, lesson.id)
+    seg_id = segment.id
 
     db_session.delete(lesson)
     db_session.commit()
 
-    result = db_session.query(SegmentProgress).filter_by(id=segment.id).first()
+    result = db_session.query(SegmentProgress).filter_by(id=seg_id).first()
     assert result is None
 
 

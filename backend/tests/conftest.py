@@ -1,12 +1,17 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from app.models import Base  # your Base = declarative_base()
 
-# Use a separate test DB to avoid clobbering dev data
-TEST_DATABASE_URL = "sqlite:///./test.db"  # or use a PostgreSQL test DB
+# Use an in-memory test DB to avoid creating real tables on disk
+TEST_DATABASE_URL = "sqlite://"
 
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="session")

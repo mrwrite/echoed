@@ -157,3 +157,32 @@ class StudentCourseWithDetails(BaseModel):
         from_attributes = True
 
 
+class BadgeCreate(BaseModel):
+    title: str
+    description: Optional[str]
+    image_url: Optional[str]
+
+
+class BadgeResponse(BaseModel):
+    id: UUID
+    title: str
+    description: Optional[str]
+    image_url: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class StudentBadgeResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+    badge_id: UUID
+    awarded_at: datetime
+    badge: Optional[BadgeResponse] = None
+
+    class Config:
+        from_attributes = True
+
+

@@ -164,3 +164,28 @@ user_units = Table(
     Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
 )
 
+
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    image_url = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    student_badges = relationship("StudentBadge", back_populates="badge", cascade="all, delete-orphan")
+
+
+class StudentBadge(Base):
+    __tablename__ = "student_badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    badge_id = Column(UUID(as_uuid=True), ForeignKey("badges.id"), nullable=False)
+    awarded_at = Column(DateTime, default=datetime.utcnow)
+
+    student = relationship("User")
+    badge = relationship("Badge", back_populates="student_badges")
+

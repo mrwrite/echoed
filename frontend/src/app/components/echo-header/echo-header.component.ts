@@ -15,12 +15,13 @@ import {
 } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
+import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.component';
 
 
 @Component({
   selector: 'echo-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EchoBreadcrumbsComponent],
   templateUrl: './echo-header.component.html',
   styleUrl: './echo-header.component.scss',
   animations: [

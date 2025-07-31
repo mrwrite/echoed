@@ -1,0 +1,13 @@
+<h2 class="text-2xl font-bold text-primary mb-4">Manage Badges</h2>
+<form [formGroup]="badgeForm" (ngSubmit)="onSubmit()" class="space-y-2 mb-4">
+  <input formControlName="title" placeholder="Title" class="border p-2 w-full" />
+  <input formControlName="description" placeholder="Description" class="border p-2 w-full" />
+  <input formControlName="image_url" placeholder="Image URL" class="border p-2 w-full" />
+  <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded" [disabled]="badgeForm.invalid">Add Badge</button>
+</form>
+<ul class="space-y-2">
+  <li *ngFor="let badge of badges" class="flex items-center space-x-2">
+    <img *ngIf="badge.image_url" [src]="badge.image_url" class="w-8 h-8" />
+    <span>{{ badge.title }}</span>
+  </li>
+</ul>

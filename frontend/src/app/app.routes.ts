@@ -10,6 +10,7 @@ import { LandingComponent } from './pages/landing/landing.component';
 import { AvailableCoursesComponent } from './pages/available-courses/available-courses.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.component';
+import { AdminBadgesComponent } from './pages/admin-badges/admin-badges.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -28,6 +29,7 @@ export const routes: Routes = [
           { path: 'courses/:courseId/edit', component: CourseWizardComponent },
           { path: 'courses', component: AvailableCoursesComponent },
           { path: 'admin/courses', component: AdminCoursesComponent },
+          { path: 'admin/badges', component: AdminBadgesComponent },
           { path: 'admin/users', component: AdminUsersComponent },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]

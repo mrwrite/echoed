@@ -93,4 +93,8 @@ export class AdminViewComponent {
   viewAllCourses() {
     this.router.navigate(['/home/admin/courses']);
   }
+
+  viewAllBadges() {
+    this.router.navigate(['/home/admin/badges']);
+  }
 }

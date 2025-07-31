@@ -8,7 +8,7 @@ import { IconModule } from '../../shared/icon/icon.module';
   imports: [CommonModule, IconModule],
   template: `
     <div class="bg-white rounded-xl shadow w-full overflow-hidden">
-      <img *ngIf="thumbnailUrl" [src]="thumbnailUrl" alt="Course image" class="w-full h-32 object-cover">
+      <img *ngIf="thumbnailUrl" [src]="thumbnailUrl" alt="Course image" class="w-full h-48 object-cover">
       <div class="p-6">
         <p class="text-xl font-bold text-primary">{{ title }}</p>
         <p *ngIf="instructor" class="text-xs text-gray-500 mb-1">By {{ instructor }}</p>

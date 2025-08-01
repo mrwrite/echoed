@@ -10,6 +10,6 @@ export interface StudentCourse {
     completedLessonIds: string[]; 
     progress: number;       
     isCompleted: boolean;
-    unitProgressId?: string; 
+    unit_progress_id?: string;
   }
   

@@ -90,9 +90,9 @@ export class StudentViewComponent implements OnInit {
   if (!this.currentLesson || !this.activeStudentCourse) return;
   
 
-  if (this.activeStudentCourse.unitProgressId) {
+  if (this.activeStudentCourse.unit_progress_id) {
     this.coursesService.markSegmentCompleted(
-    this.activeStudentCourse.unitProgressId,
+    this.activeStudentCourse.unit_progress_id,
     this.currentLesson.id
   ).subscribe({
     next: () => {

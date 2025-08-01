@@ -145,7 +145,7 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
    * returned from the backend. If all segments are completed a value of 100 is returned.
    */
   getCourseProgress(sc: StudentCourseWithDetails): Observable<number> {
-    const unitProgressId = sc.unitProgressId;
+    const unitProgressId = sc.unit_progress_id;
     const lessons = sc.course.units?.[0]?.lessons || [];
     const total = lessons.length;
 

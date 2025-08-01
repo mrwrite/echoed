@@ -7,7 +7,7 @@ import { IconModule } from '../../shared/icon/icon.module';
   standalone: true,
   imports: [CommonModule, IconModule],
   template: `
-    <div class="bg-white rounded-xl shadow w-full overflow-hidden">
+    <div class="bg-white rounded-xl shadow w-full overflow-hidden relative">
       <img *ngIf="thumbnailUrl" [src]="thumbnailUrl" alt="Course image" class="w-full h-48 object-cover">
       <div class="p-6">
         <p class="text-xl font-bold text-primary">{{ title }}</p>
@@ -26,6 +26,10 @@ import { IconModule } from '../../shared/icon/icon.module';
         </div>
         <ng-content></ng-content>
       </div>
+      <span
+        *ngIf="status === 'completed'"
+        class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded"
+      >Completed</span>
     </div>
   `,
 })
@@ -38,4 +42,5 @@ export class StudentCourseCardComponent {
   @Input() ratingCount?: number;
   /** Progress percentage from 0 to 100 */
   @Input() progress?: number;
+  @Input() status?: string;
 }

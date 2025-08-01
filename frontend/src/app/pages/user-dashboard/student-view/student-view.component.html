@@ -19,8 +19,10 @@
       [rating]="sc.course.rating"
       [ratingCount]="sc.course.ratingCount"
       [progress]="sc.progress"
+      [status]="sc.status"
     >
       <app-echo-button
+        *ngIf="sc.status !== 'completed'"
         class="mt-2"
         color="primary"
         label="Start / Resume"

@@ -5,6 +5,7 @@
       <th class="pb-2">Name</th>
       <th class="pb-2">Role</th>
       <th class="pb-2">Signup Date</th>
+      <th class="pb-2 text-right">Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -12,6 +13,9 @@
       <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
       <td class="py-2">{{ user.role }}</td>
       <td class="py-2">{{ user.created_at | date: 'MMM d, y' }}</td>
+      <td class="py-2 text-right">
+        <button class="text-red-600 text-sm hover:underline" (click)="deleteUser(user.id)">Delete</button>
+      </td>
     </tr>
   </tbody>
 </table>

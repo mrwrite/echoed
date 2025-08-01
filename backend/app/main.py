@@ -148,7 +148,11 @@ def update_user(user_id: str, user: UserDto, db: Session = Depends(get_db), curr
 
 @app.delete("/api/users/{user_id}")
 def delete_user(user_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    db_user = db.query(User).filter(User.id == user_id).first()
+    try:
+        uid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user id")
+    db_user = db.query(User).filter(User.id == uid).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -358,6 +362,20 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
     db.refresh(existing_course)
 
     return {"message": "Course updated successfully"}
+
+@app.delete("/api/courses/{course_id}")
+def delete_course(course_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        cid = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+    course = db.query(Course).filter(Course.id == cid).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    db.delete(course)
+    db.commit()
+    return {"message": "Course deleted successfully"}
 
 @app.get("/api/lessons/{lesson_id}", response_model=LessonResponse)
 def get_lesson_by_id(

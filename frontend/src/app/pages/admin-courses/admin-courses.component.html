@@ -2,6 +2,9 @@
 <ul class="space-y-2">
   <li *ngFor="let course of courses" class="flex justify-between tracking-tight leading-snug">
     <span>{{ course.title }}</span>
-    <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
+    <div>
+      <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
+      <button class="text-sm text-red-600 hover:underline ml-2" (click)="onDeleteCourse(course.id)">Delete</button>
+    </div>
   </li>
 </ul>

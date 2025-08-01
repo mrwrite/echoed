@@ -76,9 +76,26 @@ export class AdminViewComponent {
     this.router.navigate(['/home/courses', courseId, 'edit']);
   }
 
+  deleteCourse(courseId: string) {
+    this.coursesService.deleteCourse(courseId).subscribe(() => {
+      this.courses = this.courses.filter(c => c.id !== courseId);
+      this.coursesCount = this.courses.length;
+      this.updateMetrics();
+    });
+  }
+
   /** Users displayed on dashboard */
   get visibleUsers(): User[] {
     return this.users.slice(0, this.visibleCount);
+  }
+
+  deleteUser(userId: string) {
+    this.usersService.deleteUser(userId).subscribe(() => {
+      this.users = this.users.filter(u => u.id !== userId);
+      this.studentCount = this.users.filter(u => u.role === 'student').length;
+      this.teacherCount = this.users.filter(u => u.role === 'teacher').length;
+      this.updateMetrics();
+    });
   }
 
   /** Courses displayed on dashboard */

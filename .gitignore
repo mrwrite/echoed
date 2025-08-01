@@ -16,6 +16,8 @@ Pipfile.lock
 
 # ---- Node.js / Angular ----
 node_modules/
+# Ignore node dependencies
+
 dist/
 coverage/
 *.log

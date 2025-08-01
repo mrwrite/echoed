@@ -1,8 +1,12 @@
+import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.models import Base  # your Base = declarative_base()
+
+# Ensure JWT signing key is available before importing auth
+os.environ.setdefault("JWT_SECRET", "testsecret")
 
 # Use an in-memory test DB to avoid creating real tables on disk
 TEST_DATABASE_URL = "sqlite://"

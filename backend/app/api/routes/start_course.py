@@ -7,6 +7,7 @@ from app.auth import get_current_user
 from app.models import StudentCourse, StudentUnitProgress, SegmentProgress, Course, Unit, Lesson
 from app.schemas import StartCourseRequest, SegmentResponse
 from app.enum import ProgressStatus  # assuming you created this enum
+from app.log import logger
 
 router = APIRouter()
 
@@ -17,7 +18,7 @@ def start_course(
     current_user = Depends(get_current_user)
 ):   
     
-    print("RAW Request Data:", request)    
+    logger.debug("RAW Request Data: %s", request)
     # Check enrollment
     enrollment = db.query(StudentCourse).filter_by(
         student_id=current_user.id,

@@ -1,8 +1,22 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Path, UploadFile, File
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    status,
+    Request,
+    Path,
+    UploadFile,
+    File,
+)
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, joinedload
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.auth import create_access_token, authenticate_user, get_current_user, hash_password
+from app.auth import (
+    create_access_token,
+    authenticate_user,
+    get_current_user,
+    hash_password,
+)
 import os
 import uuid
 import shutil
@@ -62,8 +76,11 @@ os.makedirs(BADGES_PATH, exist_ok=True)
 app.mount("/badges", StaticFiles(directory=BADGES_PATH), name="badges")
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
+
+
 def configure_routes():
     from app.api.routes import enroll, start_course, badges, units, lessons, activities
+
     app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
     app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
     app.include_router(badges.router, prefix="/api", tags=["Badges"])
@@ -71,18 +88,19 @@ def configure_routes():
     app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
     app.include_router(activities.router, prefix="/api", tags=["Activities"])
 
+
 configure_routes()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200",
-                   "http://127.0.0.1:4200"],
+    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 def get_db():
     db = SessionLocal()
@@ -91,66 +109,105 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/api")
 def read_root():
     return {"message": "Echoed API is running"}
+
 
 @app.post("/api/auth/register")
 def register_user(user: UserDto, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.username == user.username).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    
-    new_user = User(username=user.username, firstname=user.firstname, lastname=user.lastname, email=user.email, role=user.role.lower(), hashed_password=hash_password(user.password))
+
+    new_user = User(
+        username=user.username,
+        firstname=user.firstname,
+        lastname=user.lastname,
+        email=user.email,
+        role=user.role.lower(),
+        hashed_password=hash_password(user.password),
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return {"message": "User registered successfully"}
 
+
 @app.post("/api/auth/token")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token = create_access_token(data={"sub": user.username, "user_id": str(user.id), "fullname": f"{user.firstname} {user.lastname}", "role": user.role})
+    access_token = create_access_token(
+        data={
+            "sub": user.username,
+            "user_id": str(user.id),
+            "fullname": f"{user.firstname} {user.lastname}",
+            "role": user.role,
+        }
+    )
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @app.get("/api/auth/protected")
 def protected_route(current_user: User = Depends(get_current_user)):
     return {"message": f"Hello, {current_user.username}, you have access!"}
 
+
 @app.get("/api/users")
-def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_users(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     users = db.query(User).all()
     return users
 
+
 @app.get("/api/users/{user_id}")
-def get_user_by_id(user_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_user_by_id(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+
 @app.put("/api/users/{user_id}")
-def update_user(user_id: str, user: UserDto, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_user(
+    user_id: str,
+    user: UserDto,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     db_user.firstname = user.firstname
     db_user.lastname = user.lastname
     db_user.username = user.username
     db_user.email = user.email
     db_user.role = user.role.lower()
-    
+
     if user.password:
         db_user.hashed_password = hash_password(user.password)
-    
+
     db.commit()
     return {"message": "User updated successfully"}
 
+
 @app.delete("/api/users/{user_id}")
-def delete_user(user_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
         uid = uuid.UUID(user_id)
     except ValueError:
@@ -158,25 +215,29 @@ def delete_user(user_id: str, db: Session = Depends(get_db), current_user: User 
     db_user = db.query(User).filter(User.id == uid).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted successfully"}
 
 
 @app.get("/api/courses")
-def get_courses(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_courses(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     courses = db.query(Course).all()
     return courses
 
+
 @app.get("/api/student-courses", response_model=list[StudentCourseWithDetails])
 def get_student_courses(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     student_courses = (
         db.query(StudentCourse)
-        .options(joinedload(StudentCourse.course).joinedload(Course.units))  # eager load course units
+        .options(
+            joinedload(StudentCourse.course).joinedload(Course.units)
+        )  # eager load course units
         .filter(StudentCourse.student_id == current_user.id)
         .all()
     )
@@ -184,21 +245,29 @@ def get_student_courses(
     # Convert to pydantic-compatible dicts with nested course details
     results = []
     for sc in student_courses:
-        results.append({
-            "id": sc.id,
-            "student_id": sc.student_id,
-            "course_id": sc.course_id,
-            "enrolled_on": sc.enrolled_on,
-            "status": sc.status,
-            "course": CourseResponse.from_orm(sc.course),
-            "unitProgressId": sc.unit_progress[0].id if sc.unit_progress else None,
-        })
+        results.append(
+            {
+                "id": sc.id,
+                "student_id": sc.student_id,
+                "course_id": sc.course_id,
+                "enrolled_on": sc.enrolled_on,
+                "status": sc.status,
+                "course": CourseResponse.from_orm(sc.course),
+                "unit_progress_id": (
+                    sc.unit_progress[0].id if sc.unit_progress else None
+                ),
+            }
+        )
 
     return results
 
 
 @app.get("/api/courses/{course_id}", response_model=CourseResponse)
-def get_course_by_id(course_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_course_by_id(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
@@ -227,34 +296,45 @@ def get_course_by_id(course_id: str, db: Session = Depends(get_db), current_user
                                 title=activity.title,
                                 content=activity.content,
                                 order=activity.order,
-                                media=MediaResponse(
-                                    id=activity.media.id,
-                                    type=activity.media.type,
-                                    title=activity.media.title,
-                                    url=activity.media.url,
-                                    description=activity.media.description
-                                ) if activity.media else None,
+                                media=(
+                                    MediaResponse(
+                                        id=activity.media.id,
+                                        type=activity.media.type,
+                                        title=activity.media.title,
+                                        url=activity.media.url,
+                                        description=activity.media.description,
+                                    )
+                                    if activity.media
+                                    else None
+                                ),
                                 pages=[
                                     StorybookPageResponse.from_orm(p)
                                     for p in activity.storybook_pages
                                 ],
                             )
                             for activity in lesson.activities
-                        ]
+                        ],
                     )
                     for lesson in unit.lessons
-                ]
+                ],
             )
             for unit in course.units
-        ]
+        ],
     )
 
     return course_data
 
+
 @app.post("/api/courses")
-def create_course(course: CourseDto, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_course(
+    course: CourseDto,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
     new_course = Course(title=course.title, description=course.description)
     db.add(new_course)
     db.flush()  # So we have new_course.id immediately
@@ -264,7 +344,7 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
             title=unit_data.title,
             content=unit_data.content,
             order=unit_data.order,
-            course_id=new_course.id
+            course_id=new_course.id,
         )
         db.add(new_unit)
         db.flush()  # Get unit_id for lessons
@@ -275,7 +355,7 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
                 objective=lesson_data.objective,
                 order=lesson_data.order,
                 duration_minutes=lesson_data.duration_minutes,
-                unit_id=new_unit.id
+                unit_id=new_unit.id,
             )
             db.add(new_lesson)
             db.flush()  # Get lesson_id for activities
@@ -286,7 +366,7 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
                     title=activity_data.title,
                     content=activity_data.content,
                     order=activity_data.order,
-                    lesson_id=new_lesson.id
+                    lesson_id=new_lesson.id,
                 )
                 db.add(new_activity)
                 db.flush()
@@ -303,12 +383,22 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
 
     db.commit()
 
-    return {"message": "Course with units, lessons, and activities created successfully!"}
+    return {
+        "message": "Course with units, lessons, and activities created successfully!"
+    }
+
 
 @app.put("/api/courses/{course_id}")
-def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_course(
+    course_id: str,
+    course_dto: CourseDto,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
     try:
         cid = uuid.UUID(course_id)
     except ValueError:
@@ -333,7 +423,7 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
             title=unit_dto.title,
             content=unit_dto.content,
             order=unit_dto.order,
-            course_id=existing_course.id
+            course_id=existing_course.id,
         )
         db.add(new_unit)
         db.flush()  # get unit id for relationship if needed
@@ -344,7 +434,7 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
                 objective=lesson_dto.objective,
                 order=lesson_dto.order,
                 duration_minutes=lesson_dto.duration_minutes,
-                unit_id=new_unit.id
+                unit_id=new_unit.id,
             )
             db.add(new_lesson)
             db.flush()
@@ -355,7 +445,7 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
                     type=activity_dto.type,
                     content=activity_dto.content,
                     order=activity_dto.order,
-                    lesson_id=new_lesson.id
+                    lesson_id=new_lesson.id,
                 )
                 db.add(new_activity)
                 db.flush()
@@ -375,10 +465,17 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
 
     return {"message": "Course updated successfully"}
 
+
 @app.delete("/api/courses/{course_id}")
-def delete_course(course_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_course(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
     try:
         cid = uuid.UUID(course_id)
     except ValueError:
@@ -391,38 +488,44 @@ def delete_course(course_id: str, db: Session = Depends(get_db), current_user: U
     db.commit()
     return {"message": "Course deleted successfully"}
 
+
 @app.get("/api/lessons/{lesson_id}", response_model=LessonResponse)
 def get_lesson_by_id(
     lesson_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
-    
+
     activities = []
     for activity in lesson.activities:
-        media = MediaResponse(
-            id=activity.media.id,
-            type=activity.media.type,
-            title=activity.media.title,
-            url=activity.media.url,
-            description=activity.media.description
-        ) if activity.media else None
-        
-        activities.append(ActivityResponse(
-            id=activity.id,
-            type=activity.type,
-            title=activity.title,
-            content=activity.content,
-            order=activity.order,
-            media=media,
-            pages=[
-                StorybookPageResponse.from_orm(p)
-                for p in activity.storybook_pages
-            ]
-        ))
+        media = (
+            MediaResponse(
+                id=activity.media.id,
+                type=activity.media.type,
+                title=activity.media.title,
+                url=activity.media.url,
+                description=activity.media.description,
+            )
+            if activity.media
+            else None
+        )
+
+        activities.append(
+            ActivityResponse(
+                id=activity.id,
+                type=activity.type,
+                title=activity.title,
+                content=activity.content,
+                order=activity.order,
+                media=media,
+                pages=[
+                    StorybookPageResponse.from_orm(p) for p in activity.storybook_pages
+                ],
+            )
+        )
 
     return LessonResponse(
         id=lesson.id,
@@ -430,7 +533,7 @@ def get_lesson_by_id(
         order=lesson.order,
         objective=lesson.objective,
         duration_minutes=lesson.duration_minutes,
-        activities=activities
+        activities=activities,
     )
 
 
@@ -439,7 +542,7 @@ def get_lesson_by_id(
 def upload_coloring(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Upload a coloring page and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]
@@ -456,7 +559,7 @@ def upload_coloring(
 def upload_storybook_page(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Upload a storybook page and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]
@@ -473,7 +576,7 @@ def upload_storybook_page(
 def upload_badge_image(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Upload a badge image and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]

@@ -113,3 +113,22 @@ def test_start_course_requires_enrollment(test_db, test_student, test_course_and
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Not enrolled in this course."
+
+
+def test_start_course_rejects_completed_course(test_db, test_student, test_course_and_unit_and_lesson):
+    course, _, _ = test_course_and_unit_and_lesson
+
+    # Enroll the student and mark the course as completed
+    student_course = StudentCourse(student_id=test_student.id, course_id=course.id, status="completed")
+    test_db.add(student_course)
+    test_db.commit()
+
+    test_app = FastAPI()
+    test_app.include_router(start_course.router, prefix="/api")
+    test_app.dependency_overrides[get_current_user] = override_get_current_user(test_student)
+    client = TestClient(test_app)
+
+    response = client.post("/api/start-course", json={"course_id": str(course.id)})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Course already completed"

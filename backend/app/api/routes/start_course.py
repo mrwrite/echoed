@@ -27,6 +27,9 @@ def start_course(
     if not enrollment:
         raise HTTPException(status_code=403, detail="Not enrolled in this course.")
 
+    if enrollment.status == "completed":
+        raise HTTPException(status_code=400, detail="Course already completed")
+
     # Get first unit in course
     unit = db.query(Unit).filter_by(course_id=request.course_id).order_by(Unit.order).first()
     if not unit:

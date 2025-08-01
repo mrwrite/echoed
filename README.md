@@ -103,6 +103,7 @@ If any variable is omitted, the application falls back to the example values abo
 ## 🚀 Usage
 - **Run Frontend:** Open [http://localhost:4200](http://localhost:4200)
 - **Run Backend API:** Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API documentation
+  - The `/api/start-course` endpoint now returns `400` with `"Course already completed"` if the user tries to start a finished course.
 
 ## 🧪 Running Tests
 

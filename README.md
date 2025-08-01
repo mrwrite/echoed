@@ -71,6 +71,15 @@ npm install
 ng serve
 ```
 
+### **Setting Build Environments**
+Angular uses environment files in `frontend/src/environments` to change values during different builds. The default `ng serve` uses `environment.ts`. To build with the production settings from `environment.prod.ts`, run:
+
+```sh
+ng build --configuration production
+```
+
+You can add more environment files (e.g., `environment.staging.ts`) and reference them with `--configuration <name>` once configured in `angular.json`.
+
 ---
 
 ## 🚀 Usage

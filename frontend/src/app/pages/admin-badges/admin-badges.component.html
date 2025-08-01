@@ -2,7 +2,7 @@
 <form [formGroup]="badgeForm" (ngSubmit)="onSubmit()" class="space-y-2 mb-4">
   <input formControlName="title" placeholder="Title" class="border p-2 w-full" />
   <input formControlName="description" placeholder="Description" class="border p-2 w-full" />
-  <input formControlName="image_url" placeholder="Image URL" class="border p-2 w-full" />
+  <input type="file" (change)="onFileSelected($event)" class="border p-2 w-full" />
   <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded" [disabled]="badgeForm.invalid">Add Badge</button>
 </form>
 <ul class="space-y-2">

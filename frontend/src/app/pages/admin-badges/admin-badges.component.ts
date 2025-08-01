@@ -14,6 +14,7 @@ import { Badge } from '../../models/badge';
 export class AdminBadgesComponent implements OnInit {
   badges: Badge[] = [];
   badgeForm: FormGroup;
+  selectedFile: File | null = null;
 
   constructor(private badgesService: BadgesService, private fb: FormBuilder) {
     this.badgeForm = this.fb.group({
@@ -31,11 +32,32 @@ export class AdminBadgesComponent implements OnInit {
     this.badgesService.getBadges().subscribe(badges => (this.badges = badges));
   }
 
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
   onSubmit() {
     if (this.badgeForm.invalid) return;
-    this.badgesService.createBadge(this.badgeForm.value).subscribe(badge => {
-      this.badges.push(badge);
-      this.badgeForm.reset();
-    });
+    const finalize = (url?: string) => {
+      if (url) {
+        this.badgeForm.patchValue({ image_url: url });
+      }
+      this.badgesService.createBadge(this.badgeForm.value).subscribe(badge => {
+        this.badges.push(badge);
+        this.badgeForm.reset();
+        this.selectedFile = null;
+      });
+    };
+
+    if (this.selectedFile) {
+      this.badgesService.uploadBadgeImage(this.selectedFile).subscribe(res => {
+        finalize(res.file_path);
+      });
+    } else {
+      finalize();
+    }
   }
 }

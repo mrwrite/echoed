@@ -1,6 +1,6 @@
 from app.enum import ProgressStatus
 from sqlalchemy.orm import Session
-from app.models import StudentUnitProgress, SegmentProgress, Unit
+from app.models import StudentUnitProgress, SegmentProgress, Unit, Lesson
 from uuid import UUID
 from datetime import datetime
 
@@ -110,6 +110,22 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                                 status=ProgressStatus.NOT_STARTED,
                             )
                             db.add(next_progress)
+                            db.commit()
+
+                            # create segment progress records for the lessons in the new unit
+                            lessons = (
+                                db.query(Lesson)
+                                .filter_by(unit_id=next_unit.id)
+                                .order_by(Lesson.order)
+                                .all()
+                            )
+                            for lesson in lessons:
+                                seg = SegmentProgress(
+                                    student_unit_id=next_progress.id,
+                                    lesson_id=lesson.id,
+                                    status=ProgressStatus.NOT_STARTED,
+                                )
+                                db.add(seg)
                             db.commit()
     return progress
 

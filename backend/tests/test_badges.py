@@ -29,7 +29,7 @@ def admin_user(test_db):
         firstname="Admin",
         lastname="User",
         username=f"admin_{uuid.uuid4()}",
-        email="admin@example.com",
+        email=f"admin_{uuid.uuid4()}@example.com",
         hashed_password="fake",
         role="admin",
     )
@@ -44,7 +44,7 @@ def student_user(test_db):
         firstname="Stud",
         lastname="User",
         username=f"student_{uuid.uuid4()}",
-        email="student@example.com",
+        email=f"student_{uuid.uuid4()}@example.com",
         hashed_password="fake",
         role="student",
     )

@@ -186,3 +186,24 @@ class StudentBadgeResponse(BaseModel):
         from_attributes = True
 
 
+class ThreadResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    title: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PostResponse(BaseModel):
+    id: UUID
+    thread_id: UUID
+    user_id: UUID
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+

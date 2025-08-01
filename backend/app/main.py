@@ -79,7 +79,16 @@ app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 
 
 def configure_routes():
-    from app.api.routes import enroll, start_course, badges, units, lessons, activities
+    from app.api.routes import (
+        enroll,
+        start_course,
+        badges,
+        units,
+        lessons,
+        activities,
+        threads,
+        posts,
+    )
 
     app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
     app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
@@ -87,6 +96,8 @@ def configure_routes():
     app.include_router(units.router, prefix="/api", tags=["Units"])
     app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
     app.include_router(activities.router, prefix="/api", tags=["Activities"])
+    app.include_router(threads.router, prefix="/api/forum", tags=["Threads"])
+    app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
 
 
 configure_routes()

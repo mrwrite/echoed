@@ -189,3 +189,28 @@ class StudentBadge(Base):
     student = relationship("User")
     badge = relationship("Badge", back_populates="student_badges")
 
+
+class Thread(Base):
+    __tablename__ = "threads"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    posts = relationship("Post", back_populates="thread", cascade="all, delete-orphan")
+
+
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    thread = relationship("Thread", back_populates="posts")
+    user = relationship("User")
+

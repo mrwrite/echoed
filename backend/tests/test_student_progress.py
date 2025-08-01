@@ -268,8 +268,19 @@ def test_complete_last_segment_marks_unit_and_creates_next_unit_progress(db_sess
     unit_progress = db_session.get(StudentUnitProgress, unit_progress.id)
     assert unit_progress.status == ProgressStatus.COMPLETED
 
-    next_unit_progress = db_session.query(StudentUnitProgress).filter_by(student_course_id=student_course.id, unit_id=unit2.id).first()
+    next_unit_progress = db_session.query(StudentUnitProgress).filter_by(
+        student_course_id=student_course.id,
+        unit_id=unit2.id
+    ).first()
     assert next_unit_progress is not None
     assert next_unit_progress.status == ProgressStatus.NOT_STARTED
+
+    # verify segment progress records were created for the new unit's lessons
+    segs = db_session.query(SegmentProgress).filter_by(
+        student_unit_id=next_unit_progress.id
+    ).all()
+    assert len(segs) > 0
+    for seg in segs:
+        assert seg.lesson.unit_id == unit2.id
 
 

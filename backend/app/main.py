@@ -250,6 +250,8 @@ def get_course_by_id(course_id: str, db: Session = Depends(get_db), current_user
 
 @app.post("/api/courses")
 def create_course(course: CourseDto, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role not in ["admin", "teacher"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     new_course = Course(title=course.title, description=course.description)
     db.add(new_course)
     db.flush()  # So we have new_course.id immediately
@@ -302,7 +304,14 @@ def create_course(course: CourseDto, db: Session = Depends(get_db), current_user
 
 @app.put("/api/courses/{course_id}")
 def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    existing_course = db.query(Course).filter(Course.id == course_id).first()
+    if current_user.role not in ["admin", "teacher"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+    try:
+        cid = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    existing_course = db.query(Course).filter(Course.id == cid).first()
     if not existing_course:
         raise HTTPException(status_code=404, detail="Course not found")
 
@@ -365,6 +374,8 @@ def update_course(course_id: str, course_dto: CourseDto, db: Session = Depends(g
 
 @app.delete("/api/courses/{course_id}")
 def delete_course(course_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role not in ["admin", "teacher"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     try:
         cid = uuid.UUID(course_id)
     except ValueError:

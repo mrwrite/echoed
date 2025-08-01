@@ -98,6 +98,15 @@ JWT_SECRET=your_jwt_secret
 - `JWT_SECRET` – Secret key used for signing JSON Web Tokens.
 
 If any variable is omitted, the application falls back to the example values above.
+
+## 🐳 Docker Compose
+1. Create a `.env` file in the project root with the variables above.
+2. Build and start the stack:
+   ```sh
+   docker compose up --build
+   ```
+   This spins up the FastAPI backend along with PostgreSQL and MinIO.
+3. Access the API at [http://localhost:8000/docs](http://localhost:8000/docs).
 ---
 
 ## 🚀 Usage

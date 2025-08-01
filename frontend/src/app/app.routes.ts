@@ -11,6 +11,7 @@ import { AvailableCoursesComponent } from './pages/available-courses/available-c
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.component';
 import { AdminBadgesComponent } from './pages/admin-badges/admin-badges.component';
+import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -25,12 +26,37 @@ export const routes: Routes = [
         component: UserDashboardComponent,
         children: [
           { path: '', component: EchoedRoleSelectorComponent },
-          { path: 'courses/new', component: CourseWizardComponent },
-          { path: 'courses/:courseId/edit', component: CourseWizardComponent },
+          {
+            path: 'courses/new',
+            component: CourseWizardComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin', 'teacher'] }
+          },
+          {
+            path: 'courses/:courseId/edit',
+            component: CourseWizardComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin', 'teacher'] }
+          },
           { path: 'courses', component: AvailableCoursesComponent },
-          { path: 'admin/courses', component: AdminCoursesComponent },
-          { path: 'admin/badges', component: AdminBadgesComponent },
-          { path: 'admin/users', component: AdminUsersComponent },
+          {
+            path: 'admin/courses',
+            component: AdminCoursesComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin'] }
+          },
+          {
+            path: 'admin/badges',
+            component: AdminBadgesComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin'] }
+          },
+          {
+            path: 'admin/users',
+            component: AdminUsersComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin'] }
+          },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]
       }

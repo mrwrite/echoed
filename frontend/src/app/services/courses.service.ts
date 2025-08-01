@@ -100,6 +100,10 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
     return this.http.put(`${this.apiUrl}/${courseId}`, course, { headers: this.getHeaders() });
   }
 
+  deleteCourse(courseId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${courseId}`, { headers: this.getHeaders() });
+  }
+
   enrollInCourse(courseId: string): Observable<any> {
   const payload = { course_id: courseId };
   return this.http.post(`${environment.apiUrl}/api/enroll`, payload, {

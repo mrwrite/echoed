@@ -20,4 +20,10 @@ export class AdminUsersComponent implements OnInit {
       this.users = users;
     });
   }
+
+  deleteUser(userId: string) {
+    this.usersService.deleteUser(userId).subscribe(() => {
+      this.users = this.users.filter(u => u.id !== userId);
+    });
+  }
 }

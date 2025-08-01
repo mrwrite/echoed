@@ -1,0 +1,13 @@
+[
+  { "date": "2024-01-01", "title": "New Year's Day", "description": "Celebration of the new year" },
+  { "date": "2024-02-14", "title": "Valentine's Day", "description": "A day of love" },
+  { "date": "2024-03-17", "title": "St. Patrick's Day", "description": "Irish celebration" },
+  { "date": "2024-04-01", "title": "April Fool's Day", "description": "Pranks and jokes" },
+  { "date": "2024-05-05", "title": "Cinco de Mayo", "description": "Mexican heritage celebration" },
+  { "date": "2024-06-19", "title": "Juneteenth", "description": "Commemorating emancipation" },
+  { "date": "2024-07-04", "title": "Independence Day", "description": "US Independence Day" },
+  { "date": "2024-09-02", "title": "Labor Day", "description": "Honoring workers" },
+  { "date": "2024-10-31", "title": "Halloween", "description": "Costumes and candy" },
+  { "date": "2024-11-28", "title": "Thanksgiving", "description": "Giving thanks" },
+  { "date": "2024-12-25", "title": "Christmas Day", "description": "Holiday celebration" }
+]

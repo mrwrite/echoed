@@ -1,6 +1,6 @@
 from app.enum import ProgressStatus
 from sqlalchemy.orm import Session
-from app.models import StudentUnitProgress, SegmentProgress
+from app.models import StudentUnitProgress, SegmentProgress, Unit
 from uuid import UUID
 from datetime import datetime
 
@@ -10,7 +10,7 @@ def create_student_unit_progress(db: Session, student_course_id: UUID, unit_id: 
     progress = StudentUnitProgress(
         student_course_id=student_course_id,
         unit_id=unit_id,
-        status=ProgressStatus.NOT_STARTED.name
+        status=ProgressStatus.NOT_STARTED
     )
     db.add(progress)
     db.commit()
@@ -21,18 +21,23 @@ def update_student_unit_progress_status(db: Session, progress_id: UUID, new_stat
     progress = db.get(StudentUnitProgress, progress_id)
     if progress:
         if isinstance(new_status, ProgressStatus):
-            progress.status = new_status.name
+            status_value = new_status
         else:
-            progress.status = ProgressStatus[new_status.upper()].name
+            status_value = ProgressStatus[new_status.upper()]
+        progress.status = status_value
         progress.last_updated = datetime.utcnow()
         db.commit()
     return progress
 
 def get_current_segment_for_unit(db: Session, student_unit_id: UUID):
+    """Return the next segment that has not been completed for a unit."""
     return (
         db.query(SegmentProgress)
-        .filter_by(student_unit_id=student_unit_id)
-        .order_by(SegmentProgress.status != ProgressStatus.COMPLETED, SegmentProgress.id)
+        .filter(
+            SegmentProgress.student_unit_id == student_unit_id,
+            SegmentProgress.status != ProgressStatus.COMPLETED,
+        )
+        .order_by(SegmentProgress.id)
         .first()
     )
 
@@ -50,7 +55,7 @@ def create_segment_progress(db: Session, student_unit_id: UUID, lesson_id: UUID)
     progress = SegmentProgress(
         student_unit_id=student_unit_id,
         lesson_id=lesson_id,
-        status=ProgressStatus.NOT_STARTED.name
+        status=ProgressStatus.NOT_STARTED
     )
     db.add(progress)
     db.commit()
@@ -61,11 +66,51 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
     progress = db.get(SegmentProgress, progress_id)
     if progress:
         if isinstance(new_status, ProgressStatus):
-            progress.status = new_status.name
+            status_value = new_status
         else:
-            progress.status = ProgressStatus[new_status.upper()].name
+            status_value = ProgressStatus[new_status.upper()]
+        progress.status = status_value
         progress.last_updated = datetime.utcnow()
         db.commit()
+        db.refresh(progress)
+
+        # If the segment was completed, check if the unit is finished
+        if progress.status == ProgressStatus.COMPLETED:
+            remaining = db.query(SegmentProgress).filter(
+                SegmentProgress.student_unit_id == progress.student_unit_id,
+                SegmentProgress.status != ProgressStatus.COMPLETED,
+            ).first()
+
+            if not remaining:
+                unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
+                if unit_progress:
+                    unit_progress.status = ProgressStatus.COMPLETED
+                    unit_progress.last_updated = datetime.utcnow()
+                    db.commit()
+
+                    # Attempt to create progress for the next unit in the course
+                    next_unit = (
+                        db.query(Unit)
+                        .filter(
+                            Unit.course_id == unit_progress.unit.course_id,
+                            Unit.order > (unit_progress.unit.order or 0),
+                        )
+                        .order_by(Unit.order)
+                        .first()
+                    )
+                    if next_unit:
+                        exists = db.query(StudentUnitProgress).filter_by(
+                            student_course_id=unit_progress.student_course_id,
+                            unit_id=next_unit.id,
+                        ).first()
+                        if not exists:
+                            next_progress = StudentUnitProgress(
+                                student_course_id=unit_progress.student_course_id,
+                                unit_id=next_unit.id,
+                                status=ProgressStatus.NOT_STARTED,
+                            )
+                            db.add(next_progress)
+                            db.commit()
     return progress
 
 def get_segment_progress(db: Session, student_unit_id: UUID, lesson_id: UUID):

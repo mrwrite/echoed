@@ -215,3 +215,61 @@ def test_delete_unit_cascades_progress_and_segments(db_session, test_user, test_
     assert seg_result is None
 
 
+@pytest.fixture
+def multi_unit_setup(db_session):
+    course = Course(id=uuid.uuid4(), title="Multi", description="Course")
+    unit1 = Unit(id=uuid.uuid4(), title="Unit1", course_id=course.id, order=1)
+    unit2 = Unit(id=uuid.uuid4(), title="Unit2", course_id=course.id, order=2)
+    lesson1a = Lesson(id=uuid.uuid4(), title="L1A", unit_id=unit1.id, duration_minutes=5, order=1)
+    lesson1b = Lesson(id=uuid.uuid4(), title="L1B", unit_id=unit1.id, duration_minutes=5, order=2)
+    lesson2a = Lesson(id=uuid.uuid4(), title="L2A", unit_id=unit2.id, duration_minutes=5, order=1)
+    db_session.add_all([course, unit1, unit2, lesson1a, lesson1b, lesson2a])
+    db_session.commit()
+    return course, unit1, unit2, lesson1a, lesson1b, lesson2a
+
+
+def test_next_segment_after_completion(db_session, test_user, multi_unit_setup):
+    course, unit1, _, lesson1a, lesson1b, _ = multi_unit_setup
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = crud.create_student_unit_progress(db_session, student_course.id, unit1.id)
+    seg1 = crud.create_segment_progress(db_session, unit_progress.id, lesson1a.id)
+    seg2 = crud.create_segment_progress(db_session, unit_progress.id, lesson1b.id)
+
+    crud.update_segment_progress_status(db_session, seg1.id, "completed")
+
+    unit_progress = db_session.get(StudentUnitProgress, unit_progress.id)
+    assert unit_progress.status != ProgressStatus.COMPLETED
+
+    next_seg = crud.get_current_segment_for_unit(db_session, unit_progress.id)
+    assert next_seg.id == seg2.id
+
+
+def test_complete_last_segment_marks_unit_and_creates_next_unit_progress(db_session, test_user, multi_unit_setup):
+    course, unit1, unit2, lesson1a, lesson1b, _ = multi_unit_setup
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = crud.create_student_unit_progress(db_session, student_course.id, unit1.id)
+    seg1 = crud.create_segment_progress(db_session, unit_progress.id, lesson1a.id)
+    seg2 = crud.create_segment_progress(db_session, unit_progress.id, lesson1b.id)
+
+    crud.update_segment_progress_status(db_session, seg1.id, "completed")
+    # No progress for next unit yet
+    assert db_session.query(StudentUnitProgress).filter_by(student_course_id=student_course.id, unit_id=unit2.id).first() is None
+
+    crud.update_segment_progress_status(db_session, seg2.id, "completed")
+
+    unit_progress = db_session.get(StudentUnitProgress, unit_progress.id)
+    assert unit_progress.status == ProgressStatus.COMPLETED
+
+    next_unit_progress = db_session.query(StudentUnitProgress).filter_by(student_course_id=student_course.id, unit_id=unit2.id).first()
+    assert next_unit_progress is not None
+    assert next_unit_progress.status == ProgressStatus.NOT_STARTED
+
+

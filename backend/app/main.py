@@ -32,7 +32,7 @@ from app.schemas import (
     StudentCourseWithDetails,
     StorybookPageResponse,
 )
-from app.api.routes import progress, badges
+from app.api.routes import progress, badges, units, lessons, activities
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -63,10 +63,13 @@ app.mount("/badges", StaticFiles(directory=BADGES_PATH), name="badges")
 
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 def configure_routes():
-    from app.api.routes import enroll, start_course, badges
+    from app.api.routes import enroll, start_course, badges, units, lessons, activities
     app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
     app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
     app.include_router(badges.router, prefix="/api", tags=["Badges"])
+    app.include_router(units.router, prefix="/api", tags=["Units"])
+    app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
+    app.include_router(activities.router, prefix="/api", tags=["Activities"])
 
 configure_routes()
 

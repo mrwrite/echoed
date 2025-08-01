@@ -284,3 +284,22 @@ def test_complete_last_segment_marks_unit_and_creates_next_unit_progress(db_sess
         assert seg.lesson.unit_id == unit2.id
 
 
+
+def test_complete_single_lesson_course_marks_course_completed(db_session, test_user):
+    course = Course(id=uuid.uuid4(), title="Single Course", description="Only one lesson")
+    unit = Unit(id=uuid.uuid4(), title="Unit1", course_id=course.id, order=1)
+    lesson = Lesson(id=uuid.uuid4(), title="Lesson1", unit_id=unit.id, duration_minutes=5, order=1)
+    db_session.add_all([course, unit, lesson])
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = crud.create_student_unit_progress(db_session, student_course.id, unit.id)
+    seg = crud.create_segment_progress(db_session, unit_progress.id, lesson.id)
+
+    crud.update_segment_progress_status(db_session, seg.id, "completed")
+
+    updated_course = db_session.get(StudentCourse, student_course.id)
+    assert updated_course.status == "completed"

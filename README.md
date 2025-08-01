@@ -90,6 +90,7 @@ STORYBOOK_PATH=./storybook
 COLORINGS_PATH=./colorings
 BADGES_PATH=./badges
 JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:4200
 ```
 
 - `DATABASE_URL` – Connection string used by `database.py` to initialize the database.
@@ -97,6 +98,7 @@ JWT_SECRET=your_jwt_secret
 - `COLORINGS_PATH` – Folder for coloring pages served at `/colorings`.
 - `BADGES_PATH` – Folder for badge images served at `/badges`.
 - `JWT_SECRET` – Secret key used for signing JSON Web Tokens.
+- `FRONTEND_URL` – Allowed origin(s) for CORS. Use a comma-separated list for multiple URLs.
 
 If any variable is omitted, the application falls back to the example values above.
 

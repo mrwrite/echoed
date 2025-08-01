@@ -104,9 +104,15 @@ configure_routes()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# Configure CORS using allowed origins from the environment. Defaults support
+# local development when FRONTEND_URL is not set.
+allowed_origins = os.getenv(
+    "FRONTEND_URL", "http://localhost:4200,http://127.0.0.1:4200"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

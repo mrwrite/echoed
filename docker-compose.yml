@@ -10,6 +10,7 @@ services:
       STORYBOOK_PATH: /data/storybook
       COLORINGS_PATH: /data/colorings
       BADGES_PATH: /data/badges
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
     volumes:
       - ./backend/storybook:/data/storybook
       - ./backend/colorings:/data/colorings

@@ -80,6 +80,22 @@ ng build --configuration production
 
 You can add more environment files (e.g., `environment.staging.ts`) and reference them with `--configuration <name>` once configured in `angular.json`.
 
+## 🗒️ Environment Variables
+The backend loads configuration from a `.env` file using **python-dotenv**. Create a file named `.env` in the project root with values like:
+
+```env
+DATABASE_URL=postgresql://echoed_user:your_secure_password@localhost/echoed
+STORYBOOK_PATH=./storybook
+COLORINGS_PATH=./colorings
+BADGES_PATH=./badges
+```
+
+- `DATABASE_URL` – Connection string used by `database.py` to initialize the database.
+- `STORYBOOK_PATH` – Folder for uploaded storybook pages. `main.py` exposes it at `/storybook`.
+- `COLORINGS_PATH` – Folder for coloring pages served at `/colorings`.
+- `BADGES_PATH` – Folder for badge images served at `/badges`.
+
+If any variable is omitted, the application falls back to the example values above.
 ---
 
 ## 🚀 Usage

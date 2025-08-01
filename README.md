@@ -88,12 +88,14 @@ DATABASE_URL=postgresql://echoed_user:your_secure_password@localhost/echoed
 STORYBOOK_PATH=./storybook
 COLORINGS_PATH=./colorings
 BADGES_PATH=./badges
+JWT_SECRET=your_jwt_secret
 ```
 
 - `DATABASE_URL` – Connection string used by `database.py` to initialize the database.
 - `STORYBOOK_PATH` – Folder for uploaded storybook pages. `main.py` exposes it at `/storybook`.
 - `COLORINGS_PATH` – Folder for coloring pages served at `/colorings`.
 - `BADGES_PATH` – Folder for badge images served at `/badges`.
+- `JWT_SECRET` – Secret key used for signing JSON Web Tokens.
 
 If any variable is omitted, the application falls back to the example values above.
 ---

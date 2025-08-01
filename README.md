@@ -1,4 +1,5 @@
 # EchoEd
+[![CI](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/ci.yml) [![Docker](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/docker.yml/badge.svg)](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/docker.yml)
 
 **Echoing the Past, Educating the Future**
 

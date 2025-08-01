@@ -26,12 +26,28 @@ export class BadgesService {
     });
   }
 
+  private getFileHeaders(): HttpHeaders {
+    let token = this.authService.getToken();
+    if (token && !token.startsWith('Bearer ')) {
+      token = `Bearer ${token}`;
+    } else if (!token) {
+      token = `Bearer ${this.authService.getToken()}`;
+    }
+    return new HttpHeaders({ Authorization: token || '' });
+  }
+
   getBadges(): Observable<Badge[]> {
     return this.http.get<Badge[]>(`${this.apiUrl}/badges`, { headers: this.getHeaders() });
   }
 
   createBadge(badge: BadgeCreate): Observable<Badge> {
     return this.http.post<Badge>(`${this.apiUrl}/badges`, badge, { headers: this.getHeaders() });
+  }
+
+  uploadBadgeImage(file: File): Observable<{ file_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ file_path: string }>(`${this.apiUrl}/upload/badge`, formData, { headers: this.getFileHeaders() });
   }
 
   assignBadge(studentId: string, badgeId: string): Observable<any> {

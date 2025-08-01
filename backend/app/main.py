@@ -54,6 +54,13 @@ os.makedirs(COLORINGS_PATH, exist_ok=True)
 # Serve uploaded coloring pages as static files
 app.mount("/colorings", StaticFiles(directory=COLORINGS_PATH), name="colorings")
 
+# Directory for uploaded badge images
+BADGES_PATH = os.getenv("BADGES_PATH", "./badges")
+os.makedirs(BADGES_PATH, exist_ok=True)
+
+# Serve uploaded badge images as static files
+app.mount("/badges", StaticFiles(directory=BADGES_PATH), name="badges")
+
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 def configure_routes():
     from app.api.routes import enroll, start_course, badges
@@ -426,4 +433,21 @@ def upload_storybook_page(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     file_url = request.url_for("storybook", path=filename)
+    return {"file_path": str(file_url)}
+
+
+# --- File upload endpoint for badge images ---
+@app.post("/api/upload/badge")
+def upload_badge_image(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload a badge image and return the accessible file URL."""
+    extension = os.path.splitext(file.filename)[1]
+    filename = f"{uuid.uuid4()}{extension}"
+    file_path = os.path.join(BADGES_PATH, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    file_url = request.url_for("badges", path=filename)
     return {"file_path": str(file_url)}

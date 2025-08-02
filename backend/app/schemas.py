@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 from app.enum import ProgressStatus 
 from typing import List, Optional
 from uuid import UUID
@@ -21,7 +21,8 @@ class ActivityDto(BaseModel):
     content: str
     order: Optional[int]
     pages: List['StorybookPageDto'] = Field(
-        default_factory=list, validation_alias="storybook_pages"
+        default_factory=list,
+        validation_alias=AliasChoices("pages", "storybook_pages"),
     )
 
 
@@ -83,7 +84,8 @@ class ActivityResponse(BaseModel):
     order: Optional[int]
     media: Optional[MediaResponse]
     pages: List[StorybookPageResponse] = Field(
-        default_factory=list, validation_alias="storybook_pages"
+        default_factory=list,
+        validation_alias=AliasChoices("pages", "storybook_pages"),
     )
 
     class Config:

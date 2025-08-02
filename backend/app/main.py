@@ -425,60 +425,69 @@ def update_course(
     if not existing_course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    # Update basic fields
-    existing_course.title = course_dto.title
-    existing_course.description = course_dto.description
+    try:
+        # Update basic fields
+        existing_course.title = course_dto.title
+        existing_course.description = course_dto.description
 
-    # Remove existing units along with their lessons/activities
-    for unit in list(existing_course.units):
-        db.delete(unit)
-    db.commit()
+        # Remove existing units along with their lessons/activities. We only
+        # flush the deletes so that the entire update occurs in a single
+        # transaction. If something fails while rebuilding the course, the
+        # session can be rolled back and previously existing units (and their
+        # storybook pages) will remain intact instead of being permanently
+        # removed.
+        for unit in list(existing_course.units):
+            db.delete(unit)
+        db.flush()
 
-    # Rebuild Units, Lessons, Activities fresh
-    for unit_dto in course_dto.units:
-        new_unit = Unit(
-            title=unit_dto.title,
-            content=unit_dto.content,
-            order=unit_dto.order,
-            course_id=existing_course.id,
-        )
-        db.add(new_unit)
-        db.flush()  # get unit id for relationship if needed
-
-        for lesson_dto in unit_dto.lessons:
-            new_lesson = Lesson(
-                title=lesson_dto.title,
-                objective=lesson_dto.objective,
-                order=lesson_dto.order,
-                duration_minutes=lesson_dto.duration_minutes,
-                unit_id=new_unit.id,
+        # Rebuild Units, Lessons, Activities fresh
+        for unit_dto in course_dto.units:
+            new_unit = Unit(
+                title=unit_dto.title,
+                content=unit_dto.content,
+                order=unit_dto.order,
+                course_id=existing_course.id,
             )
-            db.add(new_lesson)
-            db.flush()
+            db.add(new_unit)
+            db.flush()  # get unit id for relationship if needed
 
-            for activity_dto in lesson_dto.activities:
-                new_activity = Activity(
-                    title=activity_dto.title,
-                    type=activity_dto.type,
-                    content=activity_dto.content,
-                    order=activity_dto.order,
-                    lesson_id=new_lesson.id,
+            for lesson_dto in unit_dto.lessons:
+                new_lesson = Lesson(
+                    title=lesson_dto.title,
+                    objective=lesson_dto.objective,
+                    order=lesson_dto.order,
+                    duration_minutes=lesson_dto.duration_minutes,
+                    unit_id=new_unit.id,
                 )
-                db.add(new_activity)
+                db.add(new_lesson)
                 db.flush()
 
-                if activity_dto.type == "storybook":
-                    for page in getattr(activity_dto, "pages", []):
-                        db.add(
-                            StorybookPage(
-                                activity_id=new_activity.id,
-                                image_url=page.image_url,
-                                order=page.order,
-                            )
-                        )
+                for activity_dto in lesson_dto.activities:
+                    new_activity = Activity(
+                        title=activity_dto.title,
+                        type=activity_dto.type,
+                        content=activity_dto.content,
+                        order=activity_dto.order,
+                        lesson_id=new_lesson.id,
+                    )
+                    db.add(new_activity)
+                    db.flush()
 
-    db.commit()
-    db.refresh(existing_course)
+                    if activity_dto.type == "storybook":
+                        for page in getattr(activity_dto, "pages", []):
+                            db.add(
+                                StorybookPage(
+                                    activity_id=new_activity.id,
+                                    image_url=page.image_url,
+                                    order=page.order,
+                                )
+                            )
+
+        db.commit()
+        db.refresh(existing_course)
+    except Exception as e:
+        db.rollback()
+        raise e
 
     return {"message": "Course updated successfully"}
 

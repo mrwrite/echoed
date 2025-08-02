@@ -20,7 +20,9 @@ class ActivityDto(BaseModel):
     title: str
     content: str
     order: Optional[int]
-    pages: List['StorybookPageDto'] = []
+    pages: List['StorybookPageDto'] = Field(
+        default_factory=list, validation_alias="storybook_pages"
+    )
 
 
 class StorybookPageDto(BaseModel):
@@ -80,7 +82,9 @@ class ActivityResponse(BaseModel):
     content: str
     order: Optional[int]
     media: Optional[MediaResponse]
-    pages: List[StorybookPageResponse] = []
+    pages: List[StorybookPageResponse] = Field(
+        default_factory=list, validation_alias="storybook_pages"
+    )
 
     class Config:
         from_attributes = True

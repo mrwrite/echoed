@@ -86,25 +86,39 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
         db.commit()
         db.refresh(progress)
 
-        # If the segment was completed, check if the unit is finished
+        # If the segment was completed, advance progress within the unit or to the
+        # next unit as needed.
         if progress.status == ProgressStatus.COMPLETED:
-            remaining = (
+            # Look for the next segment in the same unit that has not been completed
+            next_seg = (
                 db.query(SegmentProgress)
                 .filter(
                     SegmentProgress.student_unit_id == progress.student_unit_id,
                     SegmentProgress.status != ProgressStatus.COMPLETED,
                 )
+                .order_by(SegmentProgress.id)
                 .first()
             )
 
-            if not remaining:
+            if next_seg:
+                # Move to the next lesson within the unit
+                next_seg.status = ProgressStatus.IN_PROGRESS
+                next_seg.last_updated = datetime.utcnow()
+                unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
+                if unit_progress and unit_progress.status != ProgressStatus.COMPLETED:
+                    unit_progress.status = ProgressStatus.IN_PROGRESS
+                    unit_progress.last_updated = datetime.utcnow()
+                db.commit()
+            else:
+                # All lessons in the unit are complete; mark unit complete and
+                # advance to the next unit if available
                 unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
                 if unit_progress:
                     unit_progress.status = ProgressStatus.COMPLETED
                     unit_progress.last_updated = datetime.utcnow()
                     db.commit()
 
-                    # Attempt to create progress for the next unit in the course
+                    # Find the next unit in the course based on order
                     next_unit = (
                         db.query(Unit)
                         .filter(
@@ -114,8 +128,10 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                         .order_by(Unit.order)
                         .first()
                     )
+
                     if next_unit:
-                        exists = (
+                        # Create or update progress for the next unit
+                        next_progress = (
                             db.query(StudentUnitProgress)
                             .filter_by(
                                 student_course_id=unit_progress.student_course_id,
@@ -123,30 +139,61 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                             )
                             .first()
                         )
-                        if not exists:
+
+                        if not next_progress:
                             next_progress = StudentUnitProgress(
                                 student_course_id=unit_progress.student_course_id,
                                 unit_id=next_unit.id,
-                                status=ProgressStatus.NOT_STARTED,
+                                status=ProgressStatus.IN_PROGRESS,
                             )
                             db.add(next_progress)
                             db.commit()
+                        else:
+                            next_progress.status = ProgressStatus.IN_PROGRESS
+                            next_progress.last_updated = datetime.utcnow()
+                            db.commit()
 
-                            # create segment progress records for the lessons in the new unit
+                        # Ensure segment progress records exist for the new unit
+                        existing = (
+                            db.query(SegmentProgress)
+                            .filter_by(student_unit_id=next_progress.id)
+                            .count()
+                        )
+                        if existing == 0:
                             lessons = (
                                 db.query(Lesson)
                                 .filter_by(unit_id=next_unit.id)
                                 .order_by(Lesson.order)
                                 .all()
                             )
-                            for lesson in lessons:
+                            for idx, lesson in enumerate(lessons):
+                                seg_status = (
+                                    ProgressStatus.IN_PROGRESS
+                                    if idx == 0
+                                    else ProgressStatus.NOT_STARTED
+                                )
                                 seg = SegmentProgress(
                                     student_unit_id=next_progress.id,
                                     lesson_id=lesson.id,
-                                    status=ProgressStatus.NOT_STARTED,
+                                    status=seg_status,
                                 )
                                 db.add(seg)
                             db.commit()
+                        else:
+                            # If segments already exist, mark the first incomplete as in progress
+                            next_seg = (
+                                db.query(SegmentProgress)
+                                .filter(
+                                    SegmentProgress.student_unit_id == next_progress.id,
+                                    SegmentProgress.status != ProgressStatus.COMPLETED,
+                                )
+                                .order_by(SegmentProgress.id)
+                                .first()
+                            )
+                            if next_seg and next_seg.status == ProgressStatus.NOT_STARTED:
+                                next_seg.status = ProgressStatus.IN_PROGRESS
+                                next_seg.last_updated = datetime.utcnow()
+                                db.commit()
                     else:
                         # No more units left; mark entire course as completed
                         student_course = db.get(

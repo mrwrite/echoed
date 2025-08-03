@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.crud import progress as crud
-from app.models import SegmentProgress
+from app.models import SegmentProgress, StudentUnitProgress
 from app.enum import ProgressStatus
 from app.schemas import CompleteSegmentRequest
 from pydantic import BaseModel
@@ -45,10 +45,32 @@ def complete_segment(
 
     updated = crud.update_segment_progress_status(db, segment.id, ProgressStatus.COMPLETED)
 
-    next_segment = crud.get_current_segment_for_unit(db, request.student_unit_id)
+    unit_progress = db.get(StudentUnitProgress, segment.student_unit_id)
+
+    next_segment = crud.get_current_segment_for_unit(db, unit_progress.id)
+    next_unit_progress_id = unit_progress.id
+
+    if not next_segment:
+        next_unit_progress = (
+            db.query(StudentUnitProgress)
+            .filter(
+                StudentUnitProgress.student_course_id == unit_progress.student_course_id,
+                StudentUnitProgress.status == ProgressStatus.IN_PROGRESS,
+            )
+            .first()
+        )
+        if next_unit_progress and next_unit_progress.id != unit_progress.id:
+            next_segment = crud.get_current_segment_for_unit(db, next_unit_progress.id)
+            next_unit_progress_id = next_unit_progress.id
 
     return {
         "message": "Segment marked as completed.",
         "segment_id": updated.id,
-        "next_segment_id": next_segment.id if next_segment else None,
+        "next_segment": {
+            "lesson_id": next_segment.lesson_id,
+            "status": next_segment.status,
+            "unit_progress_id": next_unit_progress_id,
+        }
+        if next_segment
+        else None,
     }

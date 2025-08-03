@@ -242,10 +242,11 @@ def test_next_segment_after_completion(db_session, test_user, multi_unit_setup):
     crud.update_segment_progress_status(db_session, seg1.id, "completed")
 
     unit_progress = db_session.get(StudentUnitProgress, unit_progress.id)
-    assert unit_progress.status != ProgressStatus.COMPLETED
+    assert unit_progress.status == ProgressStatus.IN_PROGRESS
 
     next_seg = crud.get_current_segment_for_unit(db_session, unit_progress.id)
     assert next_seg.id == seg2.id
+    assert next_seg.status == ProgressStatus.IN_PROGRESS
 
 
 def test_complete_last_segment_marks_unit_and_creates_next_unit_progress(db_session, test_user, multi_unit_setup):
@@ -273,13 +274,14 @@ def test_complete_last_segment_marks_unit_and_creates_next_unit_progress(db_sess
         unit_id=unit2.id
     ).first()
     assert next_unit_progress is not None
-    assert next_unit_progress.status == ProgressStatus.NOT_STARTED
+    assert next_unit_progress.status == ProgressStatus.IN_PROGRESS
 
     # verify segment progress records were created for the new unit's lessons
     segs = db_session.query(SegmentProgress).filter_by(
         student_unit_id=next_unit_progress.id
-    ).all()
+    ).order_by(SegmentProgress.id).all()
     assert len(segs) > 0
+    assert segs[0].status == ProgressStatus.IN_PROGRESS
     for seg in segs:
         assert seg.lesson.unit_id == unit2.id
 

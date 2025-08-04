@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { CoursesService } from '../services/courses.service';
 import { Lesson } from '../models/lesson';
-import { SegmentResponse } from '../models/segment-response.model';
+import { SegmentResponse, CompleteSegmentResponse } from '../models/segment-response.model';
 import { LessonViewerComponent } from "../shared/lesson-viewer.component";
 
 @Component({
@@ -60,9 +60,19 @@ export class LessonViewComponent implements OnInit {
   }
 
   this.coursesService.markSegmentCompleted(this.unitProgressId, this.segment.lesson_id).subscribe({
-    next: () => {
-      console.log('Lesson marked complete');
-      this.loadSegmentAndLesson(); // Reload to update segment status
+    next: (res: CompleteSegmentResponse) => {
+      const nextSeg = res.next_segment;
+      if (nextSeg) {
+        if (nextSeg.unit_progress_id) {
+          this.unitProgressId = nextSeg.unit_progress_id;
+        }
+        this.segment = nextSeg;
+        this.fetchLesson(nextSeg.lesson_id);
+      } else {
+        // No further segments; clear state
+        this.segment = undefined;
+        this.lesson = undefined;
+      }
     },
     error: (err) => {
       console.error('Failed to mark segment complete:', err);

@@ -10,6 +10,7 @@ import { StudentCourseCardComponent } from '../../../components/student-course-c
 import { AchievementItemComponent } from '../../../components/achievement-item/achievement-item.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
+import { CompleteSegmentResponse } from '../../../models/segment-response.model';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -88,24 +89,29 @@ export class StudentViewComponent implements OnInit {
 
   onLessonCompleted(): void {
   if (!this.currentLesson || !this.activeStudentCourse) return;
-  
 
   if (this.activeStudentCourse.unit_progress_id) {
-    this.coursesService.markSegmentCompleted(
-    this.activeStudentCourse.unit_progress_id,
-    this.currentLesson.id
-  ).subscribe({
-    next: () => {
-      this.toastService.show('Lesson completed! Progress saved.', 'success');
-      this.showLesson = false;
-      this.currentLesson = undefined;
-    },
-    error: () => {
-      this.toastService.show('There was an error saving your progress.', 'error');
-    }
-  });
+    this.coursesService
+      .markSegmentCompleted(
+        this.activeStudentCourse.unit_progress_id,
+        this.currentLesson.id
+      )
+      .subscribe({
+        next: (res: CompleteSegmentResponse) => {
+          const nextSeg = res.next_segment;
+          if (nextSeg && nextSeg.unit_progress_id) {
+            this.activeStudentCourse!.unit_progress_id = nextSeg.unit_progress_id;
+          }
+          this.toastService.show('Lesson completed! Progress saved.', 'success');
+          this.showLesson = false;
+          this.currentLesson = undefined;
+          this.loadStudentCourses();
+        },
+        error: () => {
+          this.toastService.show('There was an error saving your progress.', 'error');
+        },
+      });
   }
-  
 }
 
 enrollInCourse(courseId: string): void {

@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
 import { CourseDto } from '../models/course-dto';
 import { CourseDraft } from '../pages/admin/course-wizard/models/course-draft.model';
-import { StartCourseRequest, SegmentResponse } from '../models/segment-response.model';
+import { StartCourseRequest, SegmentResponse, CompleteSegmentResponse } from '../models/segment-response.model';
 import { Lesson } from '../models/lesson';
 import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
@@ -129,13 +129,13 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
 }
 
 
-  markSegmentCompleted(studentUnitId: string, lessonId: string): Observable<any> {
+  markSegmentCompleted(studentUnitId: string, lessonId: string): Observable<CompleteSegmentResponse> {
   const payload = {
     student_unit_id: studentUnitId,
     lesson_id: lessonId
   };
 
-  return this.http.post(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
+  return this.http.post<CompleteSegmentResponse>(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
     headers: this.getHeaders()
   });
   }
@@ -146,17 +146,17 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
    */
   getCourseProgress(sc: StudentCourseWithDetails): Observable<number> {
     const unitProgressId = sc.unit_progress_id;
-    const lessons = sc.course.units?.[0]?.lessons || [];
-    const total = lessons.length;
 
-    if (!unitProgressId || total === 0) {
+    if (!unitProgressId) {
       return of(0);
     }
-
     return this.getCurrentSegment(unitProgressId).pipe(
       map(segment => {
+        const unit = sc.course.units.find(u => u.lessons.some(l => l.id === segment.lesson_id));
+        const lessons = unit ? unit.lessons : [];
+        const total = lessons.length;
         const index = lessons.findIndex(l => l.id === segment.lesson_id);
-        if (index === -1) {
+        if (total === 0 || index === -1) {
           return 0;
         }
         return (index / total) * 100;

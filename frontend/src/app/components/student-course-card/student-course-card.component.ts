@@ -20,8 +20,11 @@ import { IconModule } from '../../shared/icon/icon.module';
           <span *ngIf="ratingCount" class="text-gray-500 ml-1">({{ ratingCount }})</span>
         </div>
         <div *ngIf="progress !== undefined" class="mt-2">
-          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div class="h-full bg-primary" [style.width.%]="progress"></div>
+          <div class="flex items-center gap-2">
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden flex-1">
+              <div class="h-full bg-primary" [style.width.%]="progress"></div>
+            </div>
+            <span class="text-xs font-medium">{{ progress }}%</span>
           </div>
         </div>
         <ng-content></ng-content>

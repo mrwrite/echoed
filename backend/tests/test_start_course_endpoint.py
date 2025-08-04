@@ -132,3 +132,64 @@ def test_start_course_rejects_completed_course(test_db, test_student, test_cours
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Course already completed"
+
+
+def test_start_course_resumes_in_progress_unit(test_db, test_student):
+    """If a student already has an in-progress unit, the endpoint should
+    return the next segment from that unit rather than restarting the course."""
+
+    # Create course with two units and one lesson each
+    course = Course(id=uuid.uuid4(), title="Course B", description="Test")
+    unit1 = Unit(id=uuid.uuid4(), title="Unit 1", course_id=course.id, order=1)
+    unit2 = Unit(id=uuid.uuid4(), title="Unit 2", course_id=course.id, order=2)
+    lesson1 = Lesson(id=uuid.uuid4(), title="Lesson 1", unit_id=unit1.id, duration_minutes=5, order=1)
+    lesson2 = Lesson(id=uuid.uuid4(), title="Lesson 2", unit_id=unit2.id, duration_minutes=5, order=1)
+
+    test_db.add_all([course, unit1, unit2, lesson1, lesson2])
+    test_db.commit()
+
+    # Enroll student and set progress: unit1 completed, unit2 in progress
+    student_course = StudentCourse(student_id=test_student.id, course_id=course.id)
+    test_db.add(student_course)
+    test_db.commit()
+    test_db.refresh(student_course)
+
+    up1 = StudentUnitProgress(
+        student_course_id=student_course.id,
+        unit_id=unit1.id,
+        status=ProgressStatus.COMPLETED,
+    )
+    up2 = StudentUnitProgress(
+        student_course_id=student_course.id,
+        unit_id=unit2.id,
+        status=ProgressStatus.IN_PROGRESS,
+    )
+    test_db.add_all([up1, up2])
+    test_db.commit()
+    test_db.refresh(up2)
+
+    seg1 = SegmentProgress(
+        student_unit_id=up1.id,
+        lesson_id=lesson1.id,
+        status=ProgressStatus.COMPLETED,
+    )
+    seg2 = SegmentProgress(
+        student_unit_id=up2.id,
+        lesson_id=lesson2.id,
+        status=ProgressStatus.IN_PROGRESS,
+    )
+    test_db.add_all([seg1, seg2])
+    test_db.commit()
+
+    test_app = FastAPI()
+    test_app.include_router(start_course.router, prefix="/api")
+    test_app.dependency_overrides[get_current_user] = override_get_current_user(test_student)
+    client = TestClient(test_app)
+
+    response = client.post("/api/start-course", json={"course_id": str(course.id)})
+
+    assert response.status_code == 200
+    data = response.json()
+    # Should return the lesson from the second unit (in progress)
+    assert data["lesson_id"] == str(lesson2.id)
+    assert data["unit_progress_id"] == str(up2.id)

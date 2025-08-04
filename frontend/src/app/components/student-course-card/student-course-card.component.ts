@@ -31,7 +31,7 @@ import { IconModule } from '../../shared/icon/icon.module';
       </div>
       <span
         *ngIf="status === 'completed'"
-        class="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded"
+        class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded"
       >Completed</span>
     </div>
   `,

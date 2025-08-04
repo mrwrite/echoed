@@ -21,16 +21,17 @@ import { CommonModule } from '@angular/common';
         </div>
         <div class="flex justify-end space-x-2">
           <button
+            *ngIf="showCancel"
             class="bg-warn text-white px-4 py-2 rounded hover:bg-warn/90"
             (click)="cancel.emit()"
           >
-            Cancel
+            {{ cancelText }}
           </button>
           <button
             class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
             (click)="confirm.emit()"
           >
-            Confirm
+            {{ confirmText }}
           </button>
         </div>
       </div>
@@ -41,6 +42,9 @@ export class EchoModalComponent {
   @Input() open = false;
   @Input() title = 'Are you sure?';
   @Input() description = 'This action cannot be undone.';
+  @Input() confirmText = 'Confirm';
+  @Input() cancelText = 'Cancel';
+  @Input() showCancel = true;
   @Output() cancel = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();
 

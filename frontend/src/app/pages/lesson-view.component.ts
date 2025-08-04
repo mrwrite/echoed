@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CoursesService } from '../services/courses.service';
 import { Lesson } from '../models/lesson';
 import { SegmentResponse, CompleteSegmentResponse } from '../models/segment-response.model';
 import { LessonViewerComponent } from "../shared/lesson-viewer.component";
+import { EchoModalComponent } from "../components/echo-modal/echo-modal.component";
 
 @Component({
   selector: 'echoed-lesson-view',
   standalone: true,
-  imports: [LessonViewerComponent, CommonModule],
+  imports: [LessonViewerComponent, CommonModule, EchoModalComponent],
   templateUrl: './lesson-view.component.html',
   styleUrl: './lesson-view.component.scss'
 })
@@ -17,10 +18,12 @@ export class LessonViewComponent implements OnInit {
   unitProgressId!: string;
   segment?: SegmentResponse;
   lesson?: Lesson;
+  courseCompleted = false;
 
   constructor(
     private route: ActivatedRoute,
-    private coursesService: CoursesService
+    private coursesService: CoursesService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +41,7 @@ export class LessonViewComponent implements OnInit {
           console.warn('All segments may be complete or none found.', err);
           this.segment = undefined;
           this.lesson = undefined;
+          this.courseCompleted = true;
       }
     });
   }
@@ -69,9 +73,10 @@ export class LessonViewComponent implements OnInit {
         this.segment = nextSeg;
         this.fetchLesson(nextSeg.lesson_id);
       } else {
-        // No further segments; clear state
+        // No further segments; clear state and show completion modal
         this.segment = undefined;
         this.lesson = undefined;
+        this.courseCompleted = true;
       }
     },
     error: (err) => {
@@ -79,5 +84,10 @@ export class LessonViewComponent implements OnInit {
     }
   });
 }
+
+  returnToDashboard(): void {
+    this.courseCompleted = false;
+    this.router.navigate(['/home']);
+  }
 
 }

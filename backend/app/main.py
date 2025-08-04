@@ -30,6 +30,10 @@ from app.models import (
     Media,
     StudentCourse,
     StorybookPage,
+    Thread,
+    Post,
+    StudentBadge,
+    user_units,
 )
 from app.schemas import (
     UserDto,
@@ -233,6 +237,20 @@ def delete_user(
     db_user = db.query(User).filter(User.id == uid).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete posts authored by the user
+    db.query(Post).filter(Post.user_id == uid).delete()
+
+    # Delete threads created by the user (cascade removes related posts)
+    user_threads = db.query(Thread).filter(Thread.user_id == uid).all()
+    for thread in user_threads:
+        db.delete(thread)
+
+    # Remove any badges awarded to the user
+    db.query(StudentBadge).filter(StudentBadge.student_id == uid).delete()
+
+    # Remove user-unit association entries
+    db.execute(user_units.delete().where(user_units.c.user_id == uid))
 
     db.delete(db_user)
     db.commit()

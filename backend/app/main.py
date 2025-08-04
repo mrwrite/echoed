@@ -46,6 +46,7 @@ from app.schemas import (
     StudentCourseWithDetails,
     StorybookPageResponse,
 )
+from app.enum import ProgressStatus
 from app.api.routes import progress, badges, units, lessons, activities
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -262,6 +263,16 @@ def get_student_courses(
     # Convert to pydantic-compatible dicts with nested course details
     results = []
     for sc in student_courses:
+        active_progress = next(
+            (up for up in sc.unit_progress if up.status == ProgressStatus.IN_PROGRESS),
+            None,
+        )
+        unit_progress_id = (
+            active_progress.id
+            if active_progress
+            else (sc.unit_progress[0].id if sc.unit_progress else None)
+        )
+
         results.append(
             {
                 "id": sc.id,
@@ -270,9 +281,7 @@ def get_student_courses(
                 "enrolled_on": sc.enrolled_on,
                 "status": sc.status,
                 "course": CourseResponse.from_orm(sc.course),
-                "unit_progress_id": (
-                    sc.unit_progress[0].id if sc.unit_progress else None
-                ),
+                "unit_progress_id": unit_progress_id,
             }
         )
 

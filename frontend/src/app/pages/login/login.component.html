@@ -1,22 +1,73 @@
-<div class="login-container">
-    <div class="login-card">
-        <form #loginForm="ngForm" (submit)="login($event)">
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" [(ngModel)]="username" required placeholder="Username">
-            </div>
-
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="Password">
-            </div>
-
-            <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
-            <button type="submit" class="login-button">Login</button>
-        </form> 
-        <p class="register-link">
-            Don't have an account?
-            <a routerLink="/registration">Register here</a>
-          </p>      
+<div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531]">
+  <div class="max-w-4xl w-full grid lg:grid-cols-2 gap-6 glass-panel p-6">
+    <div class="hidden lg:flex flex-col justify-between bg-white/5 rounded-2xl p-6 border border-white/15">
+      <div>
+        <p class="text-sm uppercase tracking-[0.25em] text-white/60">Welcome back</p>
+        <h1 class="text-3xl font-bold mt-2">EchoEd — Login</h1>
+        <p class="text-white/80">Access student, teacher, and admin views in demo mode to showcase the full EchoEd experience.</p>
+      </div>
+      <div class="space-y-3 text-sm text-white/80">
+        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">🛡️</span>WCAG AA mindful inputs & focus states</div>
+        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">📊</span>Private, microschool, and homeschool-ready</div>
+        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">🚀</span>Investor tour: landing → login → dashboards</div>
+      </div>
     </div>
+
+    <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8 text-ink">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-sm text-primary font-semibold">Secure Sign In</p>
+          <h2 class="text-2xl font-bold">Welcome to EchoEd</h2>
+        </div>
+        <span class="badge-soft">Demo Mode</span>
+      </div>
+      <form #loginForm="ngForm" (submit)="login($event)" class="space-y-4" novalidate>
+        <div class="space-y-2">
+          <label for="username" class="text-sm font-semibold text-primary">Email or Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="username"
+            required
+            placeholder="you@example.com"
+            class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
+            aria-required="true"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="password" class="text-sm font-semibold text-primary">Password</label>
+            <button type="button" class="text-sm text-primary underline" (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Hide' : 'Show' }} password
+            </button>
+          </div>
+          <div class="relative">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              name="password"
+              [(ngModel)]="password"
+              required
+              placeholder="••••••••"
+              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50 pr-20"
+              aria-required="true"
+            />
+            <span class="absolute right-4 top-3 text-xs text-slate-500">Strong & private</span>
+          </div>
+        </div>
+
+        <p class="text-sm text-red-600" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <button type="submit" class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition">
+          Login
+        </button>
+      </form>
+      <p class="text-sm text-center mt-4">
+        New to EchoEd? <a routerLink="/registration" class="text-primary font-semibold underline">Create an account</a>
+      </p>
+      <p class="text-xs text-center text-slate-500 mt-2">For demo access, use any valid credentials provided to you.</p>
+    </div>
+  </div>
 </div>

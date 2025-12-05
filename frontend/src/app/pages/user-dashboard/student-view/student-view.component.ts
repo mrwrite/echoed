@@ -35,6 +35,11 @@ export class StudentViewComponent implements OnInit {
   availableCourses: Course[] = [];
   /** Number of courses shown initially before "View More" is clicked */
   availableCoursesVisibleCount = 4;
+  demoTimeline = [
+    { label: 'Yesterday', detail: 'Completed “Roots of Rhythm” lesson', status: 'completed' },
+    { label: 'Today', detail: 'Continue African kingdoms storytelling', status: 'active' },
+    { label: 'Next', detail: 'Interactive map: The Trans-Saharan routes', status: 'upcoming' }
+  ];
 
   get visibleAvailableCourses(): Course[] {
     return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
@@ -71,6 +76,8 @@ export class StudentViewComponent implements OnInit {
     this.coursesService.getStudentCourses().subscribe({
     next: (courses) => {
       this.studentCourses = courses;
+
+      this.activeStudentCourse = this.studentCourses[0];
 
       // Calculate progress for each enrolled course
       this.studentCourses.forEach(sc => {

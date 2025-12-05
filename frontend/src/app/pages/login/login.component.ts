@@ -20,6 +20,7 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
+  showPassword = false;
   userInfo!: UserInfo;
   userRoles: string[] = [];
 

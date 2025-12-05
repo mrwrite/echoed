@@ -26,6 +26,10 @@ export class AdminCoursesComponent implements OnInit {
     this.router.navigate(['/home/courses', courseId, 'edit']);
   }
 
+  goToCreateCourse() {
+    this.router.navigate(['/home/courses/new']);
+  }
+
   onDeleteCourse(courseId: string) {
     this.coursesService.deleteCourse(courseId).subscribe(() => {
       this.courses = this.courses.filter(c => c.id !== courseId);

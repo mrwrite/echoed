@@ -2,10 +2,20 @@
   display: block;
 }
 
-h1 {
-  font-family: 'Poppins', sans-serif;
+section {
+  position: relative;
 }
 
-p {
-  font-family: 'Inter', sans-serif;
+.glass-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(239, 183, 0, 0.15), transparent 45%),
+              radial-gradient(circle at 80% 0%, rgba(46, 41, 78, 0.35), transparent 40%);
+  pointer-events: none;
 }

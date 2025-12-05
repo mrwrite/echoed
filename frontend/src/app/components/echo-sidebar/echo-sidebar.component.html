@@ -1,39 +1,55 @@
-<div [ngClass]="collapsed ? 'w-20' : 'w-64'" class="bg-blue-900 text-white h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col">
-    <div class="flex items-center justify-between p-4">
-      <span *ngIf="!collapsed" class="text-xl font-bold">Dashboard</span>
-      <button (click)="toggle.emit()" class="text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
+<div [ngClass]="collapsed ? 'w-20' : 'w-72'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
+  <div class="flex items-center justify-between p-4">
+    <div class="flex items-center gap-3" *ngIf="!collapsed">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
+      <div>
+        <p class="text-xs uppercase tracking-[0.25em] text-primary">EchoEd</p>
+        <p class="text-sm font-semibold">Demo Navigator</p>
+      </div>
     </div>
-    <nav class="flex-1 px-2 space-y-2">
-      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="Home" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Dashboard</span>
-      </a>
-      <a *ngIf="roleService.hasAccess('viewUsers')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="User" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Users</span>
-      </a>
-      <a *ngIf="roleService.hasAccess('viewStudents')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="BookMarked" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Students</span>
-      </a>
-      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="Book" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Courses</span>
-      </a>
-      <a *ngIf="roleService.hasAccess('viewReports')" href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="FileText" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Reports</span>
-      </a>
-      <a href="#" class="flex items-center p-2 rounded hover:bg-blue-700 space-x-2">
-        <lucide-icon name="Settings" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed">Settings</span>
-      </a>
-    </nav>
+    <button (click)="toggle.emit()" class="text-primary" aria-label="Toggle sidebar">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
   </div>
+
+  <nav class="flex-1 px-2 space-y-6">
+    <div>
+      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Overview</p>
+      <a routerLink="/home" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="Home" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Dashboard</span>
+      </a>
+      <a routerLink="/home/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="Book" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Courses</span>
+      </a>
+    </div>
+
+    <div>
+      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Reports & Admin</p>
+      <a *ngIf="roleService.hasAccess('viewReports')" routerLink="/home/admin/badges" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="Award" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Badges</span>
+      </a>
+      <a *ngIf="roleService.hasAccess('viewUsers')" routerLink="/home/admin/users" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="User" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Users</span>
+      </a>
+      <a *ngIf="roleService.hasAccess('viewReports')" routerLink="/home/admin/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="ClipboardList" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Admin Courses</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="p-4 border-t border-primary/10" *ngIf="!collapsed">
+    <p class="text-xs text-slate-500">Logged in as</p>
+    <p class="font-semibold text-primary">{{ userInfo?.fullname }}</p>
+    <p class="text-xs text-slate-500">{{ userInfo?.role | titlecase }}</p>
+  </div>
+</div>
   

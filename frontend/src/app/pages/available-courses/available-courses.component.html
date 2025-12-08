@@ -1,19 +1,28 @@
-<h2 class="text-2xl font-bold text-primary mb-4">Available Courses</h2>
-<div class="grid gap-4 grid-cols-1 md:grid-cols-2">
-  <app-student-course-card
-    *ngFor="let course of availableCourses"
-    [title]="course.title"
-    [description]="course.description"
-    [thumbnailUrl]="course.thumbnailUrl"
-    [instructor]="course.instructor"
-    [rating]="course.rating"
-    [ratingCount]="course.ratingCount"
-  >
-    <app-echo-button
-      class="mt-2"
-      color="accent"
-      label="Enroll"
-      (click)="enrollInCourse(course.id)"
-    ></app-echo-button>
-  </app-student-course-card>
+<div class="surface-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <p class="section-heading text-primary text-sm">Catalog</p>
+      <h2 class="text-2xl font-bold text-ink">Available Courses</h2>
+      <p class="muted-text">Enroll learners in culturally grounded, age-scaled content.</p>
+    </div>
+    <span class="badge-soft">Open enrollment</span>
+  </div>
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+    <app-student-course-card
+      *ngFor="let course of availableCourses"
+      [title]="course.title"
+      [description]="course.description"
+      [thumbnailUrl]="course.thumbnailUrl"
+      [instructor]="course.instructor"
+      [rating]="course.rating"
+      [ratingCount]="course.ratingCount"
+    >
+      <app-echo-button
+        class="mt-2"
+        color="accent"
+        label="Enroll"
+        (click)="enrollInCourse(course.id)"
+      ></app-echo-button>
+    </app-student-course-card>
+  </div>
 </div>

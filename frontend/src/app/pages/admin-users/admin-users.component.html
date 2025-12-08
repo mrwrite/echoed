@@ -1,21 +1,29 @@
-<h2 class="text-2xl font-bold text-primary mb-4">All Signups</h2>
-<table class="w-full text-sm text-gray-700">
-  <thead>
-    <tr class="text-left border-b">
-      <th class="pb-2">Name</th>
-      <th class="pb-2">Role</th>
-      <th class="pb-2">Signup Date</th>
-      <th class="pb-2 text-right">Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let user of users" class="tracking-tight leading-snug">
-      <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
-      <td class="py-2">{{ user.role }}</td>
-      <td class="py-2">{{ user.created_at | date: 'MMM d, y' }}</td>
-      <td class="py-2 text-right">
-        <button class="text-red-600 text-sm hover:underline" (click)="deleteUser(user.id)">Delete</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="surface-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <p class="section-heading text-primary text-sm">Admin</p>
+      <h2 class="text-2xl font-bold text-ink">All Signups</h2>
+    </div>
+    <span class="badge-soft">User governance</span>
+  </div>
+  <table class="w-full text-sm text-gray-700">
+    <thead class="bg-slate-50 text-slate-600">
+      <tr class="text-left border-b">
+        <th class="py-2 px-2">Name</th>
+        <th class="py-2 px-2">Role</th>
+        <th class="py-2 px-2">Signup Date</th>
+        <th class="py-2 px-2 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      <tr *ngFor="let user of users" class="tracking-tight leading-snug hover:bg-slate-50">
+        <td class="py-3 px-2 font-semibold text-ink">{{ user.firstname }} {{user.lastname}}</td>
+        <td class="py-3 px-2">{{ user.role }}</td>
+        <td class="py-3 px-2 text-slate-500">{{ user.created_at | date: 'MMM d, y' }}</td>
+        <td class="py-3 px-2 text-right">
+          <button class="text-red-600 text-sm font-semibold hover:underline" (click)="deleteUser(user.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

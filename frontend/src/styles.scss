@@ -7,20 +7,109 @@
 
 @include typography.echoed-typography;
 
+:root {
+  --echo-primary: #2E294E;
+  --echo-secondary: #44356B;
+  --echo-accent: #EFB700;
+  --echo-ink: #0F172A;
+  --echo-sand: #F7F3ED;
+  --echo-emerald: #1D9A6C;
+  --echo-rose: #E46D6D;
+  --echo-surface: #ffffff;
+  --echo-muted: #6B7280;
+  --echo-shadow: 0 16px 40px -18px rgba(15, 23, 42, 0.3);
+  --echo-radius: 18px;
+}
 
 html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background-color: #F9FAFB;
-  color: #1B1B1E;
+  background: radial-gradient(circle at 10% 10%, #f3ede2 0, #f3ede2 25%, transparent 26%),
+              radial-gradient(circle at 90% 20%, #e6ddff 0, #e6ddff 22%, transparent 23%),
+              var(--echo-sand);
+  color: var(--echo-ink);
+  letter-spacing: 0.01em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
+  color: var(--echo-ink);
 }
 
 blockquote, cite {
   font-family: 'Playfair Display', serif;
   font-style: italic;
+}
+
+a, button, [role='button'], input, select, textarea {
+  outline: none;
+}
+
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  box-shadow: 0 0 0 3px rgba(239, 183, 0, 0.25);
+  border-radius: 10px;
+}
+
+.surface-card {
+  background: var(--echo-surface);
+  border-radius: var(--echo-radius);
+  box-shadow: var(--echo-shadow);
+  border: 1px solid rgba(17, 24, 39, 0.04);
+}
+
+.muted-text {
+  color: var(--echo-muted);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(239, 183, 0, 0.12);
+  color: #8a5b00;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 50px -24px rgba(15, 23, 42, 0.4);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.section-heading::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--echo-primary), var(--echo-accent));
+}
+
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(68, 53, 107, 0.12);
+  color: var(--echo-primary);
+}
+
+.card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }

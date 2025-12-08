@@ -1,11 +1,29 @@
-<echoed-lesson-viewer
-  *ngIf="lesson"
-  [lesson]="lesson!"
-  [isTeacherLed]="false"
-  (segmentCompleted)="onLessonCompleted()"
-/>
+<div class="min-h-screen bg-gradient-to-br from-primary/5 via-white to-accent/10 py-6">
+  <div class="max-w-5xl mx-auto surface-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="section-heading text-primary text-sm">Immersive Lesson</p>
+        <h2 class="text-2xl font-bold text-ink">{{ lesson?.title || 'Loading lesson...' }}</h2>
+        <p class="muted-text">Step through segments with consistent navigation and clear focus.</p>
+      </div>
+      <button class="px-3 py-2 rounded-xl border border-primary text-primary font-semibold" (click)="returnToDashboard()">Exit lesson</button>
+    </div>
 
-<p *ngIf="!lesson && !courseCompleted">Loading lesson...</p>
+    <div class="flex items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson">
+      <span class="px-3 py-1 rounded-full bg-primary/10 text-primary">Active segment</span>
+      <span class="px-3 py-1 rounded-full bg-accent/30 text-ink">Guided reading & activities</span>
+    </div>
+
+    <echoed-lesson-viewer
+      *ngIf="lesson"
+      [lesson]="lesson!"
+      [isTeacherLed]="false"
+      (segmentCompleted)="onLessonCompleted()"
+    />
+
+    <p *ngIf="!lesson && !courseCompleted" class="text-center text-slate-500">Loading lesson...</p>
+  </div>
+</div>
 
 <app-echo-modal
   [open]="courseCompleted"

@@ -1,42 +1,112 @@
-<div class="grid gap-4 grid-rows-[auto,1fr,1fr] grid-cols-4">
-    <div class="bg-white col-span-5 rounded-xl shadow">    
-        <div class="flex justify-between items-center p-6">
-            <div>
-                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}} </h2>
-                <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
-            </div>
-        </div>
+<div class="space-y-6">
+  <div class="surface-card p-6 bg-gradient-to-br from-primary/90 to-secondary text-white">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.2em] text-white/70">Teacher Control Center</p>
+        <h2 class="text-3xl font-bold">Welcome, {{userInfo.fullname}}</h2>
+        <p class="text-white/80">Monitor classes, manage courses, and take quick actions in one place.</p>
+      </div>
+      <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">Demo ready</span>
     </div>
-    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Course Management</h3>
-        <p class="text-xs text-gray-500">Manage your courses and track student progress.</p>
-        <div class="flex flex-col gap-2 mt-4">
-            <button class="bg-blue-600 text-white py-2 px-4 rounded">Create New Course</button>
-            <button class="bg-green-600 text-white py-2 px-4 rounded">View All Courses</button>
-        </div>
+    <div class="grid sm:grid-cols-3 gap-4 mt-6">
+      <div class="p-4 rounded-xl bg-white/10 border border-white/15">
+        <p class="text-white/70">Active courses</p>
+        <p class="text-2xl font-bold">{{ courses.length }}</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/10 border border-white/15">
+        <p class="text-white/70">In progress lessons</p>
+        <p class="text-2xl font-bold">8</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/10 border border-white/15">
+        <p class="text-white/70">Average completion</p>
+        <p class="text-2xl font-bold">92%</p>
+      </div>
     </div>
-    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Recent Activity</h3>
-        <ul class="list-disc pl-5 text-gray-700">
-            <li>New student enrolled in "History 101"</li>
-            <li>Assignment "Math Homework" submitted by John Doe</li>
-            <li>Course "Science 202" updated with new materials</li>
-        </ul>
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
+    <div class="surface-card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-primary">Course Management</h3>
+        <button class="px-3 py-2 rounded-xl bg-primary text-white text-sm font-semibold" (click)="onAddCourse()">+ Add Course</button>
+      </div>
+      <ng-container *ngIf="courses.length > 0; else noCourses">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b">
+              <th class="py-2">Title</th>
+              <th class="py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let course of visibleCourses" class="hover:bg-slate-50">
+              <td class="py-3 font-semibold text-ink">{{ course.title }}</td>
+              <td class="py-3 space-x-2 text-right">
+                <button class="text-sm text-primary font-semibold" (click)="onManageCourse(course.id)">Manage</button>
+                <button class="text-sm text-red-600 font-semibold" (click)="deleteCourse(course.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <a *ngIf="courses.length > visibleCount" class="text-primary underline cursor-pointer text-sm" (click)="viewAllCourses()">View More</a>
+      </ng-container>
+      <ng-template #noCourses>
+        <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>
+      </ng-template>
     </div>
-    <div class="bg-white p-6 col-span-2 rounded-xl shadow">
-        <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Upcoming Events</h3>
-        <ul class="list-disc pl-5 text-gray-700">
-            <li>Parent-Teacher Conference on March 15</li>
-            <li>Final Exams Week: April 10 - April 14</li>
-            <li>Course Feedback Survey: April 20 - April 30</li>
-        </ul>
+
+    <div class="surface-card p-6">
+      <h3 class="text-xl font-bold text-primary mb-4">Quick Actions</h3>
+      <div class="space-y-3">
+        <button class="w-full py-2 rounded-xl bg-primary text-white font-semibold">Assign Course</button>
+        <button class="w-full py-2 rounded-xl bg-accent text-ink font-semibold">Start Live Lesson</button>
+        <button class="w-full py-2 rounded-xl border border-primary text-primary font-semibold">View Reports</button>
+      </div>
     </div>
-       <div class="bg-white p-6 col-span-2 rounded-xl shadow">
-            <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Notifications</h3>
-            <ul class="list-disc pl-5 text-gray-700">
-                <li>New message from student: "Can I get extra credit?"</li>
-                <li>Course materials updated for "History 101"</li>
-                <li>Reminder: Grade assignments by March 20</li>
-            </ul>
-       </div>      
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
+    <div class="surface-card p-6 lg:col-span-2">
+      <h3 class="text-xl font-bold text-primary mb-3">Student Progress</h3>
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-600">
+          <tr class="text-left">
+            <th class="py-2 px-2">Student</th>
+            <th class="py-2 px-2">Course</th>
+            <th class="py-2 px-2">Progress</th>
+            <th class="py-2 px-2">Last Active</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-2 font-semibold text-ink">Layla M.</td>
+            <td class="py-3 px-2">African Kingdoms</td>
+            <td class="py-3 px-2">86%</td>
+            <td class="py-3 px-2 text-slate-500">Today</td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-2 font-semibold text-ink">Ezra J.</td>
+            <td class="py-3 px-2">Civil Rights Trailblazers</td>
+            <td class="py-3 px-2">72%</td>
+            <td class="py-3 px-2 text-slate-500">1 day ago</td>
+          </tr>
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-2 font-semibold text-ink">Nova S.</td>
+            <td class="py-3 px-2">Music of the Diaspora</td>
+            <td class="py-3 px-2">64%</td>
+            <td class="py-3 px-2 text-slate-500">2 days ago</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="surface-card p-6">
+      <h3 class="text-xl font-bold text-primary mb-3">Upcoming Events</h3>
+      <ul class="space-y-3 text-sm text-slate-700">
+        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Parent-Teacher Conference — March 15</li>
+        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Live project showcase — March 20</li>
+        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Course feedback survey — March 30</li>
+      </ul>
+    </div>
+  </div>
 </div>

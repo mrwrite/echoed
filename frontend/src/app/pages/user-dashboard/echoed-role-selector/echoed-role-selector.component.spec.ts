@@ -1,3 +1,5 @@
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EchoedRoleSelectorComponent } from './echoed-role-selector.component';
@@ -8,7 +10,7 @@ describe('EchoedRoleSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EchoedRoleSelectorComponent]
+      imports: [RouterTestingModule, HttpClientTestingModule, EchoedRoleSelectorComponent]
     })
     .compileComponents();
 

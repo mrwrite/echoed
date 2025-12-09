@@ -1,27 +1,25 @@
-<div class="p-6 bg-white rounded-xl shadow space-y-6">
+<div class="p-4 bg-white rounded-xl shadow space-y-6">
   <div class="space-y-1">
     <h2 class="text-2xl font-bold text-[#1A1A40]">{{ lesson.title }}</h2>
     <p class="text-sm text-gray-600" *ngIf="lesson.objective">{{ lesson.objective }}</p>
     <p class="text-xs text-gray-500" *ngIf="lesson.duration_minutes">Duration: {{ lesson.duration_minutes }} minutes</p>
   </div>
 
-  <div *ngIf="currentActivity" class="border-t pt-4 space-y-2">
+  <div *ngIf="currentActivity" class="border-t pt-2 space-y-2">
     <h3 class="font-semibold text-lg">{{ currentActivity.title }}</h3>
     <div class="text-sm">
       <ng-container [ngSwitch]="currentActivity.type">
         <div *ngSwitchCase="'video'">
           <ng-container *ngIf="isYouTubeLink(currentActivity.content); else standardVideo">
             <iframe
-              class="w-full rounded"
+              class="w-full rounded aspect-video max-h-[60vh]"
               [src]="getYouTubeEmbedUrl(currentActivity.content)"
-              width="640"
-              height="360"
               frameborder="0"
               allowfullscreen>
             </iframe>
           </ng-container>
           <ng-template #standardVideo>
-            <video class="w-full rounded" controls [src]="currentActivity.content"></video>
+            <video class="w-full rounded max-h-[60vh]" controls [src]="currentActivity.content"></video>
           </ng-template>
         </div>
         <div *ngSwitchCase="'image'" class="flex justify-center">
@@ -31,6 +29,12 @@
             alt="{{ currentActivity.title }}"
           >
         </div>
+        <div *ngSwitchCase="'coloring'">
+          <app-coloring-canvas [imageUrl]="currentActivity.content"></app-coloring-canvas>
+        </div>
+        <div *ngSwitchCase="'storybook'">
+          <app-storybook-viewer [pages]="currentActivity.pages ?? []"></app-storybook-viewer>
+        </div>
         <div *ngSwitchDefault>
           <p>{{ currentActivity.content }}</p>
         </div>
@@ -39,7 +43,7 @@
     <p class="text-xs text-gray-500">Activity {{ currentActivityIndex + 1 }} of {{ lesson.activities.length }}</p>
   </div>
 
-  <div class="pt-6 flex justify-end space-x-2">
+  <div class="pt-4 flex justify-end space-x-2">
     <button
       *ngIf="currentActivityIndex < lesson.activities.length - 1"
       class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"

@@ -2,11 +2,13 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Lesson } from '../models/lesson';
+import { ColoringCanvasComponent } from '../components/coloring-canvas/coloring-canvas.component';
+import { StorybookViewerComponent } from '../components/storybook-viewer/storybook-viewer.component';
 
 @Component({
   selector: 'echoed-lesson-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ColoringCanvasComponent, StorybookViewerComponent],
   templateUrl: './lesson-viewer.component.html',
   styleUrl: './lesson-viewer.component.scss'
 })

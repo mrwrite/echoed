@@ -1,43 +1,55 @@
-<header class="bg-blue-900 text-white shadow px-6 py-4 flex justify-between items-center relative">
-  <h1 class="text-2xl font-bold">Dashboard</h1>
-
-  <!-- Avatar and Flyout -->
-  <div class="relative" #menuContainer>
-    <!-- Avatar Circle -->
-    <div
-      (click)="toggleMenu()"
-      class="h-10 w-10 rounded-full bg-white text-blue-900 flex items-center justify-center font-bold uppercase cursor-pointer"
-    >
-      {{ getInitials() }}
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl shadow-elevated border-b border-primary/5 px-6 py-4">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
+      <div>
+        <p class="text-xs uppercase tracking-[0.25em] text-primary">EchoEd Dashboard</p>
+        <h1 class="text-xl font-bold text-ink">Command center</h1>
+        <echo-breadcrumbs class="text-sm text-slate-500"></echo-breadcrumbs>
+      </div>
+      <span class="badge-soft hidden md:inline-flex">Investor-ready demo</span>
     </div>
 
-   <!-- Flyout Menu -->
-   <div
-   *ngIf="menuOpen"
-   @menuAnim
-   class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-xl shadow-lg ring-1 ring-black/5 z-50 transition-all
-          before:content-[''] before:absolute before:-top-2 before:right-4 before:border-8 before:border-transparent
-          before:border-b-white before:z-[-1]"
- >
-   <ul class="py-1 text-sm">
-     <li>
-       <a
-         class="block px-4 py-2 hover:bg-gray-100 hover:text-blue-600 transition-colors"
-         routerLink="/profile"
-       >
-         👤 Profile
-       </a>
-     </li>
-     <li>
-       <a
-         class="block px-4 py-2 hover:bg-gray-100 hover:text-blue-600 transition-colors"
-         (click)="logout()"
-       >
-         🚪 Logout
-       </a>
-     </li>
-   </ul>
- </div>
- 
+    <div class="flex items-center gap-3">
+      <button class="px-3 py-2 rounded-full border border-primary/10 text-primary bg-primary/5 text-sm font-semibold hidden sm:inline-flex">Help & Support</button>
+      <button class="px-3 py-2 rounded-full border border-primary/10 text-primary bg-accent/20 text-sm font-semibold hidden sm:inline-flex">Start Guided Tour</button>
+      <div class="relative" #menuContainer>
+        <button
+          (click)="toggleMenu()"
+          class="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold uppercase"
+          aria-label="Open profile menu"
+        >
+          {{ getInitials() }}
+        </button>
+        <div
+          *ngIf="menuOpen"
+          @menuAnim
+          class="absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-2xl shadow-soft-card ring-1 ring-black/5 z-50"
+        >
+          <div class="px-4 py-3 border-b border-slate-100">
+            <p class="font-semibold text-primary">{{ userinfo.fullname }}</p>
+            <p class="text-xs text-slate-500">{{ userinfo.role | titlecase }}</p>
+          </div>
+          <ul class="py-1 text-sm">
+            <li>
+              <a
+                class="block px-4 py-2 hover:bg-slate-50 hover:text-primary transition-colors"
+                routerLink="/profile"
+              >
+                Profile & Preferences
+              </a>
+            </li>
+            <li>
+              <button
+                class="w-full text-left px-4 py-2 hover:bg-slate-50 hover:text-primary transition-colors"
+                (click)="logout()"
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </header>

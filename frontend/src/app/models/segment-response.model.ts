@@ -8,3 +8,9 @@ export interface SegmentResponse {
   status: string;
   unit_progress_id?: string; // Optional, used to track progress in the unit
 }
+
+export interface CompleteSegmentResponse {
+  message: string;
+  segment_id: string;
+  next_segment?: SegmentResponse;
+}

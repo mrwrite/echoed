@@ -4,6 +4,13 @@ export interface Activity {
     title: string;
     content: string;
     order?: number;
+    pages?: StorybookPage[];
+}
+
+export interface StorybookPage {
+    id: string;
+    image_url: string;
+    order?: number;
 }
 
 export interface Lesson {

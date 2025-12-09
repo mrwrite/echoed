@@ -7,5 +7,7 @@ export interface StudentCourseWithDetails {
   enrolled_on: string;
   status: string;
   course: Course;
-  unitProgressId?: string;
+  unit_progress_id?: string;
+  /** Progress percentage from 0 to 100 */
+  progress?: number;
 }

@@ -16,6 +16,8 @@ import { RegisterDto } from '../../models/register-dto';
 export class RegistrationComponent implements OnInit{
   registrationForm: FormGroup;
   errorMessage: string = '';
+  showPassword = false;
+  showConfirm = false;
 
   constructor(private router: Router, private authService: AuthService, private fb: FormBuilder) {
     this.registrationForm = this.fb.group({      

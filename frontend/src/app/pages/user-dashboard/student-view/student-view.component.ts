@@ -1,18 +1,28 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserInfo } from '../../../models/user-info';
-import { StudentCourse } from '../../../models/student-course';
 import { CoursesService } from '../../../services/courses.service';
 import { Router } from '@angular/router';
 import { Lesson } from '../../../models/lesson';
 import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
+import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
+import { StudentCourseCardComponent } from '../../../components/student-course-card/student-course-card.component';
+import { AchievementItemComponent } from '../../../components/achievement-item/achievement-item.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
+import { CompleteSegmentResponse } from '../../../models/segment-response.model';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'echoed-student-view',
   standalone: true,
-  imports: [CommonModule, LessonViewerComponent],
+  imports: [
+    CommonModule,
+    LessonViewerComponent,
+    EchoButtonComponent,
+    StudentCourseCardComponent,
+    AchievementItemComponent,
+  ],
   templateUrl: './student-view.component.html',
   styleUrl: './student-view.component.scss'
 })
@@ -23,10 +33,27 @@ export class StudentViewComponent implements OnInit {
   currentLesson?: Lesson;
   showLesson = false;
   availableCourses: Course[] = [];
+  /** Number of courses shown initially before "View More" is clicked */
+  availableCoursesVisibleCount = 4;
+  demoTimeline = [
+    { label: 'Yesterday', detail: 'Completed “Roots of Rhythm” lesson', status: 'completed' },
+    { label: 'Today', detail: 'Continue African kingdoms storytelling', status: 'active' },
+    { label: 'Next', detail: 'Interactive map: The Trans-Saharan routes', status: 'upcoming' }
+  ];
+
+  get visibleAvailableCourses(): Course[] {
+    return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
+  }
+
+  /** Navigate to the full available courses page */
+  goToAvailableCourses(): void {
+    this.router.navigate(['/home/courses']);
+  }
   
 
   constructor(private coursesService: CoursesService,
-              private router: Router
+              private router: Router,
+              private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -49,6 +76,16 @@ export class StudentViewComponent implements OnInit {
     this.coursesService.getStudentCourses().subscribe({
     next: (courses) => {
       this.studentCourses = courses;
+
+      this.activeStudentCourse = this.studentCourses[0];
+
+      // Calculate progress for each enrolled course
+      this.studentCourses.forEach(sc => {
+        this.coursesService.getCourseProgress(sc).subscribe(progress => {
+          sc.progress = progress;
+        });
+      });
+
       this.loadAvailableCourses(); // Refresh available courses after loading student courses
     },
     error: (err) => {
@@ -59,36 +96,41 @@ export class StudentViewComponent implements OnInit {
 
   onLessonCompleted(): void {
   if (!this.currentLesson || !this.activeStudentCourse) return;
-  
 
-  if (this.activeStudentCourse.unitProgressId) {
-    this.coursesService.markSegmentCompleted(
-    this.activeStudentCourse.unitProgressId,
-    this.currentLesson.id
-  ).subscribe({
-    next: () => {
-      alert('Lesson completed! Progress saved.');
-      this.showLesson = false;
-      this.currentLesson = undefined;
-    },
-    error: () => {
-      alert('There was an error saving your progress.');
-    }
-  });
+  if (this.activeStudentCourse.unit_progress_id) {
+    this.coursesService
+      .markSegmentCompleted(
+        this.activeStudentCourse.unit_progress_id,
+        this.currentLesson.id
+      )
+      .subscribe({
+        next: (res: CompleteSegmentResponse) => {
+          const nextSeg = res.next_segment;
+          if (nextSeg && nextSeg.unit_progress_id) {
+            this.activeStudentCourse!.unit_progress_id = nextSeg.unit_progress_id;
+          }
+          this.toastService.show('Lesson completed! Progress saved.', 'success');
+          this.showLesson = false;
+          this.currentLesson = undefined;
+          this.loadStudentCourses();
+        },
+        error: () => {
+          this.toastService.show('There was an error saving your progress.', 'error');
+        },
+      });
   }
-  
 }
 
 enrollInCourse(courseId: string): void {
   this.coursesService.enrollInCourse(courseId).subscribe({
     next: () => {
-      alert('Enrollment successful!');
+      this.toastService.show('Enrollment successful!', 'success');
       this.loadStudentCourses();
       this.loadAvailableCourses();
     },
     error: (err) => {
       console.error('Enrollment failed', err);
-      alert('Enrollment failed. You may already be enrolled.');
+      this.toastService.show('Enrollment failed. You may already be enrolled.', 'error');
     }
   });
 }

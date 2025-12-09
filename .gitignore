@@ -16,6 +16,8 @@ Pipfile.lock
 
 # ---- Node.js / Angular ----
 node_modules/
+# Ignore node dependencies
+
 dist/
 coverage/
 *.log
@@ -27,6 +29,7 @@ yarn-error.log*
 .idea/
 .DS_Store
 angular.json
+!/frontend/angular.json
 package-lock.json
 yarn.lock
 

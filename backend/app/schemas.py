@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 from app.enum import ProgressStatus 
 from typing import List, Optional
 from uuid import UUID
@@ -20,6 +20,18 @@ class ActivityDto(BaseModel):
     title: str
     content: str
     order: Optional[int]
+    pages: List['StorybookPageDto'] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("pages", "storybook_pages"),
+    )
+
+
+class StorybookPageDto(BaseModel):
+    image_url: str
+    order: Optional[int]
+
+    class Config:
+        from_attributes = True
 
 class LessonDto(BaseModel):
     title: str
@@ -55,6 +67,15 @@ class MediaResponse(BaseModel):
         from_attributes = True
 
 
+class StorybookPageResponse(BaseModel):
+    id: UUID
+    image_url: str
+    order: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+
 class ActivityResponse(BaseModel):
     id: UUID
     type: str
@@ -62,6 +83,10 @@ class ActivityResponse(BaseModel):
     content: str
     order: Optional[int]
     media: Optional[MediaResponse]
+    pages: List[StorybookPageResponse] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("pages", "storybook_pages"),
+    )
 
     class Config:
         from_attributes = True
@@ -133,6 +158,56 @@ class StudentCourseWithDetails(BaseModel):
     status: str
     course: CourseResponse
     unit_progress_id: Optional[UUID] = None
+
+    class Config:
+        from_attributes = True
+
+
+class BadgeCreate(BaseModel):
+    title: str
+    description: Optional[str]
+    image_url: Optional[str]
+
+
+class BadgeResponse(BaseModel):
+    id: UUID
+    title: str
+    description: Optional[str]
+    image_url: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class StudentBadgeResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+    badge_id: UUID
+    awarded_at: datetime
+    badge: Optional[BadgeResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ThreadResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    title: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PostResponse(BaseModel):
+    id: UUID
+    thread_id: UUID
+    user_id: UUID
+    content: str
+    created_at: datetime
 
     class Config:
         from_attributes = True

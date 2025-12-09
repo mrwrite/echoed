@@ -1,94 +1,163 @@
-<div class="grid gap-4 grid-rows-[auto,auto,1fr,auto,auto,auto] grid-cols-5">   
-    <div class="bg-white col-span-5 rounded-xl shadow">    
-        <div class="flex justify-between items-center p-6">
-            <div>
-                <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}} </h2>
-                <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
-            </div>
-        </div>
-    </div>
-   <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">My Courses</h2>
-   
-   <ng-container *ngFor="let sc of studentCourses">
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <p class="text-xl font-bold text-[#1A1A40]">{{ sc.course.title }}</p>
-    <p class="text-xs text-gray-500">{{ sc.course.description }}</p>
-    <button
-      class="mt-2 text-white bg-[#1A1A40] px-4 py-2 rounded-lg"
-      (click)="startCourse(sc)">
-      Start / Resume
-    </button>
-  </div>
-</ng-container>
-  
-  <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Achievements Unlocked</h2>
-    <div class="bg-white p-4 rounded-xl shadow">    
-        <div class="flex items-center gap-3 p-3 rounded-lg">
-            <div class="text-2xl">🧠</div>
-                <div>
-                    <p class="font-semibold text-[#1A1A40] text-sm">Memory Master</p>
-                    <p class="text-xs text-gray-500">Completed 10 quizzes</p>
-                </div>
-            </div>
-        </div>  
-    <div class="bg-white p-4 rounded-xl shadow">    
-      <div class="flex items-center gap-3 p-3 rounded-lg">
-        <div class="text-2xl">📚</div>
+<div class="space-y-6">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
+    <div class="col-span-2 p-6 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white shadow-soft-card">
+      <div class="flex justify-between items-start">
         <div>
-          <p class="font-semibold text-[#1A1A40] text-sm">Knowledge Seeker</p>
-          <p class="text-xs text-gray-500">Completed 5 lessons</p>
+          <p class="text-sm uppercase tracking-[0.2em] text-white/70">Welcome back</p>
+          <h2 class="text-3xl font-bold">{{userInfo.fullname}}</h2>
+          <p class="text-white/85">Here’s a beautiful overview of your EchoEd learning journey.</p>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">K–5 Demo</span>
+      </div>
+      <div class="mt-6 grid sm:grid-cols-3 gap-4 text-sm">
+        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+          <p class="text-white/70">Active courses</p>
+          <p class="text-2xl font-bold">{{ studentCourses.length }}</p>
+        </div>
+        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+          <p class="text-white/70">Streak</p>
+          <p class="text-2xl font-bold">5 days 🔥</p>
+        </div>
+        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+          <p class="text-white/70">Badges</p>
+          <p class="text-2xl font-bold">12 earned</p>
         </div>
       </div>
     </div>
-    <div class="bg-white p-4 rounded-xl shadow">     
-        <div class="flex items-center gap-3 p-3 rounded-lg">
-            <div class="text-2xl">🌍</div>
-                <div>
-                  <p class="font-semibold text-[#1A1A40] text-sm">Explorer</p>
-                  <p class="text-xs text-gray-500">Finished 3 Geography units</p>
-                </div>            
+    <div class="surface-card p-6">
+      <p class="section-heading text-primary text-sm">Today’s Learning</p>
+      <ng-container *ngIf="activeStudentCourse; else noActive">
+        <p class="text-lg font-semibold mt-2">{{ activeStudentCourse.course.title }}</p>
+        <p class="text-sm text-slate-600">{{ activeStudentCourse.course.description }}</p>
+        <div class="mt-4">
+          <div class="flex justify-between text-sm text-slate-500 mb-1">
+            <span>Progress</span>
+            <span>{{ (activeStudentCourse.progress || 0) | number:'1.0-0' }}%</span>
+          </div>
+          <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-primary to-accent" [style.width.%]="activeStudentCourse.progress || 0"></div>
+          </div>
+          <button class="mt-4 w-full py-2 rounded-xl bg-primary text-white font-semibold" (click)="startCourse(activeStudentCourse)">
+            Continue lesson
+          </button>
         </div>
+      </ng-container>
+      <ng-template #noActive>
+        <p class="text-sm text-slate-600">Enroll in a course to begin your learning journey.</p>
+      </ng-template>
     </div>
-    <div class="bg-white p-4 rounded-xl shadow">        
-        <div class="flex items-center gap-3 p-3 rounded-lg">
-            <div class="text-2xl">🎯</div>
-            <div>
-              <p class="font-semibold text-[#1A1A40] text-sm">Precision Pro</p>
-              <p class="text-xs text-gray-500">Scored 100% on a quiz</p>
-            </div>
-          </div>
-    </div>
-    <div class="bg-white p-4 rounded-xl shadow">
-        <div class="flex items-center gap-3 p-3 rounded-lg">
-            <div class="text-2xl">🏆</div>
-            <div>
-              <p class="font-semibold text-[#1A1A40] text-sm">Streak Champ</p>
-              <p class="text-xs text-gray-500">5 days of login streak</p>
-            </div>
-          </div>
-    </div>
-    <h2 class="text-2xl font-bold text-[#1A1A40] col-span-5">Available Courses</h2>
-
-<ng-container *ngFor="let course of availableCourses">
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <p class="text-xl font-bold text-[#1A1A40]">{{ course.title }}</p>
-    <p class="text-xs text-gray-500">{{ course.description }}</p>
-
-    <button
-      class="mt-2 text-white bg-green-600 px-4 py-2 rounded-lg"
-      (click)="enrollInCourse(course.id)">
-      Enroll
-    </button>
   </div>
-</ng-container>
 
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
+    <div class="surface-card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-primary">My Courses</h3>
+        <button class="text-sm text-primary underline" (click)="goToAvailableCourses()">Explore catalog</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <ng-container *ngFor="let sc of studentCourses">
+          <app-student-course-card
+            [title]="sc.course.title"
+            [description]="sc.course.description"
+            [thumbnailUrl]="sc.course.thumbnailUrl"
+            [instructor]="sc.course.instructor"
+            [rating]="sc.course.rating"
+            [ratingCount]="sc.course.ratingCount"
+            [progress]="sc.progress"
+            [status]="sc.status"
+          >
+            <app-echo-button
+              *ngIf="sc.status !== 'completed'"
+              class="mt-2"
+              color="primary"
+              label="Start / Resume"
+              (click)="startCourse(sc)"
+            ></app-echo-button>
+          </app-student-course-card>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="surface-card p-6">
+      <h3 class="text-xl font-bold text-primary mb-3">What’s next</h3>
+      <ul class="space-y-3">
+        <li *ngFor="let item of demoTimeline" class="flex items-start gap-3">
+          <span class="h-9 w-9 rounded-full flex items-center justify-center" [ngClass]="{
+            'bg-primary/10 text-primary': item.status === 'active',
+            'bg-emerald-100 text-emerald-700': item.status === 'completed',
+            'bg-slate-100 text-slate-600': item.status === 'upcoming'
+          }">{{ item.label }}</span>
+          <p class="text-sm text-slate-700">{{ item.detail }}</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
+    <div class="surface-card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xl font-bold text-primary">Achievements & Streaks</h3>
+        <span class="badge-soft">Motivation</span>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <app-achievement-item
+          icon="🧠"
+          title="Memory Master"
+          description="Completed 10 quizzes"
+        ></app-achievement-item>
+        <app-achievement-item
+          icon="📚"
+          title="Knowledge Seeker"
+          description="Completed 5 lessons"
+        ></app-achievement-item>
+        <app-achievement-item
+          icon="🌍"
+          title="Explorer"
+          description="Finished 3 Geography units"
+        ></app-achievement-item>
+        <app-achievement-item
+          icon="🎯"
+          title="Precision Pro"
+          description="Scored 100% on a quiz"
+        ></app-achievement-item>
+        <app-achievement-item
+          icon="🏆"
+          title="Streak Champ"
+          description="5 days of login streak"
+        ></app-achievement-item>
+      </div>
+    </div>
+    <div class="surface-card p-6 bg-gradient-to-br from-primary/5 to-accent/10">
+      <h3 class="text-xl font-bold text-primary mb-3">Available Courses</h3>
+      <div class="space-y-3">
+        <ng-container *ngFor="let course of visibleAvailableCourses">
+          <div class="p-3 rounded-xl bg-white shadow-sm border border-slate-100">
+            <p class="font-semibold text-ink">{{ course.title }}</p>
+            <p class="text-sm text-slate-600">{{ course.description }}</p>
+            <app-echo-button
+              class="mt-2"
+              color="accent"
+              label="Enroll"
+              (click)="enrollInCourse(course.id)"
+            ></app-echo-button>
+          </div>
+        </ng-container>
+      </div>
+      <a
+        *ngIf="availableCourses.length > 4"
+        class="inline-flex mt-3 text-primary underline cursor-pointer"
+        (click)="goToAvailableCourses()"
+      >
+        View More
+      </a>
+    </div>
+  </div>
 </div>
 
-<echoed-lesson-viewer 
+<echoed-lesson-viewer
   *ngIf="showLesson && currentLesson"
   [lesson]="currentLesson"
   (segmentCompleted)="onLessonCompleted()"
 />
-
        
   

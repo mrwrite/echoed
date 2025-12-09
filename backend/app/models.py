@@ -51,6 +51,12 @@ class Unit(Base):
 
     lessons = relationship("Lesson", back_populates="unit", cascade="all, delete-orphan")
 
+    student_progress = relationship(
+        "StudentUnitProgress",
+        back_populates="unit",
+        cascade="all, delete-orphan",
+    )
+
 class Lesson(Base):
     __tablename__ = 'lessons'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -77,6 +83,21 @@ class Activity(Base):
     
     media = relationship("Media")
     lesson = relationship("Lesson", back_populates="activities")
+    storybook_pages = relationship(
+        "StorybookPage",
+        back_populates="activity",
+        cascade="all, delete-orphan",
+    )
+
+
+class StorybookPage(Base):
+    __tablename__ = "storybook_pages"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=False)
+    image_url = Column(String, nullable=False)
+    order = Column(Integer)
+
+    activity = relationship("Activity", back_populates="storybook_pages")
 
 
 class Media(Base):
@@ -105,12 +126,16 @@ class StudentUnitProgress(Base):
     __tablename__ = 'student_unit_progress'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_course_id = Column(UUID(as_uuid=True), ForeignKey('student_courses.id'), nullable=False)
-    unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
+    unit_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('units.id', ondelete='CASCADE'),
+        nullable=False,
+    )
     status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
     student_course = relationship("StudentCourse", back_populates="unit_progress")
-    unit = relationship("Unit")
+    unit = relationship("Unit", back_populates="student_progress")
 
     segments = relationship("SegmentProgress", back_populates="student_unit", cascade="all, delete-orphan")
 
@@ -118,7 +143,11 @@ class SegmentProgress(Base):
     __tablename__ = 'segment_progress'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     student_unit_id = Column(UUID(as_uuid=True), ForeignKey('student_unit_progress.id'), nullable=False)
-    lesson_id = Column(UUID(as_uuid=True), ForeignKey('lessons.id'), nullable=False)
+    lesson_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('lessons.id', ondelete='CASCADE'),
+        nullable=False
+    )
     status = Column(SqlEnum(ProgressStatus, name="segment_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
@@ -134,4 +163,54 @@ user_units = Table(
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
     Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
 )
+
+
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    image_url = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    student_badges = relationship("StudentBadge", back_populates="badge", cascade="all, delete-orphan")
+
+
+class StudentBadge(Base):
+    __tablename__ = "student_badges"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    badge_id = Column(UUID(as_uuid=True), ForeignKey("badges.id"), nullable=False)
+    awarded_at = Column(DateTime, default=datetime.utcnow)
+
+    student = relationship("User")
+    badge = relationship("Badge", back_populates="student_badges")
+
+
+class Thread(Base):
+    __tablename__ = "threads"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+    posts = relationship("Post", back_populates="thread", cascade="all, delete-orphan")
+
+
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    thread = relationship("Thread", back_populates="posts")
+    user = relationship("User")
 

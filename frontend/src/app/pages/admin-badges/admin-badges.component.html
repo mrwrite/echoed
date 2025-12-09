@@ -1,0 +1,36 @@
+<div class="surface-card p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <p class="section-heading text-primary text-sm">Admin</p>
+      <h2 class="text-2xl font-bold text-ink">Manage Badges</h2>
+      <p class="muted-text">Create and preview recognition moments for students.</p>
+    </div>
+    <span class="badge-soft">Engagement</span>
+  </div>
+  <form [formGroup]="badgeForm" (ngSubmit)="onSubmit()" class="grid gap-3 md:grid-cols-2 mb-6">
+    <div class="space-y-2">
+      <label class="text-sm font-semibold text-primary">Title</label>
+      <input formControlName="title" placeholder="Title" class="w-full rounded-xl border border-slate-200 px-3 py-2" />
+    </div>
+    <div class="space-y-2">
+      <label class="text-sm font-semibold text-primary">Description</label>
+      <input formControlName="description" placeholder="Description" class="w-full rounded-xl border border-slate-200 px-3 py-2" />
+    </div>
+    <div class="space-y-2">
+      <label class="text-sm font-semibold text-primary">Badge image</label>
+      <input type="file" (change)="onFileSelected($event)" class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white" />
+    </div>
+    <div class="flex items-end">
+      <button type="submit" class="px-4 py-3 bg-primary text-white rounded-xl shadow-soft-card" [disabled]="badgeForm.invalid">Add Badge</button>
+    </div>
+  </form>
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+    <div *ngFor="let badge of badges" class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
+      <img *ngIf="badge.image_url" [src]="badge.image_url" class="w-10 h-10 rounded-full object-cover" />
+      <div>
+        <p class="font-semibold text-ink">{{ badge.title }}</p>
+        <p class="text-xs text-slate-500">{{ badge.description }}</p>
+      </div>
+    </div>
+  </div>
+</div>

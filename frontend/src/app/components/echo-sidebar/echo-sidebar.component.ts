@@ -1,12 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { UserInfo } from '../../models/user-info';
 import { RoleService } from '../../services/role.service';
+import { IconModule } from '../../shared/icon/icon.module';
 
 @Component({
   selector: 'echo-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule, IconModule],
   styleUrls: ['./echo-sidebar.component.scss'],
   templateUrl: './echo-sidebar.component.html',
 })

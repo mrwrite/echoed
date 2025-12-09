@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
 import { CourseDto } from '../models/course-dto';
 import { CourseDraft } from '../pages/admin/course-wizard/models/course-draft.model';
-import { StartCourseRequest, SegmentResponse } from '../models/segment-response.model';
+import { StartCourseRequest, SegmentResponse, CompleteSegmentResponse } from '../models/segment-response.model';
 import { Lesson } from '../models/lesson';
 import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,46 @@ export class CoursesService {
   });
 }
 
+  uploadColoring(file: File): Observable<{ file_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let token = this.authService.getToken();
+    if (token && !token.startsWith('Bearer ')) {
+      token = `Bearer ${token}`;
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: token || ''
+    });
+
+    return this.http.post<{ file_path: string }>(
+      `${environment.apiUrl}/api/upload/coloring`,
+      formData,
+      { headers }
+    );
+  }
+
+  uploadStorybookPage(file: File): Observable<{ file_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let token = this.authService.getToken();
+    if (token && !token.startsWith('Bearer ')) {
+      token = `Bearer ${token}`;
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: token || ''
+    });
+
+    return this.http.post<{ file_path: string }>(
+      `${environment.apiUrl}/api/upload/storybook`,
+      formData,
+      { headers }
+    );
+  }
+
 getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
   return this.http.get<SegmentResponse>(
     `${environment.apiUrl}/api/progress/segment?student_unit_id=${studentUnitId}`,
@@ -57,6 +98,10 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
 
   updateCourse(courseId: string, course: CourseDraft): Observable<any> {
     return this.http.put(`${this.apiUrl}/${courseId}`, course, { headers: this.getHeaders() });
+  }
+
+  deleteCourse(courseId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${courseId}`, { headers: this.getHeaders() });
   }
 
   enrollInCourse(courseId: string): Observable<any> {
@@ -84,15 +129,46 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
 }
 
 
-  markSegmentCompleted(studentUnitId: string, lessonId: string): Observable<any> {
+  markSegmentCompleted(studentUnitId: string, lessonId: string): Observable<CompleteSegmentResponse> {
   const payload = {
     student_unit_id: studentUnitId,
     lesson_id: lessonId
   };
 
-  return this.http.post(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
+  return this.http.post<CompleteSegmentResponse>(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
     headers: this.getHeaders()
   });
-}
+  }
+
+  /**
+   * Calculate course progress as a percentage based on the current segment
+   * returned from the backend. If all segments are completed a value of 100 is returned.
+   */
+  getCourseProgress(sc: StudentCourseWithDetails): Observable<number> {
+    const unitProgressId = sc.unit_progress_id;
+
+    if (!unitProgressId) {
+      return of(0);
+    }
+    return this.getCurrentSegment(unitProgressId).pipe(
+      map(segment => {
+        const unit = sc.course.units.find(u => u.lessons.some(l => l.id === segment.lesson_id));
+        const lessons = unit ? unit.lessons : [];
+        const total = lessons.length;
+        const index = lessons.findIndex(l => l.id === segment.lesson_id);
+        if (total === 0 || index === -1) {
+          return 0;
+        }
+        return (index / total) * 100;
+      }),
+      catchError(err => {
+        // If API returns 404 no segment found => all lessons completed
+        if (err.status === 404) {
+          return of(100);
+        }
+        return of(0);
+      })
+    );
+  }
 
 }

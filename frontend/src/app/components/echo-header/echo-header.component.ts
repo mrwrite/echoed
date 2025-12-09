@@ -15,6 +15,7 @@ import {
 } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
+import { DemoTourService } from '../../services/demo-tour.service';
 import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.component';
 
 
@@ -44,7 +45,8 @@ export class EchoHeaderComponent {
   @ViewChild('menuContainer') menuContainer!: ElementRef;
 
   constructor(private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private demoTourService: DemoTourService
   ) {}
 
   getInitials(): string {
@@ -62,6 +64,10 @@ export class EchoHeaderComponent {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  startGuidedTour() {
+    this.demoTourService.startTour();
   }
 
   @HostListener('document:click', ['$event.target'])

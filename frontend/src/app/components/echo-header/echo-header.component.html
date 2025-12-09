@@ -1,4 +1,4 @@
-<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl shadow-elevated border-b border-primary/5 px-6 py-4">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl shadow-elevated border-b border-primary/10 px-6 py-4">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-4">
       <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
@@ -11,8 +11,8 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <button class="px-3 py-2 rounded-full border border-primary/10 text-primary bg-primary/5 text-sm font-semibold hidden sm:inline-flex">Help & Support</button>
-      <button class="px-3 py-2 rounded-full border border-primary/10 text-primary bg-accent/20 text-sm font-semibold hidden sm:inline-flex">Start Guided Tour</button>
+      <button class="px-3 py-2 rounded-full border border-primary/20 text-primary bg-primary/5 text-sm font-semibold hidden sm:inline-flex hover:bg-primary/10">Help & Support</button>
+      <button class="px-3 py-2 rounded-full border border-primary/20 text-white bg-primary text-sm font-semibold hidden sm:inline-flex hover:-translate-y-0.5 transition" (click)="startGuidedTour()">Start Guided Tour</button>
       <div class="relative" #menuContainer>
         <button
           (click)="toggleMenu()"

@@ -8,6 +8,7 @@ import { UserInfo } from '../../models/user-info';
 import { AuthService } from '../../services/auth.service';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
+import { DemoTourService } from '../../services/demo-tour.service';
 
 @Component({
   selector: 'app-home',
@@ -32,7 +33,7 @@ export class HomeComponent implements OnInit {
   userInfo!: UserInfo;
   lessonMode = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router, private demoTourService: DemoTourService) { }
 
   ngOnInit(): void {
     var access_token = localStorage.getItem('token');
@@ -46,6 +47,10 @@ export class HomeComponent implements OnInit {
       .subscribe(() => {
         this.lessonMode = this.router.url.includes('/lesson/');
       });
+  }
+
+  startDemoTour() {
+    this.demoTourService.startTour();
   }
 
 }

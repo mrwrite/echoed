@@ -8,7 +8,7 @@
   ></echo-sidebar>
   <div
     [ngClass]="lessonMode ? 'ml-0' : (sidebarCollapsed ? 'ml-20' : 'ml-64')"
-    class="flex flex-col h-screen transition-all duration-500"
+    class="flex flex-col min-h-screen transition-all duration-500"
   >
     <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" @fade></echo-header>
     <main class="flex-1 overflow-y-auto p-6">
@@ -18,7 +18,9 @@
             <p class="text-xs uppercase tracking-[0.25em] text-primary">Demo Mode: K–5 African & African-American History</p>
             <p class="text-sm text-slate-600">Guide stakeholders through landing → login → dashboards → lessons → admin.</p>
           </div>
-          <a routerLink="/" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold">Start Demo Tour</a>
+          <button (click)="startDemoTour()" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold hover:-translate-y-0.5 transition">
+            Start Demo Tour
+          </button>
         </div>
         <div class="surface-card p-1 bg-white/50">
           <router-outlet></router-outlet>

@@ -39,7 +39,7 @@ export class LoginComponent {
       },
       (error) => {
         console.log('Login failed');
-        this.errorMessage = error.errorMessage;
+        this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
       }
     );
   }

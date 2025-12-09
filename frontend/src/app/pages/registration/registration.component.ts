@@ -65,7 +65,7 @@ export class RegistrationComponent implements OnInit{
       },
       (error) => {
         console.log('Registration failed');
-        this.errorMessage = error.errorMessage;
+        this.errorMessage = error?.error?.detail || 'Registration failed. Please check your details and try again.';
       }
     );
    }

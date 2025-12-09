@@ -5,6 +5,7 @@ import { UserInfo } from '../../../models/user-info';
 import { CoursesService } from '../../../services/courses.service';
 import { Course } from '../../../models/course';
 import { IconModule } from '../../../shared/icon/icon.module';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'echoed-teacher-view',
@@ -19,7 +20,7 @@ export class TeacherViewComponent implements OnInit {
   courses: Course[] = [];
   readonly visibleCount = 5;
 
-  constructor(private coursesService: CoursesService, private router: Router) {}
+  constructor(private coursesService: CoursesService, private router: Router, private toastService: ToastService) {}
 
   ngOnInit(): void {
     this.coursesService.getCourses().subscribe(courses => {
@@ -47,5 +48,22 @@ export class TeacherViewComponent implements OnInit {
 
   viewAllCourses() {
     this.router.navigate(['/home/admin/courses']);
+  }
+
+  assignCourse() {
+    this.router.navigate(['/home/admin/courses']);
+  }
+
+  startLiveLesson() {
+    const targetCourse = this.courses[0];
+    if (targetCourse) {
+      this.router.navigate(['/home/lesson', targetCourse.id || 'demo']);
+    } else {
+      this.toastService.show('Add a course first to start a live lesson.', 'info');
+    }
+  }
+
+  viewReports() {
+    this.router.navigate(['/home/admin/users']);
   }
 }

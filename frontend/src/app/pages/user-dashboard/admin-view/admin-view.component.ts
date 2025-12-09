@@ -8,6 +8,7 @@ import { Course } from '../../../models/course';
 import { IconModule } from '../../../shared/icon/icon.module';
 import { Router } from '@angular/router';
 import { StatCardComponent } from '../../../components/stat-card/stat-card.component';
+import { UsageStat, UsageStatsService } from '../../../services/usage-stats.service';
 
 interface Metric {
   icon: string;
@@ -26,6 +27,7 @@ export class AdminViewComponent {
   @Input() userInfo!: UserInfo;
   users: User[] = [];
   courses: Course[] = [];
+  usageStats: UsageStat[] = [];
 
   /** Number of items visible in dashboard */
   readonly visibleCount = 5;
@@ -38,7 +40,8 @@ export class AdminViewComponent {
   constructor(
     private usersService: UsersService,
     private coursesService: CoursesService,
-    private router: Router
+    private router: Router,
+    private usageStatsService: UsageStatsService
   ) {}
 
   ngOnInit() {
@@ -57,6 +60,8 @@ export class AdminViewComponent {
 
     // initialize metrics with default values
     this.updateMetrics();
+
+    this.usageStatsService.getUsageStats().subscribe(stats => this.usageStats = stats);
   }
 
   private updateMetrics() {

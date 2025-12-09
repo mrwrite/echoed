@@ -7,6 +7,7 @@ import { ActivityDraft } from '../../models/course-draft.model';
 import { CoursesService } from '../../../../../services/courses.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { v4 as uuidv4 } from 'uuid';
+import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
   selector: 'step4-review-save',
@@ -30,7 +31,8 @@ export class Step4ReviewSaveComponent implements OnInit {
   constructor(public courseWizardService: CourseWizardService,
               private coursesService: CoursesService,
               private router: Router,
-              private route: ActivatedRoute) {}
+              private route: ActivatedRoute,
+              private toastService: ToastService) {}
 
               
   ngOnInit() {
@@ -48,8 +50,8 @@ export class Step4ReviewSaveComponent implements OnInit {
         next: () => {
           this.isSaving = false;
           console.log('Course updated successfully!');
-          // ✅ Redirect to course management page (or success screen)
-          //this.router.navigate(['/home']);
+          this.toastService.show('Course updated successfully', 'success');
+          this.router.navigate(['/home/admin/courses']);
         },
         error: (error) => {
           this.isSaving = false;
@@ -63,8 +65,9 @@ export class Step4ReviewSaveComponent implements OnInit {
         next: () => {
           this.isSaving = false;
           console.log('Course saved successfully!');
-          // ✅ Redirect to course management page (or success screen)
-          //this.router.navigate(['/admin/courses']);
+          this.toastService.show('Course created successfully', 'success');
+          this.courseWizardService.resetDraft();
+          this.router.navigate(['/home/admin/courses']);
         },
         error: (error) => {
           this.isSaving = false;

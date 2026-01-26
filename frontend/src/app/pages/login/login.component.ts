@@ -34,7 +34,6 @@ export class LoginComponent {
         this.userInfo = this.authService.getTokenPayload(response.access_token);
         this.userRoles.push(this.userInfo.role);
         this.roleService.setUserRoles(this.userRoles);
-        localStorage.setItem('token', response.access_token);
         this.router.navigate(['/home']);
       },
       (error) => {

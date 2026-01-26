@@ -16,11 +16,11 @@
         </div>
         <div class="p-4 bg-white/10 rounded-xl border border-white/10">
           <p class="text-white/70">Streak</p>
-          <p class="text-2xl font-bold">5 days 🔥</p>
+          <p class="text-2xl font-bold">{{ streakDays }} days 🔥</p>
         </div>
         <div class="p-4 bg-white/10 rounded-xl border border-white/10">
           <p class="text-white/70">Badges</p>
-          <p class="text-2xl font-bold">12 earned</p>
+          <p class="text-2xl font-bold">{{ studentBadges.length }} earned</p>
         </div>
       </div>
     </div>
@@ -99,32 +99,40 @@
         <h3 class="text-xl font-bold text-primary">Achievements & Streaks</h3>
         <span class="badge-soft">Motivation</span>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <app-achievement-item
-          icon="🧠"
-          title="Memory Master"
-          description="Completed 10 quizzes"
-        ></app-achievement-item>
-        <app-achievement-item
-          icon="📚"
-          title="Knowledge Seeker"
-          description="Completed 5 lessons"
-        ></app-achievement-item>
-        <app-achievement-item
-          icon="🌍"
-          title="Explorer"
-          description="Finished 3 Geography units"
-        ></app-achievement-item>
-        <app-achievement-item
-          icon="🎯"
-          title="Precision Pro"
-          description="Scored 100% on a quiz"
-        ></app-achievement-item>
-        <app-achievement-item
-          icon="🏆"
-          title="Streak Champ"
-          description="5 days of login streak"
-        ></app-achievement-item>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="space-y-3">
+          <div *ngFor="let badge of badgeProgress" class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-ink">{{ badge.title }}</p>
+                <p class="text-xs text-slate-500">{{ badge.description }}</p>
+              </div>
+              <span class="text-xs font-semibold" [ngClass]="badge.earned ? 'text-emerald-600' : 'text-slate-500'">
+                {{ badge.earned ? 'Earned' : badge.current + '/' + badge.target }}
+              </span>
+            </div>
+            <div class="mt-2 h-2 rounded-full bg-white border border-slate-100 overflow-hidden">
+              <div
+                class="h-2 rounded-full"
+                [ngClass]="badge.earned ? 'bg-emerald-500' : 'bg-primary'"
+                [style.width.%]="badge.earned ? 100 : (badge.current / badge.target) * 100"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-slate-600">Earned Badges</h4>
+          <div *ngIf="studentBadges.length === 0" class="text-sm text-slate-500">
+            Complete your first lesson to unlock badges.
+          </div>
+          <div *ngFor="let badge of studentBadges" class="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-100">
+            <img *ngIf="badge.badge?.image_url" [src]="badge.badge?.image_url" alt="" class="h-10 w-10 rounded-full object-cover" />
+            <div>
+              <p class="font-semibold text-ink">{{ badge.badge?.title }}</p>
+              <p class="text-xs text-slate-500">{{ badge.badge?.description }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="surface-card p-6 bg-gradient-to-br from-primary/5 to-accent/10">

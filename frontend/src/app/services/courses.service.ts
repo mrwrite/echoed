@@ -111,6 +111,13 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
   });
 }
 
+  assignCourseToStudent(courseId: string, studentId: string): Observable<any> {
+    const payload = { course_id: courseId, student_id: studentId };
+    return this.http.post(`${environment.apiUrl}/api/assign-course`, payload, {
+      headers: this.getHeaders()
+    });
+  }
+
 
   createCourse(course: CourseDraft): Observable<any> {
     return this.http.post(`${this.apiUrl}`, course, { headers: this.getHeaders() });

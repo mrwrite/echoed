@@ -9,9 +9,10 @@
       <button class="px-3 py-2 rounded-xl border border-primary text-primary font-semibold" (click)="returnToDashboard()">Exit lesson</button>
     </div>
 
-    <div class="flex items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson">
+    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson">
       <span class="px-3 py-1 rounded-full bg-primary/10 text-primary">Active segment</span>
       <span class="px-3 py-1 rounded-full bg-accent/30 text-ink">Guided reading & activities</span>
+      <span *ngIf="demoMode" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Demo preview</span>
     </div>
 
     <echoed-lesson-viewer

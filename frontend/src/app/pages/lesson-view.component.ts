@@ -19,6 +19,7 @@ export class LessonViewComponent implements OnInit {
   segment?: SegmentResponse;
   lesson?: Lesson;
   courseCompleted = false;
+  demoMode = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -28,6 +29,11 @@ export class LessonViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.unitProgressId = this.route.snapshot.paramMap.get('id')!;
+    if (this.unitProgressId === 'demo') {
+      this.demoMode = true;
+      this.loadDemoLesson();
+      return;
+    }
     this.loadSegmentAndLesson();
   }
 
@@ -58,6 +64,10 @@ export class LessonViewComponent implements OnInit {
   }
 
   onLessonCompleted(): void {
+  if (this.demoMode) {
+    this.courseCompleted = true;
+    return;
+  }
   if (!this.segment || !this.segment.lesson_id || !this.unitProgressId) {
     console.warn('Incomplete data to mark lesson complete');
     return;
@@ -83,7 +93,36 @@ export class LessonViewComponent implements OnInit {
       console.error('Failed to mark segment complete:', err);
     }
   });
-}
+  }
+
+  loadDemoLesson(): void {
+    this.coursesService.getCourses().subscribe({
+      next: (courses) => {
+        const firstCourse = courses[0];
+        if (!firstCourse) {
+          this.courseCompleted = true;
+          return;
+        }
+        this.coursesService.getCourseById(firstCourse.id).subscribe({
+          next: (course) => {
+            const firstUnit = course.units?.[0];
+            const firstLesson = firstUnit?.lessons?.[0];
+            if (firstLesson) {
+              this.lesson = firstLesson as Lesson;
+            } else {
+              this.courseCompleted = true;
+            }
+          },
+          error: () => {
+            this.courseCompleted = true;
+          }
+        });
+      },
+      error: () => {
+        this.courseCompleted = true;
+      }
+    });
+  }
 
   returnToDashboard(): void {
     this.courseCompleted = false;

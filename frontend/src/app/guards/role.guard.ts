@@ -22,7 +22,7 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    this.router.navigate(['/home']);
+    this.router.navigate(['/access-denied']);
     return false;
   }
 }

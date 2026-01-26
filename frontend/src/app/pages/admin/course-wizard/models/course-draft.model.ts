@@ -28,7 +28,7 @@ export interface LessonDraft {
 
 export interface ActivityDraft {
     id: string;
-    type: 'video' | 'story' | 'storybook' | 'coloring' | 'song' | 'quiz' | 'text' | 'discussion';
+    type: 'video' | 'story' | 'storybook' | 'coloring' | 'song' | 'quiz' | 'reflection' | 'checkpoint' | 'audio' | 'text' | 'discussion';
     title: string;
     content: string; // URL for video, text for story, etc.
     order: number; // Order of the activity within the lesson

@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.auth import get_current_user
+from app.deps import require_roles
 from app.models import StudentCourse, StudentUnitProgress, SegmentProgress, Unit, Lesson
 from app.schemas import StartCourseRequest, SegmentResponse
 from app.enum import ProgressStatus  # assuming you created this enum
 from app.crud import progress as crud
 from app.log import logger
+from datetime import datetime
 
 router = APIRouter()
 
@@ -14,7 +15,7 @@ router = APIRouter()
 def start_course(
     request: StartCourseRequest,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(require_roles("student")),
 ):   
     
     logger.debug("RAW Request Data: %s", request)
@@ -94,6 +95,17 @@ def start_course(
     segment = crud.get_current_segment_for_unit(db, unit_progress.id)
     if not segment:
         raise HTTPException(status_code=404, detail="No segment found.")
+
+    if segment.status == ProgressStatus.NOT_STARTED:
+        segment.status = ProgressStatus.IN_PROGRESS
+        segment.started_at = datetime.utcnow()
+        segment.last_updated = datetime.utcnow()
+        unit_progress.status = ProgressStatus.IN_PROGRESS
+        if not unit_progress.started_at:
+            unit_progress.started_at = datetime.utcnow()
+        unit_progress.last_updated = datetime.utcnow()
+        enrollment.last_activity_at = datetime.utcnow()
+        db.commit()
 
     return SegmentResponse(
         lesson_id=segment.lesson_id,

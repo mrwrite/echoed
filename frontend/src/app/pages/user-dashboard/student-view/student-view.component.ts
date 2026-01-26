@@ -7,11 +7,13 @@ import { Lesson } from '../../../models/lesson';
 import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
 import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
 import { StudentCourseCardComponent } from '../../../components/student-course-card/student-course-card.component';
-import { AchievementItemComponent } from '../../../components/achievement-item/achievement-item.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
 import { CompleteSegmentResponse } from '../../../models/segment-response.model';
 import { ToastService } from '../../../services/toast.service';
+import { AnalyticsService, StudentProgressResponse } from '../../../services/analytics.service';
+import { BadgesService } from '../../../services/badges.service';
+import { StudentBadge } from '../../../models/badge';
 
 @Component({
   selector: 'echoed-student-view',
@@ -21,7 +23,6 @@ import { ToastService } from '../../../services/toast.service';
     LessonViewerComponent,
     EchoButtonComponent,
     StudentCourseCardComponent,
-    AchievementItemComponent,
   ],
   templateUrl: './student-view.component.html',
   styleUrl: './student-view.component.scss'
@@ -33,6 +34,12 @@ export class StudentViewComponent implements OnInit {
   currentLesson?: Lesson;
   showLesson = false;
   availableCourses: Course[] = [];
+  badgeProgress: StudentProgressResponse['badge_progress'] = [];
+  studentBadges: StudentBadge[] = [];
+  streakDays = 0;
+  lessonsCompleted = 0;
+  unitsCompleted = 0;
+  coursesCompleted = 0;
   /** Number of courses shown initially before "View More" is clicked */
   availableCoursesVisibleCount = 4;
   demoTimeline = [
@@ -53,11 +60,44 @@ export class StudentViewComponent implements OnInit {
 
   constructor(private coursesService: CoursesService,
               private router: Router,
-              private toastService: ToastService
+              private toastService: ToastService,
+              private analyticsService: AnalyticsService,
+              private badgesService: BadgesService
   ) { }
 
   ngOnInit(): void {
-    this.loadStudentCourses();    
+    this.loadStudentCourses();
+    this.loadProgressInsights();
+    this.loadBadges();
+  }
+
+  loadProgressInsights(): void {
+    this.analyticsService.getStudentProgress().subscribe({
+      next: (progress) => {
+        this.badgeProgress = progress.badge_progress;
+        this.streakDays = progress.metrics.streak_days;
+        this.lessonsCompleted = progress.metrics.lessons_completed;
+        this.unitsCompleted = progress.metrics.units_completed;
+        this.coursesCompleted = progress.metrics.courses_completed;
+      },
+      error: (err) => {
+        console.error('Failed to load progress insights', err);
+      }
+    });
+  }
+
+  loadBadges(): void {
+    if (!this.userInfo?.user_id) {
+      return;
+    }
+    this.badgesService.getStudentBadges(this.userInfo.user_id).subscribe({
+      next: (badges) => {
+        this.studentBadges = badges;
+      },
+      error: (err) => {
+        console.error('Failed to load badges', err);
+      }
+    });
   }
 
   loadAvailableCourses(): void {
@@ -113,6 +153,8 @@ export class StudentViewComponent implements OnInit {
           this.showLesson = false;
           this.currentLesson = undefined;
           this.loadStudentCourses();
+          this.loadProgressInsights();
+          this.loadBadges();
         },
         error: () => {
           this.toastService.show('There was an error saving your progress.', 'error');

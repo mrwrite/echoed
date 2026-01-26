@@ -116,6 +116,8 @@ class StudentCourse(Base):
     course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
     enrolled_on = Column(DateTime, nullable=False, default=datetime.utcnow)
     status = Column(String, default="active")  # optional: active, completed, withdrawn
+    last_activity_at = Column(DateTime)
+    completed_at = Column(DateTime)
 
     student = relationship("User", back_populates="student_courses")
     course = relationship("Course", back_populates="student_courses")
@@ -133,6 +135,8 @@ class StudentUnitProgress(Base):
     )
     status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
 
     student_course = relationship("StudentCourse", back_populates="unit_progress")
     unit = relationship("Unit", back_populates="student_progress")
@@ -150,6 +154,8 @@ class SegmentProgress(Base):
     )
     status = Column(SqlEnum(ProgressStatus, name="segment_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
     last_updated = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
 
     student_unit = relationship("StudentUnitProgress", back_populates="segments")
     lesson = relationship("Lesson")
@@ -213,4 +219,3 @@ class Post(Base):
 
     thread = relationship("Thread", back_populates="posts")
     user = relationship("User")
-

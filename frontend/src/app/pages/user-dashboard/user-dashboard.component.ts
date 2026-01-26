@@ -28,7 +28,7 @@ export class UserDashboardComponent implements OnInit {
           this.isDashboardView = !(url.includes('/courses'));
         });
       
-        const access_token = localStorage.getItem('token');
+        const access_token = this.authService.getToken();
         if (access_token) {
           this.userInfo = this.authService.getTokenPayload(access_token);      
           if (this.userInfo) {

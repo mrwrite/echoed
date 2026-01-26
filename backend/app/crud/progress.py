@@ -1,6 +1,7 @@
 from app.enum import ProgressStatus
 from sqlalchemy.orm import Session
 from app.models import StudentUnitProgress, SegmentProgress, Unit, Lesson, StudentCourse
+from app.crud.badges import award_badges_for_student
 from uuid import UUID
 from datetime import datetime
 
@@ -31,6 +32,10 @@ def update_student_unit_progress_status(
         else:
             status_value = ProgressStatus[new_status.upper()]
         progress.status = status_value
+        if status_value == ProgressStatus.IN_PROGRESS and not progress.started_at:
+            progress.started_at = datetime.utcnow()
+        if status_value == ProgressStatus.COMPLETED:
+            progress.completed_at = datetime.utcnow()
         progress.last_updated = datetime.utcnow()
         db.commit()
     return progress
@@ -82,9 +87,21 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
         else:
             status_value = ProgressStatus[new_status.upper()]
         progress.status = status_value
+        if status_value == ProgressStatus.IN_PROGRESS and not progress.started_at:
+            progress.started_at = datetime.utcnow()
+        if status_value == ProgressStatus.COMPLETED:
+            progress.completed_at = datetime.utcnow()
         progress.last_updated = datetime.utcnow()
         db.commit()
         db.refresh(progress)
+
+        if progress.status == ProgressStatus.IN_PROGRESS:
+            unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
+            if unit_progress:
+                student_course = db.get(StudentCourse, unit_progress.student_course_id)
+                if student_course:
+                    student_course.last_activity_at = datetime.utcnow()
+                    db.commit()
 
         # If the segment was completed, advance progress within the unit or to the
         # next unit as needed.
@@ -107,7 +124,12 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                 unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
                 if unit_progress and unit_progress.status != ProgressStatus.COMPLETED:
                     unit_progress.status = ProgressStatus.IN_PROGRESS
+                    if not unit_progress.started_at:
+                        unit_progress.started_at = datetime.utcnow()
                     unit_progress.last_updated = datetime.utcnow()
+                student_course = db.get(StudentCourse, unit_progress.student_course_id) if unit_progress else None
+                if student_course:
+                    student_course.last_activity_at = datetime.utcnow()
                 db.commit()
             else:
                 # All lessons in the unit are complete; mark unit complete and
@@ -115,6 +137,7 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                 unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
                 if unit_progress:
                     unit_progress.status = ProgressStatus.COMPLETED
+                    unit_progress.completed_at = datetime.utcnow()
                     unit_progress.last_updated = datetime.utcnow()
                     db.commit()
 
@@ -146,10 +169,13 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                                 unit_id=next_unit.id,
                                 status=ProgressStatus.IN_PROGRESS,
                             )
+                            next_progress.started_at = datetime.utcnow()
                             db.add(next_progress)
                             db.commit()
                         else:
                             next_progress.status = ProgressStatus.IN_PROGRESS
+                            if not next_progress.started_at:
+                                next_progress.started_at = datetime.utcnow()
                             next_progress.last_updated = datetime.utcnow()
                             db.commit()
 
@@ -177,6 +203,8 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                                     lesson_id=lesson.id,
                                     status=seg_status,
                                 )
+                                if seg_status == ProgressStatus.IN_PROGRESS:
+                                    seg.started_at = datetime.utcnow()
                                 db.add(seg)
                             db.commit()
                         else:
@@ -192,6 +220,7 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                             )
                             if next_seg and next_seg.status == ProgressStatus.NOT_STARTED:
                                 next_seg.status = ProgressStatus.IN_PROGRESS
+                                next_seg.started_at = datetime.utcnow()
                                 next_seg.last_updated = datetime.utcnow()
                                 db.commit()
                     else:
@@ -201,7 +230,13 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                         )
                         if student_course:
                             student_course.status = "completed"
+                            student_course.completed_at = datetime.utcnow()
+                            student_course.last_activity_at = datetime.utcnow()
                             db.commit()
+            if unit_progress:
+                student_course = db.get(StudentCourse, unit_progress.student_course_id)
+                if student_course:
+                    award_badges_for_student(db, student_course.student_id)
     return progress
 
 

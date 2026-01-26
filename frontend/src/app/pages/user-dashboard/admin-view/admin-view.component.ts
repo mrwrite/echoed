@@ -9,6 +9,7 @@ import { IconModule } from '../../../shared/icon/icon.module';
 import { Router } from '@angular/router';
 import { StatCardComponent } from '../../../components/stat-card/stat-card.component';
 import { UsageStat, UsageStatsService } from '../../../services/usage-stats.service';
+import { AnalyticsService } from '../../../services/analytics.service';
 
 interface Metric {
   icon: string;
@@ -35,31 +36,33 @@ export class AdminViewComponent {
   studentCount = 0;
   teacherCount = 0;
   coursesCount = 0;
+  pendingEnrollments = 0;
   metrics: Metric[] = [];
 
   constructor(
     private usersService: UsersService,
     private coursesService: CoursesService,
     private router: Router,
-    private usageStatsService: UsageStatsService
+    private usageStatsService: UsageStatsService,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit() {
     this.usersService.getUsers().subscribe((users: User[]) => {
       this.users = users;
-      this.studentCount = this.users.filter(u => u.role === 'student').length;
-      this.teacherCount = this.users.filter(u => u.role === 'teacher').length;
-      this.updateMetrics();
     });
 
     this.coursesService.getCourses().subscribe(courses => {
       this.courses = courses;
-      this.coursesCount = this.courses.length;
-      this.updateMetrics();
     });
 
-    // initialize metrics with default values
-    this.updateMetrics();
+    this.analyticsService.getAdminOverview().subscribe(overview => {
+      this.studentCount = overview.totals.students;
+      this.teacherCount = overview.totals.teachers;
+      this.coursesCount = overview.totals.courses;
+      this.pendingEnrollments = overview.totals.pending_enrollments;
+      this.updateMetrics();
+    });
 
     this.usageStatsService.getUsageStats().subscribe(stats => this.usageStats = stats);
   }
@@ -69,7 +72,7 @@ export class AdminViewComponent {
       { icon: 'User', label: 'Active Students', value: this.studentCount },
       { icon: 'User', label: 'Instructors', value: this.teacherCount },
       { icon: 'book-marked', label: 'Courses', value: this.coursesCount },
-      { icon: 'clock', label: 'Pending Enrollments', value: 154 }
+      { icon: 'clock', label: 'Pending Enrollments', value: this.pendingEnrollments }
     ];
   }
 

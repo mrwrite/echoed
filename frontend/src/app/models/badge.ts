@@ -12,3 +12,11 @@ export interface BadgeCreate {
   description?: string;
   image_url?: string;
 }
+
+export interface StudentBadge {
+  id: string;
+  student_id: string;
+  badge_id: string;
+  awarded_at: Date;
+  badge?: Badge;
+}

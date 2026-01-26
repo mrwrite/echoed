@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.database import get_db
+from app.deps import require_roles
 from app.models import Activity
 from app.schemas import ActivityResponse
 from pydantic import BaseModel
@@ -20,7 +21,11 @@ class ActivityUpdate(ActivityCreate):
 router = APIRouter()
 
 @router.post('/activities', response_model=ActivityResponse)
-def create_activity(activity: ActivityCreate, db: Session = Depends(get_db)):
+def create_activity(
+    activity: ActivityCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
     new_activity = Activity(
         lesson_id=activity.lesson_id,
         type=activity.type,
@@ -34,18 +39,30 @@ def create_activity(activity: ActivityCreate, db: Session = Depends(get_db)):
     return new_activity
 
 @router.get('/activities', response_model=list[ActivityResponse])
-def list_activities(db: Session = Depends(get_db)):
+def list_activities(
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
     return db.query(Activity).all()
 
 @router.get('/activities/{activity_id}', response_model=ActivityResponse)
-def get_activity(activity_id: UUID, db: Session = Depends(get_db)):
+def get_activity(
+    activity_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher", "student")),
+):
     activity = db.query(Activity).filter_by(id=activity_id).first()
     if not activity:
         raise HTTPException(status_code=404, detail='Activity not found')
     return activity
 
 @router.put('/activities/{activity_id}', response_model=ActivityResponse)
-def update_activity(activity_id: UUID, activity: ActivityUpdate, db: Session = Depends(get_db)):
+def update_activity(
+    activity_id: UUID,
+    activity: ActivityUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
     db_activity = db.query(Activity).filter_by(id=activity_id).first()
     if not db_activity:
         raise HTTPException(status_code=404, detail='Activity not found')
@@ -59,7 +76,11 @@ def update_activity(activity_id: UUID, activity: ActivityUpdate, db: Session = D
     return db_activity
 
 @router.delete('/activities/{activity_id}')
-def delete_activity(activity_id: UUID, db: Session = Depends(get_db)):
+def delete_activity(
+    activity_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
     db_activity = db.query(Activity).filter_by(id=activity_id).first()
     if not db_activity:
         raise HTTPException(status_code=404, detail='Activity not found')

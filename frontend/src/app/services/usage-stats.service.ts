@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { AnalyticsService } from './analytics.service';
 
 export interface UsageStat {
   label: string;
@@ -10,13 +12,22 @@ export interface UsageStat {
 
 @Injectable({ providedIn: 'root' })
 export class UsageStatsService {
+  constructor(private analyticsService: AnalyticsService) {}
+
   getUsageStats(): Observable<UsageStat[]> {
-    // Demo-friendly data; can be replaced with real API aggregation later
-    const stats: UsageStat[] = [
-      { label: 'Lessons Completed', value: 82, color: 'bg-primary' },
-      { label: 'Assignments Submitted', value: 68, color: 'bg-secondary' },
-      { label: 'Active Students', value: 74, color: 'bg-accent' },
-    ];
-    return of(stats);
+    return this.analyticsService.getAdminOverview().pipe(
+      map(overview => {
+        const progress = overview.progress;
+        const totals = overview.totals;
+        const activeStudentsPercent = totals.students
+          ? Math.round((totals.active_students / totals.students) * 100)
+          : 0;
+        return [
+          { label: 'Course Completion Rate', value: progress.course_completion_rate, color: 'bg-primary' },
+          { label: 'Lessons Completed', value: Math.min(progress.lessons_completed, 100), color: 'bg-secondary' },
+          { label: 'Active Students', value: activeStudentsPercent, color: 'bg-accent' },
+        ];
+      })
+    );
   }
 }

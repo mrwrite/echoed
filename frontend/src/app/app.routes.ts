@@ -12,11 +12,13 @@ import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.component';
 import { AdminBadgesComponent } from './pages/admin-badges/admin-badges.component';
 import { RoleGuard } from './guards/role.guard';
+import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'registration', component: RegistrationComponent },
+  { path: 'access-denied', component: AccessDeniedComponent },
   {
     path: 'home',
     component: HomeComponent,

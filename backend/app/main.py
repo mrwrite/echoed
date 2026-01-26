@@ -52,6 +52,7 @@ from app.schemas import (
 )
 from app.enum import ProgressStatus
 from app.api.routes import progress, badges, units, lessons, activities
+from app.deps import require_roles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -93,6 +94,7 @@ def configure_routes():
         activities,
         threads,
         posts,
+        analytics,
     )
 
     app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
@@ -103,6 +105,7 @@ def configure_routes():
     app.include_router(activities.router, prefix="/api", tags=["Activities"])
     app.include_router(threads.router, prefix="/api/forum", tags=["Threads"])
     app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
+    app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
 
 
 configure_routes()
@@ -182,7 +185,8 @@ def protected_route(current_user: User = Depends(get_current_user)):
 
 @app.get("/api/users")
 def get_users(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin")),
 ):
     users = db.query(User).all()
     return users
@@ -192,7 +196,7 @@ def get_users(
 def get_user_by_id(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin")),
 ):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -200,12 +204,20 @@ def get_user_by_id(
     return user
 
 
+@app.get("/api/users/students")
+def get_student_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin", "teacher")),
+):
+    return db.query(User).filter(User.role == "student").all()
+
+
 @app.put("/api/users/{user_id}")
 def update_user(
     user_id: str,
     user: UserDto,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin")),
 ):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
@@ -228,7 +240,7 @@ def update_user(
 def delete_user(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin")),
 ):
     try:
         uid = uuid.UUID(user_id)
@@ -259,7 +271,8 @@ def delete_user(
 
 @app.get("/api/courses")
 def get_courses(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin", "teacher", "student")),
 ):
     courses = db.query(Course).all()
     return courses
@@ -267,7 +280,7 @@ def get_courses(
 
 @app.get("/api/student-courses", response_model=list[StudentCourseWithDetails])
 def get_student_courses(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db), current_user: User = Depends(require_roles("student"))
 ):
     student_courses = (
         db.query(StudentCourse)
@@ -310,7 +323,7 @@ def get_student_courses(
 def get_course_by_id(
     course_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "teacher", "student")),
 ):
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
@@ -546,7 +559,7 @@ def delete_course(
 def get_lesson_by_id(
     lesson_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "teacher", "student")),
 ):
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
     if not lesson:
@@ -595,7 +608,7 @@ def get_lesson_by_id(
 def upload_coloring(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "teacher")),
 ):
     """Upload a coloring page and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]
@@ -612,7 +625,7 @@ def upload_coloring(
 def upload_storybook_page(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "teacher")),
 ):
     """Upload a storybook page and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]
@@ -629,7 +642,7 @@ def upload_storybook_page(
 def upload_badge_image(
     request: Request,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin")),
 ):
     """Upload a badge image and return the accessible file URL."""
     extension = os.path.splitext(file.filename)[1]

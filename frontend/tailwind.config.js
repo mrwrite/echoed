@@ -17,6 +17,10 @@ module.exports = {
         warn: "#FF4C4C",
         success: "#1D9A6C",
         info: "#00A8FF",
+        // Animal coloring palette
+        giraffe: "#D2B48C",   // tan shade for giraffe body
+        elephant: "#808080", // gray shade for elephant
+        lion: "#C19A6B",     // brownish gold for lion fur
       },
       boxShadow: {
         elevated: '0 18px 40px -18px rgba(17, 24, 39, 0.25)',

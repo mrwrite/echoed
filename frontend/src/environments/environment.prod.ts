@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.echoed.com', // Production backend URL
+  apiUrl: 'https://acceptable-enchantment-production-c407.up.railway.app', // Production backend URL
 };

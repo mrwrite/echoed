@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DemoTourService } from '../../services/demo-tour.service';
+import { DemoTourService, DemoTourStep } from '../../services/demo-tour.service';
 
 @Component({
   selector: 'app-demo-tour-overlay',
@@ -16,7 +16,7 @@ export class DemoTourOverlayComponent {
     return !!this.demoTourService.currentStep;
   }
 
-  get step() {
+  get step(): DemoTourStep | null | undefined {
     return this.demoTourService.currentStep;
   }
 

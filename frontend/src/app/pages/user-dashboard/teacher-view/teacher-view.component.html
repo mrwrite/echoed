@@ -15,11 +15,11 @@
       </div>
       <div class="p-4 rounded-xl bg-white/10 border border-white/15">
         <p class="text-white/70">In progress lessons</p>
-        <p class="text-2xl font-bold">8</p>
+        <p class="text-2xl font-bold">{{ inProgressLessons }}</p>
       </div>
       <div class="p-4 rounded-xl bg-white/10 border border-white/15">
         <p class="text-white/70">Average completion</p>
-        <p class="text-2xl font-bold">92%</p>
+        <p class="text-2xl font-bold">{{ averageCompletion }}%</p>
       </div>
     </div>
   </div>
@@ -58,9 +58,20 @@
     <div class="surface-card p-6">
       <h3 class="text-xl font-bold text-primary mb-4">Quick Actions</h3>
       <div class="space-y-3">
-        <button class="w-full py-2 rounded-xl bg-primary text-white font-semibold">Assign Course</button>
-        <button class="w-full py-2 rounded-xl bg-accent text-ink font-semibold">Start Live Lesson</button>
-        <button class="w-full py-2 rounded-xl border border-primary text-primary font-semibold">View Reports</button>
+        <div class="space-y-2">
+          <label class="text-sm text-slate-600">Assign a course</label>
+          <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" [(ngModel)]="selectedStudentId" aria-label="Select student">
+            <option value="">Select student</option>
+            <option *ngFor="let student of students" [value]="student.id">{{ student.firstname }} {{ student.lastname }}</option>
+          </select>
+          <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" [(ngModel)]="selectedCourseId" aria-label="Select course">
+            <option value="">Select course</option>
+            <option *ngFor="let course of courses" [value]="course.id">{{ course.title }}</option>
+          </select>
+          <button class="w-full py-2 rounded-xl bg-primary text-white font-semibold hover:-translate-y-0.5 transition" (click)="assignCourse()">Assign Course</button>
+        </div>
+        <button class="w-full py-2 rounded-xl bg-accent text-ink font-semibold hover:-translate-y-0.5 transition" (click)="startLiveLesson()">Start Live Lesson</button>
+        <button class="w-full py-2 rounded-xl border border-primary text-primary font-semibold hover:-translate-y-0.5 transition" (click)="viewReports()">View Reports</button>
       </div>
     </div>
   </div>
@@ -78,23 +89,14 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <tr class="hover:bg-slate-50">
-            <td class="py-3 px-2 font-semibold text-ink">Layla M.</td>
-            <td class="py-3 px-2">African Kingdoms</td>
-            <td class="py-3 px-2">86%</td>
-            <td class="py-3 px-2 text-slate-500">Today</td>
+          <tr *ngFor="let row of teacherSummary" class="hover:bg-slate-50">
+            <td class="py-3 px-2 font-semibold text-ink">{{ row.student_name }}</td>
+            <td class="py-3 px-2">{{ row.course_title }}</td>
+            <td class="py-3 px-2">{{ row.progress }}%</td>
+            <td class="py-3 px-2 text-slate-500">{{ row.last_active ? (row.last_active | date: 'MMM d, y') : 'Not started' }}</td>
           </tr>
-          <tr class="hover:bg-slate-50">
-            <td class="py-3 px-2 font-semibold text-ink">Ezra J.</td>
-            <td class="py-3 px-2">Civil Rights Trailblazers</td>
-            <td class="py-3 px-2">72%</td>
-            <td class="py-3 px-2 text-slate-500">1 day ago</td>
-          </tr>
-          <tr class="hover:bg-slate-50">
-            <td class="py-3 px-2 font-semibold text-ink">Nova S.</td>
-            <td class="py-3 px-2">Music of the Diaspora</td>
-            <td class="py-3 px-2">64%</td>
-            <td class="py-3 px-2 text-slate-500">2 days ago</td>
+          <tr *ngIf="teacherSummary.length === 0">
+            <td colspan="4" class="py-4 text-center text-slate-500">No enrolled students yet.</td>
           </tr>
         </tbody>
       </table>

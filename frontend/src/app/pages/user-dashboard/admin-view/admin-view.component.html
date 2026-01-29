@@ -1,9 +1,9 @@
-<div class="grid gap-4 grid-rows-[auto,auto,auto,auto] grid-cols-4">
-  <div class="bg-white col-span-4 rounded-xl shadow">
-    <div class="flex justify-between items-center p-6">
+<div class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+  <div class="surface-card col-span-1 md:col-span-2 xl:col-span-4 rounded-xl">
+    <div class="flex justify-between items-center p-6 flex-wrap gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-[#1A1A40]"> Welcome, {{userInfo.fullname}}</h2>
-        <p class="text-gray-600">Here's a snapshot of what's happening on EchoEd.</p>
+        <h2 class="text-2xl font-bold text-ink"> Welcome, {{userInfo.fullname}}</h2>
+        <p class="text-slate-600">Here's a snapshot of what's happening on EchoEd.</p>
       </div>
     </div>
   </div>
@@ -12,10 +12,10 @@
     <app-stat-card class="col-span-1" [icon]="m.icon" [label]="m.label" [value]="m.value"></app-stat-card>
   </ng-container>
 
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4 tracking-tight leading-snug">Recent User Signups</h3>
+  <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
+    <h3 class="text-lg font-semibold text-ink mb-4 tracking-tight leading-snug">Recent User Signups</h3>
     <ng-container *ngIf="users.length > 0; else noUsers">
-      <table class="w-full text-sm text-gray-700">
+      <table class="w-full text-sm text-slate-700">
         <thead>
           <tr class="text-left border-b">
             <th class="pb-2">Name</th>
@@ -42,16 +42,24 @@
     </ng-template>
   </div>
 
-  <div class="bg-white p-4 rounded-xl shadow col-span-2">
-    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Usage Statistics</h3>
-    <div class="h-48 bg-[#ECEEF3] rounded-lg flex items-center justify-center text-gray-500">
-      📊 Chart placeholder (Lessons Completed / Assignments Submitted)
+  <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
+    <h3 class="text-lg font-semibold text-ink mb-4">Usage Statistics</h3>
+    <div class="space-y-3">
+      <div *ngFor="let stat of usageStats" class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <p class="font-semibold text-ink">{{ stat.label }}</p>
+          <span class="text-sm text-slate-500">{{ stat.value }}%</span>
+        </div>
+        <div class="w-full bg-white rounded-full h-3 border border-slate-100 overflow-hidden">
+          <div class="h-3 rounded-full {{ stat.color }}" [style.width.%]="stat.value"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+  <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-[#1A1A40] tracking-tight leading-snug">Course Management</h3>
+      <h3 class="text-lg font-semibold text-ink tracking-tight leading-snug">Course Management</h3>
       <span class="text-sm hover:text-[#4A90E2] px-3 py-1 rounded-md transition-colors duration-200" (click)="onAddCourse()"><lucide-icon name="Plus"/></span>
     </div>
     <ng-container *ngIf="courses.length > 0; else noCourses">
@@ -71,15 +79,15 @@
     </ng-template>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
+  <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2 xl:col-span-1">
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-[#1A1A40] tracking-tight leading-snug">Badge Management</h3>
+      <h3 class="text-lg font-semibold text-ink tracking-tight leading-snug">Badge Management</h3>
       <span class="text-sm text-blue-600 underline cursor-pointer" (click)="viewAllBadges()">View All</span>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow col-span-2">
-    <h3 class="text-lg font-semibold text-[#1A1A40] mb-4">Announcements</h3>
+  <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2 xl:col-span-1">
+    <h3 class="text-lg font-semibold text-ink mb-4">Announcements</h3>
     <ul class="space-y-3 text-sm text-gray-700">
       <li><span class="font-semibold">Apr 7, 2024:</span> Don't forget the summit tomorrow!</li>
       <li><span class="font-semibold">Apr 4, 2024:</span> New Course: Web Development</li>

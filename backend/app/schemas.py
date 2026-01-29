@@ -127,6 +127,11 @@ class CourseResponse(BaseModel):
 class EnrollRequest(BaseModel):
     course_id: UUID
 
+
+class AssignCourseRequest(BaseModel):
+    student_id: UUID
+    course_id: UUID
+
 class StartCourseRequest(BaseModel):
     course_id: UUID
 
@@ -211,5 +216,4 @@ class PostResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
 

@@ -8,6 +8,8 @@ import { UserInfo } from '../../models/user-info';
 import { AuthService } from '../../services/auth.service';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
+import { DemoTourService } from '../../services/demo-tour.service';
+import { RoleService } from '../../services/role.service';
 
 @Component({
   selector: 'app-home',
@@ -32,13 +34,21 @@ export class HomeComponent implements OnInit {
   userInfo!: UserInfo;
   lessonMode = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private demoTourService: DemoTourService,
+    private roleService: RoleService,
+  ) { }
 
   ngOnInit(): void {
-    var access_token = localStorage.getItem('token');
+    const access_token = this.authService.getToken();
     if (access_token) {
       this.userInfo = this.authService.getTokenPayload(access_token);
       console.log(this.userInfo);
+      if (this.userInfo?.role) {
+        this.roleService.setUserRoles([this.userInfo.role]);
+      }
     }
 
     this.router.events
@@ -46,6 +56,10 @@ export class HomeComponent implements OnInit {
       .subscribe(() => {
         this.lessonMode = this.router.url.includes('/lesson/');
       });
+  }
+
+  startDemoTour() {
+    this.demoTourService.startTour();
   }
 
 }

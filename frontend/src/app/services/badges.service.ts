@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { Badge, BadgeCreate } from '../models/badge';
+import { Badge, BadgeCreate, StudentBadge } from '../models/badge';
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +38,10 @@ export class BadgesService {
 
   getBadges(): Observable<Badge[]> {
     return this.http.get<Badge[]>(`${this.apiUrl}/badges`, { headers: this.getHeaders() });
+  }
+
+  getStudentBadges(studentId: string): Observable<StudentBadge[]> {
+    return this.http.get<StudentBadge[]>(`${this.apiUrl}/students/${studentId}/badges`, { headers: this.getHeaders() });
   }
 
   createBadge(badge: BadgeCreate): Observable<Badge> {

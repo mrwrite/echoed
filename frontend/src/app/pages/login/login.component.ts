@@ -34,12 +34,11 @@ export class LoginComponent {
         this.userInfo = this.authService.getTokenPayload(response.access_token);
         this.userRoles.push(this.userInfo.role);
         this.roleService.setUserRoles(this.userRoles);
-        localStorage.setItem('token', response.access_token);
         this.router.navigate(['/home']);
       },
       (error) => {
         console.log('Login failed');
-        this.errorMessage = error.errorMessage;
+        this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
       }
     );
   }

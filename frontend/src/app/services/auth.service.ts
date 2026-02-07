@@ -13,6 +13,8 @@ import { RegisterDto } from '../models/register-dto';
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/api/auth`;
   private authTokenKey = 'auth_token';
+  private activeOrgKey = 'active_org_id';
+  private activeOrgRoleKey = 'active_org_role';
 
   constructor(private http: HttpClient) { }
 
@@ -27,6 +29,12 @@ export class AuthService {
 
       tap(response => {
         localStorage.setItem(this.authTokenKey, response.access_token);
+        if (response.active_org_id) {
+          localStorage.setItem(this.activeOrgKey, response.active_org_id);
+        }
+        if (response.organizations && response.organizations.length > 0) {
+          localStorage.setItem(this.activeOrgRoleKey, response.organizations[0].role);
+        }
       })
     );
   }
@@ -37,6 +45,8 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.authTokenKey);
+    localStorage.removeItem(this.activeOrgKey);
+    localStorage.removeItem(this.activeOrgRoleKey);
   }
 
   isLoggedIn(): boolean {

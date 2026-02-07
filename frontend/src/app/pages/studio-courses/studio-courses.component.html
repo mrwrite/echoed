@@ -1,0 +1,33 @@
+<div class="p-6 space-y-6">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-2xl font-bold text-ink">Content studio</h2>
+    <p class="text-sm text-slate-600">Create draft courses and manage published learning paths.</p>
+  </div>
+
+  <div class="surface-card p-6 space-y-4">
+    <h3 class="text-lg font-semibold text-ink">New course draft</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="title" placeholder="Course title" />
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="description" placeholder="Short description" />
+      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createCourse()">Create draft</button>
+    </div>
+  </div>
+
+  <div class="surface-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-ink">Course library</h3>
+      <span class="text-xs text-slate-500">Drafts + published</span>
+    </div>
+    <div *ngIf="courses.length === 0" class="text-sm text-slate-500">No courses yet. Start with a draft above.</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="courses.length > 0">
+      <div *ngFor="let course of courses" class="border border-slate-200 rounded-2xl p-4 bg-white">
+        <h4 class="text-lg font-semibold text-ink">{{ course.title }}</h4>
+        <p class="text-sm text-slate-600">{{ course.description }}</p>
+        <div class="flex items-center gap-2 mt-3">
+          <span class="pill">Draft</span>
+          <button class="text-sm text-primary font-semibold">Open editor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

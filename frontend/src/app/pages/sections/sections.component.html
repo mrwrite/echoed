@@ -1,0 +1,32 @@
+<div class="p-6 space-y-6">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-2xl font-bold text-ink">Sections & classrooms</h2>
+    <p class="text-sm text-slate-600">Create cohorts, assign lessons, and monitor progress.</p>
+  </div>
+
+  <div class="surface-card p-6 space-y-4">
+    <h3 class="text-lg font-semibold text-ink">New section</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="name" placeholder="Section name" />
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="courseVersionId" placeholder="Course version ID" />
+      <select class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="mode">
+        <option value="in_person">In-person</option>
+        <option value="remote">Remote</option>
+        <option value="hybrid">Hybrid</option>
+        <option value="home">Home</option>
+      </select>
+      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createSection()">Create section</button>
+    </div>
+  </div>
+
+  <div class="surface-card p-6">
+    <h3 class="text-lg font-semibold text-ink mb-4">My sections</h3>
+    <div *ngIf="sections.length === 0" class="text-sm text-slate-500">No sections yet.</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="sections.length > 0">
+      <a *ngFor="let section of sections" [routerLink]="['/home/sections', section.id]" class="border border-slate-200 rounded-2xl p-4 bg-white hover:shadow-soft-card transition">
+        <h4 class="text-lg font-semibold text-ink">{{ section.name }}</h4>
+        <p class="text-sm text-slate-500">Mode: {{ section.mode | titlecase }}</p>
+      </a>
+    </div>
+  </div>
+</div>

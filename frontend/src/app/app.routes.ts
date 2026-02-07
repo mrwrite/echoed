@@ -13,6 +13,11 @@ import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.compo
 import { AdminBadgesComponent } from './pages/admin-badges/admin-badges.component';
 import { RoleGuard } from './guards/role.guard';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
+import { OrgInvitesComponent } from './pages/org-invites/org-invites.component';
+import { StudioCoursesComponent } from './pages/studio-courses/studio-courses.component';
+import { SectionsComponent } from './pages/sections/sections.component';
+import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
+import { PreferencesComponent } from './pages/preferences/preferences.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -41,6 +46,31 @@ export const routes: Routes = [
             data: { roles: ['admin', 'teacher'] }
           },
           { path: 'courses', component: AvailableCoursesComponent },
+          {
+            path: 'org/invites',
+            component: OrgInvitesComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['org_admin', 'content_admin'] }
+          },
+          {
+            path: 'studio/courses',
+            component: StudioCoursesComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['content_admin', 'org_admin'] }
+          },
+          {
+            path: 'sections',
+            component: SectionsComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'org_admin', 'instructor'] }
+          },
+          {
+            path: 'sections/:id',
+            component: SectionDetailComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'org_admin', 'instructor'] }
+          },
+          { path: 'me/preferences', component: PreferencesComponent },
           {
             path: 'admin/courses',
             component: AdminCoursesComponent,

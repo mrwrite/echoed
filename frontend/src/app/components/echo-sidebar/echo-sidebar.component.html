@@ -44,6 +44,26 @@
         <span *ngIf="!collapsed" class="font-semibold">Admin Courses</span>
       </a>
     </div>
+
+    <div>
+      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Org & Studio</p>
+      <a routerLink="/home/org/invites" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="Mail" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Invites</span>
+      </a>
+      <a routerLink="/home/studio/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="BookOpen" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Studio Courses</span>
+      </a>
+      <a routerLink="/home/sections" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="Users" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Sections</span>
+      </a>
+      <a routerLink="/home/me/preferences" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+        <lucide-icon name="SlidersHorizontal" class="h-5 w-5"></lucide-icon>
+        <span *ngIf="!collapsed" class="font-semibold">Preferences</span>
+      </a>
+    </div>
   </nav>
 
   <div class="p-4 border-t border-primary/10" *ngIf="!collapsed">

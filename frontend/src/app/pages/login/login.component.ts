@@ -33,6 +33,9 @@ export class LoginComponent {
         console.log('Login successful');
         this.userInfo = this.authService.getTokenPayload(response.access_token);
         this.userRoles.push(this.userInfo.role);
+        if (response.organizations && response.organizations.length > 0) {
+          this.userRoles.push(response.organizations[0].role);
+        }
         this.roleService.setUserRoles(this.userRoles);
         this.router.navigate(['/home']);
       },

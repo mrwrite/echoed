@@ -10,6 +10,7 @@ import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
 import { DemoTourService } from '../../services/demo-tour.service';
 import { RoleService } from '../../services/role.service';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-home',
@@ -39,6 +40,7 @@ export class HomeComponent implements OnInit {
     private router: Router,
     private demoTourService: DemoTourService,
     private roleService: RoleService,
+    private organizationService: OrganizationService,
   ) { }
 
   ngOnInit(): void {
@@ -47,7 +49,12 @@ export class HomeComponent implements OnInit {
       this.userInfo = this.authService.getTokenPayload(access_token);
       console.log(this.userInfo);
       if (this.userInfo?.role) {
-        this.roleService.setUserRoles([this.userInfo.role]);
+        const orgRole = this.organizationService.getActiveOrgRole();
+        const roles = [this.userInfo.role];
+        if (orgRole) {
+          roles.push(orgRole);
+        }
+        this.roleService.setUserRoles(roles);
       }
     }
 

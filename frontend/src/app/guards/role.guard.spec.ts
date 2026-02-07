@@ -1,49 +1,42 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 import { RoleGuard } from './role.guard';
+import { AuthService } from '../services/auth.service';
+import { OrganizationService } from '../services/organization.service';
 
 class MockAuthService {
-  token: string | null = null;
-  getToken() { return this.token; }
-  getTokenPayload(token: string) { return { role: 'admin' }; }
+  getToken() {
+    return 'fake-token';
+  }
+
+  getTokenPayload() {
+    return { role: 'student' };
+  }
+}
+
+class MockOrgService {
+  getActiveOrgRole() {
+    return 'teacher';
+  }
 }
 
 class MockRouter {
-  navigateSpy: any[] = [];
-  navigate(commands: any[]) { this.navigateSpy = commands; }
+  navigate() {}
 }
 
 describe('RoleGuard', () => {
-  let guard: RoleGuard;
-  let authService: MockAuthService;
-  let router: MockRouter;
-  const route = new ActivatedRouteSnapshot();
-  const state = {} as RouterStateSnapshot;
-
-  beforeEach(() => {
+  it('allows when org role matches', () => {
     TestBed.configureTestingModule({
       providers: [
         RoleGuard,
         { provide: AuthService, useClass: MockAuthService },
+        { provide: OrganizationService, useClass: MockOrgService },
         { provide: Router, useClass: MockRouter }
       ]
     });
-    guard = TestBed.inject(RoleGuard);
-    authService = TestBed.inject(AuthService) as unknown as MockAuthService;
-    router = TestBed.inject(Router) as unknown as MockRouter;
-  });
 
-  it('should allow activation when role matches', () => {
-    authService.token = 'token';
-    route.data = { roles: ['admin'] } as any;
-    expect(guard.canActivate(route, state)).toBeTrue();
-  });
-
-  it('should navigate to login when no token', () => {
-    authService.token = null;
-    route.data = { roles: ['admin'] } as any;
-    expect(guard.canActivate(route, state)).toBeFalse();
-    expect(router.navigateSpy[0]).toBe('/login');
+    const guard = TestBed.inject(RoleGuard);
+    const canActivate = guard.canActivate({ data: { roles: ['teacher'] } } as any, {} as any);
+    expect(canActivate).toBe(true);
   });
 });

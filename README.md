@@ -62,7 +62,13 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # (Windows: venv\Scripts\activate)
 pip install -r requirements.txt
+alembic upgrade head
 uvicorn app.main:app --reload
+```
+
+Seed demo data:
+```sh
+python -m app.seed_demo
 ```
 
 ### **3️⃣ Frontend Setup (Angular)**
@@ -99,6 +105,9 @@ FRONTEND_URL=http://localhost:4200
 - `BADGES_PATH` – Folder for badge images served at `/badges`.
 - `JWT_SECRET` – Secret key used for signing JSON Web Tokens.
 - `FRONTEND_URL` – Allowed origin(s) for CORS. Use a comma-separated list for multiple URLs.
+- `STORYBOOK_PATH`, `COLORINGS_PATH`, `BADGES_PATH` – File storage locations for uploads.
+
+> **Org Context Header:** Most org-scoped endpoints require `X-Org-Id` to be set by the frontend (handled by the org interceptor).
 
 If any variable is omitted, the application falls back to the example values above.
 
@@ -140,6 +149,30 @@ Generate coverage:
 ```sh
 ng test --code-coverage
 ```
+
+---
+
+## 🧭 Platform Roles & Core Flows
+
+### **Platform roles**
+- `super_admin` – Global platform control, diagnostics, and ops.
+
+### **Organization roles**
+- `org_admin` – Manages org settings, invites, and staffing.
+- `content_admin` – Authors and publishes courses.
+- `teacher` – Manages sections and assignments (in-person or remote).
+- `parent` – Monitors student progress and supports learning at home.
+- `student` – Consumes courses and completes activities.
+- `instructor` – Higher-ed teaching role (remote-first).
+- `viewer` – Read-only access for observers/guests.
+
+### **Key flows**
+1. **Organization setup** → New users automatically receive a Personal Org and membership.
+2. **Invitations** → Org admins invite users; accepted invites create memberships.
+3. **Course authoring** → Content admins create course containers, draft versions, and publish immutable versions.
+4. **Sections** → Teachers create sections linked to a course version and enroll learners.
+5. **Learning** → Students enroll, resume progress by unit/lesson/activity, and earn badges.
+6. **Assignments & sessions** → Teachers assign units/lessons, start live sessions, and review progress summaries.
 ---
 
 ## 🤝 Contributing
@@ -170,4 +203,3 @@ Looking for styling tips? Check out [docs/design-guidelines.md](docs/design-guid
 ---
 
 Let's **Echo the Past & Educate the Future** together! 🌍📚
-

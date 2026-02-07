@@ -4,7 +4,7 @@ from uuid import UUID
 
 from app.database import get_db
 from app.deps import require_roles
-from app.models import Unit
+from app.models import Unit, CourseVersion
 from app.schemas import UnitResponse
 from pydantic import BaseModel
 
@@ -16,6 +16,12 @@ class UnitCreate(BaseModel):
 
 class UnitUpdate(UnitCreate):
     pass
+
+
+class VersionUnitCreate(BaseModel):
+    title: str
+    content: str | None = None
+    order: int | None = None
 
 router = APIRouter()
 
@@ -35,6 +41,38 @@ def create_unit(
     db.commit()
     db.refresh(new_unit)
     return new_unit
+
+
+@router.post('/course-versions/{version_id}/units', response_model=UnitResponse)
+def create_unit_for_version(
+    version_id: UUID,
+    unit: VersionUnitCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
+    version = db.query(CourseVersion).filter_by(id=version_id).first()
+    if not version:
+        raise HTTPException(status_code=404, detail='Course version not found')
+    new_unit = Unit(
+        course_id=version.course_id,
+        course_version_id=version.id,
+        title=unit.title,
+        content=unit.content,
+        order=unit.order,
+    )
+    db.add(new_unit)
+    db.commit()
+    db.refresh(new_unit)
+    return new_unit
+
+
+@router.get('/course-versions/{version_id}/units', response_model=list[UnitResponse])
+def list_units_for_version(
+    version_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
+    return db.query(Unit).filter_by(course_version_id=version_id).all()
 
 @router.get('/units', response_model=list[UnitResponse])
 def list_units(

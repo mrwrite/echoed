@@ -1,0 +1,35 @@
+<div class="p-6 space-y-6">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-2xl font-bold text-ink">Section detail</h2>
+    <p class="text-sm text-slate-600">Manage assignments and run live lesson sessions.</p>
+  </div>
+
+  <div class="surface-card p-6 space-y-4">
+    <h3 class="text-lg font-semibold text-ink">New assignment</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <select class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="targetType">
+        <option value="unit">Unit</option>
+        <option value="lesson">Lesson</option>
+      </select>
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="targetId" placeholder="Target ID" />
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="dueAt" placeholder="Due date (optional)" />
+      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createAssignment()">Assign</button>
+    </div>
+    <textarea class="w-full border border-slate-200 rounded-xl px-3 py-2" rows="3" [(ngModel)]="instructions" placeholder="Instructions"></textarea>
+  </div>
+
+  <div class="surface-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-ink">Assignments</h3>
+      <button class="px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold">Start lesson session</button>
+    </div>
+    <div *ngIf="assignments.length === 0" class="text-sm text-slate-500">No assignments yet.</div>
+    <div class="space-y-3" *ngIf="assignments.length > 0">
+      <div *ngFor="let assignment of assignments" class="border border-slate-200 rounded-2xl p-4 bg-white">
+        <p class="font-semibold text-ink">{{ assignment.target_type | titlecase }} · {{ assignment.target_id }}</p>
+        <p class="text-xs text-slate-500">Due: {{ assignment.due_at || 'Flexible' }}</p>
+        <p class="text-sm text-slate-600" *ngIf="assignment.instructions">{{ assignment.instructions }}</p>
+      </div>
+    </div>
+  </div>
+</div>

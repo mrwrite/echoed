@@ -1,0 +1,34 @@
+<div class="p-6 space-y-6">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-2xl font-bold text-ink">Organization invites</h2>
+    <p class="text-sm text-slate-600">Invite teachers, parents, and students into your organization.</p>
+  </div>
+
+  <div class="surface-card p-6 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="email" placeholder="Email address" />
+      <select class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="role">
+        <option value="org_admin">Org admin</option>
+        <option value="content_admin">Content admin</option>
+        <option value="teacher">Teacher</option>
+        <option value="parent">Parent</option>
+        <option value="student">Student</option>
+      </select>
+      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createInvite()">Send invite</button>
+    </div>
+  </div>
+
+  <div class="surface-card p-6">
+    <h3 class="text-lg font-semibold text-ink mb-4">Active invites</h3>
+    <div *ngIf="invites.length === 0" class="text-sm text-slate-500">No invites yet. Create one above.</div>
+    <div class="space-y-3" *ngIf="invites.length > 0">
+      <div *ngFor="let invite of invites" class="flex flex-col md:flex-row md:items-center md:justify-between bg-slate-50 rounded-xl p-4">
+        <div>
+          <p class="font-semibold text-ink">{{ invite.email }}</p>
+          <p class="text-xs text-slate-500">Role: {{ invite.role | titlecase }} · Expires {{ invite.expires_at | date }}</p>
+        </div>
+        <span class="badge-soft mt-2 md:mt-0">Token: {{ invite.token }}</span>
+      </div>
+    </div>
+  </div>
+</div>

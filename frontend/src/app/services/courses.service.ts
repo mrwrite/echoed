@@ -159,7 +159,8 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
     }
     return this.getCurrentSegment(unitProgressId).pipe(
       map(segment => {
-        const unit = sc.course.units.find(u => u.lessons.some(l => l.id === segment.lesson_id));
+        const units = sc.course.units ?? [];
+        const unit = units.find(u => u.lessons.some(l => l.id === segment.lesson_id));
         const lessons = unit ? unit.lessons : [];
         const total = lessons.length;
         const index = lessons.findIndex(l => l.id === segment.lesson_id);

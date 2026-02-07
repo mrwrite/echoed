@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.crud.badges import BADGE_RULES, calculate_streak_days, get_or_create_badge
 from app.database import get_db
-from app.deps import require_roles
+from app.deps import require_roles, require_org_roles
 from app.enum import ProgressStatus
-from app.models import Course, Lesson, SegmentProgress, StudentBadge, StudentCourse, StudentUnitProgress, Unit, User
+from app.models import Course, Lesson, SegmentProgress, StudentBadge, StudentCourse, StudentUnitProgress, Unit, User, Enrollment
 
 router = APIRouter()
 
@@ -164,4 +164,41 @@ def get_student_progress(
             "streak_days": streak_days,
         },
         "badge_progress": progress_cards,
+    }
+
+
+@router.get("/sections/{section_id}/analytics/summary")
+def get_section_summary(
+    section_id: str,
+    db: Session = Depends(get_db),
+    membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
+):
+    total_enrolled = (
+        db.query(Enrollment)
+        .filter(Enrollment.section_id == section_id)
+        .count()
+    )
+    completed_lessons = (
+        db.query(SegmentProgress)
+        .filter(
+            SegmentProgress.section_id == section_id,
+            SegmentProgress.status == ProgressStatus.COMPLETED,
+        )
+        .count()
+    )
+    completed_units = (
+        db.query(StudentUnitProgress)
+        .filter(
+            StudentUnitProgress.section_id == section_id,
+            StudentUnitProgress.status == ProgressStatus.COMPLETED,
+        )
+        .count()
+    )
+    return {
+        "section_id": section_id,
+        "totals": {
+            "enrolled": total_enrolled,
+            "lessons_completed": completed_lessons,
+            "units_completed": completed_units,
+        },
     }

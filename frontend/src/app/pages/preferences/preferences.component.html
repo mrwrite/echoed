@@ -1,0 +1,63 @@
+<div class="p-6 space-y-6">
+  <div class="flex flex-col gap-2">
+    <h2 class="text-2xl font-bold text-ink">Preferences & Accessibility</h2>
+    <p class="text-sm text-slate-600">Tune EchoEd to your learning style and accessibility needs.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="surface-card p-6 space-y-4">
+      <h3 class="text-lg font-semibold text-ink">Language & Region</h3>
+      <label class="block text-sm text-slate-500">Locale</label>
+      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.locale">
+        <option value="en">English</option>
+        <option value="fr">Français (coming soon)</option>
+        <option value="es">Español (coming soon)</option>
+      </select>
+      <label class="block text-sm text-slate-500">Timezone</label>
+      <input class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.timezone" placeholder="e.g. Africa/Accra" />
+    </div>
+
+    <div class="surface-card p-6 space-y-4">
+      <h3 class="text-lg font-semibold text-ink">Learning Mode</h3>
+      <label class="block text-sm text-slate-500">Preferred mode</label>
+      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.preferred_mode">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="parent">Parent</option>
+      </select>
+
+      <label class="block text-sm text-slate-500">Reading level</label>
+      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.reading_level_mode">
+        <option value="kids">Kids</option>
+        <option value="standard">Standard</option>
+        <option value="large-type">Large type</option>
+      </select>
+    </div>
+
+    <div class="surface-card p-6 space-y-4">
+      <h3 class="text-lg font-semibold text-ink">Accessibility</h3>
+      <label class="flex items-center gap-3 text-sm text-slate-600">
+        <input type="checkbox" [(ngModel)]="preferences.large_text" />
+        Large text mode
+      </label>
+      <label class="flex items-center gap-3 text-sm text-slate-600">
+        <input type="checkbox" [(ngModel)]="preferences.dyslexia_font" />
+        Dyslexia-friendly font (placeholder)
+      </label>
+    </div>
+
+    <div class="surface-card p-6 space-y-4">
+      <h3 class="text-lg font-semibold text-ink">Theme</h3>
+      <label class="block text-sm text-slate-500">Theme</label>
+      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.theme">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="flex justify-end">
+    <button class="px-6 py-2 bg-primary text-white rounded-full font-semibold" (click)="save()">Save preferences</button>
+  </div>
+</div>

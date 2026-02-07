@@ -3,9 +3,11 @@ import {
   Input, 
   ElementRef, 
   HostListener, 
-  ViewChild 
+  ViewChild,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { UserInfo } from '../../models/user-info';
 import {
   trigger,
@@ -17,12 +19,14 @@ import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { DemoTourService } from '../../services/demo-tour.service';
 import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.component';
+import { OrganizationService } from '../../services/organization.service';
+import { Organization } from '../../models/organization';
 
 
 @Component({
   selector: 'echo-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, EchoBreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, EchoBreadcrumbsComponent, FormsModule],
   templateUrl: './echo-header.component.html',
   styleUrl: './echo-header.component.scss',
   animations: [
@@ -38,16 +42,31 @@ import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.c
   ],
 })
 
-export class EchoHeaderComponent {
+export class EchoHeaderComponent implements OnInit {
   @Input() userinfo!: UserInfo;
   menuOpen: boolean = false;
+  organizations: Organization[] = [];
+  activeOrgId: string | null = null;
 
   @ViewChild('menuContainer') menuContainer!: ElementRef;
 
-  constructor(private authService: AuthService,
+  constructor(
+    private authService: AuthService,
     private router: Router,
-    private demoTourService: DemoTourService
+    private demoTourService: DemoTourService,
+    private organizationService: OrganizationService
   ) {}
+
+  ngOnInit(): void {
+    this.activeOrgId = this.organizationService.getActiveOrgId();
+    this.organizationService.getOrganizations().subscribe(orgs => {
+      this.organizations = orgs;
+      if (!this.activeOrgId && this.organizations.length > 0) {
+        const defaultOrg = this.organizations[0];
+        this.switchOrg(defaultOrg.id);
+      }
+    });
+  }
 
   getInitials(): string {
     return this.userinfo?.fullname
@@ -63,6 +82,7 @@ export class EchoHeaderComponent {
 
   logout(): void {
     this.authService.logout();
+    this.organizationService.clearActiveOrg();
     this.router.navigate(['/login']);
   }
 
@@ -75,5 +95,12 @@ export class EchoHeaderComponent {
     if (this.menuContainer && !this.menuContainer.nativeElement.contains(targetElement)) {
       this.menuOpen = false;
     }
+  }
+
+  switchOrg(orgId: string) {
+    const role = this.organizations.find(org => org.id === orgId)?.role;
+    this.organizationService.setActiveOrg(orgId, role).subscribe(() => {
+      this.activeOrgId = orgId;
+    });
   }
 }

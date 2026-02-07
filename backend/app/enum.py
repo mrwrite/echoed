@@ -27,7 +27,7 @@ class OrganizationRole(enum.Enum):
     VIEWER = "viewer"
 
 
-class MembershipStatus(enum.Enum):
+class MembershipStatus(str, enum.Enum):
     ACTIVE = "active"
     INVITED = "invited"
     INACTIVE = "inactive"

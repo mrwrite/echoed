@@ -81,13 +81,25 @@ class OrganizationMembership(Base):
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     role = Column(
-        SqlEnum(OrganizationRole, name="organization_role_enum", create_constraint=True),
+        SqlEnum(
+            OrganizationRole,
+            name="organization_role_enum",
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            native_enum=True,
+            validate_strings=True,
+            create_constraint=True,
+            ),
         nullable=False,
     )
     status = Column(
-        SqlEnum(MembershipStatus, name="membership_status_enum", create_constraint=True),
-        default=MembershipStatus.ACTIVE,
-        nullable=False,
+        SqlEnum(
+            MembershipStatus,
+            name="membership_status_enum",
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            native_enum=True,
+            validate_strings=True,
+            create_constraint=True,
+        ),
     )
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -101,7 +113,14 @@ class OrganizationInvite(Base):
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False)
     email = Column(String, nullable=False)
     role = Column(
-        SqlEnum(OrganizationRole, name="invite_role_enum", create_constraint=True),
+        SqlEnum(
+        OrganizationRole,
+        name="invite_role_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+        ),
         nullable=False,
     )
     token = Column(String, unique=True, nullable=False)

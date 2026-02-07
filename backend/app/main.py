@@ -1,119 +1,46 @@
-from fastapi import (
-    FastAPI,
-    Depends,
-    HTTPException,
-    status,
-    Request,
-    Path,
-    UploadFile,
-    File,
-)
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session, joinedload
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.auth import (
-    create_access_token,
-    authenticate_user,
-    get_current_user,
-    hash_password,
-)
 import os
-import uuid
-import shutil
-from app.database import SessionLocal, engine, Base
-from app.models import (
-    User,
-    Course,
-    Unit,
-    Lesson,
-    Activity,
-    Media,
-    StudentCourse,
-    StorybookPage,
-    Thread,
-    Post,
-    StudentBadge,
-    user_units,
-)
-from app.schemas import (
-    UserDto,
-    CourseDto,
-    CourseResponse,
-    UnitDto,
-    LessonDto,
-    ActivityDto,
-    MediaResponse,
-    ActivityResponse,
-    LessonResponse,
-    UnitResponse,
-    StudentCourseResponse,
-    StudentCourseWithDetails,
-    StorybookPageResponse,
-)
-from app.enum import ProgressStatus
-from app.api.routes import progress, badges, units, lessons, activities
-from app.deps import require_roles
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-Base.metadata.create_all(bind=engine)
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from app.api.routes import (
+    activities,
+    analytics,
+    assignments,
+    auth,
+    badges,
+    courses,
+    enroll,
+    invites,
+    lesson_sessions,
+    lessons,
+    orgs,
+    posts,
+    preferences,
+    progress,
+    sections,
+    start_course,
+    threads,
+    units,
+    uploads,
+    users,
+)
 
 app = FastAPI()
 
-# Directory for uploaded storybook pages
 STORYBOOK_PATH = os.getenv("STORYBOOK_PATH", "./storybook")
-os.makedirs(STORYBOOK_PATH, exist_ok=True)
-
-# Serve uploaded storybook pages as static files
-app.mount("/storybook", StaticFiles(directory=STORYBOOK_PATH), name="storybook")
-
-# Directory for uploaded coloring pages
 COLORINGS_PATH = os.getenv("COLORINGS_PATH", "./colorings")
-os.makedirs(COLORINGS_PATH, exist_ok=True)
-
-# Serve uploaded coloring pages as static files
-app.mount("/colorings", StaticFiles(directory=COLORINGS_PATH), name="colorings")
-
-# Directory for uploaded badge images
 BADGES_PATH = os.getenv("BADGES_PATH", "./badges")
+
+os.makedirs(STORYBOOK_PATH, exist_ok=True)
+os.makedirs(COLORINGS_PATH, exist_ok=True)
 os.makedirs(BADGES_PATH, exist_ok=True)
 
-# Serve uploaded badge images as static files
+app.mount("/storybook", StaticFiles(directory=STORYBOOK_PATH), name="storybook")
+app.mount("/colorings", StaticFiles(directory=COLORINGS_PATH), name="colorings")
 app.mount("/badges", StaticFiles(directory=BADGES_PATH), name="badges")
 
-app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
-
-
-def configure_routes():
-    from app.api.routes import (
-        enroll,
-        start_course,
-        badges,
-        units,
-        lessons,
-        activities,
-        threads,
-        posts,
-        analytics,
-    )
-
-    app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
-    app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
-    app.include_router(badges.router, prefix="/api", tags=["Badges"])
-    app.include_router(units.router, prefix="/api", tags=["Units"])
-    app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
-    app.include_router(activities.router, prefix="/api", tags=["Activities"])
-    app.include_router(threads.router, prefix="/api/forum", tags=["Threads"])
-    app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
-    app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
-
-
-configure_routes()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# Configure CORS using allowed origins from the environment. Defaults support
-# local development when FRONTEND_URL is not set.
 allowed_origins = os.getenv(
     "FRONTEND_URL", "http://localhost:4200,http://127.0.0.1:4200"
 ).split(",")
@@ -126,529 +53,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+app.include_router(progress.router, prefix="/api", tags=["Progress"])
+app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
+app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
+app.include_router(badges.router, prefix="/api", tags=["Badges"])
+app.include_router(units.router, prefix="/api", tags=["Units"])
+app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
+app.include_router(activities.router, prefix="/api", tags=["Activities"])
+app.include_router(threads.router, prefix="/api/forum", tags=["Threads"])
+app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
+app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
+app.include_router(auth.router, prefix="/api", tags=["Auth"])
+app.include_router(users.router, prefix="/api", tags=["Users"])
+app.include_router(courses.router, prefix="/api", tags=["Courses"])
+app.include_router(orgs.router, prefix="/api", tags=["Organizations"])
+app.include_router(invites.router, prefix="/api", tags=["Invites"])
+app.include_router(preferences.router, prefix="/api", tags=["Preferences"])
+app.include_router(sections.router, prefix="/api", tags=["Sections"])
+app.include_router(lesson_sessions.router, prefix="/api", tags=["Lesson Sessions"])
+app.include_router(assignments.router, prefix="/api", tags=["Assignments"])
+app.include_router(uploads.router, prefix="/api", tags=["Uploads"])
 
 
 @app.get("/api")
 def read_root():
     return {"message": "Echoed API is running"}
-
-
-@app.post("/api/auth/register")
-def register_user(user: UserDto, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == user.username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
-
-    new_user = User(
-        username=user.username,
-        firstname=user.firstname,
-        lastname=user.lastname,
-        email=user.email,
-        role=user.role.lower(),
-        hashed_password=hash_password(user.password),
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return {"message": "User registered successfully"}
-
-
-@app.post("/api/auth/token")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
-):
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    access_token = create_access_token(
-        data={
-            "sub": user.username,
-            "user_id": str(user.id),
-            "fullname": f"{user.firstname} {user.lastname}",
-            "role": user.role,
-        }
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/api/auth/protected")
-def protected_route(current_user: User = Depends(get_current_user)):
-    return {"message": f"Hello, {current_user.username}, you have access!"}
-
-
-@app.get("/api/users")
-def get_users(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin")),
-):
-    users = db.query(User).all()
-    return users
-
-
-@app.get("/api/users/{user_id}")
-def get_user_by_id(
-    user_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin")),
-):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-@app.get("/api/users/students")
-def get_student_users(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin", "teacher")),
-):
-    return db.query(User).filter(User.role == "student").all()
-
-
-@app.put("/api/users/{user_id}")
-def update_user(
-    user_id: str,
-    user: UserDto,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin")),
-):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    db_user.firstname = user.firstname
-    db_user.lastname = user.lastname
-    db_user.username = user.username
-    db_user.email = user.email
-    db_user.role = user.role.lower()
-
-    if user.password:
-        db_user.hashed_password = hash_password(user.password)
-
-    db.commit()
-    return {"message": "User updated successfully"}
-
-
-@app.delete("/api/users/{user_id}")
-def delete_user(
-    user_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin")),
-):
-    try:
-        uid = uuid.UUID(user_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid user id")
-    db_user = db.query(User).filter(User.id == uid).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Delete posts authored by the user
-    db.query(Post).filter(Post.user_id == uid).delete()
-
-    # Delete threads created by the user (cascade removes related posts)
-    user_threads = db.query(Thread).filter(Thread.user_id == uid).all()
-    for thread in user_threads:
-        db.delete(thread)
-
-    # Remove any badges awarded to the user
-    db.query(StudentBadge).filter(StudentBadge.student_id == uid).delete()
-
-    # Remove user-unit association entries
-    db.execute(user_units.delete().where(user_units.c.user_id == uid))
-
-    db.delete(db_user)
-    db.commit()
-    return {"message": "User deleted successfully"}
-
-
-@app.get("/api/courses")
-def get_courses(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin", "teacher", "student")),
-):
-    courses = db.query(Course).all()
-    return courses
-
-
-@app.get("/api/student-courses", response_model=list[StudentCourseWithDetails])
-def get_student_courses(
-    db: Session = Depends(get_db), current_user: User = Depends(require_roles("student"))
-):
-    student_courses = (
-        db.query(StudentCourse)
-        .options(
-            joinedload(StudentCourse.course).joinedload(Course.units)
-        )  # eager load course units
-        .filter(StudentCourse.student_id == current_user.id)
-        .all()
-    )
-
-    # Convert to pydantic-compatible dicts with nested course details
-    results = []
-    for sc in student_courses:
-        active_progress = next(
-            (up for up in sc.unit_progress if up.status == ProgressStatus.IN_PROGRESS),
-            None,
-        )
-        unit_progress_id = (
-            active_progress.id
-            if active_progress
-            else (sc.unit_progress[0].id if sc.unit_progress else None)
-        )
-
-        results.append(
-            {
-                "id": sc.id,
-                "student_id": sc.student_id,
-                "course_id": sc.course_id,
-                "enrolled_on": sc.enrolled_on,
-                "status": sc.status,
-                "course": CourseResponse.from_orm(sc.course),
-                "unit_progress_id": unit_progress_id,
-            }
-        )
-
-    return results
-
-
-@app.get("/api/courses/{course_id}", response_model=CourseResponse)
-def get_course_by_id(
-    course_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin", "teacher", "student")),
-):
-    course = db.query(Course).filter(Course.id == course_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
-
-    course_data = CourseResponse(
-        id=course.id,
-        title=course.title,
-        description=course.description,
-        units=[
-            UnitResponse(
-                id=unit.id,
-                title=unit.title,
-                content=unit.content,
-                order=unit.order,
-                lessons=[
-                    LessonResponse(
-                        id=lesson.id,
-                        title=lesson.title,
-                        objective=lesson.objective,
-                        order=lesson.order,
-                        duration_minutes=lesson.duration_minutes,
-                        activities=[
-                            ActivityResponse(
-                                id=activity.id,
-                                type=activity.type,
-                                title=activity.title,
-                                content=activity.content,
-                                order=activity.order,
-                                media=(
-                                    MediaResponse(
-                                        id=activity.media.id,
-                                        type=activity.media.type,
-                                        title=activity.media.title,
-                                        url=activity.media.url,
-                                        description=activity.media.description,
-                                    )
-                                    if activity.media
-                                    else None
-                                ),
-                                pages=[
-                                    StorybookPageResponse.from_orm(p)
-                                    for p in activity.storybook_pages
-                                ],
-                            )
-                            for activity in lesson.activities
-                        ],
-                    )
-                    for lesson in unit.lessons
-                ],
-            )
-            for unit in course.units
-        ],
-    )
-
-    return course_data
-
-
-@app.post("/api/courses")
-def create_course(
-    course: CourseDto,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
-        )
-    new_course = Course(title=course.title, description=course.description)
-    db.add(new_course)
-    db.flush()  # So we have new_course.id immediately
-
-    for unit_data in course.units:
-        new_unit = Unit(
-            title=unit_data.title,
-            content=unit_data.content,
-            order=unit_data.order,
-            course_id=new_course.id,
-        )
-        db.add(new_unit)
-        db.flush()  # Get unit_id for lessons
-
-        for lesson_data in unit_data.lessons:
-            new_lesson = Lesson(
-                title=lesson_data.title,
-                objective=lesson_data.objective,
-                order=lesson_data.order,
-                duration_minutes=lesson_data.duration_minutes,
-                unit_id=new_unit.id,
-            )
-            db.add(new_lesson)
-            db.flush()  # Get lesson_id for activities
-
-            for activity_data in lesson_data.activities:
-                new_activity = Activity(
-                    type=activity_data.type,
-                    title=activity_data.title,
-                    content=activity_data.content,
-                    order=activity_data.order,
-                    lesson_id=new_lesson.id,
-                )
-                db.add(new_activity)
-                db.flush()
-
-                if activity_data.type == "storybook":
-                    for page in getattr(activity_data, "pages", []):
-                        db.add(
-                            StorybookPage(
-                                activity_id=new_activity.id,
-                                image_url=page.image_url,
-                                order=page.order,
-                            )
-                        )
-
-    db.commit()
-
-    return {
-        "message": "Course with units, lessons, and activities created successfully!"
-    }
-
-
-@app.put("/api/courses/{course_id}")
-def update_course(
-    course_id: str,
-    course_dto: CourseDto,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
-        )
-    try:
-        cid = uuid.UUID(course_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid course id")
-
-    existing_course = db.query(Course).filter(Course.id == cid).first()
-    if not existing_course:
-        raise HTTPException(status_code=404, detail="Course not found")
-
-    try:
-        # Update basic fields
-        existing_course.title = course_dto.title
-        existing_course.description = course_dto.description
-
-        # Remove existing units along with their lessons/activities. We only
-        # flush the deletes so that the entire update occurs in a single
-        # transaction. If something fails while rebuilding the course, the
-        # session can be rolled back and previously existing units (and their
-        # storybook pages) will remain intact instead of being permanently
-        # removed.
-        for unit in list(existing_course.units):
-            db.delete(unit)
-        db.flush()
-
-        # Rebuild Units, Lessons, Activities fresh
-        for unit_dto in course_dto.units:
-            new_unit = Unit(
-                title=unit_dto.title,
-                content=unit_dto.content,
-                order=unit_dto.order,
-                course_id=existing_course.id,
-            )
-            db.add(new_unit)
-            db.flush()  # get unit id for relationship if needed
-
-            for lesson_dto in unit_dto.lessons:
-                new_lesson = Lesson(
-                    title=lesson_dto.title,
-                    objective=lesson_dto.objective,
-                    order=lesson_dto.order,
-                    duration_minutes=lesson_dto.duration_minutes,
-                    unit_id=new_unit.id,
-                )
-                db.add(new_lesson)
-                db.flush()
-
-                for activity_dto in lesson_dto.activities:
-                    new_activity = Activity(
-                        title=activity_dto.title,
-                        type=activity_dto.type,
-                        content=activity_dto.content,
-                        order=activity_dto.order,
-                        lesson_id=new_lesson.id,
-                    )
-                    db.add(new_activity)
-                    db.flush()
-
-                    if activity_dto.type == "storybook":
-                        for page in getattr(activity_dto, "pages", []):
-                            db.add(
-                                StorybookPage(
-                                    activity_id=new_activity.id,
-                                    image_url=page.image_url,
-                                    order=page.order,
-                                )
-                            )
-
-        db.commit()
-        db.refresh(existing_course)
-    except Exception as e:
-        db.rollback()
-        raise e
-
-    return {"message": "Course updated successfully"}
-
-
-@app.delete("/api/courses/{course_id}")
-def delete_course(
-    course_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    if current_user.role not in ["admin", "teacher"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
-        )
-    try:
-        cid = uuid.UUID(course_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid course id")
-    course = db.query(Course).filter(Course.id == cid).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
-
-    db.delete(course)
-    db.commit()
-    return {"message": "Course deleted successfully"}
-
-
-@app.get("/api/lessons/{lesson_id}", response_model=LessonResponse)
-def get_lesson_by_id(
-    lesson_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin", "teacher", "student")),
-):
-    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    activities = []
-    for activity in lesson.activities:
-        media = (
-            MediaResponse(
-                id=activity.media.id,
-                type=activity.media.type,
-                title=activity.media.title,
-                url=activity.media.url,
-                description=activity.media.description,
-            )
-            if activity.media
-            else None
-        )
-
-        activities.append(
-            ActivityResponse(
-                id=activity.id,
-                type=activity.type,
-                title=activity.title,
-                content=activity.content,
-                order=activity.order,
-                media=media,
-                pages=[
-                    StorybookPageResponse.from_orm(p) for p in activity.storybook_pages
-                ],
-            )
-        )
-
-    return LessonResponse(
-        id=lesson.id,
-        title=lesson.title,
-        order=lesson.order,
-        objective=lesson.objective,
-        duration_minutes=lesson.duration_minutes,
-        activities=activities,
-    )
-
-
-# --- File upload endpoint for coloring pages ---
-@app.post("/api/upload/coloring")
-def upload_coloring(
-    request: Request,
-    file: UploadFile = File(...),
-    current_user: User = Depends(require_roles("admin", "teacher")),
-):
-    """Upload a coloring page and return the accessible file URL."""
-    extension = os.path.splitext(file.filename)[1]
-    filename = f"{uuid.uuid4()}{extension}"
-    file_path = os.path.join(COLORINGS_PATH, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    file_url = request.url_for("colorings", path=filename)
-    return {"file_path": str(file_url)}
-
-
-# --- File upload endpoint for storybook pages ---
-@app.post("/api/upload/storybook")
-def upload_storybook_page(
-    request: Request,
-    file: UploadFile = File(...),
-    current_user: User = Depends(require_roles("admin", "teacher")),
-):
-    """Upload a storybook page and return the accessible file URL."""
-    extension = os.path.splitext(file.filename)[1]
-    filename = f"{uuid.uuid4()}{extension}"
-    file_path = os.path.join(STORYBOOK_PATH, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    file_url = request.url_for("storybook", path=filename)
-    return {"file_path": str(file_url)}
-
-
-# --- File upload endpoint for badge images ---
-@app.post("/api/upload/badge")
-def upload_badge_image(
-    request: Request,
-    file: UploadFile = File(...),
-    current_user: User = Depends(require_roles("admin")),
-):
-    """Upload a badge image and return the accessible file URL."""
-    extension = os.path.splitext(file.filename)[1]
-    filename = f"{uuid.uuid4()}{extension}"
-    file_path = os.path.join(BADGES_PATH, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    file_url = request.url_for("badges", path=filename)
-    return {"file_path": str(file_url)}

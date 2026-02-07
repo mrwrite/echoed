@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { OrganizationService } from '../services/organization.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private organizationService: OrganizationService,
+    private router: Router
+  ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const allowedRoles = route.data['roles'] as string[] | undefined;
@@ -18,7 +23,8 @@ export class RoleGuard implements CanActivate {
 
     const payload = this.authService.getTokenPayload(token);
     const userRole = payload?.role;
-    if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
+    const orgRole = this.organizationService.getActiveOrgRole();
+    if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(userRole) || (orgRole && allowedRoles.includes(orgRole))) {
       return true;
     }
 

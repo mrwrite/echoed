@@ -1,0 +1,47 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531]">
+  <div class="max-w-3xl w-full glass-panel p-6">
+    <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8">
+      <p class="text-sm text-primary font-semibold">Welcome to EchoEd</p>
+      <h1 class="text-3xl font-bold text-ink">Create your organization</h1>
+      <p class="text-muted mt-2">
+        Set up your organization to unlock invites, reporting, and collaborative tools.
+      </p>
+
+      <div class="mt-6 space-y-4">
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-primary" for="organizationName">Organization name</label>
+          <input
+            id="organizationName"
+            type="text"
+            [(ngModel)]="organizationName"
+            placeholder="e.g. Bright Futures Academy"
+            class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
+          />
+        </div>
+
+        <div class="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3">
+          <p class="text-xs text-muted uppercase tracking-[0.2em]">Organization type</p>
+          <p class="text-sm font-semibold text-main">{{ inferredTypeLabel }}</p>
+          <p class="text-xs text-muted mt-1">We suggested a type based on your role.</p>
+        </div>
+
+        <div *ngIf="isStudentRole" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p class="text-sm font-semibold text-amber-800">Student accounts usually join an existing organization.</p>
+          <p class="text-xs text-amber-700 mt-1">
+            If you need a family space, you can create one here. Otherwise, ask an admin for an invite.
+          </p>
+        </div>
+
+        <p class="text-sm text-red-600" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <button
+          class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:opacity-60"
+          (click)="createOrganization()"
+          [disabled]="!organizationName || isSubmitting"
+        >
+          {{ isSubmitting ? 'Creating organization…' : 'Create organization' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

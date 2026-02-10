@@ -1,4 +1,4 @@
-<div [ngClass]="collapsed ? 'w-20' : 'w-72'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
+<div [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
   <div class="flex items-center justify-between p-4">
     <div class="flex items-center gap-3" *ngIf="!collapsed">
       <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>

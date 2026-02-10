@@ -77,6 +77,7 @@ cd frontend
 npm install
 ng serve
 ```
+The Angular dev server proxies `/api` requests to `http://127.0.0.1:8000` via `frontend/proxy.conf.json`, so keep the backend running locally when working in dev mode.
 
 ### **Setting Build Environments**
 Angular uses environment files in `frontend/src/environments` to change values during different builds. The default `ng serve` uses `environment.ts`. To build with the production settings from `environment.prod.ts`, run:
@@ -167,7 +168,7 @@ ng test --code-coverage
 - `viewer` – Read-only access for observers/guests.
 
 ### **Key flows**
-1. **Organization setup** → New users automatically receive a Personal Org and membership.
+1. **Organization setup** → New users can create an org during registration or complete the onboarding screen after login. Users with only a Personal Org are prompted to create a real org before continuing.
 2. **Invitations** → Org admins invite users; accepted invites create memberships.
 3. **Course authoring** → Content admins create course containers, draft versions, and publish immutable versions.
 4. **Sections** → Teachers create sections linked to a course version and enroll learners.

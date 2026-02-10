@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { RoleService } from '../../services/role.service';
 import { UserInfo } from '../../models/user-info';
+import { OrganizationService } from '../../services/organization.service';
+import { Organization } from '../../models/organization';
 
 @Component({
   selector: 'echo-login',
@@ -24,7 +26,12 @@ export class LoginComponent {
   userInfo!: UserInfo;
   userRoles: string[] = [];
 
-  constructor(private router: Router, private authService: AuthService, private roleService: RoleService) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private roleService: RoleService,
+    private organizationService: OrganizationService,
+  ) { }
 
   login(event: Event) {
     event.preventDefault();
@@ -37,12 +44,35 @@ export class LoginComponent {
           this.userRoles.push(response.organizations[0].role);
         }
         this.roleService.setUserRoles(this.userRoles);
-        this.router.navigate(['/home']);
+        this.organizationService.refreshOrganizations().subscribe({
+          next: (orgs) => {
+            if (this.needsOnboarding(orgs)) {
+              this.router.navigate(['/onboarding/organization']);
+              return;
+            }
+            this.router.navigate(['/home']);
+          },
+          error: () => {
+            this.router.navigate(['/home']);
+          },
+        });
       },
       (error) => {
         console.log('Login failed');
         this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
       }
     );
+  }
+
+  private needsOnboarding(orgs: Organization[]): boolean {
+    const pendingOrg = sessionStorage.getItem('pending_org_creation');
+    if (pendingOrg) {
+      return true;
+    }
+    if (!orgs || orgs.length === 0) {
+      return true;
+    }
+    const hasNonPersonal = orgs.some((org) => org.type !== 'personal');
+    return !hasNonPersonal;
   }
 }

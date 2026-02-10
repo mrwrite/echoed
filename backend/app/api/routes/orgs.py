@@ -8,7 +8,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.enum import OrganizationType, OrganizationRole
 from app.models import Organization, OrganizationMembership
-from app.schemas import OrganizationCreate, OrganizationResponse
+from app.schemas import OrganizationCreate, OrganizationResponse, OrganizationUpdate
 
 router = APIRouter()
 
@@ -61,6 +61,47 @@ def create_org(
         role=OrganizationRole.ORG_ADMIN,
     )
     db.add(membership)
+    db.commit()
+    db.refresh(organization)
+    return organization
+
+
+@router.patch("/orgs/{org_id}", response_model=OrganizationResponse)
+def update_org(
+    org_id: str,
+    payload: OrganizationUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        org_uuid = uuid.UUID(org_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid organization id") from exc
+
+    organization = db.query(Organization).filter(Organization.id == org_uuid).first()
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    if current_user.role != "super_admin":
+        membership = (
+            db.query(OrganizationMembership)
+            .filter(
+                OrganizationMembership.organization_id == org_uuid,
+                OrganizationMembership.user_id == current_user.id,
+            )
+            .first()
+        )
+        allowed_roles = {
+            OrganizationRole.ORG_ADMIN.value,
+            OrganizationRole.CONTENT_ADMIN.value,
+        }
+        if not membership or membership.role.value not in allowed_roles:
+            raise HTTPException(
+                status_code=403,
+                detail="You do not have permission to update this organization.",
+            )
+
+    organization.name = payload.name
     db.commit()
     db.refresh(organization)
     return organization

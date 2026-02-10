@@ -59,7 +59,8 @@ export class EchoHeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.activeOrgId = this.organizationService.getActiveOrgId();
-    this.organizationService.getOrganizations().subscribe(orgs => {
+    this.organizationService.refreshOrganizations().subscribe();
+    this.organizationService.organizations$.subscribe(orgs => {
       this.organizations = orgs;
       if (!this.activeOrgId && this.organizations.length > 0) {
         const defaultOrg = this.organizations[0];

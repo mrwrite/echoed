@@ -20,7 +20,11 @@ export class RegistrationComponent implements OnInit {
   showPassword = false;
   showConfirm = false;
   roleOptions: EnumOption[] = [];
+  organizationTypes: EnumOption[] = [];
   loadingRoles = true;
+  inferredOrgTypeLabel = '';
+  inferredOrgTypeValue = '';
+  showStudentOrgHint = false;
 
   constructor(
     private router: Router,
@@ -38,6 +42,8 @@ export class RegistrationComponent implements OnInit {
       firstName: new FormControl('', [Validators.required]),
       lastName: new FormControl('', [Validators.required]),
       role: new FormControl('', [Validators.required]),
+      createOrganization: new FormControl(false),
+      organizationName: new FormControl(''),
     });
   }
 
@@ -53,6 +59,8 @@ export class RegistrationComponent implements OnInit {
         this.roleOptions = (enums.organizationRoles ?? []).filter((r) =>
           allowed.has(r.value),
         );
+        this.organizationTypes = enums.organizationTypes ?? [];
+        this.updateInferredOrgType();
         this.loadingRoles = false;
       },
       error: (err) => {
@@ -63,6 +71,21 @@ export class RegistrationComponent implements OnInit {
         ];
         this.loadingRoles = false;
       },
+    });
+
+    this.registrationForm.get('role')?.valueChanges.subscribe(() => {
+      this.updateInferredOrgType();
+    });
+
+    this.registrationForm.get('createOrganization')?.valueChanges.subscribe((enabled) => {
+      const orgNameControl = this.registrationForm.get('organizationName');
+      if (enabled) {
+        orgNameControl?.setValidators([Validators.required]);
+      } else {
+        orgNameControl?.clearValidators();
+        orgNameControl?.setValue('');
+      }
+      orgNameControl?.updateValueAndValidity();
     });
     
   }
@@ -96,6 +119,15 @@ export class RegistrationComponent implements OnInit {
     this.authService.register(user).subscribe(
       (response) => {
         console.log('Registration successful');
+        if (formValue.createOrganization && formValue.organizationName) {
+          const payload = {
+            name: formValue.organizationName,
+            type: this.inferredOrgTypeValue,
+          };
+          sessionStorage.setItem('pending_org_creation', JSON.stringify(payload));
+        } else {
+          sessionStorage.removeItem('pending_org_creation');
+        }
         this.router.navigate(['/login']);
       },
       (error) => {
@@ -105,5 +137,28 @@ export class RegistrationComponent implements OnInit {
           'Registration failed. Please check your details and try again.';
       },
     );
+  }
+
+  private updateInferredOrgType(): void {
+    const role = this.registrationForm.get('role')?.value;
+    const inferredType = this.getOrgTypeForRole(role);
+    this.inferredOrgTypeValue = inferredType;
+    const match = this.organizationTypes.find((t) => t.value === inferredType);
+    this.inferredOrgTypeLabel = match?.label ?? inferredType;
+    this.showStudentOrgHint = role === 'student';
+  }
+
+  private getOrgTypeForRole(role: string): string {
+    switch (role) {
+      case 'parent':
+        return 'family';
+      case 'teacher':
+      case 'instructor':
+        return 'school';
+      case 'student':
+        return 'family';
+      default:
+        return 'personal';
+    }
   }
 }

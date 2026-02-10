@@ -82,6 +82,37 @@
           </select>
         </div>
 
+        <div class="rounded-2xl border border-primary/10 bg-primary/5 p-4 space-y-3">
+          <label class="flex items-center gap-3 text-sm font-semibold text-primary">
+            <input type="checkbox" formControlName="createOrganization" />
+            Create an organization now
+          </label>
+          <p class="text-sm text-muted">
+            If you do not have an organization yet, we can set one up for you after sign-up.
+          </p>
+          <div *ngIf="registrationForm.get('createOrganization')?.value" class="space-y-3">
+            <div class="space-y-2">
+              <label for="organizationName" class="text-sm font-semibold text-primary">Organization name</label>
+              <input
+                id="organizationName"
+                type="text"
+                formControlName="organizationName"
+                placeholder="e.g. Bright Futures Academy"
+                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
+              />
+              <p class="text-xs text-muted">
+                We will save this and guide you through setup after you sign in.
+              </p>
+            </div>
+            <div class="text-xs text-muted">
+              Suggested type: <span class="font-semibold text-main">{{ inferredOrgTypeLabel }}</span>
+            </div>
+            <p class="text-xs text-muted" *ngIf="showStudentOrgHint">
+              Students usually join an existing organization, but you can create a family space if needed.
+            </p>
+          </div>
+        </div>
+
         <div class="grid md:grid-cols-2 gap-4">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
@@ -165,11 +196,11 @@
       class="hidden lg:flex flex-col justify-between bg-white/5 rounded-2xl p-6 border border-white/15 text-white"
     >
       <div>
-        <p class="text-sm uppercase tracking-[0.25em] text-white/60">
+        <p class="text-sm uppercase tracking-[0.25em] text-on-dark-muted">
           Why EchoEd
         </p>
         <h3 class="text-2xl font-bold">Professional, warm, and future-ready</h3>
-        <p class="text-white/80">
+        <p class="text-on-dark">
           EchoEd scales from our K–5 demo to middle school, high school, and
           district deployments without feeling childish.
         </p>
@@ -177,19 +208,19 @@
       <div class="grid gap-3">
         <div class="p-3 rounded-xl bg-white/10 border border-white/10">
           <p class="font-semibold">Student journeys</p>
-          <p class="text-sm text-white/80">
+          <p class="text-sm text-on-dark">
             Progress dashboards, streaks, and immersive lessons.
           </p>
         </div>
         <div class="p-3 rounded-xl bg-white/10 border border-white/10">
           <p class="font-semibold">Teacher controls</p>
-          <p class="text-sm text-white/80">
+          <p class="text-sm text-on-dark">
             Assign courses, run live lessons, and view reports.
           </p>
         </div>
         <div class="p-3 rounded-xl bg-white/10 border border-white/10">
           <p class="font-semibold">Admin command center</p>
-          <p class="text-sm text-white/80">
+          <p class="text-sm text-on-dark">
             User management, course creation, and badge governance.
           </p>
         </div>

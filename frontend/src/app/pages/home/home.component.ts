@@ -11,6 +11,7 @@ import { filter } from 'rxjs/operators';
 import { DemoTourService } from '../../services/demo-tour.service';
 import { RoleService } from '../../services/role.service';
 import { OrganizationService } from '../../services/organization.service';
+import { Organization } from '../../models/organization';
 
 @Component({
   selector: 'app-home',
@@ -58,6 +59,12 @@ export class HomeComponent implements OnInit {
       }
     }
 
+    this.organizationService.refreshOrganizations().subscribe((orgs) => {
+      if (this.needsOnboarding(orgs)) {
+        this.router.navigate(['/onboarding/organization']);
+      }
+    });
+
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -69,4 +76,15 @@ export class HomeComponent implements OnInit {
     this.demoTourService.startTour();
   }
 
+  private needsOnboarding(orgs: Organization[]): boolean {
+    const pendingOrg = sessionStorage.getItem('pending_org_creation');
+    if (pendingOrg) {
+      return true;
+    }
+    if (!orgs || orgs.length === 0) {
+      return true;
+    }
+    const hasNonPersonal = orgs.some((org) => org.type !== 'personal');
+    return !hasNonPersonal;
+  }
 }

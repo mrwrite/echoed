@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#f7f3ed] to-[#efe9ff]">
+<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#f7f3ed] to-[#efe9ff]" *ngIf="userInfo$ | async as userInfo">
   <echo-sidebar
     *ngIf="!lessonMode"
     [userInfo]="userInfo"
@@ -7,7 +7,7 @@
     @fade
   ></echo-sidebar>
   <div
-    [ngClass]="lessonMode ? 'ml-0' : (sidebarCollapsed ? 'ml-20' : 'ml-64')"
+    [style.marginLeft]="lessonMode ? '0px' : (sidebarCollapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)')"
     class="flex flex-col min-h-screen transition-all duration-500"
   >
     <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" @fade></echo-header>
@@ -16,7 +16,7 @@
         <div class="mb-4 surface-card p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-xs uppercase tracking-[0.25em] text-primary">Demo Mode: K–5 African & African-American History</p>
-            <p class="text-sm text-slate-600">Guide stakeholders through landing → login → dashboards → lessons → admin.</p>
+            <p class="text-sm text-muted">Guide stakeholders through landing → login → dashboards → lessons → admin.</p>
           </div>
           <button (click)="startDemoTour()" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold hover:-translate-y-0.5 transition">
             Start Demo Tour

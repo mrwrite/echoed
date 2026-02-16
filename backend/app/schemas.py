@@ -22,6 +22,10 @@ class OrganizationCreate(BaseModel):
     timezone: Optional[str] = None
 
 
+class OrganizationUpdate(BaseModel):
+    name: str
+
+
 class OrganizationResponse(BaseModel):
     id: UUID
     name: str

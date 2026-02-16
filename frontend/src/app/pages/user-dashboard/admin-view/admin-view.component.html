@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center p-6 flex-wrap gap-4">
       <div>
         <h2 class="text-2xl font-bold text-ink"> Welcome, {{userInfo.fullname}}</h2>
-        <p class="text-slate-600">Here's a snapshot of what's happening on EchoEd.</p>
+        <p class="text-muted">Here's a snapshot of what's happening on EchoEd.</p>
       </div>
     </div>
   </div>
@@ -48,7 +48,7 @@
       <div *ngFor="let stat of usageStats" class="p-4 rounded-xl bg-slate-50 border border-slate-100">
         <div class="flex items-center justify-between mb-2">
           <p class="font-semibold text-ink">{{ stat.label }}</p>
-          <span class="text-sm text-slate-500">{{ stat.value }}%</span>
+          <span class="text-sm text-muted">{{ stat.value }}%</span>
         </div>
         <div class="w-full bg-white rounded-full h-3 border border-slate-100 overflow-hidden">
           <div class="h-3 rounded-full {{ stat.color }}" [style.width.%]="stat.value"></div>

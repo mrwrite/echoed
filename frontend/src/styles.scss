@@ -16,9 +16,15 @@
   --echo-emerald: #1D9A6C;
   --echo-rose: #E46D6D;
   --echo-surface: #ffffff;
-  --echo-muted: #6B7280;
+  --echo-text-main: #111827;
+  --echo-text-muted: #334155;
+  --echo-text-on-dark: #F9FAFB;
+  --echo-text-on-dark-muted: #F1F5F9;
+  --echo-muted: var(--echo-text-muted);
   --echo-shadow: 0 16px 40px -18px rgba(15, 23, 42, 0.3);
   --echo-radius: 18px;
+  --echo-sidebar-collapsed-width: 5rem;
+  --echo-sidebar-expanded-width: 18rem;
 }
 
 html, body {
@@ -30,6 +36,7 @@ html, body {
               var(--echo-sand);
   color: var(--echo-ink);
   letter-spacing: 0.01em;
+  overflow-x: hidden;
 }
 
 body.large-type {
@@ -67,7 +74,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .muted-text {
-  color: var(--echo-muted);
+  color: var(--echo-text-muted);
+}
+
+.text-main {
+  color: var(--echo-text-main);
+}
+
+.text-muted {
+  color: var(--echo-text-muted);
+}
+
+.text-on-dark {
+  color: var(--echo-text-on-dark);
+}
+
+.text-on-dark-muted {
+  color: var(--echo-text-on-dark-muted);
 }
 
 .pill {

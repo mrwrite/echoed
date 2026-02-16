@@ -2,15 +2,17 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { RoleService } from '../../services/role.service';
-import { UserInfo } from '../../models/user-info';
+import { OrganizationService } from '../../services/organization.service';
+import { Organization } from '../../models/organization';
+import { PermissionsService } from '../../services/permissions.service';
 
 @Component({
   selector: 'echo-login',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     RouterModule,
     FormsModule],
   templateUrl: './login.component.html',
@@ -21,28 +23,60 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
   showPassword = false;
-  userInfo!: UserInfo;
-  userRoles: string[] = [];
 
-  constructor(private router: Router, private authService: AuthService, private roleService: RoleService) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private organizationService: OrganizationService,
+    private permissionsService: PermissionsService,
+  ) { }
 
-  login(event: Event) {
+  async login(event: Event) {
     event.preventDefault();
-    this.authService.login(this.username, this.password).subscribe(
-      (response) => {
-        console.log('Login successful');
-        this.userInfo = this.authService.getTokenPayload(response.access_token);
-        this.userRoles.push(this.userInfo.role);
-        if (response.organizations && response.organizations.length > 0) {
-          this.userRoles.push(response.organizations[0].role);
+
+    try {
+      await firstValueFrom(this.authService.login(this.username, this.password));
+      // Bootstrap user + permissions before navigation so sidenav renders
+      // immediately on first dashboard paint.
+      await this.permissionsService.bootstrapSession();
+
+      // Super admins should always land in dashboard; onboarding is only for non-super-admin users lacking org context.
+      try {
+        const orgs = await firstValueFrom(this.organizationService.refreshOrganizations());
+        if (this.needsOnboarding(orgs)) {
+          await this.router.navigateByUrl('/onboarding/organization');
+          return;
         }
-        this.roleService.setUserRoles(this.userRoles);
-        this.router.navigate(['/home']);
-      },
-      (error) => {
-        console.log('Login failed');
-        this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
+      } catch {
+        // Onboarding lookup failed; proceed to home.
       }
-    );
+
+      await this.router.navigateByUrl('/home');
+    } catch (error: any) {
+      this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
+    }
+  }
+
+
+  private isSuperAdminSession(): boolean {
+    const token = this.authService.getToken();
+    const payload = token ? this.authService.getTokenPayload(token) : null;
+    return this.authService.isSuperAdminRole(payload?.role);
+  }
+
+  private needsOnboarding(orgs: Organization[]): boolean {
+    if (this.isSuperAdminSession()) {
+      return false;
+    }
+
+    const pendingOrg = sessionStorage.getItem('pending_org_creation');
+    if (pendingOrg) {
+      return true;
+    }
+    if (!orgs || orgs.length === 0) {
+      return true;
+    }
+    const hasNonPersonal = orgs.some((org) => org.type !== 'personal');
+    return !hasNonPersonal;
   }
 }

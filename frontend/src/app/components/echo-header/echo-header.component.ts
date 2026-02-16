@@ -21,6 +21,7 @@ import { DemoTourService } from '../../services/demo-tour.service';
 import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.component';
 import { OrganizationService } from '../../services/organization.service';
 import { Organization } from '../../models/organization';
+import { PermissionsService } from '../../services/permissions.service';
 
 
 @Component({
@@ -54,12 +55,14 @@ export class EchoHeaderComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private demoTourService: DemoTourService,
-    private organizationService: OrganizationService
+    private organizationService: OrganizationService,
+    private permissionsService: PermissionsService
   ) {}
 
   ngOnInit(): void {
     this.activeOrgId = this.organizationService.getActiveOrgId();
-    this.organizationService.getOrganizations().subscribe(orgs => {
+    this.organizationService.refreshOrganizations().subscribe();
+    this.organizationService.organizations$.subscribe(orgs => {
       this.organizations = orgs;
       if (!this.activeOrgId && this.organizations.length > 0) {
         const defaultOrg = this.organizations[0];
@@ -83,6 +86,7 @@ export class EchoHeaderComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.organizationService.clearActiveOrg();
+    this.permissionsService.resetSession();
     this.router.navigate(['/login']);
   }
 
@@ -99,8 +103,10 @@ export class EchoHeaderComponent implements OnInit {
 
   switchOrg(orgId: string) {
     const role = this.organizations.find(org => org.id === orgId)?.role;
-    this.organizationService.setActiveOrg(orgId, role).subscribe(() => {
+    this.organizationService.setActiveOrg(orgId, role).subscribe(async () => {
       this.activeOrgId = orgId;
+      this.permissionsService.resetSession();
+      await this.permissionsService.bootstrapSession();
     });
   }
 }

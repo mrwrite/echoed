@@ -15,6 +15,7 @@ class OrganizationType(enum.Enum):
     DISTRICT = "district"
     INSTRUCTOR = "instructor"
     PERSONAL = "personal"
+    FAMILY = "family"
 
 
 class OrganizationRole(enum.Enum):
@@ -24,7 +25,8 @@ class OrganizationRole(enum.Enum):
     PARENT = "parent"
     STUDENT = "student"
     INSTRUCTOR = "instructor"
-    VIEWER = "viewer"
+    VIEWER = "viewer",
+    SUPER_ADMIN = "super_admin"
 
 
 class MembershipStatus(str, enum.Enum):

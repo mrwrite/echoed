@@ -8,7 +8,7 @@ export class RoleService {
   private userRoles: string[] = [];
 
   setUserRoles(roles: string[]): void {
-    this.userRoles = roles;
+    this.userRoles = [...roles];
   }
 
   hasAccess(feature: string): boolean {
@@ -19,5 +19,8 @@ export class RoleService {
   hasAnyRole(...rolesToCheck: string[]): boolean {
     return this.userRoles.some(role => rolesToCheck.includes(role));
   }
-  
+
+  getUserRoles(): string[] {
+    return [...this.userRoles];
+  }
 }

@@ -1,21 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../components/echo-sidebar/echo-sidebar.component';
 import { EchoHeaderComponent } from '../../components/echo-header/echo-header.component';
-import { UserDashboardComponent } from "../user-dashboard/user-dashboard.component";
-import { UserInfo } from '../../models/user-info';
-import { AuthService } from '../../services/auth.service';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
 import { DemoTourService } from '../../services/demo-tour.service';
-import { RoleService } from '../../services/role.service';
-import { OrganizationService } from '../../services/organization.service';
+import { PermissionsService } from '../../services/permissions.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, EchoHeaderComponent,RouterOutlet],
+  imports: [CommonModule, SidebarComponent, EchoHeaderComponent, RouterOutlet],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   animations: [
@@ -32,31 +28,17 @@ import { OrganizationService } from '../../services/organization.service';
 })
 export class HomeComponent implements OnInit {
   sidebarCollapsed = false;
-  userInfo!: UserInfo;
   lessonMode = false;
+  private readonly permissionsService = inject(PermissionsService);
+  readonly userInfo$ = this.permissionsService.user$;
 
   constructor(
-    private authService: AuthService,
     private router: Router,
     private demoTourService: DemoTourService,
-    private roleService: RoleService,
-    private organizationService: OrganizationService,
   ) { }
 
   ngOnInit(): void {
-    const access_token = this.authService.getToken();
-    if (access_token) {
-      this.userInfo = this.authService.getTokenPayload(access_token);
-      console.log(this.userInfo);
-      if (this.userInfo?.role) {
-        const orgRole = this.organizationService.getActiveOrgRole();
-        const roles = [this.userInfo.role];
-        if (orgRole) {
-          roles.push(orgRole);
-        }
-        this.roleService.setUserRoles(roles);
-      }
-    }
+    void this.permissionsService.bootstrapSession();
 
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -68,5 +50,4 @@ export class HomeComponent implements OnInit {
   startDemoTour() {
     this.demoTourService.startTour();
   }
-
 }

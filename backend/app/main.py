@@ -25,6 +25,7 @@ from app.api.routes import (
     units,
     uploads,
     users,
+    meta,
 )
 
 app = FastAPI()
@@ -73,6 +74,7 @@ app.include_router(sections.router, prefix="/api", tags=["Sections"])
 app.include_router(lesson_sessions.router, prefix="/api", tags=["Lesson Sessions"])
 app.include_router(assignments.router, prefix="/api", tags=["Assignments"])
 app.include_router(uploads.router, prefix="/api", tags=["Uploads"])
+app.include_router(meta.router, prefix="/api", tags=["Meta"])
 
 
 @app.get("/api")

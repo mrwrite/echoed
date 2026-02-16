@@ -11,7 +11,7 @@ from app.models import (
     Section,
     Enrollment,
 )
-from app.enum import OrganizationType, OrganizationRole, CourseVersionStatus, SectionMode
+from app.enum import OrganizationType, OrganizationRole, CourseVersionStatus, SectionMode, MembershipStatus
 from app.auth import hash_password
 
 
@@ -73,7 +73,15 @@ def run():
                 lastname="Content",
                 username="contentadmin",
                 email="content@demo.com",
-                role="teacher",
+                role="content_admin",
+                hashed_password=hash_password("password"),
+            ),
+            "super_admin": User(
+                firstname="Sam",
+                lastname="Super",
+                username="superadmin",
+                email="superadmin@demo.com",
+                role="super_admin",
                 hashed_password=hash_password("password"),
             ),
         }
@@ -86,7 +94,7 @@ def run():
             "parent": OrganizationRole.PARENT,
             "student1": OrganizationRole.STUDENT,
             "student2": OrganizationRole.STUDENT,
-            "content_admin": OrganizationRole.CONTENT_ADMIN,
+            "content_admin": OrganizationRole.CONTENT_ADMIN,           
         }
         for key, role in membership_map.items():
             db.add(
@@ -94,6 +102,7 @@ def run():
                     organization_id=org.id,
                     user_id=users[key].id,
                     role=role,
+                    status=MembershipStatus.ACTIVE,
                 )
             )
 

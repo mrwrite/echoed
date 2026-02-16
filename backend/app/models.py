@@ -54,9 +54,17 @@ class Organization(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String, nullable=False)
     type = Column(
-        SqlEnum(OrganizationType, name="organization_type_enum", create_constraint=True),
-        nullable=False,
+    SqlEnum(
+        OrganizationType,
+        name="organization_type_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+    ),
+    nullable=False,
     )
+
     country = Column(String, nullable=True)
     timezone = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -100,6 +108,8 @@ class OrganizationMembership(Base):
             validate_strings=True,
             create_constraint=True,
         ),
+        nullable=False,
+        default=MembershipStatus.ACTIVE,
     )
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -174,9 +184,16 @@ class CourseVersion(Base):
     course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
     version_number = Column(Integer, nullable=False)
     status = Column(
-        SqlEnum(CourseVersionStatus, name="course_version_status_enum", create_constraint=True),
-        default=CourseVersionStatus.DRAFT,
-        nullable=False,
+    SqlEnum(
+        CourseVersionStatus,
+        name="course_version_status_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+    ),
+    default=CourseVersionStatus.DRAFT,
+    nullable=False,
     )
     changelog = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -385,10 +402,18 @@ class Section(Base):
     course_version_id = Column(UUID(as_uuid=True), ForeignKey("course_versions.id"), nullable=False)
     name = Column(String, nullable=False)
     mode = Column(
-        SqlEnum(SectionMode, name="section_mode_enum", create_constraint=True),
-        default=SectionMode.REMOTE,
-        nullable=False,
-    )
+    SqlEnum(
+        SectionMode,
+        name="section_mode_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+    ),
+    default=SectionMode.REMOTE,
+    nullable=False,
+)
+
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
@@ -410,10 +435,18 @@ class Enrollment(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     role_in_section = Column(String, default="student")
     status = Column(
-        SqlEnum(EnrollmentStatus, name="enrollment_status_enum", create_constraint=True),
-        default=EnrollmentStatus.ACTIVE,
-        nullable=False,
-    )
+    SqlEnum(
+        EnrollmentStatus,
+        name="enrollment_status_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+    ),
+    default=EnrollmentStatus.ACTIVE,
+    nullable=False,
+)
+
     enrolled_at = Column(DateTime, default=datetime.utcnow)
 
     section = relationship("Section", back_populates="enrollments")
@@ -439,8 +472,15 @@ class Assignment(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     section_id = Column(UUID(as_uuid=True), ForeignKey("sections.id"), nullable=False)
     target_type = Column(
-        SqlEnum(AssignmentTargetType, name="assignment_target_enum", create_constraint=True),
-        nullable=False,
+    SqlEnum(
+        AssignmentTargetType,
+        name="assignment_target_enum",
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        native_enum=True,
+        validate_strings=True,
+        create_constraint=True,
+    ),
+    nullable=False,
     )
     target_id = Column(UUID(as_uuid=True), nullable=False)
     due_at = Column(DateTime, nullable=True)
@@ -466,6 +506,9 @@ class AssignmentSubmission(Base):
         SqlEnum(
             AssignmentSubmissionStatus,
             name="assignment_submission_status_enum",
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            native_enum=True,
+            validate_strings=True,
             create_constraint=True,
         ),
         default=AssignmentSubmissionStatus.NOT_STARTED,

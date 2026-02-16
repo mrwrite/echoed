@@ -1,4 +1,4 @@
-<div [ngClass]="collapsed ? 'w-20' : 'w-72'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
+<div [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
   <div class="flex items-center justify-between p-4">
     <div class="flex items-center gap-3" *ngIf="!collapsed">
       <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
@@ -17,59 +17,30 @@
   </div>
 
   <nav class="flex-1 px-2 space-y-6">
-    <div>
-      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Overview</p>
-      <a routerLink="/home" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="Home" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Dashboard</span>
-      </a>
-      <a routerLink="/home/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="Book" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Courses</span>
-      </a>
-    </div>
+    <ng-container *ngIf="ready$ | async; else navSkeleton">
+      <ng-container *ngIf="visibleNavSections$ | async as sections">
+        <div *ngFor="let section of sections">
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">{{ section.title }}</p>
+          <a *ngFor="let item of section.items" [routerLink]="item.route" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
+            <lucide-icon [name]="item.icon" class="h-5 w-5"></lucide-icon>
+            <span *ngIf="!collapsed" class="font-semibold">{{ item.label }}</span>
+          </a>
+        </div>
+      </ng-container>
+    </ng-container>
 
-    <div>
-      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Reports & Admin</p>
-      <a *ngIf="roleService.hasAccess('viewReports')" routerLink="/home/admin/badges" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="Award" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Badges</span>
-      </a>
-      <a *ngIf="roleService.hasAccess('viewUsers')" routerLink="/home/admin/users" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="User" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Users</span>
-      </a>
-      <a *ngIf="roleService.hasAccess('viewReports')" routerLink="/home/admin/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="ClipboardList" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Admin Courses</span>
-      </a>
-    </div>
-
-    <div>
-      <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">Org & Studio</p>
-      <a routerLink="/home/org/invites" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="Mail" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Invites</span>
-      </a>
-      <a routerLink="/home/studio/courses" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="BookOpen" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Studio Courses</span>
-      </a>
-      <a routerLink="/home/sections" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="Users" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Sections</span>
-      </a>
-      <a routerLink="/home/me/preferences" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-        <lucide-icon name="SlidersHorizontal" class="h-5 w-5"></lucide-icon>
-        <span *ngIf="!collapsed" class="font-semibold">Preferences</span>
-      </a>
-    </div>
+    <ng-template #navSkeleton>
+      <div class="space-y-3 px-1" aria-label="sidenav-loading">
+        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
+        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
+        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
+      </div>
+    </ng-template>
   </nav>
 
-  <div class="p-4 border-t border-primary/10" *ngIf="!collapsed">
+  <div class="p-4 border-t border-primary/10" *ngIf="!collapsed && userInfo">
     <p class="text-xs text-slate-500">Logged in as</p>
     <p class="font-semibold text-primary">{{ userInfo.fullname }}</p>
     <p class="text-xs text-slate-500">{{ userInfo.role | titlecase }}</p>
   </div>
 </div>
-  

@@ -18,15 +18,19 @@ import { StudioCoursesComponent } from './pages/studio-courses/studio-courses.co
 import { SectionsComponent } from './pages/sections/sections.component';
 import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
 import { PreferencesComponent } from './pages/preferences/preferences.component';
+import { OnboardingOrganizationComponent } from './pages/onboarding-organization/onboarding-organization.component';
+import { HomeSessionGuard } from './guards/home-session.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'registration', component: RegistrationComponent },
+  { path: 'onboarding/organization', component: OnboardingOrganizationComponent },
   { path: 'access-denied', component: AccessDeniedComponent },
   {
     path: 'home',
     component: HomeComponent,
+    canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',

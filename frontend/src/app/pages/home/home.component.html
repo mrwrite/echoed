@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#f7f3ed] to-[#efe9ff]">
+<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#f7f3ed] to-[#efe9ff]" *ngIf="userInfo$ | async as userInfo">
   <echo-sidebar
     *ngIf="!lessonMode"
     [userInfo]="userInfo"

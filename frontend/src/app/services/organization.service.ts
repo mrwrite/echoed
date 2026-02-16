@@ -17,6 +17,10 @@ export class OrganizationService {
   activeOrg$ = this.activeOrgSubject.asObservable();
   organizations$ = this.organizationsSubject.asObservable();
 
+  get organizationsSubjectValue(): Organization[] {
+    return this.organizationsSubject.value;
+  }
+
   constructor(private http: HttpClient) {}
 
   getOrganizations(): Observable<Organization[]> {

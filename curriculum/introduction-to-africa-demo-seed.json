@@ -1,0 +1,69 @@
+{
+  "course": {
+    "id": "course_intro_africa_k5_demo",
+    "title": "Introduction to Africa",
+    "grade_band": "K-5",
+    "subject": ["Social Studies", "Geography", "Literacy"],
+    "duration": "4-6 weeks",
+    "unit_ids": [
+      "unit_1_what_is_africa",
+      "unit_2_land_water_climate",
+      "unit_3_people_languages_culture",
+      "unit_4_animals_ecosystems",
+      "unit_5_folktales_traditions",
+      "unit_6_celebration_project"
+    ]
+  },
+  "units": [
+    {"id": "unit_1_what_is_africa", "title": "What Is Africa?", "lesson_count": 3},
+    {"id": "unit_2_land_water_climate", "title": "Land, Water, and Climate", "lesson_count": 3},
+    {"id": "unit_3_people_languages_culture", "title": "People, Languages, and Culture", "lesson_count": 3},
+    {"id": "unit_4_animals_ecosystems", "title": "Animals and Ecosystems", "lesson_count": 3},
+    {"id": "unit_5_folktales_traditions", "title": "Folktales and Traditions", "lesson_count": 3},
+    {"id": "unit_6_celebration_project", "title": "Celebration Project", "lesson_count": 3}
+  ],
+  "students": [
+    {
+      "name": "Amina R.",
+      "completed_lessons": ["1.1", "1.2", "1.3", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3", "4.1", "4.2", "4.3", "5.1", "5.2", "5.3", "6.1", "6.2", "6.3"],
+      "assessment_scores": {"map_quiz": 96, "climate_check": 92, "folktale_retell": 95, "final_project": 98},
+      "strengths": ["Map labeling accuracy", "Evidence-based speaking"],
+      "growth_areas": ["Ask deeper follow-up questions"]
+    },
+    {
+      "name": "Ben T.",
+      "completed_lessons": ["1.1", "1.2", "1.3", "2.1", "2.2", "3.1", "4.1", "4.2", "5.1", "6.1"],
+      "assessment_scores": {"map_quiz": 74, "climate_check": 68, "folktale_retell": 79, "final_project": 76},
+      "strengths": ["Oral discussion", "Creative visuals"],
+      "growth_areas": ["Vocabulary precision", "Completing independent writing tasks"]
+    },
+    {
+      "name": "Camila S.",
+      "completed_lessons": ["1.1", "1.2", "1.3", "2.1", "2.2", "2.3", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2"],
+      "assessment_scores": {"map_quiz": 88, "climate_check": 84, "folktale_retell": 82, "final_project": 85},
+      "strengths": ["Compare/contrast writing", "Collaboration"],
+      "growth_areas": ["Reading fluency for oral presentations"]
+    },
+    {
+      "name": "Diego M.",
+      "completed_lessons": ["1.1", "1.2", "2.1", "2.2", "3.1", "3.3", "4.1", "4.2", "5.1", "5.2", "6.1"],
+      "assessment_scores": {"map_quiz": 63, "climate_check": 59, "folktale_retell": 71, "final_project": 70},
+      "strengths": ["Hands-on sorting tasks", "Class participation"],
+      "growth_areas": ["Map feature retention", "Written response stamina"]
+    },
+    {
+      "name": "Elena K.",
+      "completed_lessons": ["1.1", "1.2", "1.3", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3", "4.1", "4.2", "4.3", "5.1", "5.2", "5.3", "6.1", "6.2"],
+      "assessment_scores": {"map_quiz": 91, "climate_check": 89, "folktale_retell": 93, "final_project": 90},
+      "strengths": ["Academic vocabulary", "Thoughtful reflection"],
+      "growth_areas": ["Time management during project build"]
+    }
+  ],
+  "teacher_insights": [
+    "Class average is strongest in oral discussion and project creativity.",
+    "Map-specific reteach is recommended for 3 students before cumulative test.",
+    "Sentence stems improved respectful compare/contrast language across all groups.",
+    "Small-group support in Unit 2 increased climate vocabulary retention.",
+    "Family showcase night had 90% attendance and strong student confidence growth."
+  ]
+}

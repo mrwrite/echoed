@@ -74,4 +74,13 @@ export class AuthService {
       return null;
     }
   }
+
+  isSuperAdminRole(role?: string | null): boolean {
+    if (!role) {
+      return false;
+    }
+
+    const normalized = role.toLowerCase();
+    return normalized === 'super_admin' || normalized === 'superadmin';
+  }
 }

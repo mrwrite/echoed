@@ -7,12 +7,13 @@
         Set up your organization to unlock invites, reporting, and collaborative tools.
       </p>
 
-      <div class="mt-6 space-y-4">
+      <form class="mt-6 space-y-4" (ngSubmit)="onSubmit($event)">
         <div class="space-y-2">
           <label class="text-sm font-semibold text-primary" for="organizationName">Organization name</label>
           <input
             id="organizationName"
             type="text"
+            name="organizationName"
             [(ngModel)]="organizationName"
             placeholder="e.g. Bright Futures Academy"
             class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
@@ -36,12 +37,12 @@
 
         <button
           class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:opacity-60"
-          (click)="createOrganization()"
+          type="submit"
           [disabled]="!organizationName || isSubmitting"
         >
           {{ isSubmitting ? 'Creating organization…' : 'Create organization' }}
         </button>
-      </div>
+      </form>
     </div>
   </div>
 </div>

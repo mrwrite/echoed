@@ -40,23 +40,35 @@ export class LoginComponent {
       // immediately on first dashboard paint.
       await this.permissionsService.bootstrapSession();
 
+      // Super admins should always land in dashboard; onboarding is only for non-super-admin users lacking org context.
       try {
         const orgs = await firstValueFrom(this.organizationService.refreshOrganizations());
         if (this.needsOnboarding(orgs)) {
-          await this.router.navigate(['/onboarding/organization']);
+          await this.router.navigateByUrl('/onboarding/organization');
           return;
         }
       } catch {
         // Onboarding lookup failed; proceed to home.
       }
 
-      await this.router.navigate(['/home']);
+      await this.router.navigateByUrl('/home');
     } catch (error: any) {
       this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
     }
   }
 
+
+  private isSuperAdminSession(): boolean {
+    const token = this.authService.getToken();
+    const payload = token ? this.authService.getTokenPayload(token) : null;
+    return this.authService.isSuperAdminRole(payload?.role);
+  }
+
   private needsOnboarding(orgs: Organization[]): boolean {
+    if (this.isSuperAdminSession()) {
+      return false;
+    }
+
     const pendingOrg = sessionStorage.getItem('pending_org_creation');
     if (pendingOrg) {
       return true;

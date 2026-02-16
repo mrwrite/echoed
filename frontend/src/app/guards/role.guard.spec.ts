@@ -1,42 +1,41 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of } from 'rxjs';
 import { RoleGuard } from './role.guard';
 import { AuthService } from '../services/auth.service';
-import { OrganizationService } from '../services/organization.service';
+import { PermissionsService } from '../services/permissions.service';
 
 class MockAuthService {
   getToken() {
     return 'fake-token';
   }
-
-  getTokenPayload() {
-    return { role: 'student' };
-  }
-}
-
-class MockOrgService {
-  getActiveOrgRole() {
-    return 'teacher';
-  }
 }
 
 class MockRouter {
-  navigate() {}
+  navigate = jasmine.createSpy('navigate').and.resolveTo(true);
 }
 
 describe('RoleGuard', () => {
-  it('allows when org role matches', () => {
+  it('allows when any allowed role is present', async () => {
+    const permissionsService = jasmine.createSpyObj<PermissionsService>(
+      'PermissionsService',
+      ['bootstrapSession', 'hasAnyRole'],
+      { ready$: of(true) }
+    );
+    permissionsService.bootstrapSession.and.resolveTo();
+    permissionsService.hasAnyRole.and.returnValue(true);
+
     TestBed.configureTestingModule({
       providers: [
         RoleGuard,
         { provide: AuthService, useClass: MockAuthService },
-        { provide: OrganizationService, useClass: MockOrgService },
+        { provide: PermissionsService, useValue: permissionsService },
         { provide: Router, useClass: MockRouter }
       ]
     });
 
     const guard = TestBed.inject(RoleGuard);
-    const canActivate = guard.canActivate({ data: { roles: ['teacher'] } } as any, {} as any);
+    const canActivate = await guard.canActivate({ data: { roles: ['teacher'] } } as any);
     expect(canActivate).toBe(true);
   });
 });

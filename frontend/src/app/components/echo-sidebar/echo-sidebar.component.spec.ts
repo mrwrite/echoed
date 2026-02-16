@@ -1,25 +1,57 @@
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BehaviorSubject } from 'rxjs';
 
 import { SidebarComponent } from './echo-sidebar.component';
+import { PermissionsService } from '../../services/permissions.service';
+
+class MockPermissionsService {
+  readonly user$ = new BehaviorSubject<any>({ fullname: 'Test User', role: 'content_admin' });
+  readonly permissions$ = new BehaviorSubject<Set<string>>(new Set<string>());
+  readonly ready$ = new BehaviorSubject<boolean>(false);
+}
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
   let fixture: ComponentFixture<SidebarComponent>;
+  let permissionsService: MockPermissionsService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, SidebarComponent]
+      imports: [RouterTestingModule, SidebarComponent],
+      providers: [{ provide: PermissionsService, useClass: MockPermissionsService }]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(SidebarComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    component.userInfo = { fullname: 'Test User', role: 'content_admin' } as any;
+    permissionsService = TestBed.inject(PermissionsService) as unknown as MockPermissionsService;
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
+  });
+
+  it('does not render Sections when permissions exclude it', () => {
+    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:preferences']));
+    permissionsService.ready$.next(true);
+
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).not.toContain('Sections');
+  });
+
+  it('renders navigation immediately when ready emits', () => {
+    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:preferences']));
+    permissionsService.ready$.next(true);
+
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Dashboard');
+    expect(text).toContain('Courses');
   });
 });

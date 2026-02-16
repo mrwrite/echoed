@@ -19,6 +19,7 @@ import { SectionsComponent } from './pages/sections/sections.component';
 import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
 import { PreferencesComponent } from './pages/preferences/preferences.component';
 import { OnboardingOrganizationComponent } from './pages/onboarding-organization/onboarding-organization.component';
+import { HomeSessionGuard } from './guards/home-session.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -29,6 +30,7 @@ export const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
+    canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',

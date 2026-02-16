@@ -42,6 +42,17 @@ export class PermissionsService {
     }
   }
 
+
+  async refreshSession(): Promise<void> {
+    this.readySubject.next(false);
+    this.bootstrapPromise = this.loadSession();
+    try {
+      await this.bootstrapPromise;
+    } finally {
+      this.bootstrapPromise = null;
+    }
+  }
+
   hasPermission(permission: string): boolean {
     return this.permissionsSubject.value.has(permission);
   }

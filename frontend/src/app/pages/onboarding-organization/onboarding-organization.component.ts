@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize, firstValueFrom } from 'rxjs';
 import { OrganizationService } from '../../services/organization.service';
 import { MetaService, EnumOption } from '../../services/meta.service';
 import { AuthService } from '../../services/auth.service';
+import { PermissionsService } from '../../services/permissions.service';
 
 @Component({
   selector: 'app-onboarding-organization',
@@ -27,6 +29,7 @@ export class OnboardingOrganizationComponent implements OnInit {
     private organizationService: OrganizationService,
     private metaService: MetaService,
     private authService: AuthService,
+    private permissionsService: PermissionsService,
     private router: Router,
   ) {}
 
@@ -62,10 +65,14 @@ export class OnboardingOrganizationComponent implements OnInit {
     });
   }
 
-  createOrganization(): void {
+  // Handle submission through Angular ngSubmit + preventDefault to avoid full-page form reloads.
+  onSubmit(event?: Event): void {
+    event?.preventDefault();
+
     if (!this.organizationName || !this.organizationType || this.isSubmitting) {
       return;
     }
+
     this.isSubmitting = true;
     this.errorMessage = '';
 
@@ -74,23 +81,19 @@ export class OnboardingOrganizationComponent implements OnInit {
         name: this.organizationName,
         type: this.organizationType,
       })
+      .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
-        next: (org) => {
+        next: async (org) => {
           sessionStorage.removeItem('pending_org_creation');
-          this.organizationService.refreshOrganizations().subscribe();
-          this.organizationService.setActiveOrg(org.id, 'org_admin').subscribe({
-            next: () => {
-              this.isSubmitting = false;
-              this.router.navigate(['/home']);
-            },
-            error: () => {
-              this.isSubmitting = false;
-              this.router.navigate(['/home']);
-            },
-          });
+
+          await firstValueFrom(this.organizationService.refreshOrganizations());
+          // Set active organization context immediately so menu/permission logic is available after navigation.
+          await firstValueFrom(this.organizationService.setActiveOrg(org.id, 'org_admin'));
+          await this.permissionsService.refreshSession();
+
+          await this.router.navigateByUrl('/home');
         },
         error: (err) => {
-          this.isSubmitting = false;
           this.errorMessage = err?.error?.detail || 'Unable to create organization. Please try again.';
         },
       });

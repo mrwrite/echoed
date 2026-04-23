@@ -1,3 +1,34 @@
 :host {
   display: block;
 }
+
+.onboarding-helper {
+  color: #475569;
+}
+
+.onboarding-input {
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.onboarding-input::placeholder {
+  color: #64748b;
+}
+
+.onboarding-submit:disabled {
+  background: #756a9a;
+  box-shadow: none;
+}
+
+.form-state-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form-state-text--warning {
+  color: #92400e;
+}
+
+.form-state-text--error {
+  color: #b91c1c;
+}

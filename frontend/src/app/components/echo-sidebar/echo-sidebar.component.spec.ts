@@ -45,7 +45,7 @@ describe('SidebarComponent', () => {
   });
 
   it('renders navigation immediately when ready emits', () => {
-    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:preferences']));
+    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:programs', 'nav:certifications', 'nav:preferences']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
@@ -53,5 +53,20 @@ describe('SidebarComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Dashboard');
     expect(text).toContain('Courses');
+    expect(text).toContain('Programs');
+    expect(text).toContain('Certifications');
+  });
+
+  it('keeps compact navigation usable when collapsed', () => {
+    component.collapsed = true;
+    permissionsService.permissions$.next(new Set(['nav:dashboard']));
+    permissionsService.ready$.next(true);
+
+    fixture.detectChanges();
+
+    const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
+    expect(firstLink.getAttribute('aria-label')).toBe('Dashboard');
+    expect(firstLink.getAttribute('title')).toBe('Dashboard');
+    expect(firstLink.textContent?.trim()).toBe('');
   });
 });

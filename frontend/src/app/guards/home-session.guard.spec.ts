@@ -64,7 +64,7 @@ describe('HomeSessionGuard', () => {
     guard = TestBed.inject(HomeSessionGuard);
     authService = TestBed.inject(AuthService) as unknown as MockAuthService;
     organizationService = TestBed.inject(OrganizationService) as unknown as MockOrganizationService;
-    sessionStorage.removeItem('pending_org_creation');
+    sessionStorage.clear();
   });
 
   it('redirects non-super-admin users with no org to onboarding', async () => {
@@ -85,5 +85,23 @@ describe('HomeSessionGuard', () => {
 
     expect(result).toBe(true);
     expect(parseUrlSpy).not.toHaveBeenCalledWith('/onboarding/organization');
+  });
+
+  it('redirects users with pending org setup to onboarding', async () => {
+    organizationService.refreshOrganizations.and.returnValue(of([{ id: 'personal-1', name: 'Personal Workspace', type: 'personal', role: 'teacher' }]));
+    sessionStorage.setItem('pending_org_creation', JSON.stringify({ name: 'Bright Futures', type: 'school' }));
+
+    const result = await guard.canActivate();
+
+    expect(result).toBe(onboardingTree);
+  });
+
+  it('redirects users with only personal organizations to onboarding', async () => {
+    authService.role = 'teacher';
+    organizationService.refreshOrganizations.and.returnValue(of([{ id: 'personal-1', name: 'Personal Workspace', type: 'personal', role: 'teacher' }]));
+
+    const result = await guard.canActivate();
+
+    expect(result).toBe(onboardingTree);
   });
 });

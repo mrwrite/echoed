@@ -45,6 +45,12 @@ describe('LoginComponent', () => {
 
     permissionsService = jasmine.createSpyObj<PermissionsService>('PermissionsService', ['bootstrapSession']);
 
+    TestBed.overrideComponent(LoginComponent, {
+      set: {
+        template: '',
+      },
+    });
+
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
@@ -59,6 +65,7 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService) as unknown as MockAuthService;
+    sessionStorage.clear();
     fixture.detectChanges();
   });
 
@@ -94,5 +101,28 @@ describe('LoginComponent', () => {
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
     expect(router.navigateByUrl).not.toHaveBeenCalledWith('/onboarding/organization');
+  }));
+
+  it('routes users with pending registration setup to onboarding before home', fakeAsync(() => {
+    permissionsService.bootstrapSession.and.resolveTo();
+    sessionStorage.setItem('pending_org_creation', JSON.stringify({ name: 'Bright Futures', type: 'school' }));
+
+    component.login(new Event('submit'));
+    tick();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/onboarding/organization');
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/home');
+  }));
+
+  it('routes users with only personal organizations to onboarding', fakeAsync(() => {
+    permissionsService.bootstrapSession.and.resolveTo();
+    spyOn(TestBed.inject(OrganizationService), 'refreshOrganizations').and.returnValue(
+      of([{ id: 'personal-1', name: 'Personal Workspace', type: 'personal', role: 'teacher' }])
+    );
+
+    component.login(new Event('submit'));
+    tick();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/onboarding/organization');
   }));
 });

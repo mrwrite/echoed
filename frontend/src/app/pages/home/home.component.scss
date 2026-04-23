@@ -1,0 +1,17 @@
+.home-shell {
+  display: grid;
+  grid-template-columns: var(--echo-shell-sidebar-width, var(--echo-sidebar-expanded-width)) minmax(0, 1fr);
+  transition: grid-template-columns 300ms ease;
+}
+
+.home-shell--lesson {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.home-shell__sidebar {
+  min-width: 0;
+}
+
+.home-shell__main {
+  min-width: 0;
+}

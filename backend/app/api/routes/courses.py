@@ -6,15 +6,15 @@ from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.deps import get_current_user, require_roles, require_org_roles
 from app.enum import CourseVersionStatus
-from app.models import Course, CourseVersion, Unit, Lesson, Activity, Media, StorybookPage, StudentCourse
+from app.lesson_governance import (
+    evaluate_lesson_readiness,
+    resolve_review_fields,
+    serialize_course,
+)
+from app.models import Course, CourseVersion, Unit, Lesson, Activity, StorybookPage, StudentCourse, Source
 from app.schemas import (
     CourseDto,
     CourseResponse,
-    UnitResponse,
-    LessonResponse,
-    ActivityResponse,
-    MediaResponse,
-    StorybookPageResponse,
     StudentCourseWithDetails,
     CourseCreateRequest,
     CourseVersionCreateRequest,
@@ -80,7 +80,7 @@ def get_student_courses(
                 "course_id": sc.course_id,
                 "enrolled_on": sc.enrolled_on,
                 "status": sc.status,
-                "course": CourseResponse.from_orm(sc.course),
+                "course": serialize_course(sc.course, viewer_role=current_user.role),
                 "unit_progress_id": unit_progress_id,
             }
         )
@@ -94,61 +94,15 @@ def get_course_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("admin", "teacher", "student")),
 ):
-    course = db.query(Course).filter(Course.id == course_id).first()
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = db.query(Course).filter(Course.id == parsed_course_id).first()
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-
-    course_data = CourseResponse(
-        id=course.id,
-        title=course.title,
-        description=course.description,
-        units=[
-            UnitResponse(
-                id=unit.id,
-                title=unit.title,
-                content=unit.content,
-                order=unit.order,
-                lessons=[
-                    LessonResponse(
-                        id=lesson.id,
-                        title=lesson.title,
-                        objective=lesson.objective,
-                        order=lesson.order,
-                        duration_minutes=lesson.duration_minutes,
-                        activities=[
-                            ActivityResponse(
-                                id=activity.id,
-                                type=activity.type,
-                                title=activity.title,
-                                content=activity.content,
-                                order=activity.order,
-                                media=(
-                                    MediaResponse(
-                                        id=activity.media.id,
-                                        type=activity.media.type,
-                                        title=activity.media.title,
-                                        url=activity.media.url,
-                                        description=activity.media.description,
-                                    )
-                                    if activity.media
-                                    else None
-                                ),
-                                pages=[
-                                    StorybookPageResponse.from_orm(p)
-                                    for p in activity.storybook_pages
-                                ],
-                            )
-                            for activity in lesson.activities
-                        ],
-                    )
-                    for lesson in unit.lessons
-                ],
-            )
-            for unit in course.units
-        ],
-    )
-
-    return course_data
+    return serialize_course(course, viewer_role=current_user.role)
 
 
 @router.post("/courses")
@@ -162,6 +116,9 @@ def create_course(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )
     new_course = Course(title=course.title, description=course.description)
+    new_course.learning_objectives = course.learning_objectives
+    new_course.skill_tags = course.skill_tags
+    new_course.standards_metadata = course.standards_metadata
     db.add(new_course)
     db.flush()
 
@@ -176,15 +133,56 @@ def create_course(
         db.flush()
 
         for lesson_data in unit_data.lessons:
+            readiness = evaluate_lesson_readiness(
+                title=lesson_data.title,
+                objective=lesson_data.objective,
+                learning_objectives=lesson_data.learning_objectives,
+                key_concepts=lesson_data.key_concepts,
+                hook=lesson_data.hook,
+                content=lesson_data.content,
+                guided_practice=lesson_data.guided_practice,
+                independent_practice=lesson_data.independent_practice,
+                assessment=lesson_data.assessment,
+                sources=lesson_data.sources,
+            )
+            review_status, reviewed_by = resolve_review_fields(
+                db=db,
+                current_user=current_user,
+                requested_status=lesson_data.review_status,
+                unit_id=new_unit.id,
+                readiness=readiness,
+            )
             new_lesson = Lesson(
                 title=lesson_data.title,
                 objective=lesson_data.objective,
+                learning_objectives=lesson_data.learning_objectives,
+                key_concepts=lesson_data.key_concepts,
+                teacher_notes=lesson_data.teacher_notes,
+                discussion_questions=lesson_data.discussion_questions,
+                hook=lesson_data.hook,
+                content=lesson_data.content,
+                guided_practice=lesson_data.guided_practice,
+                independent_practice=lesson_data.independent_practice,
+                assessment=lesson_data.assessment,
+                review_status=review_status,
+                reviewed_by=reviewed_by,
+                skill_tags=lesson_data.skill_tags,
+                standards_metadata=lesson_data.standards_metadata,
                 order=lesson_data.order,
                 duration_minutes=lesson_data.duration_minutes,
                 unit_id=new_unit.id,
             )
             db.add(new_lesson)
             db.flush()
+
+            for source_data in lesson_data.sources:
+                db.add(
+                    Source(
+                        lesson_id=new_lesson.id,
+                        citation=source_data.citation,
+                        url=source_data.url,
+                    )
+                )
 
             for activity_data in lesson_data.activities:
                 new_activity = Activity(
@@ -228,6 +226,9 @@ def create_course_authoring(
         age_band_min=course.age_band_min,
         age_band_max=course.age_band_max,
         default_locale=course.default_locale,
+        learning_objectives=course.learning_objectives,
+        skill_tags=course.skill_tags,
+        standards_metadata=course.standards_metadata,
         created_by=current_user.id,
         organization_id=membership.organization_id,
     )
@@ -339,6 +340,9 @@ def update_course(
     try:
         existing_course.title = course_dto.title
         existing_course.description = course_dto.description
+        existing_course.learning_objectives = course_dto.learning_objectives
+        existing_course.skill_tags = course_dto.skill_tags
+        existing_course.standards_metadata = course_dto.standards_metadata
 
         for unit in list(existing_course.units):
             db.delete(unit)
@@ -355,15 +359,56 @@ def update_course(
             db.flush()
 
             for lesson_dto in unit_dto.lessons:
-                new_lesson = Lesson(
+                readiness = evaluate_lesson_readiness(
                     title=lesson_dto.title,
                     objective=lesson_dto.objective,
-                    order=lesson_dto.order,
-                    duration_minutes=lesson_dto.duration_minutes,
+                    learning_objectives=lesson_dto.learning_objectives,
+                    key_concepts=lesson_dto.key_concepts,
+                    hook=lesson_dto.hook,
+                    content=lesson_dto.content,
+                    guided_practice=lesson_dto.guided_practice,
+                    independent_practice=lesson_dto.independent_practice,
+                    assessment=lesson_dto.assessment,
+                    sources=lesson_dto.sources,
+                )
+                review_status, reviewed_by = resolve_review_fields(
+                    db=db,
+                    current_user=current_user,
+                    requested_status=lesson_dto.review_status,
                     unit_id=new_unit.id,
+                    readiness=readiness,
+                )
+                new_lesson = Lesson(
+                title=lesson_dto.title,
+                objective=lesson_dto.objective,
+                learning_objectives=lesson_dto.learning_objectives,
+                key_concepts=lesson_dto.key_concepts,
+                teacher_notes=lesson_dto.teacher_notes,
+                discussion_questions=lesson_dto.discussion_questions,
+                hook=lesson_dto.hook,
+                content=lesson_dto.content,
+                guided_practice=lesson_dto.guided_practice,
+                independent_practice=lesson_dto.independent_practice,
+                assessment=lesson_dto.assessment,
+                review_status=review_status,
+                reviewed_by=reviewed_by,
+                skill_tags=lesson_dto.skill_tags,
+                standards_metadata=lesson_dto.standards_metadata,
+                order=lesson_dto.order,
+                duration_minutes=lesson_dto.duration_minutes,
+                unit_id=new_unit.id,
                 )
                 db.add(new_lesson)
                 db.flush()
+
+                for source_data in lesson_dto.sources:
+                    db.add(
+                        Source(
+                            lesson_id=new_lesson.id,
+                            citation=source_data.citation,
+                            url=source_data.url,
+                        )
+                    )
 
                 for activity_dto in lesson_dto.activities:
                     new_activity = Activity(

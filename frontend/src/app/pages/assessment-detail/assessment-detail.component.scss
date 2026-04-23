@@ -1,0 +1,15 @@
+.assessment-choice:has(input:checked) {
+  border-color: rgba(46, 41, 78, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(46, 41, 78, 0.15);
+  background: rgba(46, 41, 78, 0.04);
+}
+
+.assessment-status--pass {
+  background: rgba(29, 154, 108, 0.12);
+  color: #166534;
+}
+
+.assessment-status--retry {
+  background: rgba(228, 109, 109, 0.12);
+  color: #9f1239;
+}

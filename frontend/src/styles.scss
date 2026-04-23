@@ -17,9 +17,9 @@
   --echo-rose: #E46D6D;
   --echo-surface: #ffffff;
   --echo-text-main: #111827;
-  --echo-text-muted: #334155;
+  --echo-text-muted: #1f2937;
   --echo-text-on-dark: #F9FAFB;
-  --echo-text-on-dark-muted: #F1F5F9;
+  --echo-text-on-dark-muted: #E2E8F0;
   --echo-muted: var(--echo-text-muted);
   --echo-shadow: 0 16px 40px -18px rgba(15, 23, 42, 0.3);
   --echo-radius: 18px;
@@ -137,6 +137,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-weight: 600;
   background: rgba(68, 53, 107, 0.12);
   color: var(--echo-primary);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #475569;
+  opacity: 1;
 }
 
 .card-grid {

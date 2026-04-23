@@ -1,0 +1,51 @@
+<div class="space-y-6">
+  <section class="certification-hero surface-card p-6">
+    <span class="badge-soft">Certifications</span>
+    <h2 class="mt-3 text-3xl font-bold text-ink">Proof of progress, readiness, and completion</h2>
+    <p class="mt-2 max-w-3xl text-sm text-slate-700">
+      Certifications are issued after required coursework is complete and assessment thresholds are met. Review each award and its supporting requirements here.
+    </p>
+  </section>
+
+  <section *ngIf="loading" class="surface-card p-6 animate-pulse">
+    <div class="h-5 w-48 rounded bg-slate-200"></div>
+    <div class="mt-3 h-4 w-full rounded bg-slate-100"></div>
+    <div class="mt-2 h-4 w-4/5 rounded bg-slate-100"></div>
+  </section>
+
+  <section *ngIf="!loading && certifications.length === 0" class="surface-card p-8 text-center">
+    <h3 class="text-xl font-semibold text-ink">No certifications earned yet</h3>
+    <p class="mt-2 text-sm text-slate-600">Complete program coursework and pass the linked assessments to unlock certification awards.</p>
+    <a routerLink="/home/programs" class="mt-4 inline-flex text-sm font-semibold text-primary underline">Browse programs</a>
+  </section>
+
+  <section *ngIf="!loading && certifications.length > 0" class="grid gap-5 lg:grid-cols-2">
+    <article *ngFor="let issued of certifications" class="surface-card certification-card p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <span class="badge-soft">Issued</span>
+          <h3 class="mt-3 text-2xl font-bold text-ink">{{ issued.certification.title }}</h3>
+          <p class="mt-2 text-sm text-slate-700">{{ issued.certification.description || 'Issued after meeting coursework and assessment requirements.' }}</p>
+        </div>
+        <div class="rounded-2xl bg-white/80 px-4 py-3 text-right shadow-sm">
+          <p class="text-xs uppercase tracking-[0.18em] text-primary">Awarded</p>
+          <p class="mt-1 text-sm font-semibold text-ink">{{ issued.awarded_at | date:'mediumDate' }}</p>
+        </div>
+      </div>
+
+      <div class="mt-5 rounded-2xl border border-white/60 bg-white/70 p-4">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Requirement summary</p>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li *ngFor="let requirement of issued.certification.requirements">
+            {{ requirement.requirement_type === 'course_completion' ? 'Course completion required' : 'Assessment pass required' }}
+            <span *ngIf="requirement.minimum_score">at {{ requirement.minimum_score | number:'1.0-0' }}% or higher</span>
+          </li>
+        </ul>
+      </div>
+
+      <p *ngIf="issued.score_snapshot !== null && issued.score_snapshot !== undefined" class="mt-4 text-sm text-slate-700">
+        Score snapshot recorded at issuance: <strong>{{ issued.score_snapshot | number:'1.0-0' }}%</strong>
+      </p>
+    </article>
+  </section>
+</div>

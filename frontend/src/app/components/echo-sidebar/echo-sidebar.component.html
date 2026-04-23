@@ -1,13 +1,17 @@
-<div [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'" class="bg-white/80 backdrop-blur-lg text-ink h-screen fixed left-0 top-0 z-40 transition-all duration-300 flex flex-col border-r border-primary/10 shadow-soft-card">
-  <div class="flex items-center justify-between p-4">
-    <div class="flex items-center gap-3" *ngIf="!collapsed">
-      <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
-      <div>
+<div
+  class="sidebar-shell bg-white/92 backdrop-blur-lg text-ink h-screen flex flex-col border-r border-slate-200/80 shadow-soft-card"
+  [class.sidebar-shell--collapsed]="collapsed"
+  [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'"
+>
+  <div class="flex items-center justify-between p-4 gap-3">
+    <div class="flex items-center gap-3 min-w-0" *ngIf="!collapsed">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold shrink-0">EE</div>
+      <div class="min-w-0">
         <p class="text-xs uppercase tracking-[0.25em] text-primary">EchoEd</p>
-        <p class="text-sm font-semibold">Demo Navigator</p>
+        <p class="text-sm font-semibold truncate">Demo Navigator</p>
       </div>
     </div>
-    <button (click)="toggle.emit()" class="text-primary" aria-label="Toggle sidebar">
+    <button (click)="toggle.emit()" class="text-primary shrink-0" aria-label="Toggle sidebar">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -16,31 +20,41 @@
     </button>
   </div>
 
-  <nav class="flex-1 px-2 space-y-6">
+  <nav class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto">
     <ng-container *ngIf="ready$ | async; else navSkeleton">
       <ng-container *ngIf="visibleNavSections$ | async as sections">
         <div *ngFor="let section of sections">
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-500 mb-2" *ngIf="!collapsed">{{ section.title }}</p>
-          <a *ngFor="let item of section.items" [routerLink]="item.route" routerLinkActive="bg-primary/10 text-primary" class="flex items-center p-3 rounded-xl hover:bg-primary/10 transition space-x-2">
-            <lucide-icon [name]="item.icon" class="h-5 w-5"></lucide-icon>
-            <span *ngIf="!collapsed" class="font-semibold">{{ item.label }}</span>
-          </a>
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-600 mb-2 px-2" *ngIf="!collapsed">{{ section.title }}</p>
+          <div class="space-y-1">
+            <a
+              *ngFor="let item of section.items"
+              [routerLink]="item.route"
+              routerLinkActive="bg-primary/10 text-primary"
+              class="sidebar-link flex items-center rounded-xl hover:bg-primary/10 transition"
+              [class.sidebar-link--collapsed]="collapsed"
+              [attr.aria-label]="collapsed ? item.label : null"
+              [attr.title]="collapsed ? item.label : null"
+            >
+              <lucide-icon [name]="item.icon" class="h-5 w-5 shrink-0"></lucide-icon>
+              <span *ngIf="!collapsed" class="font-semibold truncate">{{ item.label }}</span>
+            </a>
+          </div>
         </div>
       </ng-container>
     </ng-container>
 
     <ng-template #navSkeleton>
       <div class="space-y-3 px-1" aria-label="sidenav-loading">
-        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
-        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
-        <div class="h-10 rounded-xl bg-slate-200/70 animate-pulse"></div>
+        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
+        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
+        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
       </div>
     </ng-template>
   </nav>
 
-  <div class="p-4 border-t border-primary/10" *ngIf="!collapsed && userInfo">
-    <p class="text-xs text-slate-500">Logged in as</p>
+  <div class="p-4 border-t border-slate-200/80" *ngIf="!collapsed && userInfo">
+    <p class="text-xs text-slate-600">Logged in as</p>
     <p class="font-semibold text-primary">{{ userInfo.fullname }}</p>
-    <p class="text-xs text-slate-500">{{ userInfo.role | titlecase }}</p>
+    <p class="text-xs text-slate-600">{{ userInfo.role | titlecase }}</p>
   </div>
 </div>

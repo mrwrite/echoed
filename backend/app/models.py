@@ -1,4 +1,16 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, Boolean, Text
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+    Table,
+    Boolean,
+    Text,
+    Float,
+    JSON,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import Enum as SqlEnum
@@ -47,6 +59,21 @@ class User(Base):
     sections_created = relationship("Section", back_populates="creator")
     assignments_created = relationship("Assignment", back_populates="creator")
     lesson_sessions_started = relationship("LessonSession", back_populates="starter")
+    program_progress = relationship(
+        "StudentProgramProgress",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    assessment_attempts = relationship(
+        "StudentAssessmentAttempt",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    certifications = relationship(
+        "StudentCertification",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
 
 
 class Organization(Base):
@@ -81,6 +108,7 @@ class Organization(Base):
     )
     courses = relationship("Course", back_populates="organization")
     sections = relationship("Section", back_populates="organization")
+    programs = relationship("Program", back_populates="organization")
 
 
 class OrganizationMembership(Base):
@@ -166,6 +194,9 @@ class Course(Base):
     age_band_min = Column(Integer, nullable=True)
     age_band_max = Column(Integer, nullable=True)
     default_locale = Column(String, default="en", nullable=False)
+    learning_objectives = Column(Text, nullable=True)
+    skill_tags = Column(JSON, nullable=True)
+    standards_metadata = Column(JSON, nullable=True)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -176,6 +207,12 @@ class Course(Base):
     units = relationship("Unit", back_populates="course", cascade="all, delete-orphan")
     versions = relationship("CourseVersion", back_populates="course", cascade="all, delete-orphan")
     organization = relationship("Organization", back_populates="courses")
+    program_links = relationship(
+        "ProgramCourse",
+        back_populates="course",
+        cascade="all, delete-orphan",
+    )
+    assessments = relationship("Assessment", back_populates="course")
 
 
 class CourseVersion(Base):
@@ -231,12 +268,40 @@ class Lesson(Base):
     unit_id = Column(UUID(as_uuid=True), ForeignKey('units.id'), nullable=False)
     title = Column(String, nullable=False)
     objective = Column(String)
+    learning_objectives = Column(Text, nullable=True)
+    key_concepts = Column(JSON, nullable=True)
+    teacher_notes = Column(Text, nullable=True)
+    discussion_questions = Column(JSON, nullable=True)
+    hook = Column(Text, nullable=True)
+    content = Column(Text, nullable=True)
+    guided_practice = Column(Text, nullable=True)
+    independent_practice = Column(Text, nullable=True)
+    assessment = Column(Text, nullable=True)
+    review_status = Column(String, nullable=False, default="draft")
+    reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    skill_tags = Column(JSON, nullable=True)
+    standards_metadata = Column(JSON, nullable=True)
     order = Column(Integer)
     duration_minutes = Column(Integer)
 
     # Relationships
     unit = relationship("Unit", back_populates="lessons")
     activities = relationship("Activity", back_populates="lesson", cascade="all, delete-orphan")
+    assessments = relationship("Assessment", back_populates="lesson")
+    reviewer = relationship("User")
+    sources = relationship("Source", back_populates="lesson", cascade="all, delete-orphan")
+
+
+class Source(Base):
+    __tablename__ = "sources"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id"), nullable=False)
+    citation = Column(Text, nullable=False)
+    url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    lesson = relationship("Lesson", back_populates="sources")
 
 
 class Activity(Base):
@@ -356,6 +421,7 @@ class Badge(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
     student_badges = relationship("StudentBadge", back_populates="badge", cascade="all, delete-orphan")
+    certifications = relationship("Certification", back_populates="badge")
 
 
 class StudentBadge(Base):
@@ -368,6 +434,234 @@ class StudentBadge(Base):
 
     student = relationship("User")
     badge = relationship("Badge", back_populates="student_badges")
+
+
+class Program(Base):
+    __tablename__ = "programs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    organization = relationship("Organization", back_populates="programs")
+    courses = relationship(
+        "ProgramCourse",
+        back_populates="program",
+        cascade="all, delete-orphan",
+        order_by="ProgramCourse.order",
+    )
+    assessments = relationship("Assessment", back_populates="program")
+    student_progress = relationship(
+        "StudentProgramProgress",
+        back_populates="program",
+        cascade="all, delete-orphan",
+    )
+    certifications = relationship(
+        "Certification",
+        back_populates="program",
+        cascade="all, delete-orphan",
+    )
+
+
+class ProgramCourse(Base):
+    __tablename__ = "program_courses"
+    __table_args__ = (UniqueConstraint("program_id", "course_id", name="uq_program_course"),)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=False)
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=False)
+    order = Column(Integer, nullable=False, default=1)
+    is_required = Column(Boolean, nullable=False, default=True)
+
+    program = relationship("Program", back_populates="courses")
+    course = relationship("Course", back_populates="program_links")
+
+
+class StudentProgramProgress(Base):
+    __tablename__ = "student_program_progress"
+    __table_args__ = (
+        UniqueConstraint("student_id", "program_id", name="uq_student_program_progress"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=False)
+    status = Column(String, nullable=False, default="active")
+    enrolled_on = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_activity_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+    student = relationship("User", back_populates="program_progress")
+    program = relationship("Program", back_populates="student_progress")
+    assessment_attempts = relationship(
+        "StudentAssessmentAttempt",
+        back_populates="program_progress",
+    )
+
+
+class Assessment(Base):
+    __tablename__ = "assessments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id"), nullable=True)
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=True)
+    program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=True)
+    passing_score = Column(Float, nullable=False, default=70.0)
+    max_attempts = Column(Integer, nullable=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    lesson = relationship("Lesson", back_populates="assessments")
+    course = relationship("Course", back_populates="assessments")
+    program = relationship("Program", back_populates="assessments")
+    questions = relationship(
+        "Question",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+        order_by="Question.order",
+    )
+    attempts = relationship(
+        "StudentAssessmentAttempt",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+    )
+
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id"), nullable=False)
+    prompt = Column(Text, nullable=False)
+    question_type = Column(String, nullable=False, default="multiple_choice")
+    choices = Column(JSON, nullable=True)
+    correct_answer = Column(Text, nullable=False)
+    explanation = Column(Text, nullable=True)
+    points = Column(Float, nullable=False, default=1.0)
+    order = Column(Integer, nullable=False, default=1)
+
+    assessment = relationship("Assessment", back_populates="questions")
+    answers = relationship(
+        "StudentAssessmentAnswer",
+        back_populates="question",
+        cascade="all, delete-orphan",
+    )
+
+
+class StudentAssessmentAttempt(Base):
+    __tablename__ = "student_assessment_attempts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id"), nullable=False)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    program_progress_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("student_program_progress.id"),
+        nullable=True,
+    )
+    score = Column(Float, nullable=False, default=0.0)
+    max_score = Column(Float, nullable=False, default=0.0)
+    passed = Column(Boolean, nullable=False, default=False)
+    submitted_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    assessment = relationship("Assessment", back_populates="attempts")
+    student = relationship("User", back_populates="assessment_attempts")
+    program_progress = relationship(
+        "StudentProgramProgress",
+        back_populates="assessment_attempts",
+    )
+    answers = relationship(
+        "StudentAssessmentAnswer",
+        back_populates="attempt",
+        cascade="all, delete-orphan",
+    )
+
+
+class StudentAssessmentAnswer(Base):
+    __tablename__ = "student_assessment_answers"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    attempt_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("student_assessment_attempts.id"),
+        nullable=False,
+    )
+    question_id = Column(UUID(as_uuid=True), ForeignKey("questions.id"), nullable=False)
+    answer = Column(Text, nullable=False)
+    is_correct = Column(Boolean, nullable=False, default=False)
+    awarded_points = Column(Float, nullable=False, default=0.0)
+
+    attempt = relationship("StudentAssessmentAttempt", back_populates="answers")
+    question = relationship("Question", back_populates="answers")
+
+
+class Certification(Base):
+    __tablename__ = "certifications"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=False)
+    badge_id = Column(UUID(as_uuid=True), ForeignKey("badges.id"), nullable=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    program = relationship("Program", back_populates="certifications")
+    badge = relationship("Badge", back_populates="certifications")
+    requirements = relationship(
+        "CertificationRequirement",
+        back_populates="certification",
+        cascade="all, delete-orphan",
+    )
+    issued = relationship(
+        "StudentCertification",
+        back_populates="certification",
+        cascade="all, delete-orphan",
+    )
+
+
+class CertificationRequirement(Base):
+    __tablename__ = "certification_requirements"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    certification_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("certifications.id"),
+        nullable=False,
+    )
+    requirement_type = Column(String, nullable=False)
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=True)
+    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id"), nullable=True)
+    minimum_score = Column(Float, nullable=True)
+
+    certification = relationship("Certification", back_populates="requirements")
+    course = relationship("Course")
+    assessment = relationship("Assessment")
+
+
+class StudentCertification(Base):
+    __tablename__ = "student_certifications"
+    __table_args__ = (
+        UniqueConstraint("student_id", "certification_id", name="uq_student_certification"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    certification_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("certifications.id"),
+        nullable=False,
+    )
+    awarded_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    score_snapshot = Column(Float, nullable=True)
+
+    student = relationship("User", back_populates="certifications")
+    certification = relationship("Certification", back_populates="issued")
 
 
 class Thread(Base):

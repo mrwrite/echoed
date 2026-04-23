@@ -7,9 +7,11 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import (
     activities,
     analytics,
+    assessments,
     assignments,
     auth,
     badges,
+    certifications,
     courses,
     enroll,
     invites,
@@ -18,6 +20,7 @@ from app.api.routes import (
     orgs,
     posts,
     preferences,
+    programs,
     progress,
     sections,
     start_course,
@@ -61,6 +64,9 @@ app.include_router(badges.router, prefix="/api", tags=["Badges"])
 app.include_router(units.router, prefix="/api", tags=["Units"])
 app.include_router(lessons.router, prefix="/api", tags=["Lessons"])
 app.include_router(activities.router, prefix="/api", tags=["Activities"])
+app.include_router(programs.router, prefix="/api", tags=["Programs"])
+app.include_router(assessments.router, prefix="/api", tags=["Assessments"])
+app.include_router(certifications.router, prefix="/api", tags=["Certifications"])
 app.include_router(threads.router, prefix="/api/forum", tags=["Threads"])
 app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
 app.include_router(analytics.router, prefix="/api", tags=["Analytics"])

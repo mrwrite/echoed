@@ -3,9 +3,15 @@
     <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8">
       <p class="text-sm text-primary font-semibold">Welcome to EchoEd</p>
       <h1 class="text-3xl font-bold text-ink">Create your organization</h1>
-      <p class="text-muted mt-2">
-        Set up your organization to unlock invites, reporting, and collaborative tools.
+      <p class="onboarding-helper mt-2">
+        Set up your organization to unlock invites, reporting, collaborative tools, and structured certification programs.
       </p>
+      <div class="mt-4 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">What happens next</p>
+        <p class="mt-2 text-sm text-slate-700">
+          After this step, you will land in your dashboard where courses, programs, assessments, and certification progress become available in the same shell.
+        </p>
+      </div>
 
       <form class="mt-6 space-y-4" (ngSubmit)="onSubmit($event)">
         <div class="space-y-2">
@@ -16,27 +22,27 @@
             name="organizationName"
             [(ngModel)]="organizationName"
             placeholder="e.g. Bright Futures Academy"
-            class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
+            class="onboarding-input w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-accent/50"
           />
         </div>
 
-        <div class="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3">
-          <p class="text-xs text-muted uppercase tracking-[0.2em]">Organization type</p>
+        <div class="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+          <p class="onboarding-helper text-xs uppercase tracking-[0.2em]">Organization type</p>
           <p class="text-sm font-semibold text-main">{{ inferredTypeLabel }}</p>
-          <p class="text-xs text-muted mt-1">We suggested a type based on your role.</p>
+          <p class="onboarding-helper text-xs mt-1">We suggested a type based on your role.</p>
         </div>
 
-        <div *ngIf="isStudentRole" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-          <p class="text-sm font-semibold text-amber-800">Student accounts usually join an existing organization.</p>
-          <p class="text-xs text-amber-700 mt-1">
+        <div *ngIf="isStudentRole" class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <p class="form-state-text form-state-text--warning text-sm font-semibold">Student accounts usually join an existing organization.</p>
+          <p class="form-state-text form-state-text--warning text-xs mt-1">
             If you need a family space, you can create one here. Otherwise, ask an admin for an invite.
           </p>
         </div>
 
-        <p class="text-sm text-red-600" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="form-state-text form-state-text--error text-sm" *ngIf="errorMessage">{{ errorMessage }}</p>
 
         <button
-          class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:opacity-60"
+          class="onboarding-submit w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
           [disabled]="!organizationName || isSubmitting"
         >

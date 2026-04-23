@@ -7,7 +7,7 @@ os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database import SessionLocal
-from app.models import Course, Unit, Lesson, Activity
+from app.models import Course, Unit, Lesson, Activity, Source
 
 client = TestClient(app)
 
@@ -66,25 +66,72 @@ def test_unit_crud(test_db, test_course):
 def test_lesson_crud(test_db, test_unit):
     resp = client.post(
         "/api/lessons",
-        json={"unit_id": str(test_unit.id), "title": "Lesson1"}
+        json={
+            "unit_id": str(test_unit.id),
+            "title": "Lesson1",
+            "learning_objectives": "Understand how evidence strengthens a lesson.",
+            "key_concepts": ["evidence", "citation"],
+            "teacher_notes": "Model source evaluation before discussion.",
+            "discussion_questions": ["Why do historians cite sources?"],
+            "hook": "Ask students whether every website should be trusted equally.",
+            "content": "Introduce source credibility and historical citation practices.",
+            "guided_practice": "Review one primary and one secondary source together.",
+            "independent_practice": "Students annotate a source and explain its value.",
+            "assessment": "Exit ticket on identifying a strong citation.",
+            "review_status": "reviewed",
+            "sources": [
+                {
+                    "citation": "Example Source, 2024",
+                    "url": "https://example.com/source"
+                }
+            ]
+        }
     )
     assert resp.status_code == 200
     lesson_id = resp.json()["id"]
+    assert resp.json()["learning_objectives"] == "Understand how evidence strengthens a lesson."
+    assert resp.json()["review_status"] == "reviewed"
+    assert resp.json()["sources"][0]["citation"] == "Example Source, 2024"
 
     resp = client.get(f"/api/lessons/{lesson_id}")
     assert resp.status_code == 200
     assert resp.json()["title"] == "Lesson1"
+    assert resp.json()["key_concepts"] == ["evidence", "citation"]
+    assert resp.json()["discussion_questions"] == ["Why do historians cite sources?"]
 
     resp = client.put(
         f"/api/lessons/{lesson_id}",
-        json={"unit_id": str(test_unit.id), "title": "LessonNew"}
+        json={
+            "unit_id": str(test_unit.id),
+            "title": "LessonNew",
+            "learning_objectives": "Understand how evidence strengthens a lesson.",
+            "key_concepts": ["evidence", "citation"],
+            "teacher_notes": "Model source evaluation before discussion.",
+            "discussion_questions": ["Why do historians cite sources?"],
+            "hook": "Ask students whether every website should be trusted equally.",
+            "content": "Introduce source credibility and historical citation practices.",
+            "guided_practice": "Review one primary and one secondary source together.",
+            "independent_practice": "Students annotate a source and explain its value.",
+            "assessment": "Exit ticket on identifying a strong citation.",
+            "review_status": "approved",
+            "sources": [
+                {
+                    "citation": "Updated Source, 2025",
+                    "url": "https://example.com/updated-source"
+                }
+            ]
+        }
     )
     assert resp.status_code == 200
     assert resp.json()["title"] == "LessonNew"
+    assert resp.json()["review_status"] == "approved"
+    assert resp.json()["sources"][0]["citation"] == "Updated Source, 2025"
+    assert test_db.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 1
 
     resp = client.delete(f"/api/lessons/{lesson_id}")
     assert resp.status_code == 200
     assert test_db.query(Lesson).filter_by(id=uuid.UUID(lesson_id)).first() is None
+    assert test_db.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 0
 
 def test_activity_crud(test_db, test_lesson):
     resp = client.post(

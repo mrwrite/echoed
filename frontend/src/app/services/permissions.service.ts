@@ -139,6 +139,8 @@ export class PermissionsService {
 
     permissions.add('nav:dashboard');
     permissions.add('nav:courses');
+    permissions.add('nav:programs');
+    permissions.add('nav:certifications');
     permissions.add('nav:preferences');
 
     if (this.hasRole(roleSet, ['admin'])) {

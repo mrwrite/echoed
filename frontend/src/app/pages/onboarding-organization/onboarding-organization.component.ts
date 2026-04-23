@@ -7,6 +7,10 @@ import { OrganizationService } from '../../services/organization.service';
 import { MetaService, EnumOption } from '../../services/meta.service';
 import { AuthService } from '../../services/auth.service';
 import { PermissionsService } from '../../services/permissions.service';
+import {
+  clearPendingOrganizationSetup,
+  readPendingOrganizationSetup,
+} from '../../shared/onboarding-flow';
 
 @Component({
   selector: 'app-onboarding-organization',
@@ -39,15 +43,10 @@ export class OnboardingOrganizationComponent implements OnInit {
     this.userRole = payload?.role ?? '';
     this.isStudentRole = this.userRole === 'student';
 
-    const pending = sessionStorage.getItem('pending_org_creation');
+    const pending = readPendingOrganizationSetup();
     if (pending) {
-      try {
-        const parsed = JSON.parse(pending);
-        this.organizationName = parsed?.name ?? '';
-        this.organizationType = parsed?.type ?? '';
-      } catch (err) {
-        console.warn('Unable to parse pending org creation payload.', err);
-      }
+      this.organizationName = pending.name;
+      this.organizationType = pending.type;
     }
 
     if (!this.organizationType) {
@@ -84,12 +83,13 @@ export class OnboardingOrganizationComponent implements OnInit {
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: async (org) => {
-          sessionStorage.removeItem('pending_org_creation');
-
-          await firstValueFrom(this.organizationService.refreshOrganizations());
+          const organizations = await firstValueFrom(this.organizationService.refreshOrganizations());
+          const createdOrganization = organizations.find((candidate) => candidate.id === org.id) ?? org;
+          const activeRole = createdOrganization.role ?? org.role ?? 'org_admin';
           // Set active organization context immediately so menu/permission logic is available after navigation.
-          await firstValueFrom(this.organizationService.setActiveOrg(org.id, 'org_admin'));
+          await firstValueFrom(this.organizationService.setActiveOrg(createdOrganization.id, activeRole));
           await this.permissionsService.refreshSession();
+          clearPendingOrganizationSetup();
 
           await this.router.navigateByUrl('/home');
         },

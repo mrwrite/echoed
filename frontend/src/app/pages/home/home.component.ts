@@ -50,4 +50,10 @@ export class HomeComponent implements OnInit {
   startDemoTour() {
     this.demoTourService.startTour();
   }
+
+  get sidebarWidth(): string {
+    return this.sidebarCollapsed
+      ? 'var(--echo-sidebar-collapsed-width)'
+      : 'var(--echo-sidebar-expanded-width)';
+  }
 }

@@ -14,6 +14,8 @@ import { ToastService } from '../../../services/toast.service';
 import { AnalyticsService, StudentProgressResponse } from '../../../services/analytics.service';
 import { BadgesService } from '../../../services/badges.service';
 import { StudentBadge } from '../../../models/badge';
+import { Program, StudentCertification } from '../../../models/program';
+import { ProgramsService } from '../../../services/programs.service';
 
 @Component({
   selector: 'echoed-student-view',
@@ -36,6 +38,8 @@ export class StudentViewComponent implements OnInit {
   availableCourses: Course[] = [];
   badgeProgress: StudentProgressResponse['badge_progress'] = [];
   studentBadges: StudentBadge[] = [];
+  programs: Program[] = [];
+  certifications: StudentCertification[] = [];
   streakDays = 0;
   lessonsCompleted = 0;
   unitsCompleted = 0;
@@ -62,13 +66,15 @@ export class StudentViewComponent implements OnInit {
               private router: Router,
               private toastService: ToastService,
               private analyticsService: AnalyticsService,
-              private badgesService: BadgesService
+              private badgesService: BadgesService,
+              private programsService: ProgramsService
   ) { }
 
   ngOnInit(): void {
     this.loadStudentCourses();
     this.loadProgressInsights();
     this.loadBadges();
+    this.loadProgramsOverview();
   }
 
   loadProgressInsights(): void {
@@ -96,6 +102,26 @@ export class StudentViewComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load badges', err);
+      }
+    });
+  }
+
+  loadProgramsOverview(): void {
+    this.programsService.getPrograms().subscribe({
+      next: (programs) => {
+        this.programs = programs;
+      },
+      error: (err) => {
+        console.error('Failed to load programs', err);
+      }
+    });
+
+    this.programsService.getMyCertifications().subscribe({
+      next: (certifications) => {
+        this.certifications = certifications;
+      },
+      error: (err) => {
+        console.error('Failed to load certifications', err);
       }
     });
   }
@@ -155,6 +181,7 @@ export class StudentViewComponent implements OnInit {
           this.loadStudentCourses();
           this.loadProgressInsights();
           this.loadBadges();
+          this.loadProgramsOverview();
         },
         error: () => {
           this.toastService.show('There was an error saving your progress.', 'error');
@@ -182,5 +209,13 @@ enrollInCourse(courseId: string): void {
     this.coursesService.startCourse({ course_id: course.course.id }).subscribe(segment => {
       this.router.navigate(['/home/lesson', segment.unit_progress_id || '']);
     });
+  }
+
+  goToPrograms(): void {
+    this.router.navigate(['/home/programs']);
+  }
+
+  goToCertifications(): void {
+    this.router.navigate(['/home/certifications']);
   }
 }

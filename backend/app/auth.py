@@ -4,6 +4,7 @@ import os
 import bcrypt
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
@@ -73,8 +74,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
 
 
 # Get user from database
-def get_user(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+def get_user(db: Session, identifier: str):
+    return (
+        db.query(User)
+        .filter(or_(User.username == identifier, User.email == identifier))
+        .first()
+    )
 
 
 # Authenticate user

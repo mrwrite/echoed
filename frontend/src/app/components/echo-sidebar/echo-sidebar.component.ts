@@ -36,6 +36,8 @@ export class SidebarComponent {
       items: [
         { label: 'Dashboard', route: '/home', icon: 'Home', permission: 'nav:dashboard' },
         { label: 'Courses', route: '/home/courses', icon: 'Book', permission: 'nav:courses' },
+        { label: 'Programs', route: '/home/programs', icon: 'BookOpen', permission: 'nav:programs' },
+        { label: 'Certifications', route: '/home/certifications', icon: 'Award', permission: 'nav:certifications' },
       ]
     },
     {

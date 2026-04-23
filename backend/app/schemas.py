@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, ConfigDict, AliasChoices
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices, model_validator
 from app.enum import ProgressStatus 
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 from datetime import datetime
 
@@ -94,6 +94,9 @@ class CourseCreateRequest(BaseModel):
     age_band_min: Optional[int] = None
     age_band_max: Optional[int] = None
     default_locale: str = "en"
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class CourseVersionCreateRequest(BaseModel):
@@ -122,6 +125,9 @@ class CourseSummaryResponse(BaseModel):
     age_band_min: Optional[int] = None
     age_band_max: Optional[int] = None
     default_locale: str
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
     created_by: Optional[UUID]
     organization_id: Optional[UUID]
 
@@ -238,24 +244,49 @@ class StorybookPageDto(BaseModel):
     class Config:
         from_attributes = True
 
+
+class SourceDto(BaseModel):
+    citation: str
+    url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 class LessonDto(BaseModel):
     title: str
     objective: Optional[str]
+    learning_objectives: Optional[str] = None
+    key_concepts: List[str] = Field(default_factory=list)
+    teacher_notes: Optional[str] = None
+    discussion_questions: List[str] = Field(default_factory=list)
+    hook: Optional[str] = None
+    content: Optional[str] = None
+    guided_practice: Optional[str] = None
+    independent_practice: Optional[str] = None
+    assessment: Optional[str] = None
+    review_status: str = "draft"
+    reviewed_by: Optional[UUID] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
     order: Optional[int]
     duration_minutes: Optional[int]
-    activities: List[ActivityDto] = []
+    activities: List[ActivityDto] = Field(default_factory=list)
+    sources: List[SourceDto] = Field(default_factory=list)
 
 class UnitDto(BaseModel):
     title: str
     content: Optional[str]
     order: Optional[int]
-    lessons: List[LessonDto] = []
+    lessons: List[LessonDto] = Field(default_factory=list)
         
 
 class CourseDto(BaseModel):
     title: str
     description: str
-    units: List[UnitDto] = []
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
+    units: List[UnitDto] = Field(default_factory=list)
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -297,13 +328,39 @@ class ActivityResponse(BaseModel):
         from_attributes = True
 
 
+class SourceResponse(BaseModel):
+    id: UUID
+    citation: str
+    url: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class LessonResponse(BaseModel):
     id: UUID
     title: str
     objective: Optional[str]
+    learning_objectives: Optional[str] = None
+    key_concepts: List[str] = Field(default_factory=list)
+    teacher_notes: Optional[str] = None
+    discussion_questions: List[str] = Field(default_factory=list)
+    hook: Optional[str] = None
+    content: Optional[str] = None
+    guided_practice: Optional[str] = None
+    independent_practice: Optional[str] = None
+    assessment: Optional[str] = None
+    review_status: str
+    reviewed_by: Optional[UUID] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
     order: Optional[int]
     duration_minutes: Optional[int]
-    activities: List[ActivityResponse] = []
+    activities: List[ActivityResponse] = Field(default_factory=list)
+    sources: List[SourceResponse] = Field(default_factory=list)
+    is_ready_for_approval: bool = False
+    missing_readiness_fields: List[str] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -314,7 +371,7 @@ class UnitResponse(BaseModel):
     title: str
     content: Optional[str]
     order: Optional[int]
-    lessons: List[LessonResponse] = []
+    lessons: List[LessonResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -324,7 +381,10 @@ class CourseResponse(BaseModel):
     id: UUID
     title: str
     description: str
-    units: List[UnitResponse] = []
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
+    units: List[UnitResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -421,3 +481,210 @@ class PostResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProgramCourseLinkRequest(BaseModel):
+    course_id: UUID
+    order: int = 1
+    is_required: bool = True
+
+
+class ProgramCreateRequest(BaseModel):
+    title: str
+    description: str
+    course_links: List[ProgramCourseLinkRequest] = Field(default_factory=list)
+
+
+class ProgramCourseResponse(BaseModel):
+    id: UUID
+    course_id: UUID
+    order: int
+    is_required: bool
+    course: CourseSummaryResponse
+
+    class Config:
+        from_attributes = True
+
+
+class StudentProgramProgressResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+    program_id: UUID
+    status: str
+    enrolled_on: datetime
+    last_activity_at: Optional[datetime]
+    completed_at: Optional[datetime]
+    completion_percentage: float = 0
+    completed_courses: int = 0
+    total_courses: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class ProgramResponse(BaseModel):
+    id: UUID
+    title: str
+    description: str
+    organization_id: Optional[UUID]
+    created_by: Optional[UUID]
+    created_at: datetime
+    updated_at: datetime
+    courses: List[ProgramCourseResponse] = Field(default_factory=list)
+    progress: Optional[StudentProgramProgressResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class QuestionCreateRequest(BaseModel):
+    prompt: str
+    question_type: str = "multiple_choice"
+    choices: List[str] = Field(default_factory=list)
+    correct_answer: str
+    explanation: Optional[str] = None
+    points: float = 1.0
+    order: int = 1
+
+
+class AssessmentCreateRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    lesson_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    passing_score: float = 70.0
+    max_attempts: Optional[int] = None
+    questions: List[QuestionCreateRequest] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_scope(self) -> "AssessmentCreateRequest":
+        scope_count = sum(
+            value is not None for value in (self.lesson_id, self.course_id, self.program_id)
+        )
+        if scope_count != 1:
+            raise ValueError("Assessment must target exactly one of lesson, course, or program.")
+        return self
+
+
+class QuestionResponse(BaseModel):
+    id: UUID
+    prompt: str
+    question_type: str
+    choices: List[str] = Field(default_factory=list)
+    explanation: Optional[str]
+    points: float
+    order: int
+
+    class Config:
+        from_attributes = True
+
+
+class AssessmentResponse(BaseModel):
+    id: UUID
+    title: str
+    description: Optional[str]
+    lesson_id: Optional[UUID]
+    course_id: Optional[UUID]
+    program_id: Optional[UUID]
+    passing_score: float
+    max_attempts: Optional[int]
+    created_by: Optional[UUID]
+    created_at: datetime
+    questions: List[QuestionResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+
+class AssessmentAnswerRequest(BaseModel):
+    question_id: UUID
+    answer: str
+
+
+class AssessmentAttemptCreateRequest(BaseModel):
+    answers: List[AssessmentAnswerRequest] = Field(default_factory=list)
+
+
+class StudentAssessmentAnswerResponse(BaseModel):
+    question_id: UUID
+    answer: str
+    is_correct: bool
+    awarded_points: float
+
+    class Config:
+        from_attributes = True
+
+
+class StudentAssessmentAttemptResponse(BaseModel):
+    id: UUID
+    assessment_id: UUID
+    student_id: UUID
+    program_progress_id: Optional[UUID]
+    score: float
+    max_score: float
+    percentage: float
+    passed: bool
+    submitted_at: datetime
+    answers: List[StudentAssessmentAnswerResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+
+class CertificationRequirementCreateRequest(BaseModel):
+    requirement_type: str
+    course_id: Optional[UUID] = None
+    assessment_id: Optional[UUID] = None
+    minimum_score: Optional[float] = None
+
+
+class CertificationCreateRequest(BaseModel):
+    program_id: UUID
+    title: str
+    description: Optional[str] = None
+    badge_id: Optional[UUID] = None
+    requirements: List[CertificationRequirementCreateRequest] = Field(default_factory=list)
+
+
+class CertificationRequirementResponse(BaseModel):
+    id: UUID
+    requirement_type: str
+    course_id: Optional[UUID]
+    assessment_id: Optional[UUID]
+    minimum_score: Optional[float]
+
+    class Config:
+        from_attributes = True
+
+
+class CertificationResponse(BaseModel):
+    id: UUID
+    program_id: UUID
+    badge_id: Optional[UUID]
+    title: str
+    description: Optional[str]
+    created_at: datetime
+    requirements: List[CertificationRequirementResponse] = Field(default_factory=list)
+
+    class Config:
+        from_attributes = True
+
+
+class StudentCertificationResponse(BaseModel):
+    id: UUID
+    student_id: UUID
+    certification_id: UUID
+    awarded_at: datetime
+    score_snapshot: Optional[float]
+    certification: CertificationResponse
+
+    class Config:
+        from_attributes = True
+
+
+class CertificationEvaluationResponse(BaseModel):
+    certification_id: UUID
+    awarded: bool
+    missing_requirements: List[str] = Field(default_factory=list)
+    student_certification: Optional[StudentCertificationResponse] = None

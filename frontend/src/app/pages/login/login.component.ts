@@ -5,8 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { OrganizationService } from '../../services/organization.service';
-import { Organization } from '../../models/organization';
 import { PermissionsService } from '../../services/permissions.service';
+import {
+  readPendingOrganizationSetup,
+  requiresOrganizationOnboarding,
+} from '../../shared/onboarding-flow';
 
 @Component({
   selector: 'echo-login',
@@ -43,7 +46,11 @@ export class LoginComponent {
       // Super admins should always land in dashboard; onboarding is only for non-super-admin users lacking org context.
       try {
         const orgs = await firstValueFrom(this.organizationService.refreshOrganizations());
-        if (this.needsOnboarding(orgs)) {
+        if (requiresOrganizationOnboarding({
+          isSuperAdmin: this.isSuperAdminSession(),
+          organizations: orgs,
+          pendingSetup: readPendingOrganizationSetup(),
+        })) {
           await this.router.navigateByUrl('/onboarding/organization');
           return;
         }
@@ -57,26 +64,9 @@ export class LoginComponent {
     }
   }
 
-
   private isSuperAdminSession(): boolean {
     const token = this.authService.getToken();
     const payload = token ? this.authService.getTokenPayload(token) : null;
     return this.authService.isSuperAdminRole(payload?.role);
-  }
-
-  private needsOnboarding(orgs: Organization[]): boolean {
-    if (this.isSuperAdminSession()) {
-      return false;
-    }
-
-    const pendingOrg = sessionStorage.getItem('pending_org_creation');
-    if (pendingOrg) {
-      return true;
-    }
-    if (!orgs || orgs.length === 0) {
-      return true;
-    }
-    const hasNonPersonal = orgs.some((org) => org.type !== 'personal');
-    return !hasNonPersonal;
   }
 }

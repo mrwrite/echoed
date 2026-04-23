@@ -4,7 +4,10 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { PermissionsService } from '../services/permissions.service';
 import { OrganizationService } from '../services/organization.service';
-import { Organization } from '../models/organization';
+import {
+  readPendingOrganizationSetup,
+  requiresOrganizationOnboarding,
+} from '../shared/onboarding-flow';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +34,11 @@ export class HomeSessionGuard implements CanActivate {
     try {
       const orgs = await firstValueFrom(this.organizationService.refreshOrganizations());
       // Guard-level onboarding redirect prevents home->onboarding loops and explicitly exempts super admins.
-      if (this.needsOnboarding(orgs)) {
+      if (requiresOrganizationOnboarding({
+        isSuperAdmin: this.isSuperAdminSession(),
+        organizations: orgs,
+        pendingSetup: readPendingOrganizationSetup(),
+      })) {
         return this.router.parseUrl('/onboarding/organization');
       }
     } catch {
@@ -40,25 +47,6 @@ export class HomeSessionGuard implements CanActivate {
 
     return true;
   }
-
-  private needsOnboarding(orgs: Organization[]): boolean {
-    if (this.isSuperAdminSession()) {
-      return false;
-    }
-
-    const pendingOrg = sessionStorage.getItem('pending_org_creation');
-    if (pendingOrg) {
-      return true;
-    }
-
-    if (!orgs || orgs.length === 0) {
-      return true;
-    }
-
-    const hasNonPersonal = orgs.some((org) => org.type !== 'personal');
-    return !hasNonPersonal;
-  }
-
   private isSuperAdminSession(): boolean {
     const token = this.authService.getToken();
     const payload = token ? this.authService.getTokenPayload(token) : null;

@@ -9,7 +9,7 @@ import { EchoButtonComponent } from '../../../components/echo-button/echo-button
 import { StudentCourseCardComponent } from '../../../components/student-course-card/student-course-card.component';
 import { Course } from '../../../models/course';
 import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
-import { CompleteSegmentResponse } from '../../../models/segment-response.model';
+import { CompleteSegmentResponse, SegmentResponse } from '../../../models/segment-response.model';
 import { ToastService } from '../../../services/toast.service';
 import { AnalyticsService, StudentProgressResponse } from '../../../services/analytics.service';
 import { BadgesService } from '../../../services/badges.service';
@@ -40,6 +40,8 @@ export class StudentViewComponent implements OnInit {
   studentBadges: StudentBadge[] = [];
   programs: Program[] = [];
   certifications: StudentCertification[] = [];
+  governedDeliveryState: SegmentResponse['delivery_state'] | null = null;
+  governedDeliveryDetail = '';
   streakDays = 0;
   lessonsCompleted = 0;
   unitsCompleted = 0;
@@ -172,8 +174,12 @@ export class StudentViewComponent implements OnInit {
       .subscribe({
         next: (res: CompleteSegmentResponse) => {
           const nextSeg = res.next_segment;
-          if (nextSeg && nextSeg.unit_progress_id) {
+          if (nextSeg.delivery_state === 'governed_available' && nextSeg.unit_progress_id) {
             this.activeStudentCourse!.unit_progress_id = nextSeg.unit_progress_id;
+          } else if (nextSeg.delivery_state !== 'completed') {
+            this.governedDeliveryState = nextSeg.delivery_state;
+            this.governedDeliveryDetail = nextSeg.detail || 'This lesson path is not currently available.';
+            this.toastService.show(this.governedDeliveryDetail, 'error');
           }
           this.toastService.show('Lesson completed! Progress saved.', 'success');
           this.showLesson = false;
@@ -207,7 +213,16 @@ enrollInCourse(courseId: string): void {
 
   startCourse(course: StudentCourseWithDetails): void {
     this.coursesService.startCourse({ course_id: course.course.id }).subscribe(segment => {
-      this.router.navigate(['/home/lesson', segment.unit_progress_id || '']);
+      if (segment.delivery_state === 'governed_available' && segment.unit_progress_id) {
+        this.governedDeliveryState = null;
+        this.governedDeliveryDetail = '';
+        this.router.navigate(['/home/lesson', segment.unit_progress_id]);
+        return;
+      }
+
+      this.governedDeliveryState = segment.delivery_state;
+      this.governedDeliveryDetail = segment.detail || 'This course is not currently available for governed learner delivery.';
+      this.toastService.show(this.governedDeliveryDetail, 'error');
     });
   }
 

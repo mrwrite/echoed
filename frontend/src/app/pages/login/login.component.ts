@@ -4,12 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { OrganizationService } from '../../services/organization.service';
 import { PermissionsService } from '../../services/permissions.service';
-import {
-  readPendingOrganizationSetup,
-  requiresOrganizationOnboarding,
-} from '../../shared/onboarding-flow';
 
 @Component({
   selector: 'echo-login',
@@ -30,7 +25,6 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private organizationService: OrganizationService,
     private permissionsService: PermissionsService,
   ) { }
 
@@ -39,34 +33,29 @@ export class LoginComponent {
 
     try {
       await firstValueFrom(this.authService.login(this.username, this.password));
-      // Bootstrap user + permissions before navigation so sidenav renders
-      // immediately on first dashboard paint.
       await this.permissionsService.bootstrapSession();
+      const outcome = this.permissionsService.getCurrentOutcome();
 
-      // Super admins should always land in dashboard; onboarding is only for non-super-admin users lacking org context.
-      try {
-        const orgs = await firstValueFrom(this.organizationService.refreshOrganizations());
-        if (requiresOrganizationOnboarding({
-          isSuperAdmin: this.isSuperAdminSession(),
-          organizations: orgs,
-          pendingSetup: readPendingOrganizationSetup(),
-        })) {
+      switch (outcome.status) {
+        case 'ready':
+          await this.router.navigateByUrl('/home');
+          return;
+        case 'onboardingRequired':
           await this.router.navigateByUrl('/onboarding/organization');
           return;
-        }
-      } catch {
-        // Onboarding lookup failed; proceed to home.
+        case 'failed':
+          this.errorMessage = 'Unable to complete session bootstrap. Please try again.';
+          return;
+        case 'unauthenticated':
+          this.errorMessage = 'Your session could not be established. Please log in again.';
+          await this.router.navigateByUrl('/login');
+          return;
+        default:
+          this.errorMessage = 'Unable to determine where to continue. Please try again.';
+          return;
       }
-
-      await this.router.navigateByUrl('/home');
     } catch (error: any) {
       this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
     }
-  }
-
-  private isSuperAdminSession(): boolean {
-    const token = this.authService.getToken();
-    const payload = token ? this.authService.getTokenPayload(token) : null;
-    return this.authService.isSuperAdminRole(payload?.role);
   }
 }

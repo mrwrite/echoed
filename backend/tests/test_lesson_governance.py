@@ -175,7 +175,7 @@ def test_only_reviewers_can_set_review_status_and_reviewer_is_system_managed(gov
     assert created["is_ready_for_approval"] is True
 
 
-def test_student_direct_lesson_access_remains_available_but_filters_staff_fields(governance_app):
+def test_student_direct_lesson_access_returns_explicit_unavailable_for_draft_without_governed_content(governance_app):
     db_session = governance_app["db_session"]
     current_user_holder = governance_app["current_user_holder"]
     student = governance_app["student"]
@@ -197,15 +197,12 @@ def test_student_direct_lesson_access_remains_available_but_filters_staff_fields
     current_user_holder["user"] = student
     response = client.get(f"/api/lessons/{legacy_lesson.id}")
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["title"] == "Legacy Lesson"
-    assert payload["teacher_notes"] is None
-    assert payload["discussion_questions"] == []
-    assert payload["is_ready_for_approval"] is False
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["delivery_state"] == "no_approved_content"
 
 
-def test_student_direct_lesson_access_prefers_approved_ready_sibling(governance_app):
+def test_student_direct_lesson_access_does_not_substitute_approved_ready_sibling(governance_app):
     db_session = governance_app["db_session"]
     current_user_holder = governance_app["current_user_holder"]
     student = governance_app["student"]
@@ -236,15 +233,13 @@ def test_student_direct_lesson_access_prefers_approved_ready_sibling(governance_
     current_user_holder["user"] = student
     response = client.get(f"/api/lessons/{draft_lesson.id}")
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["id"] == str(approved_lesson.id)
-    assert payload["title"] == "Approved Lesson"
-    assert payload["teacher_notes"] is None
-    assert payload["discussion_questions"] == []
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["delivery_state"] == "governed_unavailable"
+    assert detail["lesson_id"] == str(draft_lesson.id)
 
 
-def test_course_endpoint_prefers_approved_lessons_but_falls_back_when_needed(governance_app):
+def test_course_endpoint_exposes_unavailable_unit_state_without_falling_back(governance_app):
     db_session = governance_app["db_session"]
     current_user_holder = governance_app["current_user_holder"]
     student = governance_app["student"]
@@ -286,11 +281,11 @@ def test_course_endpoint_prefers_approved_lessons_but_falls_back_when_needed(gov
 
     approved_unit_payload = payload["units"][0]
     assert [lesson["title"] for lesson in approved_unit_payload["lessons"]] == ["Approved Lesson"]
+    assert approved_unit_payload["learner_availability"] == "governed_available"
 
     fallback_unit_payload = payload["units"][1]
-    assert [lesson["title"] for lesson in fallback_unit_payload["lessons"]] == ["Fallback Lesson"]
-    assert fallback_unit_payload["lessons"][0]["teacher_notes"] is None
-    assert fallback_unit_payload["lessons"][0]["discussion_questions"] == []
+    assert fallback_unit_payload["lessons"] == []
+    assert fallback_unit_payload["learner_availability"] == "no_approved_content"
 
     assert draft_lesson.title not in [lesson["title"] for lesson in approved_unit_payload["lessons"]]
 

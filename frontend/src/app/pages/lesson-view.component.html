@@ -22,7 +22,13 @@
       (segmentCompleted)="onLessonCompleted()"
     />
 
-    <p *ngIf="!lesson && !courseCompleted" class="text-center text-slate-500">Loading lesson...</p>
+    <div *ngIf="!lesson && governedDeliveryState && governedDeliveryState !== 'completed'" class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">Instruction Unavailable</p>
+      <h3 class="mt-2 text-lg font-semibold">{{ governedDeliveryState | titlecase }}</h3>
+      <p class="mt-2 text-sm">{{ governedDeliveryDetail || 'This instructional path is not currently available for governed learner delivery.' }}</p>
+    </div>
+
+    <p *ngIf="!lesson && !courseCompleted && !governedDeliveryState" class="text-center text-slate-500">Loading lesson...</p>
   </div>
 </div>
 

@@ -27,6 +27,7 @@ class MockAuthService {
 }
 
 class MockOrganizationService {
+  activeOrg$ = of(null);
   organizations$ = of([]);
   refreshOrganizations = jasmine.createSpy('refreshOrganizations').and.returnValue(of([]));
   getActiveOrgId = jasmine.createSpy('getActiveOrgId').and.returnValue(null);
@@ -70,5 +71,30 @@ describe('HomeComponent', () => {
 
     const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
     expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('var(--echo-sidebar-collapsed-width)');
+  });
+
+  it('does not duplicate bootstrap when guard/session is already ready', () => {
+    const permissionsService = TestBed.inject(PermissionsService) as unknown as MockPermissionsService;
+
+    expect(permissionsService.bootstrapSession).not.toHaveBeenCalled();
+  });
+
+  it('renders a loading shell before readiness', () => {
+    const permissionsService = TestBed.inject(PermissionsService) as unknown as MockPermissionsService;
+    permissionsService.ready$.next(false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="shell-loading"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('echo-header')).toBeNull();
+    expect(fixture.nativeElement.querySelector('echo-sidebar')).toBeNull();
+  });
+
+  it('preserves lesson-mode shell behavior after readiness', () => {
+    component.lessonMode = true;
+    fixture.detectChanges();
+
+    const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
+    expect(shell.classList).toContain('home-shell--lesson');
+    expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('0px');
   });
 });

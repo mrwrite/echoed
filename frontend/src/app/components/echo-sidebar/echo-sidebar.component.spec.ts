@@ -57,6 +57,15 @@ describe('SidebarComponent', () => {
     expect(text).toContain('Certifications');
   });
 
+  it('renders loading state before readiness', () => {
+    permissionsService.ready$.next(false);
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="sidenav-loading"]')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Dashboard');
+  });
+
   it('keeps compact navigation usable when collapsed', () => {
     component.collapsed = true;
     permissionsService.permissions$.next(new Set(['nav:dashboard']));

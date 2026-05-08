@@ -3,6 +3,8 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Organization } from '../models/organization';
+import { AuthService } from './auth.service';
+import { TokenResponse } from '../models/token-response';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +23,10 @@ export class OrganizationService {
     return this.organizationsSubject.value;
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+  ) {}
 
   getOrganizations(): Observable<Organization[]> {
     return this.organizations$;
@@ -49,17 +54,11 @@ export class OrganizationService {
     return localStorage.getItem(this.activeOrgRoleKey);
   }
 
-  setActiveOrg(orgId: string, role?: string): Observable<{ access_token: string; token_type: string }> {
-    if (role) {
-      localStorage.setItem(this.activeOrgRoleKey, role);
-    }
-    localStorage.setItem(this.activeOrgKey, orgId);
-    this.activeOrgSubject.next(orgId);
-    return this.http.post<{ access_token: string; token_type: string }>(`${this.apiUrl}/orgs/${orgId}/switch`, {}).pipe(
+  setActiveOrg(orgId: string, role?: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.apiUrl}/orgs/${orgId}/switch`, {}).pipe(
       tap(response => {
-        if (response.access_token) {
-          localStorage.setItem('auth_token', response.access_token);
-        }
+        this.authService.applyTokenResponse(response);
+        this.activeOrgSubject.next(response.active_org_id ?? null);
       })
     );
   }

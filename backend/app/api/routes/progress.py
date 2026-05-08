@@ -1,16 +1,18 @@
+from datetime import datetime, timedelta
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
+
 from app.crud import progress as crud
-from app.models import SegmentProgress, StudentUnitProgress
+from app.database import get_db
+from app.deps import get_current_user, require_roles
 from app.enum import ProgressStatus
-from app.schemas import CompleteSegmentRequest
-from uuid import UUID
-from app.deps import require_roles, get_current_user
-from app.models import StudentCourse, User
-from datetime import datetime, timedelta
+from app.models import SegmentProgress, StudentCourse, StudentUnitProgress, User
+from app.schemas import CompleteSegmentRequest, SegmentResponse
 
 router = APIRouter()
+
 
 @router.post("/unit")
 def create_unit_progress(
@@ -21,6 +23,7 @@ def create_unit_progress(
 ):
     return crud.create_student_unit_progress(db, student_course_id, unit_id)
 
+
 @router.put("/unit/{progress_id}")
 def update_unit_progress(
     progress_id: UUID,
@@ -29,6 +32,7 @@ def update_unit_progress(
     current_user=Depends(require_roles("admin", "teacher")),
 ):
     return crud.update_student_unit_progress_status(db, progress_id, status)
+
 
 @router.get("/unit")
 def get_unit_progress(
@@ -39,19 +43,26 @@ def get_unit_progress(
 ):
     return crud.get_student_unit_progress(db, student_course_id, unit_id)
 
-@router.get("/segment")
+
+@router.get("/segment", response_model=SegmentResponse)
 def get_segment(
     student_unit_id: UUID,
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("admin", "teacher", "student")),
 ):
-    segment = crud.get_current_segment_for_unit(db, student_unit_id)
-    if not segment:
-        raise HTTPException(status_code=404, detail="No segment found.")
-    if segment.status == ProgressStatus.NOT_STARTED:
-        crud.update_segment_progress_status(db, segment.id, ProgressStatus.IN_PROGRESS)
-        segment = crud.get_current_segment_for_unit(db, student_unit_id) or segment
-    return segment
+    unit_progress = db.get(StudentUnitProgress, student_unit_id)
+    if not unit_progress:
+        raise HTTPException(status_code=404, detail="Unit progress not found.")
+
+    progression = crud.resolve_governed_progression(db, unit_progress.student_course_id)
+    if progression["delivery_state"] != "governed_available":
+        return SegmentResponse(
+            unit_progress_id=student_unit_id,
+            delivery_state=str(progression["delivery_state"]),
+            detail=str(progression.get("detail") or ""),
+        )
+
+    return SegmentResponse(**progression)
 
 
 @router.post("/segment/complete")
@@ -60,44 +71,26 @@ def complete_segment(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("admin", "teacher", "student")),
 ):
-    segment = db.query(SegmentProgress).filter_by(
-        student_unit_id=request.student_unit_id,
-        lesson_id=request.lesson_id
-    ).first()
+    segment = (
+        db.query(SegmentProgress)
+        .filter_by(
+            student_unit_id=request.student_unit_id,
+            lesson_id=request.lesson_id,
+        )
+        .first()
+    )
 
     if not segment:
         raise HTTPException(status_code=404, detail="Segment not found.")
 
     updated = crud.update_segment_progress_status(db, segment.id, ProgressStatus.COMPLETED)
-
     unit_progress = db.get(StudentUnitProgress, segment.student_unit_id)
-
-    next_segment = crud.get_current_segment_for_unit(db, unit_progress.id)
-    next_unit_progress_id = unit_progress.id
-
-    if not next_segment:
-        next_unit_progress = (
-            db.query(StudentUnitProgress)
-            .filter(
-                StudentUnitProgress.student_course_id == unit_progress.student_course_id,
-                StudentUnitProgress.status == ProgressStatus.IN_PROGRESS,
-            )
-            .first()
-        )
-        if next_unit_progress and next_unit_progress.id != unit_progress.id:
-            next_segment = crud.get_current_segment_for_unit(db, next_unit_progress.id)
-            next_unit_progress_id = next_unit_progress.id
+    next_state = crud.resolve_governed_progression(db, unit_progress.student_course_id)
 
     return {
         "message": "Segment marked as completed.",
         "segment_id": updated.id,
-        "next_segment": {
-            "lesson_id": next_segment.lesson_id,
-            "status": next_segment.status,
-            "unit_progress_id": next_unit_progress_id,
-        }
-        if next_segment
-        else None,
+        "next_segment": SegmentResponse(**next_state).model_dump(),
     }
 
 

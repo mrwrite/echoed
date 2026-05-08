@@ -12,6 +12,7 @@ from app.lesson_governance import (
     serialize_course,
 )
 from app.models import Course, CourseVersion, Unit, Lesson, Activity, StorybookPage, StudentCourse, Source
+from app.crud.progress import resolve_governed_progression
 from app.schemas import (
     CourseDto,
     CourseResponse,
@@ -21,8 +22,6 @@ from app.schemas import (
     CourseVersionResponse,
     CourseSummaryResponse,
 )
-from app.enum import ProgressStatus
-
 router = APIRouter()
 
 
@@ -63,15 +62,8 @@ def get_student_courses(
 
     results = []
     for sc in student_courses:
-        active_progress = next(
-            (up for up in sc.unit_progress if up.status == ProgressStatus.IN_PROGRESS),
-            None,
-        )
-        unit_progress_id = (
-            active_progress.id
-            if active_progress
-            else (sc.unit_progress[0].id if sc.unit_progress else None)
-        )
+        progression_state = resolve_governed_progression(db, sc.id)
+        unit_progress_id = progression_state.get("unit_progress_id")
 
         results.append(
             {

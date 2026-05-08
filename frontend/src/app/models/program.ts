@@ -50,8 +50,16 @@ export interface Assessment {
   lesson_id?: string | null;
   course_id?: string | null;
   program_id?: string | null;
+  assessment_scope?: string;
+  assessment_state?: string;
+  availability_state?: string;
+  learner_delivery_state?: string;
+  learner_delivery_detail?: string | null;
+  is_available_for_learner?: boolean;
   passing_score: number;
   max_attempts?: number | null;
+  policy_metadata?: Record<string, unknown>;
+  lifecycle_metadata?: Record<string, unknown>;
   created_by?: string | null;
   created_at: string;
   questions: Question[];

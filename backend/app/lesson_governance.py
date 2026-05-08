@@ -30,12 +30,39 @@ from app.schemas import (
 
 VALID_REVIEW_STATUSES = {"draft", "reviewed", "approved"}
 REVIEWER_ORG_ROLES = {"content_admin", "org_admin"}
+EDUCATOR_VIEWER_ROLES = {
+    "admin",
+    "teacher",
+    "org_admin",
+    "content_admin",
+    "instructor",
+    "super_admin",
+}
+GOVERNED_AVAILABLE = "governed_available"
+GOVERNED_UNAVAILABLE = "governed_unavailable"
+PENDING_REVIEW = "pending_review"
+NO_APPROVED_CONTENT = "no_approved_content"
+EMPTY_CONTENT = "empty_content"
 
 
 @dataclass
 class LessonReadinessResult:
     is_ready: bool
     missing_fields: list[str]
+
+
+@dataclass
+class GovernedUnitSelection:
+    state: str
+    lessons: list[Lesson]
+    detail: str
+
+
+@dataclass
+class GovernedLessonSelection:
+    state: str
+    lesson: Lesson | None
+    detail: str
 
 
 def _clean_text(value: object | None) -> str:
@@ -247,40 +274,107 @@ def is_lesson_approved_and_ready(lesson: Lesson) -> bool:
     return lesson.review_status == "approved" and evaluate_lesson_readiness(lesson).is_ready
 
 
-def lessons_for_student(lessons: Iterable[Lesson]) -> list[Lesson]:
-    lesson_list = list(lessons)
-    approved_ready = [lesson for lesson in lesson_list if is_lesson_approved_and_ready(lesson)]
-    return approved_ready or lesson_list
-
-
-def preferred_lesson_for_student(lesson: Lesson) -> Lesson:
-    if is_lesson_approved_and_ready(lesson):
-        return lesson
-
-    unit_lessons = list(lesson.unit.lessons or []) if lesson.unit else [lesson]
-    approved_ready = [
-        candidate
-        for candidate in unit_lessons
-        if is_lesson_approved_and_ready(candidate)
-    ]
-    if not approved_ready:
-        return lesson
-
-    approved_ready.sort(
-        key=lambda candidate: (
-            candidate.order is None,
-            candidate.order if candidate.order is not None else 0,
-            str(candidate.id),
-        )
+def _sort_lessons_for_delivery(lessons: Iterable[Lesson]) -> list[Lesson]:
+    return sorted(
+        list(lessons),
+        key=lambda lesson: (
+            lesson.order is None,
+            lesson.order if lesson.order is not None else 0,
+            str(lesson.id),
+        ),
     )
-    return approved_ready[0]
+
+
+def governed_lessons_for_unit(unit: Unit | None) -> GovernedUnitSelection:
+    if unit is None:
+        return GovernedUnitSelection(
+            state=EMPTY_CONTENT,
+            lessons=[],
+            detail="The requested instructional unit does not exist.",
+        )
+
+    unit_lessons = _sort_lessons_for_delivery(unit.lessons or [])
+    if not unit_lessons:
+        return GovernedUnitSelection(
+            state=EMPTY_CONTENT,
+            lessons=[],
+            detail="This instructional unit does not contain any lessons.",
+        )
+
+    approved_ready = [
+        lesson for lesson in unit_lessons if is_lesson_approved_and_ready(lesson)
+    ]
+    if approved_ready:
+        return GovernedUnitSelection(
+            state=GOVERNED_AVAILABLE,
+            lessons=approved_ready,
+            detail="Governed instructional content is available.",
+        )
+
+    if any(lesson.review_status == "reviewed" for lesson in unit_lessons):
+        return GovernedUnitSelection(
+            state=PENDING_REVIEW,
+            lessons=[],
+            detail="Instruction for this unit is pending governance review.",
+        )
+
+    return GovernedUnitSelection(
+        state=NO_APPROVED_CONTENT,
+        lessons=[],
+        detail="No approved learner-ready lessons are available for this unit.",
+    )
+
+
+def governed_lesson_for_student(lesson: Lesson) -> GovernedLessonSelection:
+    if is_lesson_approved_and_ready(lesson):
+        return GovernedLessonSelection(
+            state=GOVERNED_AVAILABLE,
+            lesson=lesson,
+            detail="Governed instructional content is available.",
+        )
+
+    unit_selection = governed_lessons_for_unit(lesson.unit if lesson.unit else None)
+    if lesson.review_status == "reviewed":
+        return GovernedLessonSelection(
+            state=PENDING_REVIEW,
+            lesson=None,
+            detail="This lesson is pending governance review.",
+        )
+
+    if unit_selection.state == GOVERNED_AVAILABLE:
+        return GovernedLessonSelection(
+            state=GOVERNED_UNAVAILABLE,
+            lesson=None,
+            detail="This lesson is not learner-eligible.",
+        )
+
+    return GovernedLessonSelection(
+        state=unit_selection.state,
+        lesson=None,
+        detail=unit_selection.detail,
+    )
+
+
+def raise_governed_unavailable(selection: GovernedLessonSelection, *, lesson_id) -> None:
+    raise HTTPException(
+        status_code=409,
+        detail={
+            "delivery_state": selection.state,
+            "lesson_id": str(lesson_id),
+            "message": selection.detail,
+        },
+    )
 
 
 def serialize_lesson(lesson: Lesson, *, viewer_role: str) -> LessonResponse:
     readiness = evaluate_lesson_readiness(lesson)
-    show_staff_fields = viewer_role in {"admin", "teacher"}
+    show_staff_fields = viewer_role in EDUCATOR_VIEWER_ROLES
     teacher_notes = lesson.teacher_notes if show_staff_fields else None
-    discussion_questions = (lesson.discussion_questions or []) if show_staff_fields else []
+    discussion_questions = lesson.discussion_questions or []
+    review_status = lesson.review_status if show_staff_fields else None
+    reviewed_by = lesson.reviewed_by if show_staff_fields else None
+    is_ready_for_approval = readiness.is_ready if show_staff_fields else None
+    missing_readiness_fields = readiness.missing_fields if show_staff_fields else []
 
     return LessonResponse(
         id=lesson.id,
@@ -295,8 +389,8 @@ def serialize_lesson(lesson: Lesson, *, viewer_role: str) -> LessonResponse:
         guided_practice=lesson.guided_practice,
         independent_practice=lesson.independent_practice,
         assessment=lesson.assessment,
-        review_status=lesson.review_status,
-        reviewed_by=lesson.reviewed_by,
+        review_status=review_status,
+        reviewed_by=reviewed_by,
         skill_tags=lesson.skill_tags or [],
         standards_metadata=lesson.standards_metadata or {},
         order=lesson.order,
@@ -325,8 +419,8 @@ def serialize_lesson(lesson: Lesson, *, viewer_role: str) -> LessonResponse:
             )
             for source in lesson.sources or []
         ],
-        is_ready_for_approval=readiness.is_ready,
-        missing_readiness_fields=readiness.missing_fields,
+        is_ready_for_approval=is_ready_for_approval,
+        missing_readiness_fields=missing_readiness_fields,
     )
 
 
@@ -343,6 +437,7 @@ def _serialize_media(media: Media | None) -> MediaResponse | None:
 
 
 def serialize_course(course: Course, *, viewer_role: str) -> CourseResponse:
+    learner_view = viewer_role == "student"
     return CourseResponse(
         id=course.id,
         title=course.title,
@@ -359,11 +454,17 @@ def serialize_course(course: Course, *, viewer_role: str) -> CourseResponse:
                 lessons=[
                     serialize_lesson(lesson, viewer_role=viewer_role)
                     for lesson in (
-                        lessons_for_student(unit.lessons)
-                        if viewer_role == "student"
-                        else list(unit.lessons)
+                        governed_lessons_for_unit(unit).lessons
+                        if learner_view
+                        else _sort_lessons_for_delivery(unit.lessons or [])
                     )
                 ],
+                learner_availability=(
+                    governed_lessons_for_unit(unit).state if learner_view else None
+                ),
+                learner_availability_detail=(
+                    governed_lessons_for_unit(unit).detail if learner_view else None
+                ),
             )
             for unit in course.units or []
         ],

@@ -1,9 +1,14 @@
 from app.enum import ProgressStatus
 from sqlalchemy.orm import Session
-from app.models import StudentUnitProgress, SegmentProgress, Unit, Lesson, StudentCourse
+from app.models import StudentUnitProgress, SegmentProgress, Unit, Lesson, StudentCourse, Course
 from app.crud.badges import award_badges_for_student
 from uuid import UUID
 from datetime import datetime
+from app.lesson_governance import (
+    EMPTY_CONTENT,
+    GOVERNED_AVAILABLE,
+    governed_lessons_for_unit,
+)
 
 # ---------- StudentUnitProgress ----------
 
@@ -45,11 +50,12 @@ def get_current_segment_for_unit(db: Session, student_unit_id: UUID):
     """Return the next segment that has not been completed for a unit."""
     return (
         db.query(SegmentProgress)
+        .join(Lesson, Lesson.id == SegmentProgress.lesson_id)
         .filter(
             SegmentProgress.student_unit_id == student_unit_id,
             SegmentProgress.status != ProgressStatus.COMPLETED,
         )
-        .order_by(SegmentProgress.id)
+        .order_by(Lesson.order.is_(None), Lesson.order, Lesson.id)
         .first()
     )
 
@@ -106,22 +112,24 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
         # If the segment was completed, advance progress within the unit or to the
         # next unit as needed.
         if progress.status == ProgressStatus.COMPLETED:
-            # Look for the next segment in the same unit that has not been completed
-            next_seg = (
-                db.query(SegmentProgress)
-                .filter(
-                    SegmentProgress.student_unit_id == progress.student_unit_id,
-                    SegmentProgress.status != ProgressStatus.COMPLETED,
+            unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
+            unit = db.get(Unit, unit_progress.unit_id) if unit_progress else None
+            governed_selection = governed_lessons_for_unit(unit)
+            next_seg = None
+            if (
+                unit_progress
+                and governed_selection.state == GOVERNED_AVAILABLE
+            ):
+                next_seg = _governed_current_segment_for_unit_progress(
+                    db,
+                    unit_progress,
+                    governed_selection.lessons,
                 )
-                .order_by(SegmentProgress.id)
-                .first()
-            )
 
             if next_seg:
                 # Move to the next lesson within the unit
                 next_seg.status = ProgressStatus.IN_PROGRESS
                 next_seg.last_updated = datetime.utcnow()
-                unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
                 if unit_progress and unit_progress.status != ProgressStatus.COMPLETED:
                     unit_progress.status = ProgressStatus.IN_PROGRESS
                     if not unit_progress.started_at:
@@ -141,89 +149,10 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                     unit_progress.last_updated = datetime.utcnow()
                     db.commit()
 
-                    # Find the next unit in the course based on order
-                    next_unit = (
-                        db.query(Unit)
-                        .filter(
-                            Unit.course_id == unit_progress.unit.course_id,
-                            Unit.order > (unit_progress.unit.order or 0),
-                        )
-                        .order_by(Unit.order)
-                        .first()
+                    next_state = resolve_governed_progression(
+                        db, unit_progress.student_course_id
                     )
-
-                    if next_unit:
-                        # Create or update progress for the next unit
-                        next_progress = (
-                            db.query(StudentUnitProgress)
-                            .filter_by(
-                                student_course_id=unit_progress.student_course_id,
-                                unit_id=next_unit.id,
-                            )
-                            .first()
-                        )
-
-                        if not next_progress:
-                            next_progress = StudentUnitProgress(
-                                student_course_id=unit_progress.student_course_id,
-                                unit_id=next_unit.id,
-                                status=ProgressStatus.IN_PROGRESS,
-                            )
-                            next_progress.started_at = datetime.utcnow()
-                            db.add(next_progress)
-                            db.commit()
-                        else:
-                            next_progress.status = ProgressStatus.IN_PROGRESS
-                            if not next_progress.started_at:
-                                next_progress.started_at = datetime.utcnow()
-                            next_progress.last_updated = datetime.utcnow()
-                            db.commit()
-
-                        # Ensure segment progress records exist for the new unit
-                        existing = (
-                            db.query(SegmentProgress)
-                            .filter_by(student_unit_id=next_progress.id)
-                            .count()
-                        )
-                        if existing == 0:
-                            lessons = (
-                                db.query(Lesson)
-                                .filter_by(unit_id=next_unit.id)
-                                .order_by(Lesson.order)
-                                .all()
-                            )
-                            for idx, lesson in enumerate(lessons):
-                                seg_status = (
-                                    ProgressStatus.IN_PROGRESS
-                                    if idx == 0
-                                    else ProgressStatus.NOT_STARTED
-                                )
-                                seg = SegmentProgress(
-                                    student_unit_id=next_progress.id,
-                                    lesson_id=lesson.id,
-                                    status=seg_status,
-                                )
-                                if seg_status == ProgressStatus.IN_PROGRESS:
-                                    seg.started_at = datetime.utcnow()
-                                db.add(seg)
-                            db.commit()
-                        else:
-                            # If segments already exist, mark the first incomplete as in progress
-                            next_seg = (
-                                db.query(SegmentProgress)
-                                .filter(
-                                    SegmentProgress.student_unit_id == next_progress.id,
-                                    SegmentProgress.status != ProgressStatus.COMPLETED,
-                                )
-                                .order_by(SegmentProgress.id)
-                                .first()
-                            )
-                            if next_seg and next_seg.status == ProgressStatus.NOT_STARTED:
-                                next_seg.status = ProgressStatus.IN_PROGRESS
-                                next_seg.started_at = datetime.utcnow()
-                                next_seg.last_updated = datetime.utcnow()
-                                db.commit()
-                    else:
+                    if next_state["delivery_state"] == "completed":
                         # No more units left; mark entire course as completed
                         student_course = db.get(
                             StudentCourse, unit_progress.student_course_id
@@ -246,3 +175,208 @@ def get_segment_progress(db: Session, student_unit_id: UUID, lesson_id: UUID):
         .filter_by(student_unit_id=student_unit_id, lesson_id=lesson_id)
         .first()
     )
+
+
+def _sorted_units_for_course(course: Course) -> list[Unit]:
+    return sorted(
+        list(course.units or []),
+        key=lambda unit: (
+            unit.order is None,
+            unit.order if unit.order is not None else 0,
+            str(unit.id),
+        ),
+    )
+
+
+def _lesson_ids(lessons: list[Lesson]) -> list[UUID]:
+    return [lesson.id for lesson in lessons]
+
+
+def _existing_segments_by_lesson(
+    db: Session, student_unit_id: UUID, lesson_ids: list[UUID]
+) -> dict[UUID, SegmentProgress]:
+    if not lesson_ids:
+        return {}
+    return {
+        segment.lesson_id: segment
+        for segment in (
+            db.query(SegmentProgress)
+            .filter(
+                SegmentProgress.student_unit_id == student_unit_id,
+                SegmentProgress.lesson_id.in_(lesson_ids),
+            )
+            .all()
+        )
+    }
+
+
+def _ensure_unit_progress(
+    db: Session, student_course_id: UUID, unit: Unit
+) -> StudentUnitProgress:
+    progress = (
+        db.query(StudentUnitProgress)
+        .filter_by(student_course_id=student_course_id, unit_id=unit.id)
+        .first()
+    )
+    if progress is None:
+        progress = StudentUnitProgress(
+            student_course_id=student_course_id,
+            unit_id=unit.id,
+            status=ProgressStatus.IN_PROGRESS,
+            started_at=datetime.utcnow(),
+            last_updated=datetime.utcnow(),
+        )
+        db.add(progress)
+        db.commit()
+        db.refresh(progress)
+        return progress
+
+    if progress.status != ProgressStatus.COMPLETED:
+        progress.status = ProgressStatus.IN_PROGRESS
+        if not progress.started_at:
+            progress.started_at = datetime.utcnow()
+        progress.last_updated = datetime.utcnow()
+        db.commit()
+        db.refresh(progress)
+    return progress
+
+
+def _ensure_governed_segments(
+    db: Session, unit_progress: StudentUnitProgress, lessons: list[Lesson]
+) -> list[SegmentProgress]:
+    lesson_ids = _lesson_ids(lessons)
+    existing_by_lesson = _existing_segments_by_lesson(db, unit_progress.id, lesson_ids)
+    created = False
+
+    for lesson in lessons:
+        if lesson.id in existing_by_lesson:
+            continue
+        db.add(
+            SegmentProgress(
+                student_unit_id=unit_progress.id,
+                lesson_id=lesson.id,
+                status=ProgressStatus.NOT_STARTED,
+            )
+        )
+        created = True
+
+    if created:
+        db.commit()
+
+    return [
+        existing_by_lesson.get(lesson.id)
+        or db.query(SegmentProgress)
+        .filter_by(student_unit_id=unit_progress.id, lesson_id=lesson.id)
+        .first()
+        for lesson in lessons
+    ]
+
+
+def _governed_current_segment_for_unit_progress(
+    db: Session, unit_progress: StudentUnitProgress, lessons: list[Lesson]
+) -> SegmentProgress | None:
+    lesson_ids = _lesson_ids(lessons)
+    segments = (
+        db.query(SegmentProgress)
+        .join(Lesson, Lesson.id == SegmentProgress.lesson_id)
+        .filter(
+            SegmentProgress.student_unit_id == unit_progress.id,
+            SegmentProgress.lesson_id.in_(lesson_ids),
+            SegmentProgress.status != ProgressStatus.COMPLETED,
+        )
+        .order_by(Lesson.order.is_(None), Lesson.order, Lesson.id)
+        .all()
+    )
+    return segments[0] if segments else None
+
+
+def resolve_governed_progression(
+    db: Session, student_course_id: UUID | str
+) -> dict[str, object]:
+    student_course = db.get(StudentCourse, student_course_id)
+    if student_course is None:
+        return {
+            "delivery_state": "governed_unavailable",
+            "detail": "Student course enrollment was not found.",
+        }
+
+    course = (
+        db.query(Course)
+        .filter(Course.id == student_course.course_id)
+        .first()
+    )
+    if course is None:
+        return {
+            "delivery_state": "empty_course",
+            "detail": "The requested course does not exist.",
+        }
+
+    units = _sorted_units_for_course(course)
+    if not units:
+        return {
+            "delivery_state": "empty_course",
+            "detail": "This course does not contain any instructional units.",
+        }
+
+    completed_unit_ids = {
+        progress.unit_id
+        for progress in (
+            db.query(StudentUnitProgress)
+            .filter_by(student_course_id=student_course.id, status=ProgressStatus.COMPLETED)
+            .all()
+        )
+    }
+
+    for unit in units:
+        if unit.id in completed_unit_ids:
+            continue
+
+        selection = governed_lessons_for_unit(unit)
+        if selection.state == GOVERNED_AVAILABLE:
+            unit_progress = _ensure_unit_progress(db, student_course.id, unit)
+            _ensure_governed_segments(db, unit_progress, selection.lessons)
+            segment = _governed_current_segment_for_unit_progress(
+                db, unit_progress, selection.lessons
+            )
+            if segment is None:
+                unit_progress.status = ProgressStatus.COMPLETED
+                unit_progress.completed_at = unit_progress.completed_at or datetime.utcnow()
+                unit_progress.last_updated = datetime.utcnow()
+                db.commit()
+                completed_unit_ids.add(unit.id)
+                continue
+
+            if segment.status == ProgressStatus.NOT_STARTED:
+                segment.status = ProgressStatus.IN_PROGRESS
+                segment.started_at = segment.started_at or datetime.utcnow()
+                segment.last_updated = datetime.utcnow()
+                unit_progress.status = ProgressStatus.IN_PROGRESS
+                unit_progress.started_at = unit_progress.started_at or datetime.utcnow()
+                unit_progress.last_updated = datetime.utcnow()
+                student_course.last_activity_at = datetime.utcnow()
+                db.commit()
+                db.refresh(segment)
+                db.refresh(unit_progress)
+
+            return {
+                "delivery_state": GOVERNED_AVAILABLE,
+                "detail": selection.detail,
+                "lesson_id": segment.lesson_id,
+                "status": segment.status,
+                "unit_progress_id": unit_progress.id,
+            }
+
+        delivery_state = "empty_unit" if selection.state == EMPTY_CONTENT else selection.state
+        return {
+            "delivery_state": delivery_state,
+            "detail": selection.detail,
+        }
+
+    student_course.status = "completed"
+    student_course.completed_at = student_course.completed_at or datetime.utcnow()
+    student_course.last_activity_at = datetime.utcnow()
+    db.commit()
+    return {
+        "delivery_state": "completed",
+        "detail": "All governed instructional content in this course has been completed.",
+    }

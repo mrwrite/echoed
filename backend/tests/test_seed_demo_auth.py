@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from app.api.routes import auth
 from app.auth import verify_password, hash_password
 from app.database import get_db
-from app.models import Course, CourseVersion, Enrollment, Organization, OrganizationMembership, Section, User
+from app.lesson_governance import GOVERNED_AVAILABLE, governed_lessons_for_unit
+from app.models import Course, CourseVersion, Enrollment, Lesson, Organization, OrganizationMembership, Section, Source, Unit, User
 from app import seed_demo
 
 
@@ -43,10 +44,34 @@ def test_seed_demo_is_idempotent_and_resets_passwords(db_engine, monkeypatch):
         assert session.query(CourseVersion).count() == 1
         assert session.query(Section).filter(Section.name == seed_demo.DEMO_SECTION_NAME).count() == 1
         assert session.query(Enrollment).count() == 2
+        assert session.query(Unit).filter(Unit.course_id == session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one().id).count() >= 2
+        approved_lessons = session.query(Lesson).filter(Lesson.review_status == "approved").all()
+        assert approved_lessons
+        assert session.query(Source).count() >= len(approved_lessons)
 
         refreshed_student = session.query(User).filter(User.username == "student1").one()
         assert refreshed_student.firstname == seed_demo.DEMO_USERS["student1"]["firstname"]
         assert verify_password(seed_demo.DEMO_PASSWORD, refreshed_student.hashed_password)
+    finally:
+        session.close()
+
+
+def test_seed_demo_creates_governed_ordered_student_path(db_engine, monkeypatch):
+    session_factory = _build_session_factory(db_engine)
+    _seed_with_factory(monkeypatch, session_factory)
+
+    session = session_factory()
+    try:
+        course = session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one()
+        units = session.query(Unit).filter(Unit.course_id == course.id).order_by(Unit.order, Unit.id).all()
+        assert len(units) >= 2
+        assert [unit.order for unit in units[:2]] == [1, 2]
+
+        for unit in units:
+            selection = governed_lessons_for_unit(unit)
+            assert selection.state == GOVERNED_AVAILABLE
+            assert selection.lessons
+            assert selection.lessons[0].review_status == "approved"
     finally:
         session.close()
 

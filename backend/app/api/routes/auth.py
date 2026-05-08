@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.auth import authenticate_user, create_access_token, hash_password
+from app.auth import (
+    authenticate_user,
+    create_access_token,
+    hash_password,
+    resolve_active_organization,
+)
 from app.database import get_db
 from app.models import (
     User,
@@ -12,7 +17,7 @@ from app.models import (
     OrganizationMembership,
     UserPreferences,
 )
-from app.schemas import UserDto
+from app.schemas import AuthTokenResponse, UserDto
 from app.enum import OrganizationType, OrganizationRole
 
 router = APIRouter()
@@ -56,7 +61,7 @@ def register_user(user: UserDto, db: Session = Depends(get_db)):
     return {"message": "User registered successfully", "organization_id": personal_org.id}
 
 
-@router.post("/auth/token")
+@router.post("/auth/token", response_model=AuthTokenResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
@@ -67,10 +72,12 @@ def login(
 
     memberships = (
         db.query(OrganizationMembership)
+        .join(Organization, Organization.id == OrganizationMembership.organization_id)
         .filter(OrganizationMembership.user_id == user.id)
         .all()
     )
-    active_org_id = memberships[0].organization_id if memberships else None
+    active_organization = resolve_active_organization(memberships)
+    active_org_id = active_organization.organization_id if active_organization else None
 
     access_token = create_access_token(
         data={
@@ -94,6 +101,17 @@ def login(
             for membership in memberships
         ],
         "active_org_id": str(active_org_id) if active_org_id else None,
+        "active_org_role": active_organization.organization_role if active_organization else None,
+        "active_organization": (
+            {
+                "id": active_organization.organization_id,
+                "name": active_organization.organization_name,
+                "type": active_organization.organization_type,
+                "role": active_organization.organization_role,
+            }
+            if active_organization
+            else None
+        ),
     }
 
 

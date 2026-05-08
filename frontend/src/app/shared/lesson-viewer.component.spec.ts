@@ -22,13 +22,13 @@ describe('LessonViewerComponent', () => {
     };
   });
 
-  it('hides educator-only fields in learner mode', () => {
+  it('hides educator-only notes in learner mode while preserving learner prompts', () => {
     component.isTeacherLed = false;
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
     expect(text).not.toContain('Teacher Notes');
-    expect(text).not.toContain('Which source is more credible?');
+    expect(text).toContain('Which source is more credible?');
   });
 
   it('shows educator-only fields in teacher-led mode', () => {

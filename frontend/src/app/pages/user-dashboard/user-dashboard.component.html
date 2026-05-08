@@ -1,3 +1,15 @@
+<ng-container *ngIf="isReady; else dashboardLoading">
+  <router-outlet></router-outlet>
+</ng-container>
 
-
-   <router-outlet></router-outlet>
+<ng-template #dashboardLoading>
+  <div class="p-6" aria-label="dashboard-loading">
+    <div class="space-y-4">
+      <div class="h-8 w-48 rounded-xl bg-slate-200 animate-pulse"></div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="h-32 rounded-2xl bg-slate-200 animate-pulse"></div>
+        <div class="h-32 rounded-2xl bg-slate-200 animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+</ng-template>

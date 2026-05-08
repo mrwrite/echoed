@@ -14,10 +14,16 @@
       <p class="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
         Passing score: {{ assessment.passing_score | number:'1.0-0' }}%
       </p>
+      <div *ngIf="!isAvailableForLearner" class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <p class="text-sm font-semibold text-amber-900">Assessment unavailable for learners</p>
+        <p class="mt-2 text-sm text-amber-900/80">
+          {{ deliveryStateDetail }}
+        </p>
+      </div>
     </ng-container>
   </section>
 
-  <section *ngIf="assessment" class="surface-card p-6">
+  <section *ngIf="assessment && isAvailableForLearner" class="surface-card p-6">
     <form class="space-y-5" (ngSubmit)="submit()">
       <article *ngFor="let question of assessment.questions; let index = index" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
         <div class="flex items-start justify-between gap-3">
@@ -61,6 +67,14 @@
         ></app-echo-button>
       </div>
     </form>
+  </section>
+
+  <section *ngIf="assessment && !isAvailableForLearner" class="surface-card p-6">
+    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Learner access</p>
+    <h3 class="mt-2 text-xl font-bold text-ink">Unavailable assessment state</h3>
+    <p class="mt-2 text-sm text-slate-600">
+      Learners cannot submit this assessment while it is marked {{ deliveryStateLabel }}.
+    </p>
   </section>
 
   <section *ngIf="result" class="surface-card p-6">

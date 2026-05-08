@@ -54,7 +54,22 @@ export class AssessmentDetailComponent implements OnInit {
   }
 
   get canSubmit(): boolean {
-    return !!this.assessment && this.assessment.questions.every(question => !!this.answers[question.id]?.trim()) && !this.submitting;
+    return !!this.assessment
+      && this.isAvailableForLearner
+      && this.assessment.questions.every(question => !!this.answers[question.id]?.trim())
+      && !this.submitting;
+  }
+
+  get isAvailableForLearner(): boolean {
+    return this.assessment?.is_available_for_learner !== false;
+  }
+
+  get deliveryStateLabel(): string {
+    return this.assessment?.learner_delivery_state || 'available';
+  }
+
+  get deliveryStateDetail(): string {
+    return this.assessment?.learner_delivery_detail || 'This assessment is not available right now.';
   }
 
   submit(): void {

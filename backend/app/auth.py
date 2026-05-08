@@ -1,5 +1,8 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import os
+from typing import Iterable
+from uuid import UUID
 
 import bcrypt
 from jose import JWTError, jwt
@@ -8,7 +11,8 @@ from sqlalchemy import or_
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.models import User
+from app.enum import MembershipStatus, OrganizationType
+from app.models import Organization, OrganizationMembership, User
 from app.database import SessionLocal
 from app.log import logger
 
@@ -20,6 +24,53 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+@dataclass(frozen=True)
+class ActiveOrganizationContext:
+    organization_id: UUID
+    organization_name: str
+    organization_type: str
+    organization_role: str
+
+
+def resolve_active_organization(
+    memberships: Iterable[OrganizationMembership],
+) -> ActiveOrganizationContext | None:
+    membership_list = list(memberships)
+    if not membership_list:
+        return None
+
+    active_memberships = [
+        membership
+        for membership in membership_list
+        if membership.status == MembershipStatus.ACTIVE
+    ]
+    candidate_memberships = active_memberships or membership_list
+
+    memberships_with_org = [
+        membership for membership in candidate_memberships if getattr(membership, "organization", None)
+    ]
+    if not memberships_with_org:
+        return None
+
+    def membership_sort_key(membership: OrganizationMembership) -> tuple[int, datetime, str]:
+        organization: Organization = membership.organization
+        return (
+            0 if organization.type != OrganizationType.PERSONAL else 1,
+            organization.created_at or datetime.min,
+            str(organization.id),
+        )
+
+    selected_membership = min(memberships_with_org, key=membership_sort_key)
+    selected_organization: Organization = selected_membership.organization
+
+    return ActiveOrganizationContext(
+        organization_id=selected_organization.id,
+        organization_name=selected_organization.name,
+        organization_type=selected_organization.type.value,
+        organization_role=selected_membership.role.value,
+    )
 
 
 def get_db():

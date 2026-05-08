@@ -20,6 +20,8 @@ export class LessonViewComponent implements OnInit {
   lesson?: Lesson;
   courseCompleted = false;
   demoMode = false;
+  governedDeliveryState: SegmentResponse['delivery_state'] | null = null;
+  governedDeliveryDetail = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -41,6 +43,15 @@ export class LessonViewComponent implements OnInit {
     this.coursesService.getCurrentSegment(this.unitProgressId).subscribe({
       next: (segment) => {
         this.segment = segment;
+        if (segment.delivery_state !== 'governed_available' || !segment.lesson_id) {
+          this.lesson = undefined;
+          this.courseCompleted = segment.delivery_state === 'completed';
+          this.governedDeliveryState = segment.delivery_state;
+          this.governedDeliveryDetail = segment.detail || '';
+          return;
+        }
+        this.governedDeliveryState = null;
+        this.governedDeliveryDetail = '';
         this.fetchLesson(segment.lesson_id);
       },
       error: (err) => {
@@ -59,6 +70,9 @@ export class LessonViewComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching lesson', err);
+        this.lesson = undefined;
+        this.governedDeliveryState = err?.error?.detail?.delivery_state || 'governed_unavailable';
+        this.governedDeliveryDetail = err?.error?.detail?.message || 'This lesson is not currently available for governed learner delivery.';
       }
     });
   }
@@ -73,20 +87,27 @@ export class LessonViewComponent implements OnInit {
     return;
   }
 
-  this.coursesService.markSegmentCompleted(this.unitProgressId, this.segment.lesson_id).subscribe({
+    this.coursesService.markSegmentCompleted(this.unitProgressId, this.segment.lesson_id).subscribe({
     next: (res: CompleteSegmentResponse) => {
       const nextSeg = res.next_segment;
-      if (nextSeg) {
+      if (nextSeg.delivery_state === 'governed_available' && nextSeg.lesson_id) {
         if (nextSeg.unit_progress_id) {
           this.unitProgressId = nextSeg.unit_progress_id;
         }
         this.segment = nextSeg;
+        this.governedDeliveryState = null;
+        this.governedDeliveryDetail = '';
         this.fetchLesson(nextSeg.lesson_id);
-      } else {
-        // No further segments; clear state and show completion modal
+      } else if (nextSeg.delivery_state === 'completed') {
         this.segment = undefined;
         this.lesson = undefined;
         this.courseCompleted = true;
+      } else {
+        this.segment = undefined;
+        this.lesson = undefined;
+        this.courseCompleted = false;
+        this.governedDeliveryState = nextSeg.delivery_state;
+        this.governedDeliveryDetail = nextSeg.detail || '';
       }
     },
     error: (err) => {

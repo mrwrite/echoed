@@ -550,20 +550,75 @@ class QuestionCreateRequest(BaseModel):
 class AssessmentCreateRequest(BaseModel):
     title: str
     description: Optional[str] = None
+    unit_id: Optional[UUID] = None
     lesson_id: Optional[UUID] = None
     course_id: Optional[UUID] = None
     program_id: Optional[UUID] = None
+    assessment_scope: Optional[str] = None
+    assessment_state: Optional[str] = None
+    availability_state: Optional[str] = None
     passing_score: float = 70.0
     max_attempts: Optional[int] = None
+    policy_metadata: dict[str, Any] = Field(default_factory=dict)
+    lifecycle_metadata: dict[str, Any] = Field(default_factory=dict)
+    competency_alignments: List["AssessmentCompetencyAlignmentCreateRequest"] = Field(default_factory=list)
     questions: List[QuestionCreateRequest] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_scope(self) -> "AssessmentCreateRequest":
         scope_count = sum(
-            value is not None for value in (self.lesson_id, self.course_id, self.program_id)
+            value is not None for value in (self.unit_id, self.lesson_id, self.course_id, self.program_id)
         )
         if scope_count != 1:
-            raise ValueError("Assessment must target exactly one of lesson, course, or program.")
+            raise ValueError("Assessment must target exactly one of lesson, unit, course, or program.")
+
+        if self.unit_id is not None:
+            resolved_scope = "unit"
+        elif self.lesson_id is not None:
+            resolved_scope = "lesson"
+        elif self.course_id is not None:
+            resolved_scope = "course"
+        else:
+            resolved_scope = "program"
+
+        if self.assessment_scope is None:
+            self.assessment_scope = resolved_scope
+        elif self.assessment_scope != resolved_scope:
+            raise ValueError("Assessment scope must match the provided target field.")
+
+        if self.assessment_state is None:
+            self.assessment_state = "published"
+        if self.availability_state is None:
+            self.availability_state = "available"
+
+        if self.assessment_state not in {"draft", "published", "archived"}:
+            raise ValueError("Assessment state must be draft, published, or archived.")
+        if self.availability_state not in {"available", "unavailable", "pending_review"}:
+            raise ValueError(
+                "Assessment availability state must be available, unavailable, or pending_review."
+            )
+        return self
+
+
+class AssessmentCompetencyAlignmentCreateRequest(BaseModel):
+    objective_key: str
+    objective_title: Optional[str] = None
+    objective_type: str = "objective"
+    weight: float = 1.0
+    mastery_threshold: float = 80.0
+    question_order: Optional[int] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_alignment(self) -> "AssessmentCompetencyAlignmentCreateRequest":
+        if self.objective_type not in {"objective", "competency"}:
+            raise ValueError("Objective type must be objective or competency.")
+        if self.weight <= 0:
+            raise ValueError("Alignment weight must be greater than 0.")
+        if self.mastery_threshold < 0 or self.mastery_threshold > 100:
+            raise ValueError("Mastery threshold must be between 0 and 100.")
+        if self.question_order is not None and self.question_order <= 0:
+            raise ValueError("Question order must be greater than 0.")
         return self
 
 
@@ -580,15 +635,41 @@ class QuestionResponse(BaseModel):
         from_attributes = True
 
 
+class AssessmentCompetencyAlignmentResponse(BaseModel):
+    id: UUID
+    assessment_id: UUID
+    question_id: Optional[UUID] = None
+    objective_key: str
+    objective_title: Optional[str] = None
+    objective_type: str
+    weight: float
+    mastery_threshold: float
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class AssessmentResponse(BaseModel):
     id: UUID
     title: str
     description: Optional[str]
+    unit_id: Optional[UUID]
     lesson_id: Optional[UUID]
     course_id: Optional[UUID]
     program_id: Optional[UUID]
+    assessment_scope: str
+    assessment_state: str
+    availability_state: str
     passing_score: float
     max_attempts: Optional[int]
+    policy_metadata: dict[str, Any] = Field(default_factory=dict)
+    lifecycle_metadata: dict[str, Any] = Field(default_factory=dict)
+    learner_delivery_state: str = "available"
+    learner_delivery_detail: Optional[str] = None
+    is_available_for_learner: bool = True
+    competency_alignments: List[AssessmentCompetencyAlignmentResponse] = Field(default_factory=list)
     created_by: Optional[UUID]
     created_at: datetime
     questions: List[QuestionResponse] = Field(default_factory=list)
@@ -688,3 +769,64 @@ class CertificationEvaluationResponse(BaseModel):
     awarded: bool
     missing_requirements: List[str] = Field(default_factory=list)
     student_certification: Optional[StudentCertificationResponse] = None
+
+
+class MasteryObjectiveSummaryResponse(BaseModel):
+    objective_key: str
+    objective_title: Optional[str] = None
+    objective_type: str
+    mastery_threshold: float
+    total_weight: float
+    passed_weight: float
+    mastery_percentage: float
+    mastered: bool
+    assessments_considered: int
+    attempts_considered: int
+    latest_attempt_at: Optional[datetime] = None
+
+
+class MasterySummaryResponse(BaseModel):
+    student_id: UUID
+    lesson_id: Optional[UUID] = None
+    unit_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    objectives: List[MasteryObjectiveSummaryResponse] = Field(default_factory=list)
+
+
+class ReportingProgressSnapshotResponse(BaseModel):
+    lessons_completed: int
+    units_completed: int
+    courses_completed: int
+    last_activity_at: Optional[datetime] = None
+
+
+class AssessmentEvidenceSummaryResponse(BaseModel):
+    assessment_id: UUID
+    assessment_title: str
+    assessment_scope: str
+    assessment_state: str
+    availability_state: str
+    question_count: int
+    attempt_count: int
+    passed_attempt_count: int
+    latest_attempt_id: Optional[UUID] = None
+    latest_attempt_at: Optional[datetime] = None
+    latest_score: Optional[float] = None
+    latest_max_score: Optional[float] = None
+    latest_percentage: Optional[float] = None
+    latest_passed: Optional[bool] = None
+    submitted_event_count: int = 0
+    scored_event_count: int = 0
+    latest_event_metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class AssessmentReportingSummaryResponse(BaseModel):
+    student_id: UUID
+    lesson_id: Optional[UUID] = None
+    unit_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    progress: ReportingProgressSnapshotResponse
+    assessment_evidence: List[AssessmentEvidenceSummaryResponse] = Field(default_factory=list)
+    mastery_summary: MasterySummaryResponse

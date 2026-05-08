@@ -17,9 +17,12 @@ from app.models import (
     Course,
     CourseVersion,
     Enrollment,
+    Lesson,
     Organization,
     OrganizationMembership,
     Section,
+    Source,
+    Unit,
     User,
 )
 
@@ -27,6 +30,46 @@ DEMO_PASSWORD = "password"
 DEMO_ORG_NAME = "EchoEd Demo School"
 DEMO_COURSE_TITLE = "K-5 Introduction to Africa"
 DEMO_SECTION_NAME = "Grade 3 - Cohort A"
+DEMO_UNITS = [
+    {
+        "title": "Origins and Geography",
+        "order": 1,
+        "lesson": {
+            "title": "Introduction to Africa",
+            "objective": "Identify Africa as a diverse continent with distinct regions.",
+            "learning_objectives": "Students will describe Africa's size, regions, and cultural diversity.",
+            "key_concepts": ["continent", "regions", "diversity"],
+            "hook": "Begin with a world map comparison of continent sizes.",
+            "content": "Africa contains many regions, languages, cultures, and environments.",
+            "guided_practice": "Label major regions on a map with teacher support.",
+            "independent_practice": "Write two observations about Africa's diversity.",
+            "assessment": "Short written response describing one region and one key fact.",
+            "discussion_questions": ["What makes a continent diverse?"],
+            "teacher_notes": "Emphasize that Africa is not a single country.",
+            "citation": "National Geographic Kids: Africa overview",
+            "url": "https://kids.nationalgeographic.com/geography/continents/article/africa",
+        },
+    },
+    {
+        "title": "Kingdoms and Knowledge",
+        "order": 2,
+        "lesson": {
+            "title": "Learning from Great African Kingdoms",
+            "objective": "Describe how African kingdoms contributed to learning and trade.",
+            "learning_objectives": "Students will explain one contribution from a major African kingdom.",
+            "key_concepts": ["kingdoms", "trade", "scholarship"],
+            "hook": "Show an image of Timbuktu and ask what people learned there.",
+            "content": "Kingdoms such as Mali and Songhai were centers of trade, scholarship, and leadership.",
+            "guided_practice": "Compare two contributions from different kingdoms as a class.",
+            "independent_practice": "Students create one evidence-backed fact card about a kingdom.",
+            "assessment": "Exit ticket naming one kingdom and one contribution.",
+            "discussion_questions": ["Why do centers of learning matter to a society?"],
+            "teacher_notes": "Connect historical scholarship to present-day learning communities.",
+            "citation": "Encyclopaedia Britannica: Mali Empire",
+            "url": "https://www.britannica.com/place/Mali-historical-empire-Africa",
+        },
+    },
+]
 
 DEMO_USERS = {
     "org_admin": {
@@ -255,6 +298,72 @@ def _get_or_create_section(db, org: Organization, version: CourseVersion, teache
     return section
 
 
+def _ensure_governed_demo_lessons(db, course: Course) -> None:
+    for unit_seed in DEMO_UNITS:
+        unit = (
+            db.query(Unit)
+            .filter(
+                Unit.course_id == course.id,
+                Unit.title == unit_seed["title"],
+            )
+            .first()
+        )
+        if unit is None:
+            unit = Unit(
+                course_id=course.id,
+                title=unit_seed["title"],
+                content=f"Guided content for {unit_seed['title']}.",
+                order=unit_seed["order"],
+            )
+            db.add(unit)
+            db.flush()
+        else:
+            unit.content = f"Guided content for {unit_seed['title']}."
+            unit.order = unit_seed["order"]
+
+        lesson_seed = unit_seed["lesson"]
+        lesson = (
+            db.query(Lesson)
+            .filter(
+                Lesson.unit_id == unit.id,
+                Lesson.title == lesson_seed["title"],
+            )
+            .first()
+        )
+        if lesson is None:
+            lesson = Lesson(unit_id=unit.id, title=lesson_seed["title"])
+            db.add(lesson)
+            db.flush()
+
+        lesson.objective = lesson_seed["objective"]
+        lesson.learning_objectives = lesson_seed["learning_objectives"]
+        lesson.key_concepts = lesson_seed["key_concepts"]
+        lesson.teacher_notes = lesson_seed["teacher_notes"]
+        lesson.discussion_questions = lesson_seed["discussion_questions"]
+        lesson.hook = lesson_seed["hook"]
+        lesson.content = lesson_seed["content"]
+        lesson.guided_practice = lesson_seed["guided_practice"]
+        lesson.independent_practice = lesson_seed["independent_practice"]
+        lesson.assessment = lesson_seed["assessment"]
+        lesson.review_status = "approved"
+        lesson.order = 1
+        lesson.duration_minutes = 15
+
+        source = (
+            db.query(Source)
+            .filter(Source.lesson_id == lesson.id)
+            .first()
+        )
+        if source is None:
+            source = Source(lesson_id=lesson.id, citation=lesson_seed["citation"], url=lesson_seed["url"])
+            db.add(source)
+        else:
+            source.citation = lesson_seed["citation"]
+            source.url = lesson_seed["url"]
+
+    db.flush()
+
+
 def _ensure_enrollment(db, section: Section, user: User) -> None:
     enrollment = (
         db.query(Enrollment)
@@ -283,6 +392,7 @@ def run() -> None:
 
         course = _get_or_create_course(db, org, users["content_admin"])
         version = _get_or_create_course_version(db, course, users["content_admin"])
+        _ensure_governed_demo_lessons(db, course)
         section = _get_or_create_section(db, org, version, users["teacher"])
 
         _ensure_enrollment(db, section, users["student1"])

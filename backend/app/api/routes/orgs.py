@@ -3,12 +3,17 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.auth import create_access_token
+from app.auth import ActiveOrganizationContext, create_access_token
 from app.database import get_db
 from app.deps import get_current_user
 from app.enum import OrganizationType, OrganizationRole
 from app.models import Organization, OrganizationMembership
-from app.schemas import OrganizationCreate, OrganizationResponse, OrganizationUpdate
+from app.schemas import (
+    OrganizationCreate,
+    OrganizationResponse,
+    OrganizationSwitchResponse,
+    OrganizationUpdate,
+)
 
 router = APIRouter()
 
@@ -107,7 +112,7 @@ def update_org(
     return organization
 
 
-@router.post("/orgs/{org_id}/switch")
+@router.post("/orgs/{org_id}/switch", response_model=OrganizationSwitchResponse)
 def switch_org(
     org_id: str,
     db: Session = Depends(get_db),
@@ -128,13 +133,35 @@ def switch_org(
     if not membership:
         raise HTTPException(status_code=404, detail="Organization not found")
 
+    organization = db.query(Organization).filter(Organization.id == membership.organization_id).first()
+    if not organization:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    active_organization = ActiveOrganizationContext(
+        organization_id=organization.id,
+        organization_name=organization.name,
+        organization_type=organization.type.value,
+        organization_role=membership.role.value,
+    )
+
     access_token = create_access_token(
         data={
             "sub": current_user.username,
             "user_id": str(current_user.id),
             "fullname": f"{current_user.firstname} {current_user.lastname}",
             "role": current_user.role,
-            "active_org_id": str(membership.organization_id),
+            "active_org_id": str(active_organization.organization_id),
         }
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "active_org_id": str(active_organization.organization_id),
+        "active_org_role": active_organization.organization_role,
+        "active_organization": {
+            "id": active_organization.organization_id,
+            "name": active_organization.organization_name,
+            "type": active_organization.organization_type,
+            "role": active_organization.organization_role,
+        },
+    }

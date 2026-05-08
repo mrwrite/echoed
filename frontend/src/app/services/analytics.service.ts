@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
 
 export interface AdminOverviewResponse {
   totals: {
@@ -49,28 +48,17 @@ export interface StudentProgressResponse {
 export class AnalyticsService {
   private apiUrl = `${environment.apiUrl}/api/analytics`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || ''
-    });
-  }
+  constructor(private http: HttpClient) {}
 
   getAdminOverview(): Observable<AdminOverviewResponse> {
-    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/overview`, { headers: this.getHeaders() });
+    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/overview`);
   }
 
   getTeacherSummary(): Observable<TeacherSummaryRow[]> {
-    return this.http.get<TeacherSummaryRow[]>(`${this.apiUrl}/teacher-summary`, { headers: this.getHeaders() });
+    return this.http.get<TeacherSummaryRow[]>(`${this.apiUrl}/teacher-summary`);
   }
 
   getStudentProgress(): Observable<StudentProgressResponse> {
-    return this.http.get<StudentProgressResponse>(`${this.apiUrl}/student-progress`, { headers: this.getHeaders() });
+    return this.http.get<StudentProgressResponse>(`${this.apiUrl}/student-progress`);
   }
 }

@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -12,7 +12,6 @@ import {
   StudentCertification,
   StudentProgramProgress,
 } from '../models/program';
-import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,29 +19,18 @@ import { AuthService } from './auth.service';
 export class ProgramsService {
   private readonly apiUrl = `${environment.apiUrl}/api`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || ''
-    });
-  }
+  constructor(private http: HttpClient) {}
 
   getPrograms(): Observable<Program[]> {
-    return this.http.get<Program[]>(`${this.apiUrl}/programs`, { headers: this.getHeaders() });
+    return this.http.get<Program[]>(`${this.apiUrl}/programs`);
   }
 
   getProgram(programId: string): Observable<Program> {
-    return this.http.get<Program>(`${this.apiUrl}/programs/${programId}`, { headers: this.getHeaders() });
+    return this.http.get<Program>(`${this.apiUrl}/programs/${programId}`);
   }
 
   enrollInProgram(programId: string): Observable<StudentProgramProgress> {
-    return this.http.post<StudentProgramProgress>(`${this.apiUrl}/programs/${programId}/enroll`, {}, { headers: this.getHeaders() });
+    return this.http.post<StudentProgramProgress>(`${this.apiUrl}/programs/${programId}/enroll`, {});
   }
 
   getAssessments(params?: { lessonId?: string; courseId?: string; programId?: string }): Observable<Assessment[]> {
@@ -58,18 +46,17 @@ export class ProgramsService {
     }
     const query = search.toString();
     const url = query ? `${this.apiUrl}/assessments?${query}` : `${this.apiUrl}/assessments`;
-    return this.http.get<Assessment[]>(url, { headers: this.getHeaders() });
+    return this.http.get<Assessment[]>(url);
   }
 
   getAssessment(assessmentId: string): Observable<Assessment> {
-    return this.http.get<Assessment>(`${this.apiUrl}/assessments/${assessmentId}`, { headers: this.getHeaders() });
+    return this.http.get<Assessment>(`${this.apiUrl}/assessments/${assessmentId}`);
   }
 
   submitAssessment(assessmentId: string, answers: Array<{ question_id: string; answer: string }>): Observable<AssessmentAttemptResult> {
     return this.http.post<AssessmentAttemptResult>(
       `${this.apiUrl}/assessments/${assessmentId}/attempts`,
-      { answers },
-      { headers: this.getHeaders() }
+      { answers }
     );
   }
 
@@ -77,18 +64,17 @@ export class ProgramsService {
     const url = programId
       ? `${this.apiUrl}/certifications?program_id=${programId}`
       : `${this.apiUrl}/certifications`;
-    return this.http.get<Certification[]>(url, { headers: this.getHeaders() });
+    return this.http.get<Certification[]>(url);
   }
 
   evaluateCertification(certificationId: string): Observable<CertificationEvaluationResult> {
     return this.http.post<CertificationEvaluationResult>(
       `${this.apiUrl}/certifications/${certificationId}/evaluate`,
-      {},
-      { headers: this.getHeaders() }
+      {}
     );
   }
 
   getMyCertifications(): Observable<StudentCertification[]> {
-    return this.http.get<StudentCertification[]>(`${this.apiUrl}/students/me/certifications`, { headers: this.getHeaders() });
+    return this.http.get<StudentCertification[]>(`${this.apiUrl}/students/me/certifications`);
   }
 }

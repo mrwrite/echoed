@@ -255,6 +255,7 @@ class Unit(Base):
     completed_by = relationship("User", secondary="user_units", back_populates="completed_units")
 
     lessons = relationship("Lesson", back_populates="unit", cascade="all, delete-orphan")
+    assessments = relationship("Assessment", back_populates="unit")
 
     student_progress = relationship(
         "StudentUnitProgress",
@@ -509,14 +510,21 @@ class Assessment(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
+    unit_id = Column(UUID(as_uuid=True), ForeignKey("units.id"), nullable=True)
     lesson_id = Column(UUID(as_uuid=True), ForeignKey("lessons.id"), nullable=True)
     course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=True)
     program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=True)
+    assessment_scope = Column(String, nullable=True)
+    assessment_state = Column(String, nullable=True, default="published")
+    availability_state = Column(String, nullable=True, default="available")
     passing_score = Column(Float, nullable=False, default=70.0)
     max_attempts = Column(Integer, nullable=True)
+    policy_metadata = Column(JSON, nullable=True, default=dict)
+    lifecycle_metadata = Column(JSON, nullable=True, default=dict)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    unit = relationship("Unit", back_populates="assessments")
     lesson = relationship("Lesson", back_populates="assessments")
     course = relationship("Course", back_populates="assessments")
     program = relationship("Program", back_populates="assessments")
@@ -528,6 +536,12 @@ class Assessment(Base):
     )
     attempts = relationship(
         "StudentAssessmentAttempt",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+    )
+    events = relationship("AssessmentAttemptEvent", back_populates="assessment")
+    competency_alignments = relationship(
+        "AssessmentCompetencyAlignment",
         back_populates="assessment",
         cascade="all, delete-orphan",
     )
@@ -552,6 +566,29 @@ class Question(Base):
         back_populates="question",
         cascade="all, delete-orphan",
     )
+    competency_alignments = relationship(
+        "AssessmentCompetencyAlignment",
+        back_populates="question",
+        cascade="all, delete-orphan",
+    )
+
+
+class AssessmentCompetencyAlignment(Base):
+    __tablename__ = "assessment_competency_alignments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id"), nullable=False)
+    question_id = Column(UUID(as_uuid=True), ForeignKey("questions.id"), nullable=True)
+    objective_key = Column(String, nullable=False)
+    objective_title = Column(String, nullable=True)
+    objective_type = Column(String, nullable=False, default="objective")
+    weight = Column(Float, nullable=False, default=1.0)
+    mastery_threshold = Column(Float, nullable=False, default=80.0)
+    metadata_ = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    assessment = relationship("Assessment", back_populates="competency_alignments")
+    question = relationship("Question", back_populates="competency_alignments")
 
 
 class StudentAssessmentAttempt(Base):
@@ -581,6 +618,11 @@ class StudentAssessmentAttempt(Base):
         back_populates="attempt",
         cascade="all, delete-orphan",
     )
+    events = relationship(
+        "AssessmentAttemptEvent",
+        back_populates="attempt",
+        order_by="AssessmentAttemptEvent.created_at",
+    )
 
 
 class StudentAssessmentAnswer(Base):
@@ -599,6 +641,29 @@ class StudentAssessmentAnswer(Base):
 
     attempt = relationship("StudentAssessmentAttempt", back_populates="answers")
     question = relationship("Question", back_populates="answers")
+
+
+class AssessmentAttemptEvent(Base):
+    __tablename__ = "assessment_attempt_events"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id"), nullable=False)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    attempt_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("student_assessment_attempts.id"),
+        nullable=False,
+    )
+    event_type = Column(String, nullable=False)
+    score = Column(Float, nullable=True)
+    max_score = Column(Float, nullable=True)
+    passed = Column(Boolean, nullable=True)
+    event_metadata = Column(JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    assessment = relationship("Assessment")
+    student = relationship("User")
+    attempt = relationship("StudentAssessmentAttempt", back_populates="events")
 
 
 class Certification(Base):

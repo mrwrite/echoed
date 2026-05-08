@@ -6,7 +6,8 @@ from app.database import get_db
 from app.deps import require_roles
 from app.lesson_governance import (
     evaluate_lesson_readiness,
-    preferred_lesson_for_student,
+    governed_lesson_for_student,
+    raise_governed_unavailable,
     resolve_review_fields,
     serialize_lesson,
 )
@@ -128,7 +129,10 @@ def get_lesson(
     if not lesson:
         raise HTTPException(status_code=404, detail='Lesson not found')
     if current_user.role == "student":
-        lesson = preferred_lesson_for_student(lesson)
+        selection = governed_lesson_for_student(lesson)
+        if selection.lesson is None:
+            raise_governed_unavailable(selection, lesson_id=lesson_id)
+        lesson = selection.lesson
     return serialize_lesson(lesson, viewer_role=current_user.role)
 
 @router.put('/lessons/{lesson_id}', response_model=LessonResponse)

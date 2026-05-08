@@ -62,12 +62,11 @@ export class EchoHeaderComponent implements OnInit {
   ngOnInit(): void {
     this.activeOrgId = this.organizationService.getActiveOrgId();
     this.organizationService.refreshOrganizations().subscribe();
+    this.organizationService.activeOrg$.subscribe((activeOrgId) => {
+      this.activeOrgId = activeOrgId;
+    });
     this.organizationService.organizations$.subscribe(orgs => {
       this.organizations = orgs;
-      if (!this.activeOrgId && this.organizations.length > 0) {
-        const defaultOrg = this.organizations[0];
-        this.switchOrg(defaultOrg.id);
-      }
     });
   }
 
@@ -102,11 +101,15 @@ export class EchoHeaderComponent implements OnInit {
   }
 
   switchOrg(orgId: string) {
-    const role = this.organizations.find(org => org.id === orgId)?.role;
-    this.organizationService.setActiveOrg(orgId, role).subscribe(async () => {
-      this.activeOrgId = orgId;
-      this.permissionsService.resetSession();
-      await this.permissionsService.bootstrapSession();
+    this.organizationService.setActiveOrg(orgId).subscribe({
+      next: async () => {
+        this.activeOrgId = this.organizationService.getActiveOrgId();
+        this.permissionsService.resetSession();
+        await this.permissionsService.bootstrapSession();
+      },
+      error: () => {
+        // Preserve the prior confirmed org state when switch confirmation fails.
+      },
     });
   }
 }

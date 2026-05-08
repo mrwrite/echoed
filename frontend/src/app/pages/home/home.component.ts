@@ -31,6 +31,7 @@ export class HomeComponent implements OnInit {
   lessonMode = false;
   private readonly permissionsService = inject(PermissionsService);
   readonly userInfo$ = this.permissionsService.user$;
+  readonly ready$ = this.permissionsService.ready$;
 
   constructor(
     private router: Router,
@@ -38,8 +39,7 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    void this.permissionsService.bootstrapSession();
-
+    this.lessonMode = this.router.url.includes('/lesson/');
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {

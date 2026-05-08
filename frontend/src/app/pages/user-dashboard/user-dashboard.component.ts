@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AuthService } from '../../services/auth.service'
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SharedUserService } from '../../services/shared-user.service';
 import { UserInfo } from '../../models/user-info';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterOutlet } from '@angular/router';
+import { PermissionsService } from '../../services/permissions.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'user-dashboard',
@@ -12,35 +13,39 @@ import { Router, ActivatedRoute, RouterOutlet } from '@angular/router';
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.scss'
 })
-export class UserDashboardComponent implements OnInit {
+export class UserDashboardComponent implements OnInit, OnDestroy {
   userRole: string = 'student'; 
-  userInfo!: UserInfo;
+  userInfo: UserInfo | null = null;
   isDashboardView: boolean = true; // Default to true for dashboard view
+  isReady = false;
+  private readonly subscriptions = new Subscription();
 
-  constructor(private authService: AuthService, 
+  constructor(private permissionsService: PermissionsService,
       private route: ActivatedRoute,      
       private router: Router,
       private sharedUserService: SharedUserService) { }
 
       ngOnInit(): void {    
-        this.route.url.subscribe(urlSegments => {
+        this.subscriptions.add(this.route.url.subscribe(() => {
           const url = this.router.url;
           this.isDashboardView = !(url.includes('/courses'));
-        });
-      
-        const access_token = this.authService.getToken();
-        if (access_token) {
-          this.userInfo = this.authService.getTokenPayload(access_token);      
-          if (this.userInfo) {
-            this.sharedUserService.setUserInfo(this.userInfo);
-          } else {
-            // ❗ Invalid token - redirect to login
-            this.router.navigate(['/login']);
+        }));
+
+        this.subscriptions.add(this.permissionsService.ready$.subscribe((ready) => {
+          this.isReady = ready;
+        }));
+
+        this.subscriptions.add(this.permissionsService.user$.subscribe((userInfo) => {
+          this.userInfo = userInfo;
+          this.userRole = userInfo?.role ?? 'student';
+          if (userInfo) {
+            this.sharedUserService.setUserInfo(userInfo);
           }
-        } else {
-          // ❗ No token found - redirect to login
-          this.router.navigate(['/login']);
-        }
+        }));
+      }
+
+      ngOnDestroy(): void {
+        this.subscriptions.unsubscribe();
       }
       
   }

@@ -6,11 +6,13 @@ import { Lesson } from '../models/lesson';
 import { SegmentResponse, CompleteSegmentResponse } from '../models/segment-response.model';
 import { LessonViewerComponent } from "../shared/lesson-viewer.component";
 import { EchoModalComponent } from "../components/echo-modal/echo-modal.component";
+import { EchoStatePanelComponent } from '../components/echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../components/echo-loading-state/echo-loading-state.component';
 
 @Component({
   selector: 'echoed-lesson-view',
   standalone: true,
-  imports: [LessonViewerComponent, CommonModule, EchoModalComponent],
+  imports: [LessonViewerComponent, CommonModule, EchoModalComponent, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './lesson-view.component.html',
   styleUrl: './lesson-view.component.scss'
 })
@@ -20,8 +22,25 @@ export class LessonViewComponent implements OnInit {
   lesson?: Lesson;
   courseCompleted = false;
   demoMode = false;
+  loading = true;
+  loadErrorMessage = '';
   governedDeliveryState: SegmentResponse['delivery_state'] | null = null;
   governedDeliveryDetail = '';
+
+  get governedStateTitle(): string {
+    switch (this.governedDeliveryState) {
+      case 'pending_review':
+        return 'Lesson awaiting approval';
+      case 'governed_unavailable':
+        return 'Lesson unavailable right now';
+      default:
+        return 'Lesson delivery paused';
+    }
+  }
+
+  get governedStateBody(): string {
+    return this.governedDeliveryDetail || 'This lesson is not currently available for governed learner delivery. Return to your dashboard and try again later.';
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +59,8 @@ export class LessonViewComponent implements OnInit {
   }
 
   loadSegmentAndLesson(): void {
+    this.loading = true;
+    this.loadErrorMessage = '';
     this.coursesService.getCurrentSegment(this.unitProgressId).subscribe({
       next: (segment) => {
         this.segment = segment;
@@ -48,6 +69,7 @@ export class LessonViewComponent implements OnInit {
           this.courseCompleted = segment.delivery_state === 'completed';
           this.governedDeliveryState = segment.delivery_state;
           this.governedDeliveryDetail = segment.detail || '';
+          this.loading = false;
           return;
         }
         this.governedDeliveryState = null;
@@ -59,6 +81,7 @@ export class LessonViewComponent implements OnInit {
           this.segment = undefined;
           this.lesson = undefined;
           this.courseCompleted = true;
+          this.loading = false;
       }
     });
   }
@@ -67,12 +90,21 @@ export class LessonViewComponent implements OnInit {
     this.coursesService.getLessonById(lessonId).subscribe({
       next: (lesson) => {
         this.lesson = lesson;
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error fetching lesson', err);
         this.lesson = undefined;
-        this.governedDeliveryState = err?.error?.detail?.delivery_state || 'governed_unavailable';
-        this.governedDeliveryDetail = err?.error?.detail?.message || 'This lesson is not currently available for governed learner delivery.';
+        const deliveryState = err?.error?.detail?.delivery_state;
+        if (deliveryState) {
+          this.governedDeliveryState = deliveryState;
+          this.governedDeliveryDetail = err?.error?.detail?.message || 'This lesson is not currently available for governed learner delivery.';
+        } else {
+          this.governedDeliveryState = null;
+          this.governedDeliveryDetail = '';
+          this.loadErrorMessage = 'We could not load this lesson right now. Retry to restore your governed lesson view.';
+        }
+        this.loading = false;
       }
     });
   }
@@ -148,6 +180,10 @@ export class LessonViewComponent implements OnInit {
   returnToDashboard(): void {
     this.courseCompleted = false;
     this.router.navigate(['/home']);
+  }
+
+  retryLoad(): void {
+    this.loadSegmentAndLesson();
   }
 
 }

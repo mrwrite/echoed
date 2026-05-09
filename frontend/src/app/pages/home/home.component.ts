@@ -3,6 +3,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../components/echo-sidebar/echo-sidebar.component';
 import { EchoHeaderComponent } from '../../components/echo-header/echo-header.component';
+import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
 import { DemoTourService } from '../../services/demo-tour.service';
@@ -11,7 +12,7 @@ import { PermissionsService } from '../../services/permissions.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, EchoHeaderComponent, RouterOutlet],
+  imports: [CommonModule, SidebarComponent, EchoHeaderComponent, EchoLoadingStateComponent, RouterOutlet],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   animations: [

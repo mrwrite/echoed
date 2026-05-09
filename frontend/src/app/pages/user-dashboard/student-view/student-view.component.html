@@ -26,9 +26,27 @@
     </div>
     <div class="surface-card p-6">
       <p class="section-heading text-primary text-sm">Today’s Learning</p>
-      <ng-container *ngIf="activeStudentCourse; else noActive">
+      <app-echo-loading-state
+        *ngIf="coursesLoading"
+        density="compact"
+        ariaLabel="continuation-loading"
+        title="Preparing continuation"
+        body="Finding your next learner step."
+      ></app-echo-loading-state>
+      <app-echo-state-panel
+        *ngIf="!coursesLoading && coursesLoadError"
+        variant="error"
+        eyebrow="Continuation unavailable"
+        title="We could not restore your learning path"
+        [body]="coursesLoadError"
+        actionLabel="Retry"
+        (action)="retryCourseLoad()"
+      ></app-echo-state-panel>
+      <ng-container *ngIf="!coursesLoading && !coursesLoadError && activeStudentCourse; else noActive">
         <p class="text-lg font-semibold mt-2">{{ activeStudentCourse.course.title }}</p>
         <p class="text-sm text-slate-600">{{ activeStudentCourse.course.description }}</p>
+        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Selected continuation</p>
+        <p class="mt-1 text-sm text-slate-600">{{ activeStudentCourseReason }}</p>
         <div class="mt-4">
           <div class="flex justify-between text-sm text-slate-500 mb-1">
             <span>Progress</span>
@@ -43,7 +61,15 @@
         </div>
       </ng-container>
       <ng-template #noActive>
-        <p class="text-sm text-slate-600">Enroll in a course to begin your learning journey.</p>
+        <app-echo-state-panel
+          *ngIf="!coursesLoading && !coursesLoadError"
+          variant="empty"
+          eyebrow="No continuation path"
+          title="No active course is ready to continue"
+          body="Enroll in a course to begin your learning journey and establish your next learner step."
+          actionLabel="Explore catalog"
+          (action)="goToAvailableCourses()"
+        ></app-echo-state-panel>
       </ng-template>
     </div>
   </div>
@@ -54,7 +80,32 @@
         <h3 class="text-xl font-bold text-primary">My Courses</h3>
         <button class="text-sm text-primary underline" (click)="goToAvailableCourses()">Explore catalog</button>
       </div>
-      <div class="grid md:grid-cols-2 gap-4">
+      <app-echo-loading-state
+        *ngIf="coursesLoading"
+        density="section"
+        ariaLabel="student-courses-loading"
+        title="Loading your courses"
+        body="We are preparing your current courses and continuation options."
+      ></app-echo-loading-state>
+      <app-echo-state-panel
+        *ngIf="!coursesLoading && coursesLoadError"
+        variant="error"
+        eyebrow="Dashboard data unavailable"
+        title="We could not load your courses"
+        [body]="coursesLoadError"
+        actionLabel="Retry"
+        (action)="retryCourseLoad()"
+      ></app-echo-state-panel>
+      <app-echo-state-panel
+        *ngIf="!coursesLoading && !coursesLoadError && studentCourses.length === 0"
+        variant="empty"
+        eyebrow="No active courses"
+        title="Your learning path will appear here"
+        body="Enroll in a course to start a governed learning path and unlock a continuation card."
+        actionLabel="Explore catalog"
+        (action)="goToAvailableCourses()"
+      ></app-echo-state-panel>
+      <div *ngIf="!coursesLoading && !coursesLoadError && studentCourses.length > 0" class="grid md:grid-cols-2 gap-4">
         <ng-container *ngFor="let sc of studentCourses">
           <app-student-course-card
             [title]="sc.course.title"

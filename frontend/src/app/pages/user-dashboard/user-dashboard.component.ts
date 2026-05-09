@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterOutlet } from '@angular/router';
 import { PermissionsService } from '../../services/permissions.service';
 import { Subscription } from 'rxjs';
+import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
 
 @Component({
   selector: 'user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, EchoLoadingStateComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.scss'
 })

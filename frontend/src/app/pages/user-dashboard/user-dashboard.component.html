@@ -3,13 +3,12 @@
 </ng-container>
 
 <ng-template #dashboardLoading>
-  <div class="p-6" aria-label="dashboard-loading">
-    <div class="space-y-4">
-      <div class="h-8 w-48 rounded-xl bg-slate-200 animate-pulse"></div>
-      <div class="grid gap-4 md:grid-cols-2">
-        <div class="h-32 rounded-2xl bg-slate-200 animate-pulse"></div>
-        <div class="h-32 rounded-2xl bg-slate-200 animate-pulse"></div>
-      </div>
-    </div>
+  <div class="p-6">
+    <app-echo-loading-state
+      density="section"
+      ariaLabel="dashboard-loading"
+      title="Loading dashboard"
+      body="Your role-aware dashboard is being prepared."
+    ></app-echo-loading-state>
   </div>
 </ng-template>

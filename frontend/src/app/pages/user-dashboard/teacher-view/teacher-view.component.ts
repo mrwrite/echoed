@@ -10,11 +10,13 @@ import { ToastService } from '../../../services/toast.service';
 import { AnalyticsService, TeacherSummaryRow } from '../../../services/analytics.service';
 import { UsersService } from '../../../services/users.service';
 import { User } from '../../../models/user';
+import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
 
 @Component({
   selector: 'echoed-teacher-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconModule],
+  imports: [CommonModule, FormsModule, IconModule, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './teacher-view.component.html',
   styleUrl: './teacher-view.component.scss'
 })
@@ -27,6 +29,12 @@ export class TeacherViewComponent implements OnInit {
   teacherSummary: TeacherSummaryRow[] = [];
   selectedCourseId = '';
   selectedStudentId = '';
+  coursesLoading = true;
+  studentsLoading = true;
+  summaryLoading = true;
+  coursesError = '';
+  studentsError = '';
+  summaryError = '';
 
   constructor(
     private coursesService: CoursesService,
@@ -37,15 +45,9 @@ export class TeacherViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.coursesService.getCourses().subscribe(courses => {
-      this.courses = courses;
-    });
-    this.usersService.getStudents().subscribe(students => {
-      this.students = students;
-    });
-    this.analyticsService.getTeacherSummary().subscribe(summary => {
-      this.teacherSummary = summary;
-    });
+    this.loadCourses();
+    this.loadStudents();
+    this.loadTeacherSummary();
   }
 
   get visibleCourses(): Course[] {
@@ -64,6 +66,62 @@ export class TeacherViewComponent implements OnInit {
     return Math.round(total / this.teacherSummary.length);
   }
 
+  get quickActionsLoading(): boolean {
+    return this.coursesLoading || this.studentsLoading;
+  }
+
+  get quickActionsError(): string {
+    return this.coursesError || this.studentsError;
+  }
+
+  loadCourses(): void {
+    this.coursesLoading = true;
+    this.coursesError = '';
+    this.coursesService.getCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
+        this.coursesLoading = false;
+      },
+      error: () => {
+        this.courses = [];
+        this.coursesLoading = false;
+        this.coursesError = 'We could not load educator courses right now. Retry to restore course management.';
+      },
+    });
+  }
+
+  loadStudents(): void {
+    this.studentsLoading = true;
+    this.studentsError = '';
+    this.usersService.getStudents().subscribe({
+      next: (students) => {
+        this.students = students;
+        this.studentsLoading = false;
+      },
+      error: () => {
+        this.students = [];
+        this.studentsLoading = false;
+        this.studentsError = 'We could not load learner roster data right now. Retry to restore course assignment.';
+      },
+    });
+  }
+
+  loadTeacherSummary(): void {
+    this.summaryLoading = true;
+    this.summaryError = '';
+    this.analyticsService.getTeacherSummary().subscribe({
+      next: (summary) => {
+        this.teacherSummary = summary;
+        this.summaryLoading = false;
+      },
+      error: () => {
+        this.teacherSummary = [];
+        this.summaryLoading = false;
+        this.summaryError = 'We could not load learner progress right now. Retry to restore the latest classroom summary.';
+      },
+    });
+  }
+
   onAddCourse() {
     this.router.navigate(['/home/courses/new']);
   }
@@ -73,8 +131,13 @@ export class TeacherViewComponent implements OnInit {
   }
 
   deleteCourse(courseId: string) {
-    this.coursesService.deleteCourse(courseId).subscribe(() => {
-      this.courses = this.courses.filter(c => c.id !== courseId);
+    this.coursesService.deleteCourse(courseId).subscribe({
+      next: () => {
+        this.courses = this.courses.filter(c => c.id !== courseId);
+      },
+      error: () => {
+        this.toastService.show('We could not delete that course right now.', 'error');
+      },
     });
   }
 
@@ -92,9 +155,7 @@ export class TeacherViewComponent implements OnInit {
         this.toastService.show('Course assigned successfully.', 'success');
         this.selectedCourseId = '';
         this.selectedStudentId = '';
-        this.analyticsService.getTeacherSummary().subscribe(summary => {
-          this.teacherSummary = summary;
-        });
+        this.loadTeacherSummary();
       },
       error: (err) => {
         this.toastService.show(err?.error?.detail || 'Assignment failed.', 'error');
@@ -113,5 +174,18 @@ export class TeacherViewComponent implements OnInit {
 
   viewReports() {
     this.toastService.show('Reports are listed in the Student Progress table.', 'info');
+  }
+
+  retryCourses(): void {
+    this.loadCourses();
+  }
+
+  retryQuickActions(): void {
+    this.loadCourses();
+    this.loadStudents();
+  }
+
+  retryTeacherSummary(): void {
+    this.loadTeacherSummary();
   }
 }

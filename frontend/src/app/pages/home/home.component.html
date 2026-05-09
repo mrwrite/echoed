@@ -37,12 +37,15 @@
   </ng-container>
 
   <ng-template #shellLoading>
-    <div class="min-h-screen flex items-center justify-center px-6" aria-label="shell-loading">
-      <div class="surface-card p-6 w-full max-w-md text-center bg-white/80 backdrop-blur">
-        <div class="h-4 w-24 mx-auto rounded-full bg-slate-200 animate-pulse mb-4"></div>
-        <div class="h-10 w-10 mx-auto rounded-full bg-slate-200 animate-pulse mb-4"></div>
-        <div class="h-4 w-40 mx-auto rounded-full bg-slate-200 animate-pulse"></div>
-      </div>
+    <div class="min-h-screen flex items-center justify-center px-6">
+      <app-echo-loading-state
+        class="w-full max-w-md"
+        density="page"
+        [centered]="true"
+        ariaLabel="shell-loading"
+        title="Preparing your workspace"
+        body="We are resolving your authenticated shell and navigation context."
+      ></app-echo-loading-state>
     </div>
   </ng-template>
 </div>

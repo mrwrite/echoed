@@ -16,6 +16,8 @@ import { BadgesService } from '../../../services/badges.service';
 import { StudentBadge } from '../../../models/badge';
 import { Program, StudentCertification } from '../../../models/program';
 import { ProgramsService } from '../../../services/programs.service';
+import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
 
 @Component({
   selector: 'echoed-student-view',
@@ -25,6 +27,8 @@ import { ProgramsService } from '../../../services/programs.service';
     LessonViewerComponent,
     EchoButtonComponent,
     StudentCourseCardComponent,
+    EchoStatePanelComponent,
+    EchoLoadingStateComponent,
   ],
   templateUrl: './student-view.component.html',
   styleUrl: './student-view.component.scss'
@@ -33,6 +37,7 @@ export class StudentViewComponent implements OnInit {
   @Input() userInfo!: UserInfo;
   studentCourses: StudentCourseWithDetails[] = [];
   activeStudentCourse?: StudentCourseWithDetails;
+  activeStudentCourseReason = '';
   currentLesson?: Lesson;
   showLesson = false;
   availableCourses: Course[] = [];
@@ -46,6 +51,8 @@ export class StudentViewComponent implements OnInit {
   lessonsCompleted = 0;
   unitsCompleted = 0;
   coursesCompleted = 0;
+  coursesLoading = true;
+  coursesLoadError = '';
   /** Number of courses shown initially before "View More" is clicked */
   availableCoursesVisibleCount = 4;
   demoTimeline = [
@@ -141,11 +148,12 @@ export class StudentViewComponent implements OnInit {
 }
 
   loadStudentCourses(): void {
+    this.coursesLoading = true;
+    this.coursesLoadError = '';
     this.coursesService.getStudentCourses().subscribe({
     next: (courses) => {
       this.studentCourses = courses;
-
-      this.activeStudentCourse = this.studentCourses[0];
+      this.resolveContinuationCourse();
 
       // Calculate progress for each enrolled course
       this.studentCourses.forEach(sc => {
@@ -155,11 +163,53 @@ export class StudentViewComponent implements OnInit {
       });
 
       this.loadAvailableCourses(); // Refresh available courses after loading student courses
+      this.coursesLoading = false;
     },
     error: (err) => {
       console.error('Failed to load student courses', err);
+      this.studentCourses = [];
+      this.activeStudentCourse = undefined;
+      this.activeStudentCourseReason = '';
+      this.availableCourses = [];
+      this.coursesLoadError = 'We could not load your learning dashboard right now. Retry to restore your active courses and continuation path.';
+      this.coursesLoading = false;
     }
   });
+  }
+
+  private resolveContinuationCourse(): void {
+    const inProgressStatuses = new Set(['active', 'in_progress', 'in-progress']);
+    const inProgressCourse = this.studentCourses.find((course) =>
+      inProgressStatuses.has((course.status || '').toLowerCase())
+      || ((course.progress ?? 0) > 0 && course.status !== 'completed')
+    );
+
+    if (inProgressCourse) {
+      this.activeStudentCourse = inProgressCourse;
+      this.activeStudentCourseReason = 'Continue where you already have momentum.';
+      return;
+    }
+
+    const nextAvailableCourse = [...this.studentCourses]
+      .filter((course) => course.status !== 'completed')
+      .sort((left, right) => {
+        const leftDate = Date.parse(left.enrolled_on || '') || 0;
+        const rightDate = Date.parse(right.enrolled_on || '') || 0;
+        if (leftDate !== rightDate) {
+          return leftDate - rightDate;
+        }
+
+        return left.course.title.localeCompare(right.course.title);
+      })[0];
+
+    if (nextAvailableCourse) {
+      this.activeStudentCourse = nextAvailableCourse;
+      this.activeStudentCourseReason = 'Next recommended course based on your enrolled learning path.';
+      return;
+    }
+
+    this.activeStudentCourse = undefined;
+    this.activeStudentCourseReason = '';
   }
 
   onLessonCompleted(): void {
@@ -232,5 +282,9 @@ enrollInCourse(courseId: string): void {
 
   goToCertifications(): void {
     this.router.navigate(['/home/certifications']);
+  }
+
+  retryCourseLoad(): void {
+    this.loadStudentCourses();
   }
 }

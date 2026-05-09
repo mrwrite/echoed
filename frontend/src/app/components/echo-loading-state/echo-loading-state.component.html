@@ -1,0 +1,27 @@
+<section
+  class="echo-loading-state surface-card"
+  [class.echo-loading-state--page]="density === 'page'"
+  [class.echo-loading-state--compact]="density === 'compact'"
+  [class.echo-loading-state--centered]="centered"
+  [attr.data-echo-loading]="density"
+  role="status"
+  aria-live="polite"
+  [attr.aria-label]="ariaLabel"
+>
+  <div class="echo-loading-state__inner">
+    <div class="echo-loading-state__icon-shell" aria-hidden="true">
+      <lucide-icon name="Clock" class="h-5 w-5"></lucide-icon>
+    </div>
+
+    <div class="echo-loading-state__copy">
+      <p class="echo-loading-state__title">{{ title }}</p>
+      <p *ngIf="body" class="echo-loading-state__body">{{ body }}</p>
+    </div>
+
+    <div class="echo-loading-state__skeletons" aria-hidden="true">
+      <div class="echo-loading-state__skeleton echo-loading-state__skeleton--primary"></div>
+      <div class="echo-loading-state__skeleton"></div>
+      <div class="echo-loading-state__skeleton echo-loading-state__skeleton--short"></div>
+    </div>
+  </div>
+</section>

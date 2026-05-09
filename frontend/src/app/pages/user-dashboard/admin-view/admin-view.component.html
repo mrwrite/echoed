@@ -8,43 +8,124 @@
     </div>
   </div>
 
-  <ng-container *ngFor="let m of metrics">
-    <app-stat-card class="col-span-1" [icon]="m.icon" [label]="m.label" [value]="m.value"></app-stat-card>
+  <div *ngIf="overviewLoading" class="col-span-1 md:col-span-2 xl:col-span-4">
+    <app-echo-loading-state
+      density="section"
+      ariaLabel="admin-overview-loading"
+      title="Loading platform overview"
+      body="We are restoring the latest institutional metrics."
+    ></app-echo-loading-state>
+  </div>
+  <div *ngIf="!overviewLoading && overviewError" class="col-span-1 md:col-span-2 xl:col-span-4">
+    <app-echo-state-panel
+      variant="error"
+      eyebrow="Overview unavailable"
+      title="We could not load admin metrics"
+      [body]="overviewError"
+      actionLabel="Retry"
+      (action)="retryOverview()"
+    ></app-echo-state-panel>
+  </div>
+  <ng-container *ngIf="!overviewLoading && !overviewError">
+    <ng-container *ngFor="let m of metrics">
+      <app-stat-card class="col-span-1" [icon]="m.icon" [label]="m.label" [value]="m.value"></app-stat-card>
+    </ng-container>
   </ng-container>
 
   <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
     <h3 class="text-lg font-semibold text-ink mb-4 tracking-tight leading-snug">Recent User Signups</h3>
-    <ng-container *ngIf="users.length > 0; else noUsers">
-      <table class="w-full text-sm text-slate-700">
-        <thead>
-          <tr class="text-left border-b">
-            <th class="pb-2">Name</th>
-            <th class="pb-2">Role</th>
-            <th class="pb-2">Signup Date</th>
-            <th class="pb-2 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of visibleUsers" class="tracking-tight leading-snug">
-            <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
-            <td class="py-2">{{ user.role }}</td>
-            <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
-            <td class="py-2 text-right">
-              <button class="text-red-600 text-sm hover:underline" (click)="deleteUser(user.id)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <app-echo-loading-state
+      *ngIf="usersLoading"
+      density="section"
+      ariaLabel="admin-users-loading"
+      title="Loading recent signups"
+      body="We are restoring the latest user activity."
+    ></app-echo-loading-state>
+    <app-echo-state-panel
+      *ngIf="!usersLoading && usersError"
+      variant="error"
+      eyebrow="User data unavailable"
+      title="We could not load recent signups"
+      [body]="usersError"
+      actionLabel="Retry"
+      (action)="retryUsers()"
+    ></app-echo-state-panel>
+    <app-echo-state-panel
+      *ngIf="!usersLoading && !usersError && users.length === 0"
+      variant="empty"
+      eyebrow="No signups yet"
+      title="Recent user activity will appear here"
+      body="As new users join the platform, their recent signups will be listed here."
+    ></app-echo-state-panel>
+    <ng-container *ngIf="!usersLoading && !usersError && users.length > 0">
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-sm text-slate-700">
+          <thead>
+            <tr class="text-left border-b">
+              <th class="pb-2">Name</th>
+              <th class="pb-2">Role</th>
+              <th class="pb-2">Signup Date</th>
+              <th class="pb-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of visibleUsers" class="tracking-tight leading-snug">
+              <td class="py-2">{{ user.firstname }} {{user.lastname}}</td>
+              <td class="py-2">{{ user.role }}</td>
+              <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
+              <td class="py-2 text-right">
+                <button class="text-red-600 text-sm hover:underline" (click)="deleteUser(user.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="md:hidden space-y-3" data-educator-responsive="admin-users">
+        <article *ngFor="let user of visibleUsers" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p class="font-semibold text-ink">{{ user.firstname }} {{ user.lastname }}</p>
+          <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Role</p>
+              <p class="mt-1 text-slate-700">{{ user.role }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Signup</p>
+              <p class="mt-1 text-slate-700">{{ user.created_at | date: 'MMM d, y' }}</p>
+            </div>
+          </div>
+          <button class="mt-3 text-red-600 text-sm font-semibold" (click)="deleteUser(user.id)">Delete</button>
+        </article>
+      </div>
       <a *ngIf="users.length > visibleCount" class="text-primary underline cursor-pointer" (click)="viewAllUsers()">View More</a>
     </ng-container>
-    <ng-template #noUsers>
-      <p class="text-sm text-gray-500">No recent signups available.</p>
-    </ng-template>
   </div>
 
   <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
     <h3 class="text-lg font-semibold text-ink mb-4">Usage Statistics</h3>
-    <div class="space-y-3">
+    <app-echo-loading-state
+      *ngIf="usageStatsLoading"
+      density="section"
+      ariaLabel="admin-usage-loading"
+      title="Loading usage statistics"
+      body="We are restoring the latest platform usage activity."
+    ></app-echo-loading-state>
+    <app-echo-state-panel
+      *ngIf="!usageStatsLoading && usageStatsError"
+      variant="error"
+      eyebrow="Usage data unavailable"
+      title="We could not load usage statistics"
+      [body]="usageStatsError"
+      actionLabel="Retry"
+      (action)="retryUsageStats()"
+    ></app-echo-state-panel>
+    <app-echo-state-panel
+      *ngIf="!usageStatsLoading && !usageStatsError && usageStats.length === 0"
+      variant="empty"
+      eyebrow="No usage data yet"
+      title="Usage statistics will appear here"
+      body="As learners and educators use the platform, usage metrics will populate here."
+    ></app-echo-state-panel>
+    <div *ngIf="!usageStatsLoading && !usageStatsError && usageStats.length > 0" class="space-y-3">
       <div *ngFor="let stat of usageStats" class="p-4 rounded-xl bg-slate-50 border border-slate-100">
         <div class="flex items-center justify-between mb-2">
           <p class="font-semibold text-ink">{{ stat.label }}</p>
@@ -62,21 +143,41 @@
       <h3 class="text-lg font-semibold text-ink tracking-tight leading-snug">Course Management</h3>
       <span class="text-sm hover:text-[#4A90E2] px-3 py-1 rounded-md transition-colors duration-200" (click)="onAddCourse()"><lucide-icon name="Plus"/></span>
     </div>
-    <ng-container *ngIf="courses.length > 0; else noCourses">
+    <app-echo-loading-state
+      *ngIf="coursesLoading"
+      density="section"
+      ariaLabel="admin-courses-loading"
+      title="Loading course management"
+      body="We are restoring the latest platform course catalog."
+    ></app-echo-loading-state>
+    <app-echo-state-panel
+      *ngIf="!coursesLoading && coursesError"
+      variant="error"
+      eyebrow="Course catalog unavailable"
+      title="We could not load course management"
+      [body]="coursesError"
+      actionLabel="Retry"
+      (action)="retryCourses()"
+    ></app-echo-state-panel>
+    <app-echo-state-panel
+      *ngIf="!coursesLoading && !coursesError && courses.length === 0"
+      variant="empty"
+      eyebrow="No courses yet"
+      title="Course management will appear here"
+      body="Create a course to begin managing platform learning content."
+    ></app-echo-state-panel>
+    <ng-container *ngIf="!coursesLoading && !coursesError && courses.length > 0">
       <ul class="space-y-2">
-        <li *ngFor="let course of visibleCourses" class="flex justify-between tracking-tight leading-snug">
+        <li *ngFor="let course of visibleCourses" class="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 md:flex-row md:items-center md:justify-between tracking-tight leading-snug">
           <span>{{ course.title }}</span>
-          <div>
+          <div class="flex flex-wrap gap-3" data-educator-responsive="admin-courses">
             <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
-            <button class="text-sm text-red-600 hover:underline ml-2" (click)="deleteCourse(course.id)">Delete</button>
+            <button class="text-sm text-red-600 hover:underline" (click)="deleteCourse(course.id)">Delete</button>
           </div>
         </li>
       </ul>
       <a *ngIf="courses.length > visibleCount" class="text-primary underline cursor-pointer" (click)="viewAllCourses()">View More</a>
     </ng-container>
-    <ng-template #noCourses>
-      <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>
-    </ng-template>
   </div>
 
   <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2 xl:col-span-1">

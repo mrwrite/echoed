@@ -11,7 +11,7 @@
         <p class="text-sm font-semibold truncate">Demo Navigator</p>
       </div>
     </div>
-    <button (click)="toggle.emit()" class="text-primary shrink-0" aria-label="Toggle sidebar">
+    <button (click)="toggle.emit()" class="text-primary shrink-0" aria-label="Toggle sidebar" [attr.aria-expanded]="!collapsed">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -20,7 +20,7 @@
     </button>
   </div>
 
-  <nav class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto">
+  <nav class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto" aria-label="Primary navigation">
     <ng-container *ngIf="ready$ | async; else navSkeleton">
       <ng-container *ngIf="visibleNavSections$ | async as sections">
         <div *ngFor="let section of sections">
@@ -44,11 +44,13 @@
     </ng-container>
 
     <ng-template #navSkeleton>
-      <div class="space-y-3 px-1" aria-label="sidenav-loading">
-        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
-        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
-        <div class="sidebar-skeleton h-10 rounded-xl animate-pulse"></div>
-      </div>
+      <app-echo-loading-state
+        class="px-1"
+        density="compact"
+        ariaLabel="sidenav-loading"
+        title="Loading navigation"
+        body="Visible options will appear when access resolves."
+      ></app-echo-loading-state>
     </ng-template>
   </nav>
 

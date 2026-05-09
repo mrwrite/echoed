@@ -78,4 +78,17 @@ describe('SidebarComponent', () => {
     expect(firstLink.getAttribute('title')).toBe('Dashboard');
     expect(firstLink.textContent?.trim()).toBe('');
   });
+
+  it('keeps important sidebar controls labeled for accessibility', () => {
+    permissionsService.permissions$.next(new Set(['nav:dashboard']));
+    permissionsService.ready$.next(true);
+
+    fixture.detectChanges();
+
+    const nav = fixture.nativeElement.querySelector('nav') as HTMLElement;
+    const toggleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(nav.getAttribute('aria-label')).toBe('Primary navigation');
+    expect(toggleButton.getAttribute('aria-label')).toBe('Toggle sidebar');
+    expect(toggleButton.getAttribute('aria-expanded')).toBe('true');
+  });
 });

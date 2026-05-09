@@ -57,12 +57,14 @@ blockquote, cite {
   font-style: italic;
 }
 
-a, button, [role='button'], input, select, textarea {
-  outline: none;
+:where(a, button, [role='button'], input, select, textarea, summary) {
+  outline-offset: 3px;
 }
 
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  box-shadow: 0 0 0 3px rgba(239, 183, 0, 0.25);
+:where(a, button, [role='button'], input, select, textarea, summary):focus,
+:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
+  outline: 2px solid rgba(239, 183, 0, 0.8);
+  box-shadow: 0 0 0 4px rgba(239, 183, 0, 0.22);
   border-radius: 10px;
 }
 
@@ -149,4 +151,10 @@ textarea::placeholder {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 767px) {
+  .surface-card {
+    padding: 1rem;
+  }
 }

@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { StatCardComponent } from '../../../components/stat-card/stat-card.component';
 import { UsageStat, UsageStatsService } from '../../../services/usage-stats.service';
 import { AnalyticsService } from '../../../services/analytics.service';
+import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
 
 interface Metric {
   icon: string;
@@ -20,7 +22,7 @@ interface Metric {
 @Component({
   selector: 'echoed-admin-view',
   standalone: true,
-  imports: [CommonModule, IconModule, StatCardComponent],
+  imports: [CommonModule, IconModule, StatCardComponent, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './admin-view.component.html',
   styleUrl: './admin-view.component.scss'
 })
@@ -38,6 +40,14 @@ export class AdminViewComponent {
   coursesCount = 0;
   pendingEnrollments = 0;
   metrics: Metric[] = [];
+  usersLoading = true;
+  coursesLoading = true;
+  usageStatsLoading = true;
+  overviewLoading = true;
+  usersError = '';
+  coursesError = '';
+  usageStatsError = '';
+  overviewError = '';
 
   constructor(
     private usersService: UsersService,
@@ -48,23 +58,78 @@ export class AdminViewComponent {
   ) {}
 
   ngOnInit() {
-    this.usersService.getUsers().subscribe((users: User[]) => {
-      this.users = users;
-    });
+    this.loadUsers();
+    this.loadCourses();
+    this.loadOverview();
+    this.loadUsageStats();
+  }
 
-    this.coursesService.getCourses().subscribe(courses => {
-      this.courses = courses;
+  loadUsers(): void {
+    this.usersLoading = true;
+    this.usersError = '';
+    this.usersService.getUsers().subscribe({
+      next: (users: User[]) => {
+        this.users = users;
+        this.usersLoading = false;
+      },
+      error: () => {
+        this.users = [];
+        this.usersLoading = false;
+        this.usersError = 'We could not load recent user activity right now. Retry to restore signups.';
+      },
     });
+  }
 
-    this.analyticsService.getAdminOverview().subscribe(overview => {
-      this.studentCount = overview.totals.students;
-      this.teacherCount = overview.totals.teachers;
-      this.coursesCount = overview.totals.courses;
-      this.pendingEnrollments = overview.totals.pending_enrollments;
-      this.updateMetrics();
+  loadCourses(): void {
+    this.coursesLoading = true;
+    this.coursesError = '';
+    this.coursesService.getCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
+        this.coursesLoading = false;
+      },
+      error: () => {
+        this.courses = [];
+        this.coursesLoading = false;
+        this.coursesError = 'We could not load course management right now. Retry to restore the course catalog.';
+      },
     });
+  }
 
-    this.usageStatsService.getUsageStats().subscribe(stats => this.usageStats = stats);
+  loadOverview(): void {
+    this.overviewLoading = true;
+    this.overviewError = '';
+    this.analyticsService.getAdminOverview().subscribe({
+      next: (overview) => {
+        this.studentCount = overview.totals.students;
+        this.teacherCount = overview.totals.teachers;
+        this.coursesCount = overview.totals.courses;
+        this.pendingEnrollments = overview.totals.pending_enrollments;
+        this.updateMetrics();
+        this.overviewLoading = false;
+      },
+      error: () => {
+        this.metrics = [];
+        this.overviewLoading = false;
+        this.overviewError = 'We could not load the platform overview right now. Retry to restore admin metrics.';
+      },
+    });
+  }
+
+  loadUsageStats(): void {
+    this.usageStatsLoading = true;
+    this.usageStatsError = '';
+    this.usageStatsService.getUsageStats().subscribe({
+      next: (stats) => {
+        this.usageStats = stats;
+        this.usageStatsLoading = false;
+      },
+      error: () => {
+        this.usageStats = [];
+        this.usageStatsLoading = false;
+        this.usageStatsError = 'We could not load usage statistics right now. Retry to restore platform activity insights.';
+      },
+    });
   }
 
   private updateMetrics() {
@@ -85,10 +150,12 @@ export class AdminViewComponent {
   }
 
   deleteCourse(courseId: string) {
-    this.coursesService.deleteCourse(courseId).subscribe(() => {
-      this.courses = this.courses.filter(c => c.id !== courseId);
-      this.coursesCount = this.courses.length;
-      this.updateMetrics();
+    this.coursesService.deleteCourse(courseId).subscribe({
+      next: () => {
+        this.courses = this.courses.filter(c => c.id !== courseId);
+        this.coursesCount = this.courses.length;
+        this.updateMetrics();
+      },
     });
   }
 
@@ -98,11 +165,13 @@ export class AdminViewComponent {
   }
 
   deleteUser(userId: string) {
-    this.usersService.deleteUser(userId).subscribe(() => {
-      this.users = this.users.filter(u => u.id !== userId);
-      this.studentCount = this.users.filter(u => u.role === 'student').length;
-      this.teacherCount = this.users.filter(u => u.role === 'teacher').length;
-      this.updateMetrics();
+    this.usersService.deleteUser(userId).subscribe({
+      next: () => {
+        this.users = this.users.filter(u => u.id !== userId);
+        this.studentCount = this.users.filter(u => u.role === 'student').length;
+        this.teacherCount = this.users.filter(u => u.role === 'teacher').length;
+        this.updateMetrics();
+      },
     });
   }
 
@@ -121,5 +190,21 @@ export class AdminViewComponent {
 
   viewAllBadges() {
     this.router.navigate(['/home/admin/badges']);
+  }
+
+  retryOverview(): void {
+    this.loadOverview();
+  }
+
+  retryUsers(): void {
+    this.loadUsers();
+  }
+
+  retryUsageStats(): void {
+    this.loadUsageStats();
+  }
+
+  retryCourses(): void {
+    this.loadCourses();
   }
 }

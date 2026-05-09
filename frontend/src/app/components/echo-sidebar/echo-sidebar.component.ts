@@ -5,6 +5,7 @@ import { combineLatest, map } from 'rxjs';
 import { UserInfo } from '../../models/user-info';
 import { IconModule } from '../../shared/icon/icon.module';
 import { PermissionsService } from '../../services/permissions.service';
+import { EchoLoadingStateComponent } from '../echo-loading-state/echo-loading-state.component';
 
 interface NavItem {
   label: string;
@@ -21,7 +22,7 @@ interface NavSection {
 @Component({
   selector: 'echo-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconModule],
+  imports: [CommonModule, RouterModule, IconModule, EchoLoadingStateComponent],
   styleUrls: ['./echo-sidebar.component.scss'],
   templateUrl: './echo-sidebar.component.html',
 })

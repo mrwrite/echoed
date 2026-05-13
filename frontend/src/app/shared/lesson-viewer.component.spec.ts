@@ -88,4 +88,28 @@ describe('LessonViewerComponent', () => {
     expect(radiogroup).not.toBeNull();
     expect(radiogroup.getAttribute('aria-label')).toBe('Quiz response options');
   });
+
+  it('preserves next-activity flow for richer seeded activity patterns', () => {
+    component.lesson = {
+      ...component.lesson,
+      activities: [
+        { title: 'Story Prompt', type: 'story', content: 'Listen for a place-based clue.' } as any,
+        { title: 'Reflection Prompt', type: 'reflection', content: 'What did you notice?' } as any,
+        { title: 'Wrap Up', type: 'checkpoint', content: 'Share one key idea.' } as any,
+      ],
+    };
+
+    fixture.detectChanges();
+
+    let text = fixture.nativeElement.textContent;
+    expect(text).toContain('Story Prompt');
+    expect(text).toContain('Activity 1 of 3');
+
+    component.goToNextActivity();
+    fixture.detectChanges();
+
+    text = fixture.nativeElement.textContent;
+    expect(text).toContain('Reflection Prompt');
+    expect(text).toContain('Activity 2 of 3');
+  });
 });

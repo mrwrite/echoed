@@ -18,6 +18,26 @@ class MockUsersService {
 class MockCoursesService {
   coursesResponse = of<any[]>([]);
   getCourses = jasmine.createSpy('getCourses').and.callFake(() => this.coursesResponse);
+  publishReadinessResponse = of<any>({
+    course_id: 'course-1',
+    course_title: 'Biology',
+    is_ready: true,
+    blocking_issue_count: 0,
+    warning_count: 0,
+    blocking_issues: [],
+    warnings: [],
+  });
+  getCoursePublishReadiness = jasmine.createSpy('getCoursePublishReadiness').and.callFake(() => this.publishReadinessResponse);
+  safePublishResponse = of<any>({
+    course_id: 'course-1',
+    course_title: 'Biology',
+    is_safe: true,
+    blocking_issue_count: 0,
+    warning_count: 0,
+    blocking_issues: [],
+    warnings: [],
+  });
+  getCourseSafePublishValidation = jasmine.createSpy('getCourseSafePublishValidation').and.callFake(() => this.safePublishResponse);
   deleteCourse = jasmine.createSpy('deleteCourse').and.returnValue(of({}));
 }
 
@@ -73,6 +93,8 @@ describe('AdminViewComponent', () => {
   it('uses EchoLoadingState while admin data is loading', () => {
     usersService.usersResponse = new Subject<any[]>().asObservable();
     coursesService.coursesResponse = new Subject<any[]>().asObservable();
+    coursesService.publishReadinessResponse = new Subject<any>().asObservable();
+    coursesService.safePublishResponse = new Subject<any>().asObservable();
     usageStatsService.usageResponse = new Subject<any[]>().asObservable();
     analyticsService.overviewResponse = new Subject<any>().asObservable();
 
@@ -82,6 +104,8 @@ describe('AdminViewComponent', () => {
     expect(compiled.querySelector('[data-echo-loading="section"]')).not.toBeNull();
     expect(compiled.textContent).toContain('Loading platform overview');
     expect(compiled.textContent).toContain('Loading recent signups');
+    expect(compiled.textContent).toContain('Loading publish readiness');
+    expect(compiled.textContent).toContain('Loading safe publish validation');
   });
 
   it('uses EchoStatePanel for admin empty states', () => {
@@ -93,6 +117,8 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Recent user activity will appear here');
     expect(compiled.textContent).toContain('Usage statistics will appear here');
     expect(compiled.textContent).toContain('Course management will appear here');
+    expect(compiled.textContent).toContain('Publish readiness will appear here');
+    expect(compiled.textContent).toContain('Safe publish validation will appear here');
   });
 
   it('uses EchoStatePanel for admin error states and retries data loads', () => {
@@ -106,9 +132,28 @@ describe('AdminViewComponent', () => {
     expect(coursesService.getCourses).toHaveBeenCalledTimes(1);
     expect(usageStatsService.getUsageStats).toHaveBeenCalledTimes(1);
     expect(analyticsService.getAdminOverview).toHaveBeenCalledTimes(1);
+    expect(coursesService.getCoursePublishReadiness).not.toHaveBeenCalled();
 
     usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
     usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
     analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
 
@@ -120,6 +165,8 @@ describe('AdminViewComponent', () => {
     expect(coursesService.getCourses).toHaveBeenCalledTimes(2);
     expect(usageStatsService.getUsageStats).toHaveBeenCalledTimes(2);
     expect(analyticsService.getAdminOverview).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalled();
+    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalled();
   });
 
   it('keeps existing admin links and actions present', () => {
@@ -135,6 +182,7 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('View All');
     expect(compiled.textContent).toContain('Course Management');
     expect(compiled.textContent).toContain('Delete');
+    expect(compiled.textContent).not.toContain('Publish Course');
   });
 
   it('renders responsive fallback markup for educator data tables and cards', () => {
@@ -147,5 +195,151 @@ describe('AdminViewComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('[data-educator-responsive="admin-users"]')).not.toBeNull();
     expect(compiled.querySelector('[data-educator-responsive="admin-courses"]')).not.toBeNull();
+  });
+
+  it('renders publish readiness ready state for staff/admin surfaces', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 1,
+      blocking_issues: [],
+      warnings: [{ entity_type: 'unit', entity_id: 'unit-1', entity_title: 'Unit One', code: 'empty_unit', message: 'Unit does not contain any lessons yet.' }],
+    });
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+
+    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalledWith('course-1');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Publish readiness');
+    expect(compiled.textContent).toContain('Biology');
+    expect(compiled.textContent).toContain('Ready');
+    expect(compiled.textContent).toContain('1 warning');
+  });
+
+  it('renders blocked publish readiness issues and retries read-only loading', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = throwError(() => new Error('publish readiness failed'));
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+    let compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not load course publish readiness');
+
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: false,
+      blocking_issue_count: 2,
+      warning_count: 0,
+      blocking_issues: [
+        { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'review_status_not_approved', message: 'Lesson must be approved before it is publish-ready for learners.' },
+        { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'missing_readiness_field', message: 'Lesson is missing required publish-readiness field: sources.' },
+      ],
+      warnings: [],
+    });
+
+    const retryButton = Array.from(compiled.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Retry',
+    ) as HTMLButtonElement;
+    retryButton.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalledTimes(2);
+    expect(compiled.textContent).toContain('Not ready');
+    expect(compiled.textContent).toContain('Draft Lesson');
+    expect(compiled.textContent).toContain('sources');
+    expect(coursesService.deleteCourse).not.toHaveBeenCalled();
+  });
+
+  it('renders safe-publish safe state for staff/admin surfaces', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 1,
+      blocking_issues: [],
+      warnings: [
+        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Biology', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
+      ],
+    });
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+
+    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalledWith('course-1');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Safe publish validation');
+    expect(compiled.textContent).toContain('Safe');
+    expect(compiled.textContent).toContain('1 warning');
+    expect(compiled.querySelector('[data-safe-publish-row]')).not.toBeNull();
+  });
+
+  it('renders blocked safe-publish issues and retries read-only loading', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = throwError(() => new Error('safe publish failed'));
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+    let compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not load course safe-publish validation');
+
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: false,
+      blocking_issue_count: 1,
+      warning_count: 1,
+      blocking_issues: [
+        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Biology', code: 'blocked_revision_status', message: 'Deprecated or archived content is not safe to republish for learners.' },
+      ],
+      warnings: [
+        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Biology', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
+      ],
+    });
+
+    const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
+      (button) => button.textContent?.trim() === 'Retry',
+    ) as HTMLButtonElement[];
+    retryButtons[0]?.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalledTimes(2);
+    expect(compiled.textContent).toContain('Not safe');
+    expect(compiled.textContent).toContain('Deprecated or archived content is not safe to republish for learners.');
+    expect(coursesService.deleteCourse).not.toHaveBeenCalled();
   });
 });

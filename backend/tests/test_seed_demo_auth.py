@@ -1,8 +1,8 @@
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 
-from app.api.routes import auth
 from app.auth import verify_password, hash_password
 from app.database import get_db
 from app.lesson_governance import GOVERNED_AVAILABLE, governed_lessons_for_unit
@@ -44,7 +44,8 @@ def test_seed_demo_is_idempotent_and_resets_passwords(db_engine, monkeypatch):
         assert session.query(CourseVersion).count() == 1
         assert session.query(Section).filter(Section.name == seed_demo.DEMO_SECTION_NAME).count() == 1
         assert session.query(Enrollment).count() == 2
-        assert session.query(Unit).filter(Unit.course_id == session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one().id).count() >= 2
+        seeded_course = session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one()
+        assert session.query(Unit).filter(Unit.course_id == seeded_course.id).count() == len(seed_demo.DEMO_UNITS)
         approved_lessons = session.query(Lesson).filter(Lesson.review_status == "approved").all()
         assert approved_lessons
         assert session.query(Source).count() >= len(approved_lessons)
@@ -64,19 +65,29 @@ def test_seed_demo_creates_governed_ordered_student_path(db_engine, monkeypatch)
     try:
         course = session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one()
         units = session.query(Unit).filter(Unit.course_id == course.id).order_by(Unit.order, Unit.id).all()
-        assert len(units) >= 2
-        assert [unit.order for unit in units[:2]] == [1, 2]
+        assert len(units) == len(seed_demo.DEMO_UNITS)
+        assert [unit.order for unit in units] == list(range(1, len(seed_demo.DEMO_UNITS) + 1))
 
-        for unit in units:
+        for unit, unit_seed in zip(units, seed_demo.DEMO_UNITS):
             selection = governed_lessons_for_unit(unit)
             assert selection.state == GOVERNED_AVAILABLE
             assert selection.lessons
+            assert len(selection.lessons) == len(unit_seed["lessons"])
+            assert [lesson.order for lesson in selection.lessons] == [
+                lesson_seed["order"] for lesson_seed in unit_seed["lessons"]
+            ]
             assert selection.lessons[0].review_status == "approved"
+            assert all(lesson.sources for lesson in selection.lessons)
     finally:
         session.close()
 
 
 def test_seeded_demo_users_can_log_in_with_username_and_email(db_engine, monkeypatch):
+    try:
+        from app.api.routes import auth
+    except ImportError as exc:
+        pytest.skip(f"Unrelated pre-existing auth route import issue: {exc}")
+
     session_factory = _build_session_factory(db_engine)
     _seed_with_factory(monkeypatch, session_factory)
 

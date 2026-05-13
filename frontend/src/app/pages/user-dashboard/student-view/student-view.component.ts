@@ -8,7 +8,7 @@ import { LessonViewerComponent } from "../../../shared/lesson-viewer.component";
 import { EchoButtonComponent } from '../../../components/echo-button/echo-button.component';
 import { StudentCourseCardComponent } from '../../../components/student-course-card/student-course-card.component';
 import { Course } from '../../../models/course';
-import { StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
+import { ContinuationGuidance, StudentCourseWithDetails } from '../../../models/student-course-with-details.model';
 import { CompleteSegmentResponse, SegmentResponse } from '../../../models/segment-response.model';
 import { ToastService } from '../../../services/toast.service';
 import { AnalyticsService, StudentProgressResponse } from '../../../services/analytics.service';
@@ -38,6 +38,17 @@ export class StudentViewComponent implements OnInit {
   studentCourses: StudentCourseWithDetails[] = [];
   activeStudentCourse?: StudentCourseWithDetails;
   activeStudentCourseReason = '';
+  activeContinuationTitle = '';
+  activeContinuationEyebrow = 'Selected continuation';
+  activeContinuationState: ContinuationGuidance['support_state'] = 'normal';
+  activeReinforcementTitle = '';
+  activeReinforcementMessage = '';
+  activeRemediationLessonTitle = '';
+  activeRemediationPrompts: string[] = [];
+  activeRemediationConcepts: string[] = [];
+  activeEnrichmentLessonTitle = '';
+  activeEnrichmentPrompts: string[] = [];
+  activeEnrichmentConcepts: string[] = [];
   currentLesson?: Lesson;
   showLesson = false;
   availableCourses: Course[] = [];
@@ -63,6 +74,22 @@ export class StudentViewComponent implements OnInit {
 
   get visibleAvailableCourses(): Course[] {
     return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
+  }
+
+  get allEnrolledCoursesCompleted(): boolean {
+    return this.studentCourses.length > 0 && this.studentCourses.every((course) => course.status === 'completed');
+  }
+
+  get noContinuationTitle(): string {
+    return this.allEnrolledCoursesCompleted
+      ? 'You completed your current learning path'
+      : 'No active course is ready to continue';
+  }
+
+  get noContinuationBody(): string {
+    return this.allEnrolledCoursesCompleted
+      ? 'You finished your current flagship course. Take a moment to celebrate your growth, revisit a favorite idea, or explore another course when you are ready.'
+      : 'Enroll in a course to begin your learning journey and establish your next learner step.';
   }
 
   /** Navigate to the full available courses page */
@@ -179,37 +206,84 @@ export class StudentViewComponent implements OnInit {
 
   private resolveContinuationCourse(): void {
     const inProgressStatuses = new Set(['active', 'in_progress', 'in-progress']);
-    const inProgressCourse = this.studentCourses.find((course) =>
+    const orderedCourses = [...this.studentCourses].sort((left, right) => {
+      const leftDate = Date.parse(left.enrolled_on || '') || 0;
+      const rightDate = Date.parse(right.enrolled_on || '') || 0;
+      if (leftDate !== rightDate) {
+        return leftDate - rightDate;
+      }
+
+      return left.course.title.localeCompare(right.course.title);
+    });
+    const inProgressCourse = orderedCourses.find((course) =>
       inProgressStatuses.has((course.status || '').toLowerCase())
       || ((course.progress ?? 0) > 0 && course.status !== 'completed')
     );
 
     if (inProgressCourse) {
       this.activeStudentCourse = inProgressCourse;
-      this.activeStudentCourseReason = 'Continue where you already have momentum.';
+      this.applyContinuationGuidance(
+        inProgressCourse.continuation_guidance,
+        'Continue where you already have momentum.',
+      );
       return;
     }
 
-    const nextAvailableCourse = [...this.studentCourses]
+    const nextAvailableCourse = orderedCourses
       .filter((course) => course.status !== 'completed')
-      .sort((left, right) => {
-        const leftDate = Date.parse(left.enrolled_on || '') || 0;
-        const rightDate = Date.parse(right.enrolled_on || '') || 0;
-        if (leftDate !== rightDate) {
-          return leftDate - rightDate;
-        }
-
-        return left.course.title.localeCompare(right.course.title);
-      })[0];
+      [0];
 
     if (nextAvailableCourse) {
       this.activeStudentCourse = nextAvailableCourse;
-      this.activeStudentCourseReason = 'Next recommended course based on your enrolled learning path.';
+      this.applyContinuationGuidance(
+        nextAvailableCourse.continuation_guidance,
+        'Next recommended course based on your enrolled learning path.',
+      );
       return;
     }
 
     this.activeStudentCourse = undefined;
     this.activeStudentCourseReason = '';
+    this.activeContinuationTitle = '';
+    this.activeContinuationEyebrow = 'Selected continuation';
+    this.activeContinuationState = 'normal';
+    this.activeReinforcementTitle = '';
+    this.activeReinforcementMessage = '';
+    this.activeRemediationLessonTitle = '';
+    this.activeRemediationPrompts = [];
+    this.activeRemediationConcepts = [];
+    this.activeEnrichmentLessonTitle = '';
+    this.activeEnrichmentPrompts = [];
+    this.activeEnrichmentConcepts = [];
+  }
+
+  private applyContinuationGuidance(
+    guidance: ContinuationGuidance | null | undefined,
+    fallbackReason: string,
+  ): void {
+    this.activeStudentCourseReason = guidance?.learner_message || fallbackReason;
+    this.activeContinuationTitle = guidance?.learner_title || 'Your next lesson is ready';
+    this.activeContinuationState = guidance?.support_state || 'normal';
+    this.activeReinforcementTitle = guidance?.reinforcement_title || '';
+    this.activeReinforcementMessage = guidance?.reinforcement_message || '';
+    this.activeRemediationLessonTitle =
+      guidance?.support_state === 'remediation' ? guidance?.review_lesson_title || '' : '';
+    this.activeRemediationPrompts =
+      guidance?.support_state === 'remediation' ? guidance?.review_prompts || [] : [];
+    this.activeRemediationConcepts =
+      guidance?.support_state === 'remediation' ? guidance?.review_key_concepts || [] : [];
+    this.activeEnrichmentLessonTitle =
+      guidance?.support_state === 'enrichment' ? guidance?.extension_lesson_title || '' : '';
+    this.activeEnrichmentPrompts =
+      guidance?.support_state === 'enrichment' ? guidance?.extension_prompts || [] : [];
+    this.activeEnrichmentConcepts =
+      guidance?.support_state === 'enrichment' ? guidance?.extension_key_concepts || [] : [];
+    this.activeContinuationEyebrow =
+      guidance?.support_state === 'remediation'
+        ? 'Supportive next step'
+        : guidance?.support_state === 'enrichment'
+        ? 'Recommended enrichment'
+        : 'Selected continuation';
   }
 
   onLessonCompleted(): void {

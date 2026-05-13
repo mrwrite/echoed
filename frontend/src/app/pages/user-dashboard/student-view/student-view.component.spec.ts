@@ -26,6 +26,7 @@ function buildStudentCourse(overrides: StudentCourseOverride = {}): StudentCours
     status: overrides['status'] ?? 'enrolled',
     progress: overrides['progress'] ?? 0,
     unit_progress_id: overrides['unit_progress_id'] ?? 'unit-progress-1',
+    continuation_guidance: overrides['continuation_guidance'] ?? null,
     course: {
       id: overrides['course_id'] ?? overrides['id'] ?? 'course-1',
       title: overrides['title'] ?? 'Course A',
@@ -105,13 +106,36 @@ describe('StudentViewComponent', () => {
   it('selects an in-progress course over the first course in the list', () => {
     coursesService.studentCoursesResponse = of([
       buildStudentCourse({ id: 'course-completed', title: 'Completed First', status: 'completed', progress: 100 }),
-      buildStudentCourse({ id: 'course-active', title: 'Active Second', status: 'active', progress: 32 }),
+      buildStudentCourse({
+        id: 'course-active',
+        title: 'Active Second',
+        status: 'active',
+        progress: 32,
+        continuation_guidance: {
+          support_state: 'normal',
+          learner_title: 'Your next lesson is ready',
+          learner_message: 'Continue where you already have momentum.',
+          recommended_action: 'continue',
+          evidence_source: 'governed_continuation',
+        } as any,
+      }),
     ]);
 
     fixture.detectChanges();
 
     expect(component.activeStudentCourse?.course.title).toBe('Active Second');
     expect(component.activeStudentCourseReason).toContain('momentum');
+  });
+
+  it('selects the earliest in-progress course deterministically when multiple are active', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({ id: 'course-later', title: 'Later Active', status: 'active', enrolled_on: '2026-03-01T00:00:00.000Z' }),
+      buildStudentCourse({ id: 'course-earlier', title: 'Earlier Active', status: 'active', enrolled_on: '2026-01-01T00:00:00.000Z' }),
+    ]);
+
+    fixture.detectChanges();
+
+    expect(component.activeStudentCourse?.course.title).toBe('Earlier Active');
   });
 
   it('uses deterministic fallback when no course is in progress', () => {
@@ -183,7 +207,21 @@ describe('StudentViewComponent', () => {
 
   it('uses the explicit selected continuation course for the CTA', () => {
     coursesService.studentCoursesResponse = of([
-      buildStudentCourse({ id: 'course-active', title: 'Active Learning Path', status: 'active', progress: 55 }),
+      buildStudentCourse({
+        id: 'course-active',
+        title: 'Active Learning Path',
+        status: 'active',
+        progress: 55,
+        continuation_guidance: {
+          support_state: 'normal',
+          learner_title: 'Your next lesson is ready',
+          learner_message: 'Keep your momentum with the next governed lesson.',
+          reinforcement_title: 'Steady progress matters',
+          reinforcement_message: 'Your effort is adding up. Keep going with care, and let each lesson strengthen what you know.',
+          recommended_action: 'continue',
+          evidence_source: 'governed_continuation',
+        } as any,
+      }),
     ]);
 
     fixture.detectChanges();
@@ -191,7 +229,133 @@ describe('StudentViewComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Active Learning Path');
     expect(compiled.textContent).toContain('Selected continuation');
-    expect(compiled.textContent).toContain('Continue where you already have momentum.');
+    expect(compiled.textContent).toContain('Your next lesson is ready');
+    expect(compiled.textContent).toContain('Keep your momentum with the next governed lesson.');
+    expect(compiled.textContent).toContain('Steady progress matters');
+    expect(compiled.textContent).toContain('Your effort is adding up.');
+  });
+
+  it('renders remediation-aware continuation guidance when present', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({
+        id: 'course-remediation',
+        title: 'Supportive Path',
+        status: 'active',
+        continuation_guidance: {
+          support_state: 'remediation',
+          learner_title: 'Take your next step with support',
+          learner_message: 'Your next lesson is still ready. Revisit the last check and use the support prompts to rebuild confidence.',
+          reinforcement_title: 'Learning can be rebuilt',
+          reinforcement_message: 'A hard moment does not erase your progress. Review one idea at a time, then keep moving with support.',
+          recommended_action: 'review-and-continue',
+          evidence_source: 'recent_assessment_retry',
+          review_lesson_title: 'Introduction to Africa',
+          review_key_concepts: ['continent', 'regions'],
+          review_prompts: ['Say, draw, or write one idea from Introduction to Africa that you want to remember.'],
+        } as any,
+      }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Supportive next step');
+    expect(compiled.textContent).toContain('Take your next step with support');
+    expect(compiled.textContent).toContain('rebuild confidence');
+    expect(compiled.textContent).toContain('Learning can be rebuilt');
+    expect(compiled.textContent).toContain('does not erase your progress');
+    expect(compiled.textContent).toContain('Helpful review before you continue');
+    expect(compiled.textContent).toContain('Revisit Introduction to Africa');
+    expect(compiled.textContent).toContain('continent');
+  });
+
+  it('renders enrichment-aware continuation guidance when present', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({
+        id: 'course-enrichment',
+        title: 'Deepening Path',
+        status: 'active',
+        continuation_guidance: {
+          support_state: 'enrichment',
+          learner_title: 'You are ready for a deeper challenge',
+          learner_message: 'Continue with your next governed lesson and, if you want an extra stretch, revisit Introduction to Africa for optional extension prompts that deepen your thinking.',
+          reinforcement_title: 'Your understanding is growing strong',
+          reinforcement_message: 'You have earned an optional deeper look. Follow your curiosity without leaving your steady learning path.',
+          recommended_action: 'continue-with-enrichment',
+          evidence_source: 'strong_mastery_signal',
+          extension_lesson_title: 'Introduction to Africa',
+          extension_key_concepts: ['continent', 'diversity'],
+          extension_prompts: ['Look a little deeper at Introduction to Africa by connecting one lesson idea to a place, community, or question you want to explore next.'],
+        } as any,
+      }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Recommended enrichment');
+    expect(compiled.textContent).toContain('deeper challenge');
+    expect(compiled.textContent).toContain('Your understanding is growing strong');
+    expect(compiled.textContent).toContain('Follow your curiosity');
+    expect(compiled.textContent).toContain('Optional deeper exploration');
+    expect(compiled.textContent).toContain('Extend Introduction to Africa');
+    expect(compiled.textContent).toContain('continent');
+  });
+
+  it('shows encouraging completion copy when all enrolled courses are complete', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({ id: 'course-completed', title: 'Finished Path', status: 'completed', progress: 100 }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('You completed your current learning path');
+    expect(compiled.textContent).toContain('celebrate your growth');
+  });
+
+  it('does not render staff publish readiness UI on the learner dashboard', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({ id: 'course-active', title: 'Learner Course', status: 'active', progress: 40 }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).not.toContain('Publish readiness');
+    expect(compiled.textContent).not.toContain('Blocking issues');
+    expect(compiled.textContent).not.toContain('Safe publish validation');
+    expect(compiled.textContent).not.toContain('Not safe');
+  });
+
+  it('keeps the continue lesson action bound to the selected course during enrichment guidance', () => {
+    const enrichmentCourse = buildStudentCourse({
+      id: 'course-enrichment',
+      title: 'Deepening Path',
+      status: 'active',
+      continuation_guidance: {
+        support_state: 'enrichment',
+        learner_title: 'You are ready for a deeper challenge',
+        learner_message: 'Continue with your next governed lesson and, if you want an extra stretch, revisit Introduction to Africa for optional extension prompts that deepen your thinking.',
+        recommended_action: 'continue-with-enrichment',
+        evidence_source: 'strong_mastery_signal',
+        extension_lesson_title: 'Introduction to Africa',
+        extension_prompts: ['Look a little deeper at Introduction to Africa by connecting one lesson idea to a place, community, or question you want to explore next.'],
+      } as any,
+    });
+    coursesService.studentCoursesResponse = of([enrichmentCourse]);
+    spyOn(component, 'startCourse');
+
+    fixture.detectChanges();
+
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('button'),
+    ) as HTMLButtonElement[];
+    const continueAction = buttons.find((button) => button.textContent?.trim() === 'Continue lesson') as HTMLButtonElement;
+
+    continueAction.click();
+
+    expect(component.startCourse).toHaveBeenCalledWith(enrichmentCourse);
   });
 
   it('routes catalog actions from the empty continuation state', () => {
@@ -208,5 +372,35 @@ describe('StudentViewComponent', () => {
     action.click();
 
     expect(router.navigate).toHaveBeenCalledWith(['/home/courses']);
+  });
+
+  it('keeps the continue lesson action bound to the selected course during remediation guidance', () => {
+    const remediationCourse = buildStudentCourse({
+      id: 'course-remediation',
+      title: 'Supportive Path',
+      status: 'active',
+      continuation_guidance: {
+        support_state: 'remediation',
+        learner_title: 'Take your next step with support',
+        learner_message: 'Your next lesson is still ready.',
+        recommended_action: 'review-and-continue',
+        evidence_source: 'recent_assessment_retry',
+        review_lesson_title: 'Introduction to Africa',
+        review_prompts: ['Review one map idea before continuing.'],
+      } as any,
+    });
+    coursesService.studentCoursesResponse = of([remediationCourse]);
+    spyOn(component, 'startCourse');
+
+    fixture.detectChanges();
+
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll('button'),
+    ) as HTMLButtonElement[];
+    const continueAction = buttons.find((button) => button.textContent?.trim() === 'Continue lesson') as HTMLButtonElement;
+
+    continueAction.click();
+
+    expect(component.startCourse).toHaveBeenCalledWith(remediationCourse);
   });
 });

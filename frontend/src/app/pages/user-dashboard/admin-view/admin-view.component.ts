@@ -5,6 +5,7 @@ import { UsersService } from '../../../services/users.service';
 import { CoursesService } from '../../../services/courses.service';
 import { User } from '../../../models/user';
 import { Course } from '../../../models/course';
+import { CoursePublishReadiness, CourseSafePublishValidation } from '../../../models/course-publish-readiness.model';
 import { IconModule } from '../../../shared/icon/icon.module';
 import { Router } from '@angular/router';
 import { StatCardComponent } from '../../../components/stat-card/stat-card.component';
@@ -12,6 +13,7 @@ import { UsageStat, UsageStatsService } from '../../../services/usage-stats.serv
 import { AnalyticsService } from '../../../services/analytics.service';
 import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
 import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
+import { forkJoin } from 'rxjs';
 
 interface Metric {
   icon: string;
@@ -44,10 +46,16 @@ export class AdminViewComponent {
   coursesLoading = true;
   usageStatsLoading = true;
   overviewLoading = true;
+  publishReadinessLoading = true;
+  safePublishLoading = true;
   usersError = '';
   coursesError = '';
   usageStatsError = '';
   overviewError = '';
+  publishReadinessError = '';
+  safePublishError = '';
+  courseReadiness: CoursePublishReadiness[] = [];
+  safePublishValidations: CourseSafePublishValidation[] = [];
 
   constructor(
     private usersService: UsersService,
@@ -87,11 +95,18 @@ export class AdminViewComponent {
       next: (courses) => {
         this.courses = courses;
         this.coursesLoading = false;
+        this.loadCoursePublishReadiness();
       },
       error: () => {
         this.courses = [];
         this.coursesLoading = false;
         this.coursesError = 'We could not load course management right now. Retry to restore the course catalog.';
+        this.courseReadiness = [];
+        this.publishReadinessLoading = false;
+        this.publishReadinessError = '';
+        this.safePublishValidations = [];
+        this.safePublishLoading = false;
+        this.safePublishError = '';
       },
     });
   }
@@ -153,6 +168,8 @@ export class AdminViewComponent {
     this.coursesService.deleteCourse(courseId).subscribe({
       next: () => {
         this.courses = this.courses.filter(c => c.id !== courseId);
+        this.courseReadiness = this.courseReadiness.filter((readiness) => readiness.course_id !== courseId);
+        this.safePublishValidations = this.safePublishValidations.filter((validation) => validation.course_id !== courseId);
         this.coursesCount = this.courses.length;
         this.updateMetrics();
       },
@@ -178,6 +195,79 @@ export class AdminViewComponent {
   /** Courses displayed on dashboard */
   get visibleCourses(): Course[] {
     return this.courses.slice(0, this.visibleCount);
+  }
+
+  get publishReadinessSectionEmpty(): boolean {
+    return !this.publishReadinessLoading && !this.publishReadinessError && this.courseReadiness.length === 0;
+  }
+
+  get safePublishSectionEmpty(): boolean {
+    return !this.safePublishLoading && !this.safePublishError && this.safePublishValidations.length === 0;
+  }
+
+  readinessStateLabel(isReady: boolean): string {
+    return isReady ? 'Ready' : 'Not ready';
+  }
+
+  safePublishStateLabel(isSafe: boolean): string {
+    return isSafe ? 'Safe' : 'Not safe';
+  }
+
+  loadCoursePublishReadiness(): void {
+    this.publishReadinessLoading = true;
+    this.publishReadinessError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.courseReadiness = [];
+      this.publishReadinessLoading = false;
+      this.safePublishValidations = [];
+      this.safePublishLoading = false;
+      this.safePublishError = '';
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCoursePublishReadiness(course.id)),
+    ).subscribe({
+      next: (readiness) => {
+        this.courseReadiness = readiness;
+        this.publishReadinessLoading = false;
+        this.loadCourseSafePublishValidation();
+      },
+      error: () => {
+        this.courseReadiness = [];
+        this.publishReadinessLoading = false;
+        this.publishReadinessError = 'We could not load course publish readiness right now. Retry to restore governance checks.';
+        this.safePublishValidations = [];
+        this.safePublishLoading = false;
+        this.safePublishError = '';
+      },
+    });
+  }
+
+  loadCourseSafePublishValidation(): void {
+    this.safePublishLoading = true;
+    this.safePublishError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.safePublishValidations = [];
+      this.safePublishLoading = false;
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCourseSafePublishValidation(course.id)),
+    ).subscribe({
+      next: (validations) => {
+        this.safePublishValidations = validations;
+        this.safePublishLoading = false;
+      },
+      error: () => {
+        this.safePublishValidations = [];
+        this.safePublishLoading = false;
+        this.safePublishError = 'We could not load course safe-publish validation right now. Retry to restore learner-safety checks.';
+      },
+    });
   }
 
   viewAllUsers() {
@@ -206,5 +296,19 @@ export class AdminViewComponent {
 
   retryCourses(): void {
     this.loadCourses();
+  }
+
+  retryPublishReadiness(): void {
+    if (this.coursesLoading) {
+      return;
+    }
+    this.loadCoursePublishReadiness();
+  }
+
+  retrySafePublish(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseSafePublishValidation();
   }
 }

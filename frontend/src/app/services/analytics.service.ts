@@ -44,6 +44,31 @@ export interface StudentProgressResponse {
   }[];
 }
 
+export type EducatorRuntimeSupportState =
+  | 'normal'
+  | 'remediation'
+  | 'enrichment'
+  | 'completed'
+  | 'unknown';
+
+export interface EducatorRuntimeSupportSummary {
+  student_id: string;
+  student_name: string;
+  student_course_id: string;
+  course_id: string;
+  course_title: string;
+  support_state: EducatorRuntimeSupportState;
+  support_summary: string;
+  evidence_source: string;
+  recommended_action: string;
+  last_evidence_at: string | null;
+  context_lesson_id: string | null;
+  context_lesson_title: string | null;
+  context_key_concepts: string[];
+  context_prompts: string[];
+  educator_intervention_hint: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
   private apiUrl = `${environment.apiUrl}/api/analytics`;
@@ -56,6 +81,12 @@ export class AnalyticsService {
 
   getTeacherSummary(): Observable<TeacherSummaryRow[]> {
     return this.http.get<TeacherSummaryRow[]>(`${this.apiUrl}/teacher-summary`);
+  }
+
+  getEducatorRuntimeSupport(courseId: string): Observable<EducatorRuntimeSupportSummary[]> {
+    return this.http.get<EducatorRuntimeSupportSummary[]>(
+      `${this.apiUrl}/educator-runtime-support?course_id=${courseId}`
+    );
   }
 
   getStudentProgress(): Observable<StudentProgressResponse> {

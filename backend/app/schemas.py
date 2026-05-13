@@ -4,6 +4,19 @@ from typing import Any, List, Optional
 from uuid import UUID
 from datetime import datetime
 
+
+class RevisionMetadataResponseMixin(BaseModel):
+    revision_number: int = 1
+    revision_label: Optional[str] = None
+    revision_status: str = "current"
+    revision_metadata: dict[str, Any] = Field(default_factory=dict)
+    previous_revision_id: Optional[UUID] = None
+    superseded_by_id: Optional[UUID] = None
+    lineage_status: str = "standalone"
+    lineage_metadata: dict[str, Any] = Field(default_factory=dict)
+    published_at: Optional[datetime] = None
+    deprecated_at: Optional[datetime] = None
+
 class UserDto(BaseModel):
     firstname: str
     lastname: str
@@ -117,7 +130,7 @@ class CourseVersionResponse(BaseModel):
         from_attributes = True
 
 
-class CourseSummaryResponse(BaseModel):
+class CourseSummaryResponse(RevisionMetadataResponseMixin):
     id: UUID
     title: str
     description: str
@@ -338,7 +351,7 @@ class SourceResponse(BaseModel):
         from_attributes = True
 
 
-class LessonResponse(BaseModel):
+class LessonResponse(RevisionMetadataResponseMixin):
     id: UUID
     title: str
     objective: Optional[str]
@@ -351,7 +364,7 @@ class LessonResponse(BaseModel):
     guided_practice: Optional[str] = None
     independent_practice: Optional[str] = None
     assessment: Optional[str] = None
-    review_status: str
+    review_status: Optional[str] = None
     reviewed_by: Optional[UUID] = None
     skill_tags: List[str] = Field(default_factory=list)
     standards_metadata: dict[str, Any] = Field(default_factory=dict)
@@ -359,25 +372,27 @@ class LessonResponse(BaseModel):
     duration_minutes: Optional[int]
     activities: List[ActivityResponse] = Field(default_factory=list)
     sources: List[SourceResponse] = Field(default_factory=list)
-    is_ready_for_approval: bool = False
+    is_ready_for_approval: Optional[bool] = None
     missing_readiness_fields: List[str] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
 
 
-class UnitResponse(BaseModel):
+class UnitResponse(RevisionMetadataResponseMixin):
     id: UUID
     title: str
     content: Optional[str]
     order: Optional[int]
     lessons: List[LessonResponse] = Field(default_factory=list)
+    learner_availability: Optional[str] = None
+    learner_availability_detail: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
-class CourseResponse(BaseModel):
+class CourseResponse(RevisionMetadataResponseMixin):
     id: UUID
     title: str
     description: str
@@ -401,9 +416,11 @@ class StartCourseRequest(BaseModel):
     course_id: UUID
 
 class SegmentResponse(BaseModel):
-    lesson_id: UUID
-    status: ProgressStatus
+    lesson_id: Optional[UUID] = None
+    status: Optional[ProgressStatus] = None
     unit_progress_id: Optional[UUID] = None
+    delivery_state: Optional[str] = None
+    detail: Optional[str] = None
 
 class CompleteSegmentRequest(BaseModel):
     student_unit_id: UUID
@@ -428,6 +445,7 @@ class StudentCourseWithDetails(BaseModel):
     status: str
     course: CourseResponse
     unit_progress_id: Optional[UUID] = None
+    continuation_guidance: Optional["ContinuationGuidanceResponse"] = None
 
     class Config:
         from_attributes = True
@@ -651,7 +669,7 @@ class AssessmentCompetencyAlignmentResponse(BaseModel):
         from_attributes = True
 
 
-class AssessmentResponse(BaseModel):
+class AssessmentResponse(RevisionMetadataResponseMixin):
     id: UUID
     title: str
     description: Optional[str]
@@ -801,6 +819,72 @@ class ReportingProgressSnapshotResponse(BaseModel):
     last_activity_at: Optional[datetime] = None
 
 
+class ContinuationGuidanceResponse(BaseModel):
+    support_state: str
+    learner_title: str
+    learner_message: str
+    reinforcement_title: Optional[str] = None
+    reinforcement_message: Optional[str] = None
+    recommended_action: str
+    evidence_source: str
+    review_lesson_id: Optional[UUID] = None
+    review_lesson_title: Optional[str] = None
+    review_key_concepts: List[str] = Field(default_factory=list)
+    review_prompts: List[str] = Field(default_factory=list)
+    extension_lesson_id: Optional[UUID] = None
+    extension_lesson_title: Optional[str] = None
+    extension_key_concepts: List[str] = Field(default_factory=list)
+    extension_prompts: List[str] = Field(default_factory=list)
+    educator_note: Optional[str] = None
+    educator_intervention_hint: Optional[str] = None
+
+
+class EducatorRuntimeSupportSummaryResponse(BaseModel):
+    student_id: UUID
+    student_name: str
+    student_course_id: UUID
+    course_id: UUID
+    course_title: str
+    support_state: str
+    support_summary: str
+    evidence_source: str
+    recommended_action: str
+    last_evidence_at: Optional[datetime] = None
+    context_lesson_id: Optional[UUID] = None
+    context_lesson_title: Optional[str] = None
+    context_key_concepts: List[str] = Field(default_factory=list)
+    context_prompts: List[str] = Field(default_factory=list)
+    educator_intervention_hint: Optional[str] = None
+
+
+class PublishReadinessIssueResponse(BaseModel):
+    entity_type: str
+    entity_id: Optional[UUID] = None
+    entity_title: str
+    code: str
+    message: str
+
+
+class CoursePublishReadinessResponse(BaseModel):
+    course_id: UUID
+    course_title: str
+    is_ready: bool
+    blocking_issue_count: int
+    warning_count: int
+    blocking_issues: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+    warnings: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+
+
+class CourseSafePublishValidationResponse(BaseModel):
+    course_id: UUID
+    course_title: str
+    is_safe: bool
+    blocking_issue_count: int
+    warning_count: int
+    blocking_issues: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+    warnings: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+
+
 class AssessmentEvidenceSummaryResponse(BaseModel):
     assessment_id: UUID
     assessment_title: str
@@ -830,3 +914,5 @@ class AssessmentReportingSummaryResponse(BaseModel):
     progress: ReportingProgressSnapshotResponse
     assessment_evidence: List[AssessmentEvidenceSummaryResponse] = Field(default_factory=list)
     mastery_summary: MasterySummaryResponse
+    continuation_guidance: Optional[ContinuationGuidanceResponse] = None
+    educator_runtime_support_summary: Optional[EducatorRuntimeSupportSummaryResponse] = None

@@ -45,8 +45,78 @@
       <ng-container *ngIf="!coursesLoading && !coursesLoadError && activeStudentCourse; else noActive">
         <p class="text-lg font-semibold mt-2">{{ activeStudentCourse.course.title }}</p>
         <p class="text-sm text-slate-600">{{ activeStudentCourse.course.description }}</p>
-        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Selected continuation</p>
+        <p
+          class="mt-2 text-xs font-semibold uppercase tracking-[0.18em]"
+          [ngClass]="{
+            'text-primary': activeContinuationState === 'normal',
+            'text-amber-700': activeContinuationState === 'remediation',
+            'text-emerald-700': activeContinuationState === 'enrichment'
+          }"
+        >
+          {{ activeContinuationEyebrow }}
+        </p>
+        <p class="mt-1 text-sm font-semibold text-ink">{{ activeContinuationTitle }}</p>
         <p class="mt-1 text-sm text-slate-600">{{ activeStudentCourseReason }}</p>
+        <div
+          *ngIf="activeReinforcementMessage"
+          class="mt-3 rounded-2xl border p-4"
+          [ngClass]="{
+            'border-primary/20 bg-primary/[0.04] text-primary': activeContinuationState === 'normal',
+            'border-amber-200 bg-amber-50/80 text-amber-900': activeContinuationState === 'remediation',
+            'border-emerald-200 bg-emerald-50/80 text-emerald-900': activeContinuationState === 'enrichment'
+          }"
+        >
+          <p *ngIf="activeReinforcementTitle" class="text-xs font-semibold uppercase tracking-[0.16em]">
+            {{ activeReinforcementTitle }}
+          </p>
+          <p class="mt-1 text-sm">{{ activeReinforcementMessage }}</p>
+        </div>
+        <div
+          *ngIf="activeContinuationState === 'remediation' && activeRemediationPrompts.length > 0"
+          class="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4"
+        >
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Helpful review before you continue</p>
+          <p *ngIf="activeRemediationLessonTitle" class="mt-1 text-sm font-semibold text-amber-950">
+            Revisit {{ activeRemediationLessonTitle }}
+          </p>
+          <div *ngIf="activeRemediationConcepts.length > 0" class="mt-2 flex flex-wrap gap-2">
+            <span
+              *ngFor="let concept of activeRemediationConcepts"
+              class="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-amber-800 border border-amber-200"
+            >
+              {{ concept }}
+            </span>
+          </div>
+          <ul class="mt-3 space-y-2 text-sm text-amber-900">
+            <li *ngFor="let prompt of activeRemediationPrompts" class="flex gap-2">
+              <span aria-hidden="true" class="mt-0.5 text-amber-700">&bull;</span>
+              <span>{{ prompt }}</span>
+            </li>
+          </ul>
+        </div>
+        <div
+          *ngIf="activeContinuationState === 'enrichment' && activeEnrichmentPrompts.length > 0"
+          class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4"
+        >
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Optional deeper exploration</p>
+          <p *ngIf="activeEnrichmentLessonTitle" class="mt-1 text-sm font-semibold text-emerald-950">
+            Extend {{ activeEnrichmentLessonTitle }}
+          </p>
+          <div *ngIf="activeEnrichmentConcepts.length > 0" class="mt-2 flex flex-wrap gap-2">
+            <span
+              *ngFor="let concept of activeEnrichmentConcepts"
+              class="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 border border-emerald-200"
+            >
+              {{ concept }}
+            </span>
+          </div>
+          <ul class="mt-3 space-y-2 text-sm text-emerald-900">
+            <li *ngFor="let prompt of activeEnrichmentPrompts" class="flex gap-2">
+              <span aria-hidden="true" class="mt-0.5 text-emerald-700">&bull;</span>
+              <span>{{ prompt }}</span>
+            </li>
+          </ul>
+        </div>
         <div class="mt-4">
           <div class="flex justify-between text-sm text-slate-500 mb-1">
             <span>Progress</span>
@@ -65,8 +135,8 @@
           *ngIf="!coursesLoading && !coursesLoadError"
           variant="empty"
           eyebrow="No continuation path"
-          title="No active course is ready to continue"
-          body="Enroll in a course to begin your learning journey and establish your next learner step."
+          [title]="noContinuationTitle"
+          [body]="noContinuationBody"
           actionLabel="Explore catalog"
           (action)="goToAvailableCourses()"
         ></app-echo-state-panel>

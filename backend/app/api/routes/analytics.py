@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, selectinload
 from uuid import UUID
 
@@ -22,12 +23,16 @@ from app.models import (
 from app.schemas import (
     AssessmentEvidenceSummaryResponse,
     AssessmentReportingSummaryResponse,
+    ContinuationGuidanceResponse,
+    EducatorRuntimeSupportSummaryResponse,
     MasteryObjectiveSummaryResponse,
     MasterySummaryResponse,
     ReportingProgressSnapshotResponse,
 )
 
 router = APIRouter()
+
+FLAGSHIP_PATHWAY_KEY = "introduction-to-africa"
 
 
 def _latest_attempt_for_assessment(assessment: Assessment, student_id):
@@ -159,6 +164,343 @@ def _build_progress_snapshot(db: Session, student_id: UUID) -> ReportingProgress
         units_completed=units_completed,
         courses_completed=courses_completed,
         last_activity_at=last_activity_at[0] if last_activity_at else None,
+    )
+
+
+def _is_flagship_course(course: Course | None) -> bool:
+    if course is None:
+        return False
+    metadata = course.standards_metadata or {}
+    return bool(metadata.get("flagship")) and metadata.get("pathway_key") == FLAGSHIP_PATHWAY_KEY
+
+
+def _ordered_course_lessons(course: Course | None) -> list[Lesson]:
+    if course is None:
+        return []
+
+    ordered_lessons: list[Lesson] = []
+    for unit in sorted(
+        course.units or [],
+        key=lambda row: (row.order is None, row.order if row.order is not None else 0, str(row.id)),
+    ):
+        ordered_lessons.extend(
+            sorted(
+                unit.lessons or [],
+                key=lambda row: (row.order is None, row.order if row.order is not None else 0, str(row.id)),
+            )
+        )
+    return ordered_lessons
+
+
+def _metadata_string_list(metadata: dict | None, key: str) -> list[str]:
+    raw_values = (metadata or {}).get(key, [])
+    if not isinstance(raw_values, list):
+        return []
+    return [str(value) for value in raw_values if value]
+
+
+def _resolve_remediation_review_lesson(course: Course | None, assessment: Assessment) -> Lesson | None:
+    lessons = _ordered_course_lessons(course)
+    if not lessons:
+        return None
+
+    if assessment.lesson_id is not None:
+        for lesson in lessons:
+            if lesson.id == assessment.lesson_id:
+                return lesson
+
+    if assessment.unit_id is not None:
+        for unit in course.units or []:
+            if unit.id == assessment.unit_id:
+                ordered_unit_lessons = sorted(
+                    unit.lessons or [],
+                    key=lambda row: (row.order is None, row.order if row.order is not None else 0, str(row.id)),
+                )
+                if ordered_unit_lessons:
+                    return ordered_unit_lessons[0]
+
+    return lessons[0]
+
+
+def _build_remediation_review_prompts(lesson: Lesson | None) -> list[str]:
+    if lesson is None:
+        return []
+
+    prompts = _metadata_string_list(lesson.standards_metadata, "remediation_review_prompts")
+    if prompts:
+        return prompts[:2]
+
+    discussion_questions = [str(question) for question in (lesson.discussion_questions or []) if question]
+    if discussion_questions:
+        return discussion_questions[:2]
+
+    key_concepts = [str(concept) for concept in (lesson.key_concepts or []) if concept]
+    if key_concepts:
+        return [f"Explain what {key_concepts[0]} means in this lesson."]
+
+    return []
+
+
+def _build_enrichment_extension_prompts(lesson: Lesson | None) -> list[str]:
+    if lesson is None:
+        return []
+
+    prompts = _metadata_string_list(lesson.standards_metadata, "enrichment_extensions")
+    if prompts:
+        return prompts[:2]
+
+    community_extensions = _metadata_string_list(lesson.standards_metadata, "community_extensions")
+    if community_extensions:
+        return community_extensions[:2]
+
+    discussion_questions = [str(question) for question in (lesson.discussion_questions or []) if question]
+    if discussion_questions:
+        return discussion_questions[:2]
+
+    return []
+
+
+def _course_assessments_with_evidence(db: Session, course: Course | None) -> list[Assessment]:
+    if course is None:
+        return []
+
+    unit_ids = [unit.id for unit in course.units or []]
+    lesson_ids = [
+        lesson.id
+        for unit in course.units or []
+        for lesson in unit.lessons or []
+    ]
+    filters = [Assessment.course_id == course.id]
+    if unit_ids:
+        filters.append(Assessment.unit_id.in_(unit_ids))
+    if lesson_ids:
+        filters.append(Assessment.lesson_id.in_(lesson_ids))
+
+    return (
+        db.query(Assessment)
+        .options(
+            selectinload(Assessment.attempts).selectinload(StudentAssessmentAttempt.events),
+            selectinload(Assessment.competency_alignments),
+        )
+        .filter(or_(*filters))
+        .all()
+    )
+
+
+def _latest_attempt_with_assessment(
+    assessments: list[Assessment], student_id: UUID
+) -> tuple[Assessment, StudentAssessmentAttempt] | None:
+    latest: tuple[Assessment, StudentAssessmentAttempt] | None = None
+    for assessment in assessments:
+        if assessment.assessment_state != "published" or assessment.availability_state != "available":
+            continue
+        attempt = _latest_attempt_for_assessment(assessment, student_id)
+        if attempt is None:
+            continue
+        if latest is None or (attempt.submitted_at, str(attempt.id)) > (
+            latest[1].submitted_at,
+            str(latest[1].id),
+        ):
+            latest = (assessment, attempt)
+    return latest
+
+
+def _display_name(user: User | None) -> str:
+    if user is None:
+        return "Unknown learner"
+    full_name = f"{user.firstname} {user.lastname}".strip()
+    return full_name or user.username or "Unknown learner"
+
+
+def build_course_continuation_guidance(
+    db: Session,
+    course: Course | None,
+    student_id: UUID,
+    *,
+    educator_visible: bool = False,
+) -> ContinuationGuidanceResponse | None:
+    if not _is_flagship_course(course):
+        return None
+
+    assessments = _course_assessments_with_evidence(db, course)
+    mastery_summary = _build_mastery_summary(assessments, student_id, course_id=course.id if course else None)
+    latest = _latest_attempt_with_assessment(assessments, student_id)
+
+    if latest is None:
+        return ContinuationGuidanceResponse(
+            support_state="normal",
+            learner_title="Your next lesson is ready",
+            learner_message="Continue with your next governed lesson. Short checks along the way will help you notice what is sticking.",
+            reinforcement_title="Steady start",
+            reinforcement_message="You do not need to rush. Each lesson is another chance to notice, question, and grow your understanding.",
+            recommended_action="continue",
+            evidence_source="no_recent_assessment",
+            educator_note=(
+                "No recent flagship assessment evidence yet. Continue with the governed lesson path and watch for the learner's first check-for-understanding."
+                if educator_visible
+                else None
+            ),
+        )
+
+    latest_assessment, latest_attempt = latest
+    latest_percentage = (latest_attempt.score / latest_attempt.max_score * 100) if latest_attempt.max_score else 0.0
+    mastered_objectives = mastery_summary.objectives and all(objective.mastered for objective in mastery_summary.objectives)
+    review_lesson = _resolve_remediation_review_lesson(course, latest_assessment)
+    review_lesson_title = review_lesson.title if review_lesson is not None else None
+    review_prompts = _build_remediation_review_prompts(review_lesson)
+    review_key_concepts = [str(concept) for concept in (review_lesson.key_concepts or []) if concept][:3] if review_lesson else []
+    extension_lesson = review_lesson
+    extension_lesson_title = extension_lesson.title if extension_lesson is not None else None
+    extension_prompts = _build_enrichment_extension_prompts(extension_lesson)
+    extension_key_concepts = (
+        [str(concept) for concept in (extension_lesson.key_concepts or []) if concept][:3]
+        if extension_lesson
+        else []
+    )
+    educator_intervention_hint = (
+        _metadata_string_list(review_lesson.standards_metadata if review_lesson else None, "intervention_hints")[0]
+        if review_lesson is not None and _metadata_string_list(review_lesson.standards_metadata, "intervention_hints")
+        else None
+    )
+
+    if not latest_attempt.passed:
+        return ContinuationGuidanceResponse(
+            support_state="remediation",
+            learner_title="Take your next step with support",
+            learner_message=(
+                f"Your next lesson is still ready. Before or after you continue, revisit {review_lesson_title or latest_assessment.title} "
+                "and use these review prompts to rebuild confidence one idea at a time."
+            ),
+            reinforcement_title="Learning can be rebuilt",
+            reinforcement_message="A hard moment does not erase your progress. Review one idea at a time, then keep moving with support.",
+            recommended_action="review-and-continue",
+            evidence_source="recent_assessment_retry",
+            review_lesson_id=review_lesson.id if review_lesson is not None else None,
+            review_lesson_title=review_lesson_title,
+            review_key_concepts=review_key_concepts,
+            review_prompts=review_prompts,
+            educator_note=(
+                f"Recent evidence from {latest_assessment.title} suggests the learner may benefit from brief review in {review_lesson_title or latest_assessment.title}, confidence-preserving pacing, and targeted discussion support."
+                if educator_visible
+                else None
+            ),
+            educator_intervention_hint=educator_intervention_hint if educator_visible else None,
+        )
+
+    if mastered_objectives and latest_percentage >= 90.0:
+        return ContinuationGuidanceResponse(
+            support_state="enrichment",
+            learner_title="You are ready for a deeper challenge",
+            learner_message=(
+                f"Continue with your next governed lesson and, if you want an extra stretch, revisit "
+                f"{extension_lesson_title or latest_assessment.title} for optional extension prompts that deepen your thinking."
+            ),
+            reinforcement_title="Your understanding is growing strong",
+            reinforcement_message="You have earned an optional deeper look. Follow your curiosity without leaving your steady learning path.",
+            recommended_action="continue-with-enrichment",
+            evidence_source="strong_mastery_signal",
+            extension_lesson_id=extension_lesson.id if extension_lesson is not None else None,
+            extension_lesson_title=extension_lesson_title,
+            extension_key_concepts=extension_key_concepts,
+            extension_prompts=extension_prompts,
+            educator_note=(
+                f"Recent mastery evidence is strong enough to support optional enrichment through {extension_lesson_title or latest_assessment.title} while keeping the learner on the governed pathway."
+                if educator_visible
+                else None
+            ),
+        )
+
+    return ContinuationGuidanceResponse(
+        support_state="normal",
+        learner_title="Your next lesson is ready",
+        learner_message="Keep your momentum with the next governed lesson. You are building understanding one steady step at a time.",
+        reinforcement_title="Steady progress matters",
+        reinforcement_message="Your effort is adding up. Keep going with care, and let each lesson strengthen what you know.",
+        recommended_action="continue",
+        evidence_source="governed_continuation",
+        educator_note=(
+            "Current evidence supports a normal governed continuation with no special runtime support state."
+            if educator_visible
+            else None
+        ),
+    )
+
+
+def build_educator_runtime_support_summary(
+    db: Session,
+    student_course: StudentCourse,
+    *,
+    guidance: ContinuationGuidanceResponse | None = None,
+) -> EducatorRuntimeSupportSummaryResponse | None:
+    course = student_course.course
+    if course is None or not _is_flagship_course(course):
+        return None
+
+    guidance = guidance or build_course_continuation_guidance(
+        db,
+        course,
+        student_course.student_id,
+        educator_visible=True,
+    )
+    latest = _latest_attempt_with_assessment(_course_assessments_with_evidence(db, course), student_course.student_id)
+    last_evidence_at = latest[1].submitted_at if latest is not None else student_course.last_activity_at
+
+    support_state = guidance.support_state if guidance is not None else "unknown"
+    support_summary = guidance.educator_note if guidance and guidance.educator_note else (
+        "No flagship runtime support summary is available for this learner yet."
+    )
+    evidence_source = guidance.evidence_source if guidance is not None else "no_flagship_guidance"
+    recommended_action = guidance.recommended_action if guidance is not None else "continue"
+    context_lesson_id = None
+    context_lesson_title = None
+    context_key_concepts: list[str] = []
+    context_prompts: list[str] = []
+    educator_intervention_hint = guidance.educator_intervention_hint if guidance is not None else None
+
+    if student_course.status == "completed":
+        support_state = "completed"
+        support_summary = (
+            "The learner has completed the current flagship pathway. Recognize the progress and invite reflective extension only if it feels useful."
+        )
+        evidence_source = "course_completed"
+        recommended_action = "celebrate-and-reflect"
+        educator_intervention_hint = None
+    elif guidance is not None and guidance.support_state == "remediation":
+        context_lesson_id = guidance.review_lesson_id
+        context_lesson_title = guidance.review_lesson_title
+        context_key_concepts = list(guidance.review_key_concepts or [])
+        context_prompts = list(guidance.review_prompts or [])
+    elif guidance is not None and guidance.support_state == "enrichment":
+        context_lesson_id = guidance.extension_lesson_id
+        context_lesson_title = guidance.extension_lesson_title
+        context_key_concepts = list(guidance.extension_key_concepts or [])
+        context_prompts = list(guidance.extension_prompts or [])
+    elif guidance is not None and guidance.support_state == "normal":
+        if guidance.evidence_source == "no_recent_assessment":
+            support_summary = (
+                "Normal continuation with limited flagship evidence so far. Continue with the governed lesson path and watch for the learner's first check-for-understanding."
+            )
+        elif guidance.evidence_source == "governed_continuation":
+            support_summary = (
+                "Current evidence supports a normal governed continuation with no special runtime support state."
+            )
+
+    return EducatorRuntimeSupportSummaryResponse(
+        student_id=student_course.student_id,
+        student_name=_display_name(student_course.student),
+        student_course_id=student_course.id,
+        course_id=course.id,
+        course_title=course.title,
+        support_state=support_state,
+        support_summary=support_summary,
+        evidence_source=evidence_source,
+        recommended_action=recommended_action,
+        last_evidence_at=last_evidence_at,
+        context_lesson_id=context_lesson_id,
+        context_lesson_title=context_lesson_title,
+        context_key_concepts=context_key_concepts,
+        context_prompts=context_prompts,
+        educator_intervention_hint=educator_intervention_hint,
     )
 
 
@@ -491,6 +833,55 @@ def get_reporting_summary(
         query = query.filter(Assessment.program_id == program_id)
 
     assessments = query.all()
+    continuation_course: Course | None = None
+    if course_id is not None:
+        continuation_course = (
+            db.query(Course)
+            .options(selectinload(Course.units).selectinload(Unit.lessons))
+            .filter(Course.id == course_id)
+            .first()
+        )
+    elif unit_id is not None:
+        unit = (
+            db.query(Unit)
+            .options(selectinload(Unit.course).selectinload(Course.units).selectinload(Unit.lessons))
+            .filter(Unit.id == unit_id)
+            .first()
+        )
+        continuation_course = unit.course if unit else None
+    elif lesson_id is not None:
+        lesson = (
+            db.query(Lesson)
+            .options(selectinload(Lesson.unit).selectinload(Unit.course).selectinload(Course.units).selectinload(Unit.lessons))
+            .filter(Lesson.id == lesson_id)
+            .first()
+        )
+        continuation_course = lesson.unit.course if lesson and lesson.unit else None
+
+    continuation_guidance = build_course_continuation_guidance(
+        db,
+        continuation_course,
+        target_student_id,
+        educator_visible=current_user.role in {"admin", "teacher"},
+    )
+    educator_runtime_support_summary = None
+    if current_user.role in {"admin", "teacher"} and continuation_course is not None:
+        student_course = (
+            db.query(StudentCourse)
+            .options(selectinload(StudentCourse.student), selectinload(StudentCourse.course))
+            .filter(
+                StudentCourse.student_id == target_student_id,
+                StudentCourse.course_id == continuation_course.id,
+            )
+            .first()
+        )
+        if student_course is not None:
+            educator_runtime_support_summary = build_educator_runtime_support_summary(
+                db,
+                student_course,
+                guidance=continuation_guidance,
+            )
+
     return AssessmentReportingSummaryResponse(
         student_id=target_student_id,
         lesson_id=lesson_id,
@@ -507,4 +898,55 @@ def get_reporting_summary(
             course_id=course_id,
             program_id=program_id,
         ),
+        continuation_guidance=continuation_guidance,
+        educator_runtime_support_summary=educator_runtime_support_summary,
     )
+
+
+@router.get(
+    "/analytics/educator-runtime-support",
+    response_model=list[EducatorRuntimeSupportSummaryResponse],
+)
+def get_educator_runtime_support(
+    course_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "teacher")),
+):
+    course = (
+        db.query(Course)
+        .options(
+            selectinload(Course.units).selectinload(Unit.lessons),
+            selectinload(Course.student_courses).selectinload(StudentCourse.student),
+        )
+        .filter(Course.id == course_id)
+        .first()
+    )
+    if course is None:
+        raise HTTPException(status_code=404, detail="Course not found")
+    if not _is_flagship_course(course):
+        return []
+
+    summaries: list[EducatorRuntimeSupportSummaryResponse] = []
+    for student_course in sorted(
+        course.student_courses or [],
+        key=lambda row: (
+            _display_name(row.student).lower(),
+            row.enrolled_on,
+            str(row.id),
+        ),
+    ):
+        guidance = build_course_continuation_guidance(
+            db,
+            course,
+            student_course.student_id,
+            educator_visible=True,
+        )
+        summary = build_educator_runtime_support_summary(
+            db,
+            student_course,
+            guidance=guidance,
+        )
+        if summary is not None:
+            summaries.append(summary)
+
+    return summaries

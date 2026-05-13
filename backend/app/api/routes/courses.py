@@ -5,13 +5,17 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.deps import get_current_user, require_roles, require_org_roles
+from app.enum import MembershipStatus
 from app.enum import CourseVersionStatus
+from app.api.routes.analytics import build_course_continuation_guidance
 from app.lesson_governance import (
+    evaluate_course_safe_publish,
+    evaluate_course_publish_readiness,
     evaluate_lesson_readiness,
     resolve_review_fields,
     serialize_course,
 )
-from app.models import Course, CourseVersion, Unit, Lesson, Activity, StorybookPage, StudentCourse, Source
+from app.models import Course, CourseVersion, Unit, Lesson, Assessment, Activity, StorybookPage, StudentCourse, Source, OrganizationMembership
 from app.crud.progress import resolve_governed_progression
 from app.schemas import (
     CourseDto,
@@ -20,9 +24,45 @@ from app.schemas import (
     CourseCreateRequest,
     CourseVersionCreateRequest,
     CourseVersionResponse,
+    CoursePublishReadinessResponse,
+    CourseSafePublishValidationResponse,
     CourseSummaryResponse,
+    PublishReadinessIssueResponse,
 )
 router = APIRouter()
+
+
+def _can_view_course_publish_readiness(db: Session, current_user, course: Course) -> bool:
+    if current_user.role in {"admin", "teacher"}:
+        return True
+
+    if course.organization_id is None:
+        return False
+
+    membership = (
+        db.query(OrganizationMembership)
+        .filter(
+            OrganizationMembership.organization_id == course.organization_id,
+            OrganizationMembership.user_id == current_user.id,
+        )
+        .first()
+    )
+    if membership is None:
+        return False
+
+    membership_role = getattr(membership.role, "value", membership.role)
+    membership_status = getattr(membership.status, "value", membership.status)
+    return membership_role in {"content_admin", "org_admin"} and membership_status == MembershipStatus.ACTIVE.value
+
+
+def _serialize_publish_readiness_issue(issue) -> PublishReadinessIssueResponse:
+    return PublishReadinessIssueResponse(
+        entity_type=issue.entity_type,
+        entity_id=issue.entity_id,
+        entity_title=issue.entity_title,
+        code=issue.code,
+        message=issue.message,
+    )
 
 
 @router.get("/courses", response_model=list[CourseSummaryResponse])
@@ -61,7 +101,14 @@ def get_student_courses(
     )
 
     results = []
-    for sc in student_courses:
+    for sc in sorted(
+        student_courses,
+        key=lambda row: (
+            row.enrolled_on or datetime.min,
+            (row.course.title if row.course else ""),
+            str(row.id),
+        ),
+    ):
         progression_state = resolve_governed_progression(db, sc.id)
         unit_progress_id = progression_state.get("unit_progress_id")
 
@@ -74,6 +121,12 @@ def get_student_courses(
                 "status": sc.status,
                 "course": serialize_course(sc.course, viewer_role=current_user.role),
                 "unit_progress_id": unit_progress_id,
+                "continuation_guidance": build_course_continuation_guidance(
+                    db,
+                    sc.course,
+                    current_user.id,
+                    educator_visible=False,
+                ),
             }
         )
 
@@ -95,6 +148,111 @@ def get_course_by_id(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return serialize_course(course, viewer_role=current_user.role)
+
+
+@router.get("/courses/{course_id}/publish-readiness", response_model=CoursePublishReadinessResponse)
+def get_course_publish_readiness(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.units).joinedload(Unit.lessons).joinedload(Lesson.sources),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    readiness = evaluate_course_publish_readiness(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in readiness.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in readiness.warnings]
+
+    return CoursePublishReadinessResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_ready=readiness.is_ready,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
+    )
+
+
+@router.get("/courses/{course_id}/safe-publish-validation", response_model=CourseSafePublishValidationResponse)
+def get_course_safe_publish_validation(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.student_courses),
+            joinedload(Course.assessments).joinedload(Assessment.attempts),
+            joinedload(Course.assessments).joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.sources),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.attempts),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.attempts),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.events),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    validation = evaluate_course_safe_publish(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in validation.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in validation.warnings]
+
+    return CourseSafePublishValidationResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_safe=validation.is_safe,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
+    )
 
 
 @router.post("/courses")

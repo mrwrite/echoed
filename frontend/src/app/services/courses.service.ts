@@ -12,6 +12,7 @@ import { StudentCourseWithDetails } from '../models/student-course-with-details.
 import {
   CourseCompetencyEvidenceIntegrity,
   CoursePublishReadiness,
+  CourseRuntimeInterventionRecommendation,
   CourseSafePublishValidation,
 } from '../models/course-publish-readiness.model';
 import { map, catchError } from 'rxjs/operators';
@@ -43,6 +44,10 @@ export class CoursesService {
 
   getCourseCompetencyEvidenceIntegrity(courseId: string): Observable<CourseCompetencyEvidenceIntegrity> {
     return this.http.get<CourseCompetencyEvidenceIntegrity>(`${this.apiUrl}/${courseId}/competency-evidence-integrity`);
+  }
+
+  getCourseRuntimeInterventionRecommendations(courseId: string): Observable<CourseRuntimeInterventionRecommendation[]> {
+    return this.http.get<CourseRuntimeInterventionRecommendation[]>(`${this.apiUrl}/${courseId}/runtime-intervention-recommendations`);
   }
 
   getLessonById(lessonId: string): Observable<Lesson> {

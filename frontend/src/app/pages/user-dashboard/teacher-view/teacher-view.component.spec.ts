@@ -46,6 +46,8 @@ class MockCoursesService {
     affected_competency_identifiers: [],
   });
   getCourseCompetencyEvidenceIntegrity = jasmine.createSpy('getCourseCompetencyEvidenceIntegrity').and.callFake(() => this.competencyIntegrityResponse);
+  runtimeInterventionResponse = of<any[]>([]);
+  getCourseRuntimeInterventionRecommendations = jasmine.createSpy('getCourseRuntimeInterventionRecommendations').and.callFake(() => this.runtimeInterventionResponse);
   deleteCourse = jasmine.createSpy('deleteCourse').and.returnValue(of({}));
   assignCourseToStudent = jasmine.createSpy('assignCourseToStudent').and.returnValue(of({}));
 }
@@ -106,10 +108,12 @@ describe('TeacherViewComponent', () => {
     const pendingPublishReadiness = new Subject<any>();
     const pendingSafePublish = new Subject<any>();
     const pendingCompetencyIntegrity = new Subject<any>();
+    const pendingRuntimeIntervention = new Subject<any[]>();
     coursesService.coursesResponse = pendingCourses.asObservable();
     coursesService.publishReadinessResponse = pendingPublishReadiness.asObservable();
     coursesService.safePublishResponse = pendingSafePublish.asObservable();
     coursesService.competencyIntegrityResponse = pendingCompetencyIntegrity.asObservable();
+    coursesService.runtimeInterventionResponse = pendingRuntimeIntervention.asObservable();
     usersService.studentsResponse = pendingStudents.asObservable();
     analyticsService.summaryResponse = pendingSummary.asObservable();
     analyticsService.runtimeSupportResponse = pendingRuntimeSupport.asObservable();
@@ -124,6 +128,7 @@ describe('TeacherViewComponent', () => {
     expect(compiled.textContent).toContain('Loading publish readiness');
     expect(compiled.textContent).toContain('Loading safe publish validation');
     expect(compiled.textContent).toContain('Loading competency evidence integrity');
+    expect(compiled.textContent).toContain('Loading runtime intervention recommendations');
   });
 
   it('uses EchoStatePanel for teacher empty states', () => {
@@ -139,6 +144,7 @@ describe('TeacherViewComponent', () => {
     expect(compiled.textContent).toContain('Publish readiness will appear here');
     expect(compiled.textContent).toContain('Safe publish validation will appear here');
     expect(compiled.textContent).toContain('Competency evidence integrity will appear here');
+    expect(compiled.textContent).toContain('Runtime intervention recommendations will appear here');
   });
 
   it('uses EchoStatePanel for teacher error states and retries data loads', () => {
@@ -185,6 +191,7 @@ describe('TeacherViewComponent', () => {
       affected_assessments: [],
       affected_competency_identifiers: [],
     });
+    coursesService.runtimeInterventionResponse = of([]);
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([{ student_name: 'Ada Lovelace', course_title: 'Algebra I', progress: 50, status: 'active', last_active: '2026-05-01T00:00:00.000Z' }]);
     analyticsService.runtimeSupportResponse = of([]);
@@ -201,6 +208,7 @@ describe('TeacherViewComponent', () => {
     expect(coursesService.getCoursePublishReadiness).toHaveBeenCalled();
     expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalled();
     expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalled();
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalled();
   });
 
   it('keeps existing teacher actions and links present', () => {
@@ -444,6 +452,139 @@ describe('TeacherViewComponent', () => {
     expect(compiled.textContent).toContain('Attempt evidence is missing an authoritative event.');
     expect(coursesService.assignCourseToStudent).not.toHaveBeenCalled();
     expect(coursesService.deleteCourse).not.toHaveBeenCalled();
+  });
+
+  it('renders runtime intervention recommendation states, evidence basis, and caution flags in the teacher staff surface', () => {
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+    coursesService.runtimeInterventionResponse = of([
+      {
+        student_id: 'student-1',
+        student_name: 'Ada Lovelace',
+        student_course_id: 'student-course-1',
+        course_id: 'course-1',
+        course_title: 'Introduction to Africa',
+        recommendation_state: 'reteach',
+        educator_attention_level: 'high',
+        summary: 'Recent evidence suggests a brief reteach cycle may help.',
+        evidence_basis: [
+          {
+            source: 'attempt_events',
+            detail: 'Recent attempts show repeated weak evidence.',
+            assessment_id: 'assessment-1',
+            assessment_title: 'Exit Check',
+            competency_identifiers: ['analysis'],
+          },
+        ],
+        confidence_level: 'high',
+        caution_flags: ['incomplete_evidence'],
+        learner_safe_message: 'Rebuild understanding with calm support and one step at a time.',
+      },
+    ]);
+    usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
+    analyticsService.summaryResponse = of([]);
+    analyticsService.runtimeSupportResponse = of([]);
+
+    fixture.detectChanges();
+
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledWith('course-1');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Runtime intervention recommendations');
+    expect(compiled.textContent).toContain('Ada Lovelace');
+    expect(compiled.textContent).toContain('Reteach');
+    expect(compiled.textContent).toContain('High attention');
+    expect(compiled.textContent).toContain('Evidence basis');
+    expect(compiled.textContent).toContain('Attempt Events');
+    expect(compiled.textContent).toContain('Exit Check');
+    expect(compiled.textContent).toContain('Caution flags');
+    expect(compiled.textContent).toContain('Incomplete Evidence');
+    expect(compiled.querySelector('[data-runtime-intervention-row]')).not.toBeNull();
+    const runtimeButtons = compiled.querySelectorAll('[data-runtime-intervention-row] button');
+    expect(runtimeButtons.length).toBe(0);
+  });
+
+  it('renders runtime intervention error state and retries read-only loading in the teacher staff surface', () => {
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+    coursesService.runtimeInterventionResponse = throwError(() => new Error('runtime intervention failed'));
+    usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
+    analyticsService.summaryResponse = of([]);
+    analyticsService.runtimeSupportResponse = of([]);
+
+    fixture.detectChanges();
+    let compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not load runtime intervention recommendations');
+
+    coursesService.runtimeInterventionResponse = of([]);
+    const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
+      (button) => button.textContent?.trim() === 'Retry',
+    ) as HTMLButtonElement[];
+    retryButtons[0]?.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledTimes(2);
+    expect(coursesService.assignCourseToStudent).not.toHaveBeenCalled();
+    expect(coursesService.deleteCourse).not.toHaveBeenCalled();
+    expect(compiled.textContent).toContain('Runtime intervention recommendations will appear here');
   });
 
   it('renders blocked safe-publish issues with retry and no mutation actions', () => {

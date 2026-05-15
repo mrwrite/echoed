@@ -1,8 +1,5 @@
-# runtime-support-evidence-integrity Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change echoed-competency-evidence-and-mastery-integrity. Update Purpose after archive.
-## Requirements
 ### Requirement: Runtime support SHALL use only valid mastery evidence
 The system SHALL ensure remediation, enrichment, continuation support, and educator runtime intervention recommendations derive from evidence that remains valid, explainable, and explicitly safe for current mastery interpretation.
 
@@ -28,4 +25,3 @@ The system SHALL keep competency-evidence filtering, mastery-integrity guardrail
 #### Scenario: Integrity evaluation does not create a parallel guidance engine
 - **WHEN** runtime support integrity rules are applied to educator recommendation visibility
 - **THEN** the system SHALL NOT create a new progression engine, alternate scoring authority, or implicit learner-state transition
-

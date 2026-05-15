@@ -1,8 +1,5 @@
-# educator-read-only-intervention-awareness Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change echoed-educator-runtime-visibility. Update Purpose after archive.
-## Requirements
 ### Requirement: Educators receive read-only support context
 The system SHALL provide educators with read-only support context that includes support state, pacing/support hints, bounded intervention recommendation state, evidence-basis context, and remediation or enrichment references without assigning tasks or mutating learner progression.
 
@@ -17,4 +14,3 @@ The system SHALL provide educators with read-only support context that includes 
 #### Scenario: Educator context does not mutate learner state
 - **WHEN** an educator views runtime support context
 - **THEN** the platform SHALL NOT mutate progression, attempt, or learner delivery state as a side effect of that visibility
-

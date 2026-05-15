@@ -51,6 +51,8 @@ class MockCoursesService {
     affected_competency_identifiers: [],
   });
   getCourseCompetencyEvidenceIntegrity = jasmine.createSpy('getCourseCompetencyEvidenceIntegrity').and.callFake(() => this.competencyIntegrityResponse);
+  runtimeInterventionResponse = of<any[]>([]);
+  getCourseRuntimeInterventionRecommendations = jasmine.createSpy('getCourseRuntimeInterventionRecommendations').and.callFake(() => this.runtimeInterventionResponse);
   deleteCourse = jasmine.createSpy('deleteCourse').and.returnValue(of({}));
 }
 
@@ -109,6 +111,7 @@ describe('AdminViewComponent', () => {
     coursesService.publishReadinessResponse = new Subject<any>().asObservable();
     coursesService.safePublishResponse = new Subject<any>().asObservable();
     coursesService.competencyIntegrityResponse = new Subject<any>().asObservable();
+    coursesService.runtimeInterventionResponse = new Subject<any[]>().asObservable();
     usageStatsService.usageResponse = new Subject<any[]>().asObservable();
     analyticsService.overviewResponse = new Subject<any>().asObservable();
 
@@ -121,6 +124,7 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Loading publish readiness');
     expect(compiled.textContent).toContain('Loading safe publish validation');
     expect(compiled.textContent).toContain('Loading competency evidence integrity');
+    expect(compiled.textContent).toContain('Loading runtime intervention recommendations');
   });
 
   it('uses EchoStatePanel for admin empty states', () => {
@@ -135,6 +139,7 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Publish readiness will appear here');
     expect(compiled.textContent).toContain('Safe publish validation will appear here');
     expect(compiled.textContent).toContain('Competency evidence integrity will appear here');
+    expect(compiled.textContent).toContain('Runtime intervention recommendations will appear here');
   });
 
   it('uses EchoStatePanel for admin error states and retries data loads', () => {
@@ -182,6 +187,7 @@ describe('AdminViewComponent', () => {
       affected_assessments: [],
       affected_competency_identifiers: [],
     });
+    coursesService.runtimeInterventionResponse = of([]);
     usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
     analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
 
@@ -196,6 +202,7 @@ describe('AdminViewComponent', () => {
     expect(coursesService.getCoursePublishReadiness).toHaveBeenCalled();
     expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalled();
     expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalled();
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalled();
   });
 
   it('keeps existing admin links and actions present', () => {
@@ -439,6 +446,138 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Practice Quiz');
     expect(compiled.textContent).toContain('Attempt evidence is missing an authoritative event.');
     expect(coursesService.deleteCourse).not.toHaveBeenCalled();
+  });
+
+  it('renders runtime intervention recommendation states, evidence basis, and caution flags for admin staff', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+    coursesService.runtimeInterventionResponse = of([
+      {
+        student_id: 'student-1',
+        student_name: 'Ada Lovelace',
+        student_course_id: 'student-course-1',
+        course_id: 'course-1',
+        course_title: 'Biology',
+        recommendation_state: 'review',
+        educator_attention_level: 'medium',
+        summary: 'Recent evidence suggests a brief review conversation may help.',
+        evidence_basis: [
+          {
+            source: 'mastery_summary',
+            detail: 'Mastery evidence is mixed but explainable.',
+            assessment_id: 'assessment-1',
+            assessment_title: 'Practice Quiz',
+            competency_identifiers: ['evidence'],
+          },
+        ],
+        confidence_level: 'moderate',
+        caution_flags: ['ambiguous_evidence'],
+        learner_safe_message: 'Offer calm review support and preserve the learner’s confidence.',
+      },
+    ]);
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledWith('course-1');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Runtime intervention recommendations');
+    expect(compiled.textContent).toContain('Ada Lovelace');
+    expect(compiled.textContent).toContain('Review');
+    expect(compiled.textContent).toContain('Medium attention');
+    expect(compiled.textContent).toContain('Evidence basis');
+    expect(compiled.textContent).toContain('Mastery Summary');
+    expect(compiled.textContent).toContain('Practice Quiz');
+    expect(compiled.textContent).toContain('Caution flags');
+    expect(compiled.textContent).toContain('Ambiguous Evidence');
+    expect(compiled.querySelector('[data-runtime-intervention-row]')).not.toBeNull();
+    const runtimeButtons = compiled.querySelectorAll('[data-runtime-intervention-row] button');
+    expect(runtimeButtons.length).toBe(0);
+  });
+
+  it('renders runtime intervention error state and retries read-only loading for admin staff', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+    coursesService.runtimeInterventionResponse = throwError(() => new Error('runtime intervention failed'));
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+    let compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not load runtime intervention recommendations');
+
+    coursesService.runtimeInterventionResponse = of([]);
+    const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
+      (button) => button.textContent?.trim() === 'Retry',
+    ) as HTMLButtonElement[];
+    retryButtons[0]?.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledTimes(2);
+    expect(coursesService.deleteCourse).not.toHaveBeenCalled();
+    expect(compiled.textContent).toContain('Runtime intervention recommendations will appear here');
   });
 
   it('renders blocked safe-publish issues and retries read-only loading', () => {

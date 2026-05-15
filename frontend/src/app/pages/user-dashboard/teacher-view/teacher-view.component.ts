@@ -8,6 +8,7 @@ import { Course } from '../../../models/course';
 import {
   CourseCompetencyEvidenceIntegrity,
   CoursePublishReadiness,
+  CourseRuntimeInterventionRecommendation,
   CourseSafePublishValidation,
 } from '../../../models/course-publish-readiness.model';
 import { IconModule } from '../../../shared/icon/icon.module';
@@ -22,6 +23,12 @@ import { User } from '../../../models/user';
 import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
 import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
 import { forkJoin } from 'rxjs';
+
+interface RuntimeInterventionCourseGroup {
+  courseId: string;
+  courseTitle: string;
+  recommendations: CourseRuntimeInterventionRecommendation[];
+}
 
 @Component({
   selector: 'echoed-teacher-view',
@@ -48,6 +55,7 @@ export class TeacherViewComponent implements OnInit {
   publishReadinessLoading = true;
   safePublishLoading = true;
   competencyIntegrityLoading = true;
+  runtimeInterventionLoading = true;
   coursesError = '';
   studentsError = '';
   summaryError = '';
@@ -55,9 +63,11 @@ export class TeacherViewComponent implements OnInit {
   publishReadinessError = '';
   safePublishError = '';
   competencyIntegrityError = '';
+  runtimeInterventionError = '';
   courseReadiness: CoursePublishReadiness[] = [];
   safePublishValidations: CourseSafePublishValidation[] = [];
   competencyIntegrities: CourseCompetencyEvidenceIntegrity[] = [];
+  runtimeInterventionRecommendations: CourseRuntimeInterventionRecommendation[] = [];
 
   constructor(
     private coursesService: CoursesService,
@@ -130,6 +140,28 @@ export class TeacherViewComponent implements OnInit {
     return !this.competencyIntegrityLoading && !this.competencyIntegrityError && this.competencyIntegrities.length === 0;
   }
 
+  get runtimeInterventionSectionEmpty(): boolean {
+    return !this.runtimeInterventionLoading && !this.runtimeInterventionError && this.runtimeInterventionRecommendations.length === 0;
+  }
+
+  get runtimeInterventionGroups(): RuntimeInterventionCourseGroup[] {
+    const groups = new Map<string, RuntimeInterventionCourseGroup>();
+    for (const recommendation of this.runtimeInterventionRecommendations) {
+      if (!groups.has(recommendation.course_id)) {
+        groups.set(recommendation.course_id, {
+          courseId: recommendation.course_id,
+          courseTitle: recommendation.course_title,
+          recommendations: [],
+        });
+      }
+      groups.get(recommendation.course_id)?.recommendations.push(recommendation);
+    }
+
+    return this.visibleCourses
+      .map((course) => groups.get(course.id))
+      .filter((group): group is RuntimeInterventionCourseGroup => !!group);
+  }
+
   loadCourses(): void {
     this.coursesLoading = true;
     this.coursesError = '';
@@ -155,6 +187,9 @@ export class TeacherViewComponent implements OnInit {
         this.competencyIntegrityLoading = false;
         this.competencyIntegrities = [];
         this.competencyIntegrityError = '';
+        this.runtimeInterventionLoading = false;
+        this.runtimeInterventionRecommendations = [];
+        this.runtimeInterventionError = '';
       },
     });
   }
@@ -252,6 +287,35 @@ export class TeacherViewComponent implements OnInit {
     return isExplainable ? 'Explainable' : 'Not explainable';
   }
 
+  runtimeInterventionStateClasses(state: string): string {
+    switch (state) {
+      case 'enrichment':
+        return 'bg-emerald-100 text-emerald-900 border border-emerald-200';
+      case 'normal':
+        return 'bg-slate-100 text-slate-800 border border-slate-200';
+      case 'monitor':
+        return 'bg-amber-100 text-amber-900 border border-amber-200';
+      case 'review':
+        return 'bg-sky-100 text-sky-900 border border-sky-200';
+      case 'reteach':
+        return 'bg-rose-100 text-rose-900 border border-rose-200';
+      default:
+        return 'bg-white text-slate-700 border border-slate-200';
+    }
+  }
+
+  formatRuntimeLabel(value: string): string {
+    return value
+      .split(/[_-]/g)
+      .filter((part) => part.length > 0)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  formatRuntimeLabels(values: string[]): string {
+    return values.map((value) => this.formatRuntimeLabel(value)).join(', ');
+  }
+
   loadCoursePublishReadiness(): void {
     this.publishReadinessLoading = true;
     this.publishReadinessError = '';
@@ -265,6 +329,9 @@ export class TeacherViewComponent implements OnInit {
       this.competencyIntegrities = [];
       this.competencyIntegrityLoading = false;
       this.competencyIntegrityError = '';
+      this.runtimeInterventionRecommendations = [];
+      this.runtimeInterventionLoading = false;
+      this.runtimeInterventionError = '';
       return;
     }
 
@@ -276,6 +343,7 @@ export class TeacherViewComponent implements OnInit {
         this.publishReadinessLoading = false;
         this.loadCourseSafePublishValidation();
         this.loadCourseCompetencyIntegrity();
+        this.loadCourseRuntimeInterventions();
       },
       error: () => {
         this.courseReadiness = [];
@@ -287,6 +355,9 @@ export class TeacherViewComponent implements OnInit {
         this.competencyIntegrities = [];
         this.competencyIntegrityLoading = false;
         this.competencyIntegrityError = '';
+        this.runtimeInterventionRecommendations = [];
+        this.runtimeInterventionLoading = false;
+        this.runtimeInterventionError = '';
       },
     });
   }
@@ -341,6 +412,34 @@ export class TeacherViewComponent implements OnInit {
     });
   }
 
+  loadCourseRuntimeInterventions(): void {
+    this.runtimeInterventionLoading = true;
+    this.runtimeInterventionError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.runtimeInterventionRecommendations = [];
+      this.runtimeInterventionLoading = false;
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCourseRuntimeInterventionRecommendations(course.id)),
+    ).subscribe({
+      next: (recommendations) => {
+        this.runtimeInterventionRecommendations = recommendations.reduce(
+          (all, courseRecommendations) => all.concat(courseRecommendations),
+          [] as CourseRuntimeInterventionRecommendation[],
+        );
+        this.runtimeInterventionLoading = false;
+      },
+      error: () => {
+        this.runtimeInterventionRecommendations = [];
+        this.runtimeInterventionLoading = false;
+        this.runtimeInterventionError = 'We could not load runtime intervention guidance right now. Retry to restore educator recommendation visibility.';
+      },
+    });
+  }
+
   onAddCourse() {
     this.router.navigate(['/home/courses/new']);
   }
@@ -356,6 +455,7 @@ export class TeacherViewComponent implements OnInit {
         this.courseReadiness = this.courseReadiness.filter((readiness) => readiness.course_id !== courseId);
         this.safePublishValidations = this.safePublishValidations.filter((validation) => validation.course_id !== courseId);
         this.competencyIntegrities = this.competencyIntegrities.filter((integrity) => integrity.course_id !== courseId);
+        this.runtimeInterventionRecommendations = this.runtimeInterventionRecommendations.filter((recommendation) => recommendation.course_id !== courseId);
       },
       error: () => {
         this.toastService.show('We could not delete that course right now.', 'error');
@@ -421,6 +521,13 @@ export class TeacherViewComponent implements OnInit {
       return;
     }
     this.loadCourseCompetencyIntegrity();
+  }
+
+  retryRuntimeInterventions(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseRuntimeInterventions();
   }
 
   retryQuickActions(): void {

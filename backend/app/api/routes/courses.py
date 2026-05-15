@@ -28,9 +28,12 @@ from app.models import (
     StudentAssessmentAttempt,
     Source,
     OrganizationMembership,
+    StudentUnitProgress,
 )
 from app.crud.progress import resolve_governed_progression
+from app.runtime_intervention_intelligence import evaluate_runtime_intervention_recommendation
 from app.schemas import (
+    CourseRuntimeInterventionRecommendationResponse,
     CourseDto,
     CourseResponse,
     StudentCourseWithDetails,
@@ -43,6 +46,7 @@ from app.schemas import (
     CourseSafePublishValidationResponse,
     CourseSummaryResponse,
     PublishReadinessIssueResponse,
+    RuntimeInterventionEvidenceBasisResponse,
 )
 router = APIRouter()
 
@@ -85,6 +89,16 @@ def _serialize_affected_assessment(context) -> CompetencyEvidenceAffectedAssessm
         assessment_id=context.assessment_id,
         assessment_title=context.assessment_title,
         competency_identifiers=list(context.competency_identifiers),
+    )
+
+
+def _serialize_runtime_intervention_evidence_basis(basis) -> RuntimeInterventionEvidenceBasisResponse:
+    return RuntimeInterventionEvidenceBasisResponse(
+        source=basis.source,
+        detail=basis.detail,
+        assessment_id=basis.assessment_id,
+        assessment_title=basis.assessment_title,
+        competency_identifiers=list(basis.competency_identifiers),
     )
 
 
@@ -342,6 +356,105 @@ def get_course_competency_evidence_integrity(
         affected_assessments=affected_assessments,
         affected_competency_identifiers=list(integrity.affected_competency_identifiers),
     )
+
+
+@router.get(
+    "/courses/{course_id}/runtime-intervention-recommendations",
+    response_model=list[CourseRuntimeInterventionRecommendationResponse],
+)
+def get_course_runtime_intervention_recommendations(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.assessments).joinedload(Assessment.events),
+            joinedload(Course.assessments).joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.competency_alignments),
+            joinedload(Course.student_courses)
+            .joinedload(StudentCourse.student),
+            joinedload(Course.student_courses)
+            .joinedload(StudentCourse.unit_progress)
+            .joinedload(StudentUnitProgress.segments),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    recommendations: list[CourseRuntimeInterventionRecommendationResponse] = []
+    for student_course in sorted(
+        course.student_courses or [],
+        key=lambda row: (
+            row.student.firstname.lower() if row.student and row.student.firstname else "",
+            row.student.lastname.lower() if row.student and row.student.lastname else "",
+            row.enrolled_on or datetime.min,
+            str(row.id),
+        ),
+    ):
+        recommendation = evaluate_runtime_intervention_recommendation(db, student_course)
+        recommendations.append(
+            CourseRuntimeInterventionRecommendationResponse(
+                student_id=student_course.student_id,
+                student_name=(f"{student_course.student.firstname} {student_course.student.lastname}".strip()
+                              if student_course.student is not None
+                              else "Unknown learner"),
+                student_course_id=student_course.id,
+                course_id=course.id,
+                course_title=course.title,
+                recommendation_state=recommendation.recommendation_state,
+                educator_attention_level=recommendation.educator_attention_level,
+                summary=recommendation.summary,
+                evidence_basis=[
+                    _serialize_runtime_intervention_evidence_basis(basis)
+                    for basis in recommendation.evidence_basis
+                ],
+                confidence_level=recommendation.confidence_level,
+                caution_flags=list(recommendation.caution_flags),
+                learner_safe_message=recommendation.learner_safe_tone,
+            )
+        )
+
+    return recommendations
 
 
 @router.post("/courses")

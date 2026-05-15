@@ -329,6 +329,111 @@
           </article>
         </div>
       </div>
+
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <div class="mb-4">
+          <h4 class="text-base font-semibold text-ink">Runtime intervention recommendations</h4>
+          <p class="text-sm text-slate-600">Read-only educator guidance for reteach, review, enrichment, monitoring, and steady continuation.</p>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="runtimeInterventionLoading"
+          density="section"
+          ariaLabel="teacher-runtime-intervention-loading"
+          title="Loading runtime intervention recommendations"
+          body="We are restoring course-level educator guidance from governed learner evidence."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!runtimeInterventionLoading && runtimeInterventionError"
+          variant="error"
+          eyebrow="Runtime intervention unavailable"
+          title="We could not load runtime intervention recommendations"
+          [body]="runtimeInterventionError"
+          actionLabel="Retry"
+          (action)="retryRuntimeInterventions()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="runtimeInterventionSectionEmpty"
+          variant="empty"
+          eyebrow="No runtime intervention data yet"
+          title="Runtime intervention recommendations will appear here"
+          body="As governed learner evidence becomes available for your visible courses, bounded educator guidance will appear here."
+        ></app-echo-state-panel>
+
+        <div *ngIf="!runtimeInterventionLoading && !runtimeInterventionError && runtimeInterventionGroups.length > 0" class="space-y-4">
+          <section
+            *ngFor="let group of runtimeInterventionGroups"
+            class="rounded-2xl border border-slate-200 bg-white p-4"
+            data-runtime-intervention-course
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ group.courseTitle }}</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  {{ group.recommendations.length }} learner recommendation<span *ngIf="group.recommendations.length !== 1">s</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-3 space-y-3">
+              <article
+                *ngFor="let recommendation of group.recommendations"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                data-runtime-intervention-row
+              >
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold text-ink">{{ recommendation.student_name }}</p>
+                    <p class="mt-1 text-sm text-slate-600">{{ recommendation.summary }}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                      [ngClass]="runtimeInterventionStateClasses(recommendation.recommendation_state)"
+                    >
+                      {{ formatRuntimeLabel(recommendation.recommendation_state) }}
+                    </span>
+                    <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+                      {{ formatRuntimeLabel(recommendation.educator_attention_level) }} attention
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid gap-3 md:grid-cols-2">
+                  <div class="rounded-xl border border-slate-200 bg-white p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Confidence</p>
+                    <p class="mt-2 text-sm text-slate-700">{{ formatRuntimeLabel(recommendation.confidence_level) }}</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 bg-white p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Learner-safe message</p>
+                    <p class="mt-2 text-sm text-slate-700">{{ recommendation.learner_safe_message }}</p>
+                  </div>
+                </div>
+
+                <div *ngIf="recommendation.evidence_basis.length > 0" class="mt-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Evidence basis</p>
+                  <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                    <li *ngFor="let basis of recommendation.evidence_basis" class="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <span class="font-semibold">{{ formatRuntimeLabel(basis.source) }}</span>: {{ basis.detail }}
+                      <span *ngIf="basis.assessment_title">
+                        ({{ basis.assessment_title }})
+                      </span>
+                      <span *ngIf="basis.competency_identifiers.length > 0">
+                        • {{ basis.competency_identifiers.join(', ') }}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div *ngIf="recommendation.caution_flags.length > 0" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Caution flags</p>
+                  <p class="mt-2 text-sm text-slate-700">{{ formatRuntimeLabels(recommendation.caution_flags) }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
 
     <div class="surface-card p-6">

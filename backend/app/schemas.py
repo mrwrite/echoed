@@ -904,6 +904,29 @@ class CourseCompetencyEvidenceIntegrityResponse(BaseModel):
     affected_competency_identifiers: List[str] = Field(default_factory=list)
 
 
+class RuntimeInterventionEvidenceBasisResponse(BaseModel):
+    source: str
+    detail: str
+    assessment_id: Optional[UUID] = None
+    assessment_title: Optional[str] = None
+    competency_identifiers: List[str] = Field(default_factory=list)
+
+
+class CourseRuntimeInterventionRecommendationResponse(BaseModel):
+    student_id: UUID
+    student_name: str
+    student_course_id: UUID
+    course_id: UUID
+    course_title: str
+    recommendation_state: str
+    educator_attention_level: str
+    summary: str
+    evidence_basis: List[RuntimeInterventionEvidenceBasisResponse] = Field(default_factory=list)
+    confidence_level: str
+    caution_flags: List[str] = Field(default_factory=list)
+    learner_safe_message: str
+
+
 class AssessmentEvidenceSummaryResponse(BaseModel):
     assessment_id: UUID
     assessment_title: str

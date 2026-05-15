@@ -84,4 +84,39 @@ describe('CoursesService', () => {
       affected_competency_identifiers: [],
     });
   });
+
+  it('calls the runtime-intervention endpoint for a course', () => {
+    service.getCourseRuntimeInterventionRecommendations('course-1').subscribe((response) => {
+      expect(response.length).toBe(1);
+      expect(response[0].course_id).toBe('course-1');
+      expect(response[0].recommendation_state).toBe('review');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/courses/course-1/runtime-intervention-recommendations`);
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        student_id: 'student-1',
+        student_name: 'Ada Lovelace',
+        student_course_id: 'student-course-1',
+        course_id: 'course-1',
+        course_title: 'Introduction to Africa',
+        recommendation_state: 'review',
+        educator_attention_level: 'medium',
+        summary: 'Recent evidence suggests a brief review conversation may help.',
+        evidence_basis: [
+          {
+            source: 'mastery_summary',
+            detail: 'Mastery evidence is mixed and explainable.',
+            assessment_id: 'assessment-1',
+            assessment_title: 'Practice Quiz',
+            competency_identifiers: ['evidence'],
+          },
+        ],
+        confidence_level: 'moderate',
+        caution_flags: ['ambiguous_evidence'],
+        learner_safe_message: 'Offer calm review support and preserve the learner’s confidence.',
+      },
+    ]);
+  });
 });

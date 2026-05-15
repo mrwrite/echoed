@@ -9,7 +9,11 @@ import { StartCourseRequest, SegmentResponse, CompleteSegmentResponse } from '..
 import { Lesson } from '../models/lesson';
 import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
-import { CoursePublishReadiness, CourseSafePublishValidation } from '../models/course-publish-readiness.model';
+import {
+  CourseCompetencyEvidenceIntegrity,
+  CoursePublishReadiness,
+  CourseSafePublishValidation,
+} from '../models/course-publish-readiness.model';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -35,6 +39,10 @@ export class CoursesService {
 
   getCourseSafePublishValidation(courseId: string): Observable<CourseSafePublishValidation> {
     return this.http.get<CourseSafePublishValidation>(`${this.apiUrl}/${courseId}/safe-publish-validation`);
+  }
+
+  getCourseCompetencyEvidenceIntegrity(courseId: string): Observable<CourseCompetencyEvidenceIntegrity> {
+    return this.http.get<CourseCompetencyEvidenceIntegrity>(`${this.apiUrl}/${courseId}/competency-evidence-integrity`);
   }
 
   getLessonById(lessonId: string): Observable<Lesson> {

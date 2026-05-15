@@ -885,6 +885,25 @@ class CourseSafePublishValidationResponse(BaseModel):
     warnings: List[PublishReadinessIssueResponse] = Field(default_factory=list)
 
 
+class CompetencyEvidenceAffectedAssessmentResponse(BaseModel):
+    assessment_id: Optional[UUID] = None
+    assessment_title: str
+    competency_identifiers: List[str] = Field(default_factory=list)
+
+
+class CourseCompetencyEvidenceIntegrityResponse(BaseModel):
+    course_id: UUID
+    course_title: str
+    is_valid: bool
+    is_explainable: bool
+    blocking_issue_count: int
+    warning_count: int
+    blocking_issues: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+    warnings: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+    affected_assessments: List[CompetencyEvidenceAffectedAssessmentResponse] = Field(default_factory=list)
+    affected_competency_identifiers: List[str] = Field(default_factory=list)
+
+
 class AssessmentEvidenceSummaryResponse(BaseModel):
     assessment_id: UUID
     assessment_title: str

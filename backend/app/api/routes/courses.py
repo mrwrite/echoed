@@ -9,13 +9,26 @@ from app.enum import MembershipStatus
 from app.enum import CourseVersionStatus
 from app.api.routes.analytics import build_course_continuation_guidance
 from app.lesson_governance import (
+    evaluate_course_competency_evidence_integrity,
     evaluate_course_safe_publish,
     evaluate_course_publish_readiness,
     evaluate_lesson_readiness,
     resolve_review_fields,
     serialize_course,
 )
-from app.models import Course, CourseVersion, Unit, Lesson, Assessment, Activity, StorybookPage, StudentCourse, Source, OrganizationMembership
+from app.models import (
+    Course,
+    CourseVersion,
+    Unit,
+    Lesson,
+    Assessment,
+    Activity,
+    StorybookPage,
+    StudentCourse,
+    StudentAssessmentAttempt,
+    Source,
+    OrganizationMembership,
+)
 from app.crud.progress import resolve_governed_progression
 from app.schemas import (
     CourseDto,
@@ -24,6 +37,8 @@ from app.schemas import (
     CourseCreateRequest,
     CourseVersionCreateRequest,
     CourseVersionResponse,
+    CourseCompetencyEvidenceIntegrityResponse,
+    CompetencyEvidenceAffectedAssessmentResponse,
     CoursePublishReadinessResponse,
     CourseSafePublishValidationResponse,
     CourseSummaryResponse,
@@ -62,6 +77,14 @@ def _serialize_publish_readiness_issue(issue) -> PublishReadinessIssueResponse:
         entity_title=issue.entity_title,
         code=issue.code,
         message=issue.message,
+    )
+
+
+def _serialize_affected_assessment(context) -> CompetencyEvidenceAffectedAssessmentResponse:
+    return CompetencyEvidenceAffectedAssessmentResponse(
+        assessment_id=context.assessment_id,
+        assessment_title=context.assessment_title,
+        competency_identifiers=list(context.competency_identifiers),
     )
 
 
@@ -252,6 +275,72 @@ def get_course_safe_publish_validation(
         warning_count=len(warnings),
         blocking_issues=blocking_issues,
         warnings=warnings,
+    )
+
+
+@router.get("/courses/{course_id}/competency-evidence-integrity", response_model=CourseCompetencyEvidenceIntegrityResponse)
+def get_course_competency_evidence_integrity(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.assessments).joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.competency_alignments),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    integrity = evaluate_course_competency_evidence_integrity(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in integrity.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in integrity.warnings]
+    affected_assessments = [_serialize_affected_assessment(context) for context in integrity.affected_assessments]
+
+    return CourseCompetencyEvidenceIntegrityResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_valid=integrity.is_valid,
+        is_explainable=integrity.is_explainable,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
+        affected_assessments=affected_assessments,
+        affected_competency_identifiers=list(integrity.affected_competency_identifiers),
     )
 
 

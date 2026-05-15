@@ -326,6 +326,9 @@ describe('StudentViewComponent', () => {
     expect(compiled.textContent).not.toContain('Blocking issues');
     expect(compiled.textContent).not.toContain('Safe publish validation');
     expect(compiled.textContent).not.toContain('Not safe');
+    expect(compiled.textContent).not.toContain('Competency evidence integrity');
+    expect(compiled.textContent).not.toContain('Explainable');
+    expect(compiled.textContent).not.toContain('Affected competencies');
   });
 
   it('keeps the continue lesson action bound to the selected course during enrichment guidance', () => {

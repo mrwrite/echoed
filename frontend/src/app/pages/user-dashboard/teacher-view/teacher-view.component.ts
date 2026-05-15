@@ -5,7 +5,11 @@ import { Router } from '@angular/router';
 import { UserInfo } from '../../../models/user-info';
 import { CoursesService } from '../../../services/courses.service';
 import { Course } from '../../../models/course';
-import { CoursePublishReadiness, CourseSafePublishValidation } from '../../../models/course-publish-readiness.model';
+import {
+  CourseCompetencyEvidenceIntegrity,
+  CoursePublishReadiness,
+  CourseSafePublishValidation,
+} from '../../../models/course-publish-readiness.model';
 import { IconModule } from '../../../shared/icon/icon.module';
 import { ToastService } from '../../../services/toast.service';
 import {
@@ -43,14 +47,17 @@ export class TeacherViewComponent implements OnInit {
   runtimeSupportLoading = true;
   publishReadinessLoading = true;
   safePublishLoading = true;
+  competencyIntegrityLoading = true;
   coursesError = '';
   studentsError = '';
   summaryError = '';
   runtimeSupportError = '';
   publishReadinessError = '';
   safePublishError = '';
+  competencyIntegrityError = '';
   courseReadiness: CoursePublishReadiness[] = [];
   safePublishValidations: CourseSafePublishValidation[] = [];
+  competencyIntegrities: CourseCompetencyEvidenceIntegrity[] = [];
 
   constructor(
     private coursesService: CoursesService,
@@ -119,6 +126,10 @@ export class TeacherViewComponent implements OnInit {
     return !this.safePublishLoading && !this.safePublishError && this.safePublishValidations.length === 0;
   }
 
+  get competencyIntegritySectionEmpty(): boolean {
+    return !this.competencyIntegrityLoading && !this.competencyIntegrityError && this.competencyIntegrities.length === 0;
+  }
+
   loadCourses(): void {
     this.coursesLoading = true;
     this.coursesError = '';
@@ -141,6 +152,9 @@ export class TeacherViewComponent implements OnInit {
         this.safePublishLoading = false;
         this.safePublishValidations = [];
         this.safePublishError = '';
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrities = [];
+        this.competencyIntegrityError = '';
       },
     });
   }
@@ -230,6 +244,14 @@ export class TeacherViewComponent implements OnInit {
     return isSafe ? 'Safe' : 'Not safe';
   }
 
+  competencyIntegrityStateLabel(isValid: boolean): string {
+    return isValid ? 'Valid' : 'Not valid';
+  }
+
+  competencyExplainabilityLabel(isExplainable: boolean): string {
+    return isExplainable ? 'Explainable' : 'Not explainable';
+  }
+
   loadCoursePublishReadiness(): void {
     this.publishReadinessLoading = true;
     this.publishReadinessError = '';
@@ -240,6 +262,9 @@ export class TeacherViewComponent implements OnInit {
       this.safePublishValidations = [];
       this.safePublishLoading = false;
       this.safePublishError = '';
+      this.competencyIntegrities = [];
+      this.competencyIntegrityLoading = false;
+      this.competencyIntegrityError = '';
       return;
     }
 
@@ -250,6 +275,7 @@ export class TeacherViewComponent implements OnInit {
         this.courseReadiness = readiness;
         this.publishReadinessLoading = false;
         this.loadCourseSafePublishValidation();
+        this.loadCourseCompetencyIntegrity();
       },
       error: () => {
         this.courseReadiness = [];
@@ -258,6 +284,9 @@ export class TeacherViewComponent implements OnInit {
         this.safePublishValidations = [];
         this.safePublishLoading = false;
         this.safePublishError = '';
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = '';
       },
     });
   }
@@ -287,6 +316,31 @@ export class TeacherViewComponent implements OnInit {
     });
   }
 
+  loadCourseCompetencyIntegrity(): void {
+    this.competencyIntegrityLoading = true;
+    this.competencyIntegrityError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.competencyIntegrities = [];
+      this.competencyIntegrityLoading = false;
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCourseCompetencyEvidenceIntegrity(course.id)),
+    ).subscribe({
+      next: (integrities) => {
+        this.competencyIntegrities = integrities;
+        this.competencyIntegrityLoading = false;
+      },
+      error: () => {
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = 'We could not load competency evidence integrity right now. Retry to restore mastery explainability checks.';
+      },
+    });
+  }
+
   onAddCourse() {
     this.router.navigate(['/home/courses/new']);
   }
@@ -301,6 +355,7 @@ export class TeacherViewComponent implements OnInit {
         this.courses = this.courses.filter(c => c.id !== courseId);
         this.courseReadiness = this.courseReadiness.filter((readiness) => readiness.course_id !== courseId);
         this.safePublishValidations = this.safePublishValidations.filter((validation) => validation.course_id !== courseId);
+        this.competencyIntegrities = this.competencyIntegrities.filter((integrity) => integrity.course_id !== courseId);
       },
       error: () => {
         this.toastService.show('We could not delete that course right now.', 'error');
@@ -359,6 +414,13 @@ export class TeacherViewComponent implements OnInit {
       return;
     }
     this.loadCourseSafePublishValidation();
+  }
+
+  retryCompetencyIntegrity(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseCompetencyIntegrity();
   }
 
   retryQuickActions(): void {

@@ -61,4 +61,27 @@ describe('CoursesService', () => {
       warnings: [],
     });
   });
+
+  it('calls the competency-evidence-integrity endpoint for a course', () => {
+    service.getCourseCompetencyEvidenceIntegrity('course-1').subscribe((response) => {
+      expect(response.course_id).toBe('course-1');
+      expect(response.is_valid).toBeTrue();
+      expect(response.is_explainable).toBeTrue();
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/courses/course-1/competency-evidence-integrity`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+  });
 });

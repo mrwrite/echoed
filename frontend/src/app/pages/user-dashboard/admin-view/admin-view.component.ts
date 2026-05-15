@@ -5,7 +5,11 @@ import { UsersService } from '../../../services/users.service';
 import { CoursesService } from '../../../services/courses.service';
 import { User } from '../../../models/user';
 import { Course } from '../../../models/course';
-import { CoursePublishReadiness, CourseSafePublishValidation } from '../../../models/course-publish-readiness.model';
+import {
+  CourseCompetencyEvidenceIntegrity,
+  CoursePublishReadiness,
+  CourseSafePublishValidation,
+} from '../../../models/course-publish-readiness.model';
 import { IconModule } from '../../../shared/icon/icon.module';
 import { Router } from '@angular/router';
 import { StatCardComponent } from '../../../components/stat-card/stat-card.component';
@@ -48,14 +52,17 @@ export class AdminViewComponent {
   overviewLoading = true;
   publishReadinessLoading = true;
   safePublishLoading = true;
+  competencyIntegrityLoading = true;
   usersError = '';
   coursesError = '';
   usageStatsError = '';
   overviewError = '';
   publishReadinessError = '';
   safePublishError = '';
+  competencyIntegrityError = '';
   courseReadiness: CoursePublishReadiness[] = [];
   safePublishValidations: CourseSafePublishValidation[] = [];
+  competencyIntegrities: CourseCompetencyEvidenceIntegrity[] = [];
 
   constructor(
     private usersService: UsersService,
@@ -107,6 +114,9 @@ export class AdminViewComponent {
         this.safePublishValidations = [];
         this.safePublishLoading = false;
         this.safePublishError = '';
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = '';
       },
     });
   }
@@ -170,6 +180,7 @@ export class AdminViewComponent {
         this.courses = this.courses.filter(c => c.id !== courseId);
         this.courseReadiness = this.courseReadiness.filter((readiness) => readiness.course_id !== courseId);
         this.safePublishValidations = this.safePublishValidations.filter((validation) => validation.course_id !== courseId);
+        this.competencyIntegrities = this.competencyIntegrities.filter((integrity) => integrity.course_id !== courseId);
         this.coursesCount = this.courses.length;
         this.updateMetrics();
       },
@@ -205,12 +216,24 @@ export class AdminViewComponent {
     return !this.safePublishLoading && !this.safePublishError && this.safePublishValidations.length === 0;
   }
 
+  get competencyIntegritySectionEmpty(): boolean {
+    return !this.competencyIntegrityLoading && !this.competencyIntegrityError && this.competencyIntegrities.length === 0;
+  }
+
   readinessStateLabel(isReady: boolean): string {
     return isReady ? 'Ready' : 'Not ready';
   }
 
   safePublishStateLabel(isSafe: boolean): string {
     return isSafe ? 'Safe' : 'Not safe';
+  }
+
+  competencyIntegrityStateLabel(isValid: boolean): string {
+    return isValid ? 'Valid' : 'Not valid';
+  }
+
+  competencyExplainabilityLabel(isExplainable: boolean): string {
+    return isExplainable ? 'Explainable' : 'Not explainable';
   }
 
   loadCoursePublishReadiness(): void {
@@ -223,6 +246,9 @@ export class AdminViewComponent {
       this.safePublishValidations = [];
       this.safePublishLoading = false;
       this.safePublishError = '';
+      this.competencyIntegrities = [];
+      this.competencyIntegrityLoading = false;
+      this.competencyIntegrityError = '';
       return;
     }
 
@@ -233,6 +259,7 @@ export class AdminViewComponent {
         this.courseReadiness = readiness;
         this.publishReadinessLoading = false;
         this.loadCourseSafePublishValidation();
+        this.loadCourseCompetencyIntegrity();
       },
       error: () => {
         this.courseReadiness = [];
@@ -241,6 +268,9 @@ export class AdminViewComponent {
         this.safePublishValidations = [];
         this.safePublishLoading = false;
         this.safePublishError = '';
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = '';
       },
     });
   }
@@ -266,6 +296,31 @@ export class AdminViewComponent {
         this.safePublishValidations = [];
         this.safePublishLoading = false;
         this.safePublishError = 'We could not load course safe-publish validation right now. Retry to restore learner-safety checks.';
+      },
+    });
+  }
+
+  loadCourseCompetencyIntegrity(): void {
+    this.competencyIntegrityLoading = true;
+    this.competencyIntegrityError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.competencyIntegrities = [];
+      this.competencyIntegrityLoading = false;
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCourseCompetencyEvidenceIntegrity(course.id)),
+    ).subscribe({
+      next: (integrities) => {
+        this.competencyIntegrities = integrities;
+        this.competencyIntegrityLoading = false;
+      },
+      error: () => {
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = 'We could not load competency evidence integrity right now. Retry to restore mastery explainability checks.';
       },
     });
   }
@@ -310,5 +365,12 @@ export class AdminViewComponent {
       return;
     }
     this.loadCourseSafePublishValidation();
+  }
+
+  retryCompetencyIntegrity(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseCompetencyIntegrity();
   }
 }

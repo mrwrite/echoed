@@ -38,6 +38,19 @@ class MockCoursesService {
     warnings: [],
   });
   getCourseSafePublishValidation = jasmine.createSpy('getCourseSafePublishValidation').and.callFake(() => this.safePublishResponse);
+  competencyIntegrityResponse = of<any>({
+    course_id: 'course-1',
+    course_title: 'Biology',
+    is_valid: true,
+    is_explainable: true,
+    blocking_issue_count: 0,
+    warning_count: 0,
+    blocking_issues: [],
+    warnings: [],
+    affected_assessments: [],
+    affected_competency_identifiers: [],
+  });
+  getCourseCompetencyEvidenceIntegrity = jasmine.createSpy('getCourseCompetencyEvidenceIntegrity').and.callFake(() => this.competencyIntegrityResponse);
   deleteCourse = jasmine.createSpy('deleteCourse').and.returnValue(of({}));
 }
 
@@ -95,6 +108,7 @@ describe('AdminViewComponent', () => {
     coursesService.coursesResponse = new Subject<any[]>().asObservable();
     coursesService.publishReadinessResponse = new Subject<any>().asObservable();
     coursesService.safePublishResponse = new Subject<any>().asObservable();
+    coursesService.competencyIntegrityResponse = new Subject<any>().asObservable();
     usageStatsService.usageResponse = new Subject<any[]>().asObservable();
     analyticsService.overviewResponse = new Subject<any>().asObservable();
 
@@ -106,6 +120,7 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Loading recent signups');
     expect(compiled.textContent).toContain('Loading publish readiness');
     expect(compiled.textContent).toContain('Loading safe publish validation');
+    expect(compiled.textContent).toContain('Loading competency evidence integrity');
   });
 
   it('uses EchoStatePanel for admin empty states', () => {
@@ -119,6 +134,7 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Course management will appear here');
     expect(compiled.textContent).toContain('Publish readiness will appear here');
     expect(compiled.textContent).toContain('Safe publish validation will appear here');
+    expect(compiled.textContent).toContain('Competency evidence integrity will appear here');
   });
 
   it('uses EchoStatePanel for admin error states and retries data loads', () => {
@@ -154,6 +170,18 @@ describe('AdminViewComponent', () => {
       blocking_issues: [],
       warnings: [],
     });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
     usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
     analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
 
@@ -167,6 +195,7 @@ describe('AdminViewComponent', () => {
     expect(analyticsService.getAdminOverview).toHaveBeenCalledTimes(2);
     expect(coursesService.getCoursePublishReadiness).toHaveBeenCalled();
     expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalled();
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalled();
   });
 
   it('keeps existing admin links and actions present', () => {
@@ -294,6 +323,122 @@ describe('AdminViewComponent', () => {
     expect(compiled.textContent).toContain('Safe');
     expect(compiled.textContent).toContain('1 warning');
     expect(compiled.querySelector('[data-safe-publish-row]')).not.toBeNull();
+  });
+
+  it('renders competency integrity valid and explainable state for staff/admin surfaces', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 1,
+      blocking_issues: [],
+      warnings: [
+        { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
+      ],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+    });
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalledWith('course-1');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Competency evidence integrity');
+    expect(compiled.textContent).toContain('Valid');
+    expect(compiled.textContent).toContain('Explainable');
+    expect(compiled.textContent).toContain('1 warning');
+    expect(compiled.querySelector('[data-competency-integrity-row]')).not.toBeNull();
+  });
+
+  it('renders competency integrity affected assessments, competencies, and issues with retry and no mutation actions', () => {
+    usersService.usersResponse = of([{ id: 'user-1', firstname: 'Grace', lastname: 'Hopper', role: 'admin', created_at: '2026-05-01T00:00:00.000Z' }]);
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Biology' }]);
+    coursesService.publishReadinessResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.safePublishResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+    });
+    coursesService.competencyIntegrityResponse = throwError(() => new Error('integrity failed'));
+    usageStatsService.usageResponse = of([{ label: 'Daily Active Users', value: 82, color: 'bg-primary' }]);
+    analyticsService.overviewResponse = of({ totals: { students: 14, teachers: 2, courses: 5, pending_enrollments: 1 } });
+
+    fixture.detectChanges();
+    let compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not load competency evidence integrity');
+
+    coursesService.competencyIntegrityResponse = of({
+      course_id: 'course-1',
+      course_title: 'Biology',
+      is_valid: false,
+      is_explainable: false,
+      blocking_issue_count: 1,
+      warning_count: 1,
+      blocking_issues: [
+        { entity_type: 'assessment', entity_id: 'assessment-1', entity_title: 'Final Assessment', code: 'missing_attempt_event_for_mastery_evidence', message: 'Attempt evidence is missing an authoritative event.' },
+      ],
+      warnings: [
+        { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
+      ],
+      affected_assessments: [
+        { assessment_id: 'assessment-1', assessment_title: 'Final Assessment', competency_identifiers: ['evidence', 'analysis'] },
+        { assessment_id: 'assessment-2', assessment_title: 'Practice Quiz', competency_identifiers: [] },
+      ],
+      affected_competency_identifiers: ['evidence', 'analysis'],
+    });
+
+    const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
+      (button) => button.textContent?.trim() === 'Retry',
+    ) as HTMLButtonElement[];
+    retryButtons[0]?.click();
+    fixture.detectChanges();
+
+    compiled = fixture.nativeElement as HTMLElement;
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalledTimes(2);
+    expect(compiled.textContent).toContain('Not valid');
+    expect(compiled.textContent).toContain('Not explainable');
+    expect(compiled.textContent).toContain('Affected competencies');
+    expect(compiled.textContent).toContain('evidence, analysis');
+    expect(compiled.textContent).toContain('Final Assessment');
+    expect(compiled.textContent).toContain('Practice Quiz');
+    expect(compiled.textContent).toContain('Attempt evidence is missing an authoritative event.');
+    expect(coursesService.deleteCourse).not.toHaveBeenCalled();
   });
 
   it('renders blocked safe-publish issues and retries read-only loading', () => {

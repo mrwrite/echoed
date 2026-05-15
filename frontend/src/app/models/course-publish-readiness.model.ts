@@ -25,3 +25,22 @@ export interface CourseSafePublishValidation {
   blocking_issues: PublishReadinessIssue[];
   warnings: PublishReadinessIssue[];
 }
+
+export interface CompetencyEvidenceAffectedAssessment {
+  assessment_id?: string | null;
+  assessment_title: string;
+  competency_identifiers: string[];
+}
+
+export interface CourseCompetencyEvidenceIntegrity {
+  course_id: string;
+  course_title: string;
+  is_valid: boolean;
+  is_explainable: boolean;
+  blocking_issue_count: number;
+  warning_count: number;
+  blocking_issues: PublishReadinessIssue[];
+  warnings: PublishReadinessIssue[];
+  affected_assessments: CompetencyEvidenceAffectedAssessment[];
+  affected_competency_identifiers: string[];
+}

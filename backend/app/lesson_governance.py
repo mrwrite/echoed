@@ -127,6 +127,39 @@ class AssessmentEvidenceSafetyResult:
     warnings: list[PublishReadinessIssue] = field(default_factory=list)
 
 
+@dataclass
+class CompetencyEvidenceIntegrityResult:
+    entity_type: str
+    entity_id: object | None
+    entity_title: str
+    is_valid: bool
+    is_explainable: bool
+    blocking_issues: list[PublishReadinessIssue] = field(default_factory=list)
+    warnings: list[PublishReadinessIssue] = field(default_factory=list)
+
+
+@dataclass
+class CompetencyEvidenceAffectedAssessment:
+    assessment_id: object | None
+    assessment_title: str
+    competency_identifiers: list[str] = field(default_factory=list)
+
+
+@dataclass
+class CourseCompetencyEvidenceIntegrityResult:
+    entity_type: str
+    entity_id: object | None
+    entity_title: str
+    is_valid: bool
+    is_explainable: bool
+    blocking_issue_count: int
+    warning_count: int
+    blocking_issues: list[PublishReadinessIssue] = field(default_factory=list)
+    warnings: list[PublishReadinessIssue] = field(default_factory=list)
+    affected_assessments: list[CompetencyEvidenceAffectedAssessment] = field(default_factory=list)
+    affected_competency_identifiers: list[str] = field(default_factory=list)
+
+
 def _clean_text(value: object | None) -> str:
     if value is None:
         return ""
@@ -1045,6 +1078,301 @@ def _assessment_evidence_state_is_ambiguous(*, revision_status: str, lineage_sta
     if has_successor and revision_status == "current":
         return True
     return False
+
+
+def _latest_attempts_by_student(assessment: Assessment) -> list[object]:
+    latest_by_student: dict[object, object] = {}
+
+    for attempt in getattr(assessment, "attempts", None) or []:
+        student_id = getattr(attempt, "student_id", None)
+        existing = latest_by_student.get(student_id)
+        if existing is None:
+            latest_by_student[student_id] = attempt
+            continue
+
+        attempt_submitted_at = getattr(attempt, "submitted_at", None)
+        existing_submitted_at = getattr(existing, "submitted_at", None)
+        if (attempt_submitted_at, str(getattr(attempt, "id", ""))) > (
+            existing_submitted_at,
+            str(getattr(existing, "id", "")),
+        ):
+            latest_by_student[student_id] = attempt
+
+    return list(latest_by_student.values())
+
+
+def _assessment_alignment_entity_title(alignment) -> str:
+    return (
+        _clean_text(getattr(alignment, "objective_title", None))
+        or _clean_text(getattr(alignment, "objective_key", None))
+        or "Competency alignment"
+    )
+
+
+def _assessment_competency_identifiers(assessment: Assessment) -> list[str]:
+    return sorted(
+        {
+            objective_key
+            for alignment in getattr(assessment, "competency_alignments", None) or []
+            if (objective_key := _clean_text(getattr(alignment, "objective_key", None)))
+        }
+    )
+
+
+def _course_assessments(course: Course) -> list[Assessment]:
+    assessments_by_id: dict[object, Assessment] = {}
+
+    for assessment in getattr(course, "assessments", None) or []:
+        assessments_by_id[getattr(assessment, "id", id(assessment))] = assessment
+
+    for unit in getattr(course, "units", None) or []:
+        for assessment in getattr(unit, "assessments", None) or []:
+            assessments_by_id[getattr(assessment, "id", id(assessment))] = assessment
+        for lesson in getattr(unit, "lessons", None) or []:
+            for assessment in getattr(lesson, "assessments", None) or []:
+                assessments_by_id[getattr(assessment, "id", id(assessment))] = assessment
+
+    return list(assessments_by_id.values())
+
+
+def evaluate_competency_evidence_integrity(assessment: Assessment) -> CompetencyEvidenceIntegrityResult:
+    blocking_issues: list[PublishReadinessIssue] = []
+    warnings: list[PublishReadinessIssue] = []
+
+    evidence_safety = evaluate_assessment_evidence_safety(assessment)
+    blocking_issues.extend(evidence_safety.blocking_issues)
+    warnings.extend(evidence_safety.warnings)
+
+    alignments = list(getattr(assessment, "competency_alignments", None) or [])
+    latest_attempts = _latest_attempts_by_student(assessment)
+    has_mastery_relevant_evidence = bool(latest_attempts)
+
+    if has_mastery_relevant_evidence and not alignments:
+        warnings.append(
+            _issue_for_entity(
+                entity_type="assessment",
+                entity=assessment,
+                code="unaligned_assessment_mastery_evidence",
+                message=(
+                    "Assessment has attempt evidence but no competency alignments. Current mastery "
+                    "summary logic excludes unaligned assessments to avoid ambiguous mastery evidence."
+                ),
+            )
+        )
+
+    for alignment in alignments:
+        if _clean_text(getattr(alignment, "objective_key", None)):
+            continue
+        warnings.append(
+            PublishReadinessIssue(
+                entity_type="competency_alignment",
+                entity_id=getattr(alignment, "id", None),
+                entity_title=_assessment_alignment_entity_title(alignment),
+                code="missing_competency_identifier",
+                message=(
+                    "Competency alignment is missing an objective key, which makes mastery evidence "
+                    "hard to explain."
+                ),
+            )
+        )
+
+    for attempt in latest_attempts:
+        attempt_id = getattr(attempt, "id", None)
+        attempt_assessment_id = getattr(attempt, "assessment_id", None)
+        attempt_student_id = getattr(attempt, "student_id", None)
+
+        if attempt_assessment_id != assessment.id:
+            blocking_issues.append(
+                _issue_for_entity(
+                    entity_type="assessment",
+                    entity=assessment,
+                    code="historical_attempt_reassigned_to_different_assessment",
+                    message=(
+                        "Assessment attempt evidence no longer points to the original assessment "
+                        "revision, which would silently reassign historical mastery evidence."
+                    ),
+                )
+            )
+
+        attempt_events = list(getattr(attempt, "events", None) or [])
+        if not attempt_events:
+            blocking_issues.append(
+                _issue_for_entity(
+                    entity_type="assessment",
+                    entity=assessment,
+                    code="missing_attempt_event_for_mastery_evidence",
+                    message=(
+                        "Assessment attempt evidence used for mastery has no matching attempt-event "
+                        "record, so the evidence is not fully explainable."
+                    ),
+                )
+            )
+            continue
+
+        matching_events = [
+            event
+            for event in attempt_events
+            if getattr(event, "attempt_id", None) == attempt_id
+            and getattr(event, "assessment_id", None) == assessment.id
+            and getattr(event, "student_id", None) == attempt_student_id
+        ]
+        if not matching_events:
+            blocking_issues.append(
+                _issue_for_entity(
+                    entity_type="assessment",
+                    entity=assessment,
+                    code="attempt_event_mismatch_for_mastery_evidence",
+                    message=(
+                        "Assessment attempt events do not match the assessment attempt that current "
+                        "mastery logic would read."
+                    ),
+                )
+            )
+            continue
+
+        if not any(
+            _clean_text(getattr(event, "event_type", None)) in {"submitted", "attempt_submitted", "attempt_scored"}
+            for event in matching_events
+        ):
+            warnings.append(
+                _issue_for_entity(
+                    entity_type="assessment",
+                    entity=assessment,
+                    code="unexpected_attempt_event_types_for_mastery_evidence",
+                    message=(
+                        "Assessment attempt events exist but do not include the usual submitted or "
+                        "attempt_scored event types for mastery explainability."
+                    ),
+                )
+            )
+
+    deduped_blocking_issues = list(
+        dict.fromkeys(
+            (
+                issue.entity_type,
+                issue.entity_id,
+                issue.entity_title,
+                issue.code,
+                issue.message,
+            )
+            for issue in blocking_issues
+        )
+    )
+    deduped_warnings = list(
+        dict.fromkeys(
+            (
+                issue.entity_type,
+                issue.entity_id,
+                issue.entity_title,
+                issue.code,
+                issue.message,
+            )
+            for issue in warnings
+        )
+    )
+
+    return CompetencyEvidenceIntegrityResult(
+        entity_type="assessment",
+        entity_id=assessment.id,
+        entity_title=assessment.title,
+        is_valid=not deduped_blocking_issues,
+        is_explainable=not deduped_blocking_issues and not deduped_warnings,
+        blocking_issues=[
+            PublishReadinessIssue(*issue_values)
+            for issue_values in deduped_blocking_issues
+        ],
+        warnings=[
+            PublishReadinessIssue(*issue_values)
+            for issue_values in deduped_warnings
+        ],
+    )
+
+
+def evaluate_course_competency_evidence_integrity(course: Course) -> CourseCompetencyEvidenceIntegrityResult:
+    blocking_issues: list[PublishReadinessIssue] = []
+    warnings: list[PublishReadinessIssue] = []
+    affected_assessment_contexts: list[CompetencyEvidenceAffectedAssessment] = []
+    affected_competency_identifiers: set[str] = set()
+
+    for assessment in _course_assessments(course):
+        result = evaluate_competency_evidence_integrity(assessment)
+        blocking_issues.extend(result.blocking_issues)
+        warnings.extend(result.warnings)
+
+        if not result.blocking_issues and not result.warnings:
+            continue
+
+        competency_identifiers = _assessment_competency_identifiers(assessment)
+        affected_competency_identifiers.update(competency_identifiers)
+        affected_assessment_contexts.append(
+            CompetencyEvidenceAffectedAssessment(
+                assessment_id=getattr(assessment, "id", None),
+                assessment_title=_clean_text(getattr(assessment, "title", None)) or "Assessment",
+                competency_identifiers=competency_identifiers,
+            )
+        )
+
+    deduped_blocking_issues = list(
+        dict.fromkeys(
+            (
+                issue.entity_type,
+                issue.entity_id,
+                issue.entity_title,
+                issue.code,
+                issue.message,
+            )
+            for issue in blocking_issues
+        )
+    )
+    deduped_warnings = list(
+        dict.fromkeys(
+            (
+                issue.entity_type,
+                issue.entity_id,
+                issue.entity_title,
+                issue.code,
+                issue.message,
+            )
+            for issue in warnings
+        )
+    )
+    deduped_affected_assessments = list(
+        dict.fromkeys(
+            (
+                context.assessment_id,
+                context.assessment_title,
+                tuple(context.competency_identifiers),
+            )
+            for context in affected_assessment_contexts
+        )
+    )
+
+    return CourseCompetencyEvidenceIntegrityResult(
+        entity_type="course",
+        entity_id=getattr(course, "id", None),
+        entity_title=_clean_text(getattr(course, "title", None)) or "Course",
+        is_valid=not deduped_blocking_issues,
+        is_explainable=not deduped_blocking_issues and not deduped_warnings,
+        blocking_issue_count=len(deduped_blocking_issues),
+        warning_count=len(deduped_warnings),
+        blocking_issues=[
+            PublishReadinessIssue(*issue_values)
+            for issue_values in deduped_blocking_issues
+        ],
+        warnings=[
+            PublishReadinessIssue(*issue_values)
+            for issue_values in deduped_warnings
+        ],
+        affected_assessments=[
+            CompetencyEvidenceAffectedAssessment(
+                assessment_id=assessment_id,
+                assessment_title=assessment_title,
+                competency_identifiers=list(competency_identifiers),
+            )
+            for assessment_id, assessment_title, competency_identifiers in deduped_affected_assessments
+        ],
+        affected_competency_identifiers=sorted(affected_competency_identifiers),
+    )
 
 
 def evaluate_assessment_evidence_safety(assessment: Assessment) -> AssessmentEvidenceSafetyResult:

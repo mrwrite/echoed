@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import or_
 
@@ -11,11 +11,13 @@ from app.enum import (
     MembershipStatus,
     OrganizationRole,
     OrganizationType,
+    ProgressStatus,
     SectionMode,
 )
 from app.models import (
     Activity,
     Assessment,
+    AssessmentAttemptEvent,
     AssessmentCompetencyAlignment,
     Course,
     CourseVersion,
@@ -24,8 +26,13 @@ from app.models import (
     Organization,
     OrganizationMembership,
     Question,
+    SegmentProgress,
     Section,
     Source,
+    StudentAssessmentAnswer,
+    StudentAssessmentAttempt,
+    StudentCourse,
+    StudentUnitProgress,
     Unit,
     User,
 )
@@ -38,6 +45,19 @@ LEGACY_DEMO_COURSE_TITLES = {
     "K-5 Introduction to Africa",
 }
 DEMO_SECTION_NAME = "Grade 3 - Cohort A"
+DEMO_SEED_BASELINE = datetime(2026, 1, 15, 12, 0, 0)
+DEMO_ARCHETYPE_LEARNER_KEYS = (
+    "mastered_student",
+    "reteach_student",
+    "review_student",
+    "monitor_student",
+    "normal_student",
+)
+DEMO_SECTION_LEARNER_KEYS = (
+    "student1",
+    "student2",
+    *DEMO_ARCHETYPE_LEARNER_KEYS,
+)
 DEMO_UNITS = [
     {
         "title": "Origins and Geography",
@@ -785,6 +805,85 @@ DEMO_FLAGSHIP_ASSESSMENTS = [
         ],
     },
     {
+        "title": "Introduction to Africa Guided Review Check",
+        "description": "A second supportive check that can demonstrate mixed but explainable evidence in the flagship demo.",
+        "scope": "lesson",
+        "unit_title": "Origins and Geography",
+        "lesson_title": "Introduction to Africa",
+        "assessment_state": "published",
+        "availability_state": "available",
+        "passing_score": 70.0,
+        "max_attempts": 2,
+        "policy_metadata": {"assessment_kind": "formative-review", "supportive_tone": True},
+        "lifecycle_metadata": {"flagship_pathway": True, "seed_key": "intro-africa-guided-review-check"},
+        "questions": [
+            {
+                "prompt": "Which sentence still shows a careful understanding of Africa?",
+                "choices": ["Africa is a diverse continent.", "Africa is one single country.", "Africa has only one culture."],
+                "correct_answer": "Africa is a diverse continent.",
+                "points": 1,
+                "order": 1,
+                "explanation": "The strongest answer continues to name Africa as a diverse continent.",
+            },
+            {
+                "prompt": "Why should we keep learning about places with curiosity and care?",
+                "choices": [
+                    "Because people and places deserve respect.",
+                    "Because one stereotype is enough.",
+                    "Because details never matter.",
+                ],
+                "correct_answer": "Because people and places deserve respect.",
+                "points": 1,
+                "order": 2,
+                "explanation": "Respectful, careful learning helps people avoid flattening places or communities.",
+            },
+        ],
+        "competency_alignments": [
+            {
+                "objective_key": "africa-diversity-and-respect",
+                "objective_title": "Africa Diversity and Respect",
+                "objective_type": "objective",
+                "weight": 1.0,
+                "mastery_threshold": 70.0,
+                "question_order": 1,
+                "metadata": {"evidence_kind": "guided-review"},
+            },
+            {
+                "objective_key": "careful-place-learning",
+                "objective_title": "Careful Place Learning",
+                "objective_type": "competency",
+                "weight": 1.0,
+                "mastery_threshold": 70.0,
+                "question_order": 2,
+                "metadata": {"evidence_kind": "guided-review"},
+            },
+        ],
+    },
+    {
+        "title": "Introduction to Africa Ambiguous Evidence Check",
+        "description": "A published demo assessment intentionally left without competency alignments so staff can observe stable monitor evidence.",
+        "scope": "lesson",
+        "unit_title": "Origins and Geography",
+        "lesson_title": "Introduction to Africa",
+        "assessment_state": "published",
+        "availability_state": "available",
+        "passing_score": 70.0,
+        "max_attempts": 1,
+        "policy_metadata": {"assessment_kind": "demo-ambiguity-check", "supportive_tone": True},
+        "lifecycle_metadata": {"flagship_pathway": True, "seed_key": "intro-africa-ambiguous-evidence-check"},
+        "questions": [
+            {
+                "prompt": "Which answer shows one accurate idea from the lesson?",
+                "choices": ["Africa is a diverse continent.", "Africa is one country.", "Africa has no communities."],
+                "correct_answer": "Africa is a diverse continent.",
+                "points": 1,
+                "order": 1,
+                "explanation": "The lesson consistently teaches that Africa is a continent full of many regions and communities.",
+            }
+        ],
+        "competency_alignments": [],
+    },
+    {
         "title": "Teacher Preview: Geography Extension Check",
         "description": "A preview-only assessment kept unavailable to learners until later phases.",
         "scope": "lesson",
@@ -1104,6 +1203,41 @@ DEMO_USERS = {
         "email": "student2@demo.com",
         "role": "student",
     },
+    "mastered_student": {
+        "firstname": "Amara",
+        "lastname": "Mastery",
+        "username": "masteredstudent",
+        "email": "masteredstudent@demo.com",
+        "role": "student",
+    },
+    "reteach_student": {
+        "firstname": "Binta",
+        "lastname": "Reteach",
+        "username": "reteachstudent",
+        "email": "reteachstudent@demo.com",
+        "role": "student",
+    },
+    "review_student": {
+        "firstname": "Chidi",
+        "lastname": "Review",
+        "username": "reviewstudent",
+        "email": "reviewstudent@demo.com",
+        "role": "student",
+    },
+    "monitor_student": {
+        "firstname": "Dayo",
+        "lastname": "Monitor",
+        "username": "monitorstudent",
+        "email": "monitorstudent@demo.com",
+        "role": "student",
+    },
+    "normal_student": {
+        "firstname": "Eshe",
+        "lastname": "Steady",
+        "username": "normalstudent",
+        "email": "normalstudent@demo.com",
+        "role": "student",
+    },
     "content_admin": {
         "firstname": "Carmen",
         "lastname": "Content",
@@ -1126,6 +1260,11 @@ MEMBERSHIP_MAP = {
     "parent": OrganizationRole.PARENT,
     "student1": OrganizationRole.STUDENT,
     "student2": OrganizationRole.STUDENT,
+    "mastered_student": OrganizationRole.STUDENT,
+    "reteach_student": OrganizationRole.STUDENT,
+    "review_student": OrganizationRole.STUDENT,
+    "monitor_student": OrganizationRole.STUDENT,
+    "normal_student": OrganizationRole.STUDENT,
     "content_admin": OrganizationRole.CONTENT_ADMIN,
 }
 
@@ -1646,6 +1785,439 @@ def _ensure_enrollment(db, section: Section, user: User) -> None:
         db.flush()
 
 
+def _delete_demo_assessment_attempts(db, course: Course, learner_ids: set) -> None:
+    assessments = _flagship_course_assessments(db, course)
+    assessment_ids = {assessment.id for assessment in assessments}
+    if not assessment_ids:
+        return
+
+    attempts = (
+        db.query(StudentAssessmentAttempt)
+        .filter(
+            StudentAssessmentAttempt.student_id.in_(learner_ids),
+            StudentAssessmentAttempt.assessment_id.in_(assessment_ids),
+        )
+        .all()
+    )
+    for attempt in attempts:
+        for event in list(attempt.events or []):
+            db.delete(event)
+        db.delete(attempt)
+    db.flush()
+
+
+def _reset_demo_learning_state(db, course: Course, learners: list[User]) -> None:
+    learner_ids = {learner.id for learner in learners}
+    _delete_demo_assessment_attempts(db, course, learner_ids)
+
+    student_courses = (
+        db.query(StudentCourse)
+        .filter(
+            StudentCourse.student_id.in_(learner_ids),
+            StudentCourse.course_id == course.id,
+        )
+        .all()
+    )
+    for student_course in student_courses:
+        db.delete(student_course)
+    db.flush()
+
+
+def _ordered_course_units(course: Course) -> list[Unit]:
+    return sorted(course.units or [], key=lambda unit: (unit.order is None, unit.order or 0, str(unit.id)))
+
+
+def _ordered_unit_lessons(unit: Unit) -> list[Lesson]:
+    return sorted(unit.lessons or [], key=lambda lesson: (lesson.order is None, lesson.order or 0, str(lesson.id)))
+
+
+def _flagship_course_assessments(db, course: Course) -> list[Assessment]:
+    unit_ids = [unit.id for unit in (course.units or [])]
+    lesson_ids = [
+        lesson.id
+        for unit in (course.units or [])
+        for lesson in (unit.lessons or [])
+    ]
+    query = db.query(Assessment).filter(Assessment.title.in_([seed["title"] for seed in DEMO_FLAGSHIP_ASSESSMENTS]))
+    if course.id is not None:
+        query = query.filter(
+            or_(
+                Assessment.course_id == course.id,
+                Assessment.unit_id.in_(unit_ids) if unit_ids else False,
+                Assessment.lesson_id.in_(lesson_ids) if lesson_ids else False,
+            )
+        )
+    return query.all()
+
+
+def _assessment_by_title(db, course: Course, title: str) -> Assessment:
+    for assessment in _flagship_course_assessments(db, course):
+        if assessment.title == title:
+            return assessment
+    raise ValueError(f"Expected seeded assessment '{title}' was not found.")
+
+
+def _create_student_course(
+    db,
+    *,
+    student: User,
+    course: Course,
+    section: Section,
+    status: str,
+    enrolled_on: datetime,
+    last_activity_at: datetime | None,
+    completed_at: datetime | None = None,
+) -> StudentCourse:
+    student_course = StudentCourse(
+        student_id=student.id,
+        course_id=course.id,
+        section_id=section.id,
+        status=status,
+        enrolled_on=enrolled_on,
+        last_activity_at=last_activity_at,
+        completed_at=completed_at,
+    )
+    db.add(student_course)
+    db.flush()
+    return student_course
+
+
+def _add_unit_progress(
+    db,
+    *,
+    student_course: StudentCourse,
+    section: Section,
+    unit: Unit,
+    status: ProgressStatus,
+    started_at: datetime | None,
+    completed_at: datetime | None,
+    last_updated: datetime,
+) -> StudentUnitProgress:
+    progress = StudentUnitProgress(
+        student_course_id=student_course.id,
+        section_id=section.id,
+        unit_id=unit.id,
+        status=status,
+        started_at=started_at,
+        completed_at=completed_at,
+        last_updated=last_updated,
+    )
+    db.add(progress)
+    db.flush()
+    return progress
+
+
+def _add_segment_progress(
+    db,
+    *,
+    unit_progress: StudentUnitProgress,
+    section: Section,
+    lesson: Lesson,
+    status: ProgressStatus,
+    started_at: datetime | None,
+    completed_at: datetime | None,
+    last_updated: datetime,
+) -> None:
+    db.add(
+        SegmentProgress(
+            student_unit_id=unit_progress.id,
+            section_id=section.id,
+            lesson_id=lesson.id,
+            status=status,
+            started_at=started_at,
+            completed_at=completed_at,
+            last_updated=last_updated,
+        )
+    )
+    db.flush()
+
+
+def _seed_completed_course_progress(db, *, student: User, course: Course, section: Section) -> StudentCourse:
+    student_course = _create_student_course(
+        db,
+        student=student,
+        course=course,
+        section=section,
+        status="completed",
+        enrolled_on=DEMO_SEED_BASELINE - timedelta(days=30),
+        last_activity_at=DEMO_SEED_BASELINE - timedelta(days=1),
+        completed_at=DEMO_SEED_BASELINE - timedelta(days=1),
+    )
+    for unit_index, unit in enumerate(_ordered_course_units(course)):
+        unit_started = DEMO_SEED_BASELINE - timedelta(days=20 - unit_index)
+        unit_completed = DEMO_SEED_BASELINE - timedelta(days=10 - unit_index)
+        unit_progress = _add_unit_progress(
+            db,
+            student_course=student_course,
+            section=section,
+            unit=unit,
+            status=ProgressStatus.COMPLETED,
+            started_at=unit_started,
+            completed_at=unit_completed,
+            last_updated=unit_completed,
+        )
+        for lesson_index, lesson in enumerate(_ordered_unit_lessons(unit)):
+            lesson_started = unit_started + timedelta(hours=lesson_index)
+            lesson_completed = unit_completed + timedelta(hours=lesson_index)
+            _add_segment_progress(
+                db,
+                unit_progress=unit_progress,
+                section=section,
+                lesson=lesson,
+                status=ProgressStatus.COMPLETED,
+                started_at=lesson_started,
+                completed_at=lesson_completed,
+                last_updated=lesson_completed,
+            )
+    return student_course
+
+
+def _seed_active_course_progress(
+    db,
+    *,
+    student: User,
+    course: Course,
+    section: Section,
+    completed_lessons: int,
+    last_activity_at: datetime,
+) -> StudentCourse:
+    student_course = _create_student_course(
+        db,
+        student=student,
+        course=course,
+        section=section,
+        status="active",
+        enrolled_on=DEMO_SEED_BASELINE - timedelta(days=7),
+        last_activity_at=last_activity_at,
+    )
+    first_unit = _ordered_course_units(course)[0]
+    lessons = _ordered_unit_lessons(first_unit)
+    unit_progress = _add_unit_progress(
+        db,
+        student_course=student_course,
+        section=section,
+        unit=first_unit,
+        status=ProgressStatus.IN_PROGRESS,
+        started_at=DEMO_SEED_BASELINE - timedelta(days=6),
+        completed_at=None,
+        last_updated=last_activity_at,
+    )
+    for index, lesson in enumerate(lessons):
+        if index < completed_lessons:
+            status = ProgressStatus.COMPLETED
+            started_at = DEMO_SEED_BASELINE - timedelta(days=5, hours=index)
+            completed_at = DEMO_SEED_BASELINE - timedelta(days=4, hours=index)
+            updated_at = completed_at
+        elif index == completed_lessons:
+            status = ProgressStatus.IN_PROGRESS
+            started_at = DEMO_SEED_BASELINE - timedelta(days=1)
+            completed_at = None
+            updated_at = last_activity_at
+        else:
+            status = ProgressStatus.NOT_STARTED
+            started_at = None
+            completed_at = None
+            updated_at = DEMO_SEED_BASELINE - timedelta(days=7)
+        _add_segment_progress(
+            db,
+            unit_progress=unit_progress,
+            section=section,
+            lesson=lesson,
+            status=status,
+            started_at=started_at,
+            completed_at=completed_at,
+            last_updated=updated_at,
+        )
+    return student_course
+
+
+def _submit_seeded_attempt(
+    db,
+    *,
+    assessment: Assessment,
+    student: User,
+    submitted_at: datetime,
+    answers_by_order: dict[int, str],
+) -> StudentAssessmentAttempt:
+    ordered_questions = sorted(assessment.questions or [], key=lambda question: (question.order, str(question.id)))
+    score = 0.0
+    max_score = 0.0
+    answer_rows: list[StudentAssessmentAnswer] = []
+    for question in ordered_questions:
+        expected = question.correct_answer
+        answer = answers_by_order[question.order]
+        max_score += float(question.points or 0.0)
+        is_correct = answer == expected
+        awarded_points = float(question.points or 0.0) if is_correct else 0.0
+        score += awarded_points
+        answer_rows.append(
+            StudentAssessmentAnswer(
+                question_id=question.id,
+                answer=answer,
+                is_correct=is_correct,
+                awarded_points=awarded_points,
+            )
+        )
+
+    percentage = (score / max_score) * 100 if max_score else 0.0
+    passed = percentage >= float(assessment.passing_score or 0.0)
+    attempt = StudentAssessmentAttempt(
+        assessment_id=assessment.id,
+        student_id=student.id,
+        score=score,
+        max_score=max_score,
+        passed=passed,
+        submitted_at=submitted_at,
+    )
+    db.add(attempt)
+    db.flush()
+
+    for answer_row in answer_rows:
+        answer_row.attempt_id = attempt.id
+        db.add(answer_row)
+
+    db.add(
+        AssessmentAttemptEvent(
+            assessment_id=assessment.id,
+            student_id=student.id,
+            attempt_id=attempt.id,
+            event_type="attempt_submitted",
+            score=score,
+            max_score=max_score,
+            passed=passed,
+            event_metadata={"source": "demo-seed", "phase": "submitted"},
+            created_at=submitted_at,
+        )
+    )
+    db.add(
+        AssessmentAttemptEvent(
+            assessment_id=assessment.id,
+            student_id=student.id,
+            attempt_id=attempt.id,
+            event_type="attempt_scored",
+            score=score,
+            max_score=max_score,
+            passed=passed,
+            event_metadata={
+                "source": "demo-seed",
+                "phase": "scored",
+                "score_snapshot": {
+                    "score": score,
+                    "max_score": max_score,
+                    "percentage": round(percentage, 1),
+                    "passed": passed,
+                },
+            },
+            created_at=submitted_at + timedelta(minutes=1),
+        )
+    )
+    db.flush()
+    return attempt
+
+
+def _seed_demo_learning_states(db, *, course: Course, section: Section, users: dict[str, User]) -> None:
+    archetype_learners = [users[key] for key in DEMO_ARCHETYPE_LEARNER_KEYS]
+    _reset_demo_learning_state(db, course, archetype_learners)
+
+    lesson_check = _assessment_by_title(db, course, "Introduction to Africa Lesson Check")
+    review_check = _assessment_by_title(db, course, "Introduction to Africa Guided Review Check")
+    ambiguous_check = _assessment_by_title(db, course, "Introduction to Africa Ambiguous Evidence Check")
+
+    _seed_completed_course_progress(
+        db,
+        student=users["mastered_student"],
+        course=course,
+        section=section,
+    )
+    _submit_seeded_attempt(
+        db,
+        assessment=lesson_check,
+        student=users["mastered_student"],
+        submitted_at=DEMO_SEED_BASELINE - timedelta(days=2),
+        answers_by_order={
+            1: "Africa is a diverse continent.",
+            2: "Because places and people deserve respect.",
+        },
+    )
+
+    _seed_active_course_progress(
+        db,
+        student=users["reteach_student"],
+        course=course,
+        section=section,
+        completed_lessons=1,
+        last_activity_at=DEMO_SEED_BASELINE - timedelta(hours=5),
+    )
+    _submit_seeded_attempt(
+        db,
+        assessment=lesson_check,
+        student=users["reteach_student"],
+        submitted_at=DEMO_SEED_BASELINE - timedelta(hours=4),
+        answers_by_order={
+            1: "Africa is one country.",
+            2: "Because only maps matter.",
+        },
+    )
+
+    _seed_active_course_progress(
+        db,
+        student=users["review_student"],
+        course=course,
+        section=section,
+        completed_lessons=1,
+        last_activity_at=DEMO_SEED_BASELINE - timedelta(hours=3),
+    )
+    _submit_seeded_attempt(
+        db,
+        assessment=lesson_check,
+        student=users["review_student"],
+        submitted_at=DEMO_SEED_BASELINE - timedelta(days=3),
+        answers_by_order={
+            1: "Africa is a diverse continent.",
+            2: "Because places and people deserve respect.",
+        },
+    )
+    _submit_seeded_attempt(
+        db,
+        assessment=review_check,
+        student=users["review_student"],
+        submitted_at=DEMO_SEED_BASELINE - timedelta(hours=2),
+        answers_by_order={
+            1: "Africa is one single country.",
+            2: "Because one stereotype is enough.",
+        },
+    )
+
+    _seed_active_course_progress(
+        db,
+        student=users["monitor_student"],
+        course=course,
+        section=section,
+        completed_lessons=1,
+        last_activity_at=DEMO_SEED_BASELINE - timedelta(hours=2),
+    )
+    _submit_seeded_attempt(
+        db,
+        assessment=ambiguous_check,
+        student=users["monitor_student"],
+        submitted_at=DEMO_SEED_BASELINE - timedelta(hours=1),
+        answers_by_order={
+            1: "Africa is a diverse continent.",
+        },
+    )
+
+    _seed_active_course_progress(
+        db,
+        student=users["normal_student"],
+        course=course,
+        section=section,
+        completed_lessons=0,
+        last_activity_at=DEMO_SEED_BASELINE - timedelta(minutes=30),
+    )
+
+    db.flush()
+
+
 def run() -> None:
     db = SessionLocal()
     try:
@@ -1664,8 +2236,10 @@ def run() -> None:
         _ensure_flagship_assessments(db, course, users["content_admin"])
         section = _get_or_create_section(db, org, version, users["teacher"])
 
-        _ensure_enrollment(db, section, users["student1"])
-        _ensure_enrollment(db, section, users["student2"])
+        for learner_key in DEMO_SECTION_LEARNER_KEYS:
+            _ensure_enrollment(db, section, users[learner_key])
+
+        _seed_demo_learning_states(db, course=course, section=section, users=users)
 
         db.commit()
         print(

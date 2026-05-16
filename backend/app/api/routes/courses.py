@@ -31,8 +31,13 @@ from app.models import (
     StudentUnitProgress,
 )
 from app.crud.progress import resolve_governed_progression
+from app.course_governance_summary import (
+    build_course_governance_summary,
+    load_course_governance_summary_course,
+)
 from app.runtime_intervention_intelligence import evaluate_runtime_intervention_recommendation
 from app.schemas import (
+    CourseGovernanceSummaryResponse,
     CourseRuntimeInterventionRecommendationResponse,
     CourseDto,
     CourseResponse,
@@ -185,6 +190,30 @@ def get_course_by_id(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     return serialize_course(course, viewer_role=current_user.role)
+
+
+@router.get("/courses/{course_id}/governance-summary", response_model=CourseGovernanceSummaryResponse)
+def get_course_governance_summary(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = load_course_governance_summary_course(db, parsed_course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    return build_course_governance_summary(db, course)
 
 
 @router.get("/courses/{course_id}/publish-readiness", response_model=CoursePublishReadinessResponse)

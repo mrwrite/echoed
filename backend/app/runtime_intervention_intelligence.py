@@ -60,6 +60,27 @@ def _affected_assessment_basis(
     return basis
 
 
+def _student_evidence_assessment_ids(assessments, student_id) -> set[object]:
+    return {
+        assessment.id
+        for assessment in assessments
+        if _latest_attempt_for_assessment(assessment, student_id) is not None
+    }
+
+
+def _student_relevant_affected_assessments(course_integrity, assessments, student_id):
+    if course_integrity is None:
+        return []
+    student_assessment_ids = _student_evidence_assessment_ids(assessments, student_id)
+    if not student_assessment_ids:
+        return []
+    return [
+        context
+        for context in course_integrity.affected_assessments
+        if context.assessment_id in student_assessment_ids
+    ]
+
+
 def _read_only_progress_basis(student_course: StudentCourse) -> RuntimeInterventionEvidenceBasis:
     unit_statuses = sorted(
         {
@@ -159,14 +180,14 @@ def _guidance_basis(guidance) -> RuntimeInterventionEvidenceBasis | None:
     )
 
 
-def _caution_flags(course_integrity, mastery_summary, assessments) -> list[str]:
+def _caution_flags(course_integrity, mastery_summary, assessments, *, integrity_relevant: bool) -> list[str]:
     flags: list[str] = []
-    warning_codes = {issue.code for issue in course_integrity.warnings}
-    blocking_codes = {issue.code for issue in course_integrity.blocking_issues}
+    warning_codes = {issue.code for issue in course_integrity.warnings} if integrity_relevant else set()
+    blocking_codes = {issue.code for issue in course_integrity.blocking_issues} if integrity_relevant else set()
     historical_assessments = [
         assessment
         for assessment in assessments
-        if (assessment.attempts or assessment.events)
+        if integrity_relevant and (assessment.attempts or assessment.events)
     ]
 
     if warning_codes:
@@ -214,6 +235,12 @@ def evaluate_runtime_intervention_recommendation(
         student_course.student_id,
         educator_visible=True,
     )
+    relevant_integrity_contexts = _student_relevant_affected_assessments(
+        course_integrity,
+        assessments,
+        student_course.student_id,
+    )
+    integrity_relevant = bool(relevant_integrity_contexts)
 
     evidence_basis: list[RuntimeInterventionEvidenceBasis] = []
     evidence_basis.append(_read_only_progress_basis(student_course))
@@ -224,11 +251,16 @@ def evaluate_runtime_intervention_recommendation(
     guidance_basis = _guidance_basis(guidance)
     if guidance_basis is not None:
         evidence_basis.append(guidance_basis)
-    if course_integrity is not None:
-        evidence_basis.extend(_affected_assessment_basis(course_integrity.affected_assessments))
+    if relevant_integrity_contexts:
+        evidence_basis.extend(_affected_assessment_basis(relevant_integrity_contexts))
 
     caution_flags = (
-        _caution_flags(course_integrity, mastery_summary, assessments)
+        _caution_flags(
+            course_integrity,
+            mastery_summary,
+            assessments,
+            integrity_relevant=integrity_relevant,
+        )
         if course_integrity is not None
         else []
     )
@@ -267,7 +299,7 @@ def evaluate_runtime_intervention_recommendation(
     summary = "Current governed evidence supports normal continuation without a special intervention signal."
     learner_safe_tone = "Keep support steady and confidence-preserving while the learner continues."
 
-    if course_integrity is not None and (
+    if integrity_relevant and course_integrity is not None and (
         not course_integrity.is_valid or not course_integrity.is_explainable
     ):
         recommendation_state = "monitor"

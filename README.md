@@ -71,6 +71,12 @@ Seed demo data:
 python -m app.seed_demo
 ```
 
+Deterministic live-demo preparation:
+```sh
+backend\venv\Scripts\python.exe backend\scripts\reseed_demo.py
+```
+See [docs/demo-readiness.md](docs/demo-readiness.md) for the operator runbook, demo accounts, learner archetypes, and expected outcomes.
+
 ### **3️⃣ Frontend Setup (Angular)**
 ```sh
 cd frontend

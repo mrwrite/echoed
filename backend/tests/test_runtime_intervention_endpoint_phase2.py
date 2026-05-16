@@ -525,7 +525,7 @@ def test_caution_flags_and_evidence_basis_serialize_correctly(db_session):
     assert all("source" in basis and "detail" in basis for basis in payload["evidence_basis"])
 
 
-def test_course_level_ambiguity_downgrades_multiple_learners_to_monitor(db_session):
+def test_course_level_ambiguity_only_downgrades_learners_whose_evidence_is_ambiguous(db_session):
     seeded = _seed_users_and_course(db_session)
     strong_learner = _create_student(db_session, first="SharedStrong", last="Learner")
     ambiguous_learner = _create_student(db_session, first="SharedAmbiguous", last="Learner")
@@ -583,10 +583,12 @@ def test_course_level_ambiguity_downgrades_multiple_learners_to_monitor(db_sessi
 
     assert response.status_code == 200
     rows = {row["student_name"]: row for row in response.json()}
-    assert rows["SharedStrong Learner"]["recommendation_state"] == "monitor"
+    assert rows["SharedStrong Learner"]["recommendation_state"] == "enrichment"
     assert rows["SharedAmbiguous Learner"]["recommendation_state"] == "monitor"
-    assert "ambiguous" in rows["SharedStrong Learner"]["summary"].lower()
-    assert "ambiguous_competency_evidence" in rows["SharedStrong Learner"]["caution_flags"]
+    assert "ambiguous_competency_evidence" not in rows["SharedStrong Learner"]["caution_flags"]
+    assert "ambiguous" not in rows["SharedStrong Learner"]["summary"].lower()
+    assert "ambiguous" in rows["SharedAmbiguous Learner"]["summary"].lower()
+    assert "ambiguous_competency_evidence" in rows["SharedAmbiguous Learner"]["caution_flags"]
 
 
 def test_endpoint_is_read_only_and_does_not_mutate_progress_or_certification_state(db_session):

@@ -205,6 +205,22 @@ describe('StudentViewComponent', () => {
     expect(compiled.querySelector('[data-echo-loading="section"]')).not.toBeNull();
   });
 
+  it('renders clean demo-facing copy without mojibake artifacts', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({ id: 'course-active', title: 'Introduction to Africa', status: 'active', progress: 42 }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Here is a guided overview of your EchoEd learning journey.');
+    expect(compiled.textContent).toContain('K-5 Demo');
+    expect(compiled.textContent).toContain("What's next");
+    expect(compiled.textContent).toContain('Completed "Roots of Rhythm" lesson');
+    expect(compiled.textContent).not.toContain('â');
+    expect(compiled.textContent).not.toContain('ðŸ');
+  });
+
   it('uses the explicit selected continuation course for the CTA', () => {
     coursesService.studentCoursesResponse = of([
       buildStudentCourse({

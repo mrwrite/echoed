@@ -7,6 +7,7 @@ import { CoursesService } from '../../../services/courses.service';
 import { Course } from '../../../models/course';
 import {
   CourseCompetencyEvidenceIntegrity,
+  CourseGovernanceSummary,
   CoursePublishReadiness,
   CourseRuntimeInterventionRecommendation,
   CourseSafePublishValidation,
@@ -68,6 +69,7 @@ export class TeacherViewComponent implements OnInit {
   safePublishValidations: CourseSafePublishValidation[] = [];
   competencyIntegrities: CourseCompetencyEvidenceIntegrity[] = [];
   runtimeInterventionRecommendations: CourseRuntimeInterventionRecommendation[] = [];
+  courseGovernanceSummaries: CourseGovernanceSummary[] = [];
 
   constructor(
     private coursesService: CoursesService,
@@ -169,13 +171,14 @@ export class TeacherViewComponent implements OnInit {
       next: (courses) => {
         this.courses = courses;
         this.coursesLoading = false;
-        this.loadCoursePublishReadiness();
+        this.loadCourseGovernanceSummary();
         this.loadEducatorRuntimeSupport();
       },
       error: () => {
         this.courses = [];
         this.coursesLoading = false;
         this.coursesError = 'We could not load educator courses right now. Retry to restore course management.';
+        this.courseGovernanceSummaries = [];
         this.runtimeSupportLoading = false;
         this.educatorRuntimeSupport = [];
         this.publishReadinessLoading = false;
@@ -316,11 +319,18 @@ export class TeacherViewComponent implements OnInit {
     return values.map((value) => this.formatRuntimeLabel(value)).join(', ');
   }
 
-  loadCoursePublishReadiness(): void {
+  loadCourseGovernanceSummary(): void {
     this.publishReadinessLoading = true;
+    this.safePublishLoading = true;
+    this.competencyIntegrityLoading = true;
+    this.runtimeInterventionLoading = true;
     this.publishReadinessError = '';
+    this.safePublishError = '';
+    this.competencyIntegrityError = '';
+    this.runtimeInterventionError = '';
 
     if (this.visibleCourses.length === 0) {
+      this.courseGovernanceSummaries = [];
       this.courseReadiness = [];
       this.publishReadinessLoading = false;
       this.safePublishValidations = [];
@@ -336,108 +346,50 @@ export class TeacherViewComponent implements OnInit {
     }
 
     forkJoin(
-      this.visibleCourses.map((course) => this.coursesService.getCoursePublishReadiness(course.id)),
+      this.visibleCourses.map((course) => this.coursesService.getCourseGovernanceSummary(course.id)),
     ).subscribe({
-      next: (readiness) => {
-        this.courseReadiness = readiness;
+      next: (summaries) => {
+        this.courseGovernanceSummaries = summaries;
+        this.courseReadiness = summaries.map((summary) => summary.publish_readiness);
+        this.safePublishValidations = summaries.map((summary) => summary.safe_publish_validation);
+        this.competencyIntegrities = summaries.map((summary) => summary.competency_evidence_integrity);
+        this.runtimeInterventionRecommendations = summaries.reduce(
+          (all, summary) => all.concat(summary.runtime_intervention_recommendations),
+          [] as CourseRuntimeInterventionRecommendation[],
+        );
         this.publishReadinessLoading = false;
-        this.loadCourseSafePublishValidation();
-        this.loadCourseCompetencyIntegrity();
-        this.loadCourseRuntimeInterventions();
+        this.safePublishLoading = false;
+        this.competencyIntegrityLoading = false;
+        this.runtimeInterventionLoading = false;
       },
       error: () => {
+        this.courseGovernanceSummaries = [];
         this.courseReadiness = [];
         this.publishReadinessLoading = false;
         this.publishReadinessError = 'We could not load course publish readiness right now. Retry to restore governance checks.';
         this.safePublishValidations = [];
         this.safePublishLoading = false;
-        this.safePublishError = '';
-        this.competencyIntegrities = [];
-        this.competencyIntegrityLoading = false;
-        this.competencyIntegrityError = '';
-        this.runtimeInterventionRecommendations = [];
-        this.runtimeInterventionLoading = false;
-        this.runtimeInterventionError = '';
-      },
-    });
-  }
-
-  loadCourseSafePublishValidation(): void {
-    this.safePublishLoading = true;
-    this.safePublishError = '';
-
-    if (this.visibleCourses.length === 0) {
-      this.safePublishValidations = [];
-      this.safePublishLoading = false;
-      return;
-    }
-
-    forkJoin(
-      this.visibleCourses.map((course) => this.coursesService.getCourseSafePublishValidation(course.id)),
-    ).subscribe({
-      next: (validations) => {
-        this.safePublishValidations = validations;
-        this.safePublishLoading = false;
-      },
-      error: () => {
-        this.safePublishValidations = [];
-        this.safePublishLoading = false;
         this.safePublishError = 'We could not load course safe-publish validation right now. Retry to restore learner-safety checks.';
-      },
-    });
-  }
-
-  loadCourseCompetencyIntegrity(): void {
-    this.competencyIntegrityLoading = true;
-    this.competencyIntegrityError = '';
-
-    if (this.visibleCourses.length === 0) {
-      this.competencyIntegrities = [];
-      this.competencyIntegrityLoading = false;
-      return;
-    }
-
-    forkJoin(
-      this.visibleCourses.map((course) => this.coursesService.getCourseCompetencyEvidenceIntegrity(course.id)),
-    ).subscribe({
-      next: (integrities) => {
-        this.competencyIntegrities = integrities;
-        this.competencyIntegrityLoading = false;
-      },
-      error: () => {
         this.competencyIntegrities = [];
         this.competencyIntegrityLoading = false;
         this.competencyIntegrityError = 'We could not load competency evidence integrity right now. Retry to restore mastery explainability checks.';
-      },
-    });
-  }
-
-  loadCourseRuntimeInterventions(): void {
-    this.runtimeInterventionLoading = true;
-    this.runtimeInterventionError = '';
-
-    if (this.visibleCourses.length === 0) {
-      this.runtimeInterventionRecommendations = [];
-      this.runtimeInterventionLoading = false;
-      return;
-    }
-
-    forkJoin(
-      this.visibleCourses.map((course) => this.coursesService.getCourseRuntimeInterventionRecommendations(course.id)),
-    ).subscribe({
-      next: (recommendations) => {
-        this.runtimeInterventionRecommendations = recommendations.reduce(
-          (all, courseRecommendations) => all.concat(courseRecommendations),
-          [] as CourseRuntimeInterventionRecommendation[],
-        );
-        this.runtimeInterventionLoading = false;
-      },
-      error: () => {
         this.runtimeInterventionRecommendations = [];
         this.runtimeInterventionLoading = false;
         this.runtimeInterventionError = 'We could not load runtime intervention guidance right now. Retry to restore educator recommendation visibility.';
       },
     });
+  }
+
+  loadCourseSafePublishValidation(): void {
+    this.loadCourseGovernanceSummary();
+  }
+
+  loadCourseCompetencyIntegrity(): void {
+    this.loadCourseGovernanceSummary();
+  }
+
+  loadCourseRuntimeInterventions(): void {
+    this.loadCourseGovernanceSummary();
   }
 
   onAddCourse() {
@@ -506,7 +458,7 @@ export class TeacherViewComponent implements OnInit {
     if (this.coursesLoading) {
       return;
     }
-    this.loadCoursePublishReadiness();
+    this.loadCourseGovernanceSummary();
   }
 
   retrySafePublish(): void {

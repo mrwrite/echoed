@@ -5,9 +5,9 @@
         <div>
           <p class="text-sm uppercase tracking-[0.2em] text-on-dark-muted">Welcome back</p>
           <h2 class="text-3xl font-bold">{{userInfo.fullname}}</h2>
-          <p class="text-on-dark">Here’s a beautiful overview of your EchoEd learning journey.</p>
+          <p class="text-on-dark">Here is a guided overview of your EchoEd learning journey.</p>
         </div>
-        <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">K–5 Demo</span>
+        <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">K-5 Demo</span>
       </div>
       <div class="mt-6 grid sm:grid-cols-3 gap-4 text-sm">
         <div class="p-4 bg-white/10 rounded-xl border border-white/10">
@@ -16,7 +16,7 @@
         </div>
         <div class="p-4 bg-white/10 rounded-xl border border-white/10">
           <p class="text-on-dark-muted">Streak</p>
-          <p class="text-2xl font-bold">{{ streakDays }} days 🔥</p>
+          <p class="text-2xl font-bold">{{ streakDays }} day<span *ngIf="streakDays !== 1">s</span></p>
         </div>
         <div class="p-4 bg-white/10 rounded-xl border border-white/10">
           <p class="text-on-dark-muted">Badges</p>
@@ -25,7 +25,7 @@
       </div>
     </div>
     <div class="surface-card p-6">
-      <p class="section-heading text-primary text-sm">Today’s Learning</p>
+      <p class="section-heading text-primary text-sm">Today's Learning</p>
       <app-echo-loading-state
         *ngIf="coursesLoading"
         density="compact"
@@ -200,7 +200,7 @@
     </div>
 
     <div class="surface-card p-6">
-      <h3 class="text-xl font-bold text-primary mb-3">What’s next</h3>
+      <h3 class="text-xl font-bold text-primary mb-3">What's next</h3>
       <ul class="space-y-3">
         <li *ngFor="let item of demoTimeline" class="flex items-start gap-3">
           <span class="h-9 w-9 rounded-full flex items-center justify-center" [ngClass]="{
@@ -329,5 +329,3 @@
   [lesson]="currentLesson"
   (segmentCompleted)="onLessonCompleted()"
 />
-       
-  

@@ -11,6 +11,7 @@ import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
 import {
   CourseCompetencyEvidenceIntegrity,
+  CourseGovernanceSummary,
   CoursePublishReadiness,
   CourseRuntimeInterventionRecommendation,
   CourseSafePublishValidation,
@@ -48,6 +49,10 @@ export class CoursesService {
 
   getCourseRuntimeInterventionRecommendations(courseId: string): Observable<CourseRuntimeInterventionRecommendation[]> {
     return this.http.get<CourseRuntimeInterventionRecommendation[]>(`${this.apiUrl}/${courseId}/runtime-intervention-recommendations`);
+  }
+
+  getCourseGovernanceSummary(courseId: string): Observable<CourseGovernanceSummary> {
+    return this.http.get<CourseGovernanceSummary>(`${this.apiUrl}/${courseId}/governance-summary`);
   }
 
   getLessonById(lessonId: string): Observable<Lesson> {

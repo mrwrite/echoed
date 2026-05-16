@@ -43,7 +43,7 @@ def test_seed_demo_is_idempotent_and_resets_passwords(db_engine, monkeypatch):
         assert session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).count() == 1
         assert session.query(CourseVersion).count() == 1
         assert session.query(Section).filter(Section.name == seed_demo.DEMO_SECTION_NAME).count() == 1
-        assert session.query(Enrollment).count() == 2
+        assert session.query(Enrollment).count() == len(seed_demo.DEMO_SECTION_LEARNER_KEYS)
         seeded_course = session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one()
         assert session.query(Unit).filter(Unit.course_id == seeded_course.id).count() == len(seed_demo.DEMO_UNITS)
         approved_lessons = session.query(Lesson).filter(Lesson.review_status == "approved").all()

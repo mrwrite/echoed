@@ -1,6 +1,5 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, Subject, throwError } from 'rxjs';
 
@@ -48,6 +47,8 @@ class MockCoursesService {
   getCourseCompetencyEvidenceIntegrity = jasmine.createSpy('getCourseCompetencyEvidenceIntegrity').and.callFake(() => this.competencyIntegrityResponse);
   runtimeInterventionResponse = of<any[]>([]);
   getCourseRuntimeInterventionRecommendations = jasmine.createSpy('getCourseRuntimeInterventionRecommendations').and.callFake(() => this.runtimeInterventionResponse);
+  governanceSummaryResponse = of<any>(buildGovernanceSummary());
+  getCourseGovernanceSummary = jasmine.createSpy('getCourseGovernanceSummary').and.callFake(() => this.governanceSummaryResponse);
   deleteCourse = jasmine.createSpy('deleteCourse').and.returnValue(of({}));
   assignCourseToStudent = jasmine.createSpy('assignCourseToStudent').and.returnValue(of({}));
 }
@@ -68,13 +69,64 @@ class MockToastService {
   show = jasmine.createSpy('show');
 }
 
+function buildGovernanceSummary(overrides: Partial<any> = {}) {
+  return {
+    course_id: overrides['course_id'] || 'course-1',
+    course_title: overrides['course_title'] || 'Introduction to Africa',
+    publish_readiness: {
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_ready: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      ...(overrides['publish_readiness'] || {}),
+    },
+    safe_publish_validation: {
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      ...(overrides['safe_publish_validation'] || {}),
+    },
+    lineage_safety_visibility: {
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_coherent: true,
+      is_safe: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      ...(overrides['lineage_safety_visibility'] || {}),
+    },
+    competency_evidence_integrity: {
+      course_id: 'course-1',
+      course_title: 'Introduction to Africa',
+      is_valid: true,
+      is_explainable: true,
+      blocking_issue_count: 0,
+      warning_count: 0,
+      blocking_issues: [],
+      warnings: [],
+      affected_assessments: [],
+      affected_competency_identifiers: [],
+      ...(overrides['competency_evidence_integrity'] || {}),
+    },
+    runtime_intervention_recommendations: overrides['runtime_intervention_recommendations'] || [],
+  };
+}
+
 describe('TeacherViewComponent', () => {
   let component: TeacherViewComponent;
   let fixture: ComponentFixture<TeacherViewComponent>;
   let coursesService: MockCoursesService;
   let analyticsService: MockAnalyticsService;
   let usersService: MockUsersService;
-  let router: Router;
 
   async function createComponent() {
     await TestBed.configureTestingModule({
@@ -93,7 +145,6 @@ describe('TeacherViewComponent', () => {
     coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
     analyticsService = TestBed.inject(AnalyticsService) as unknown as MockAnalyticsService;
     usersService = TestBed.inject(UsersService) as unknown as MockUsersService;
-    router = TestBed.inject(Router);
   }
 
   beforeEach(async () => {
@@ -105,15 +156,9 @@ describe('TeacherViewComponent', () => {
     const pendingStudents = new Subject<any[]>();
     const pendingSummary = new Subject<any[]>();
     const pendingRuntimeSupport = new Subject<any[]>();
-    const pendingPublishReadiness = new Subject<any>();
-    const pendingSafePublish = new Subject<any>();
-    const pendingCompetencyIntegrity = new Subject<any>();
-    const pendingRuntimeIntervention = new Subject<any[]>();
+    const pendingGovernanceSummary = new Subject<any>();
     coursesService.coursesResponse = pendingCourses.asObservable();
-    coursesService.publishReadinessResponse = pendingPublishReadiness.asObservable();
-    coursesService.safePublishResponse = pendingSafePublish.asObservable();
-    coursesService.competencyIntegrityResponse = pendingCompetencyIntegrity.asObservable();
-    coursesService.runtimeInterventionResponse = pendingRuntimeIntervention.asObservable();
+    coursesService.governanceSummaryResponse = pendingGovernanceSummary.asObservable();
     usersService.studentsResponse = pendingStudents.asObservable();
     analyticsService.summaryResponse = pendingSummary.asObservable();
     analyticsService.runtimeSupportResponse = pendingRuntimeSupport.asObservable();
@@ -158,60 +203,30 @@ describe('TeacherViewComponent', () => {
     expect(usersService.getStudents).toHaveBeenCalledTimes(1);
     expect(analyticsService.getTeacherSummary).toHaveBeenCalledTimes(1);
     expect(analyticsService.getEducatorRuntimeSupport).not.toHaveBeenCalled();
-    expect(coursesService.getCoursePublishReadiness).not.toHaveBeenCalled();
+    expect(coursesService.getCourseGovernanceSummary).not.toHaveBeenCalled();
 
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.competencyIntegrityResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_valid: true,
-      is_explainable: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-      affected_assessments: [],
-      affected_competency_identifiers: [],
-    });
-    coursesService.runtimeInterventionResponse = of([]);
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary());
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([{ student_name: 'Ada Lovelace', course_title: 'Algebra I', progress: 50, status: 'active', last_active: '2026-05-01T00:00:00.000Z' }]);
     analyticsService.runtimeSupportResponse = of([]);
 
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    const retryLabels = ['Retry'];
-    buttons.filter((button) => retryLabels.includes(button.textContent?.trim() || '')).forEach((button) => button.click());
+    buttons.filter((button) => button.textContent?.trim() === 'Retry').forEach((button) => button.click());
     fixture.detectChanges();
 
     expect(coursesService.getCourses).toHaveBeenCalledTimes(3);
     expect(usersService.getStudents).toHaveBeenCalledTimes(2);
     expect(analyticsService.getTeacherSummary).toHaveBeenCalledTimes(2);
     expect(analyticsService.getEducatorRuntimeSupport).toHaveBeenCalledTimes(2);
-    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalled();
-    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalled();
-    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalled();
-    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalled();
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCoursePublishReadiness).not.toHaveBeenCalled();
+    expect(coursesService.getCourseSafePublishValidation).not.toHaveBeenCalled();
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).not.toHaveBeenCalled();
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).not.toHaveBeenCalled();
   });
 
-  it('keeps existing teacher actions and links present', () => {
+  it('demotes off-script teacher actions while keeping the dashboard usable', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([{ student_name: 'Ada Lovelace', course_title: 'Algebra I', progress: 50, status: 'active', last_active: '2026-05-01T00:00:00.000Z' }]);
@@ -219,11 +234,29 @@ describe('TeacherViewComponent', () => {
 
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Add Course');
+    expect(compiled.textContent).toContain('Demo-safe view');
+    expect(compiled.textContent).toContain('Advanced actions');
+    expect(compiled.textContent).toContain('Off-script');
     expect(compiled.textContent).toContain('Assign Course');
     expect(compiled.textContent).toContain('Start Live Lesson');
     expect(compiled.textContent).toContain('View Reports');
+    expect(compiled.textContent).not.toContain('Add Course');
+    expect(compiled.textContent).not.toContain('Delete');
     expect(compiled.textContent).not.toContain('Publish Course');
+  });
+
+  it('gives runtime intervention and runtime support distinct framing', () => {
+    coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
+    usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
+    analyticsService.summaryResponse = of([]);
+    analyticsService.runtimeSupportResponse = of([]);
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary());
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Course-level recommendation detail for each learner, including evidence basis, confidence, and caution flags.');
+    expect(compiled.textContent).toContain('Flagship spotlight for fast live-demo narration about who needs support, who is ready for extension, and who is moving steadily.');
   });
 
   it('renders responsive fallback markup for educator tables', () => {
@@ -240,22 +273,20 @@ describe('TeacherViewComponent', () => {
 
   it('renders publish readiness ready state in the teacher staff surface', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 1,
-      blocking_issues: [],
-      warnings: [{ entity_type: 'unit', entity_id: 'unit-1', entity_title: 'Unit One', code: 'empty_unit', message: 'Unit does not contain any lessons yet.' }],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      publish_readiness: {
+        warning_count: 1,
+        warnings: [{ entity_type: 'unit', entity_id: 'unit-1', entity_title: 'Unit One', code: 'empty_unit', message: 'Unit does not contain any lessons yet.' }],
+      },
+    }));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
 
     fixture.detectChanges();
 
-    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCoursePublishReadiness).not.toHaveBeenCalled();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Publish readiness');
     expect(compiled.textContent).toContain('Introduction to Africa');
@@ -265,7 +296,7 @@ describe('TeacherViewComponent', () => {
 
   it('renders blocked publish readiness issues with retry and no mutation actions', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = throwError(() => new Error('readiness failed'));
+    coursesService.governanceSummaryResponse = throwError(() => new Error('readiness failed'));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
@@ -274,18 +305,18 @@ describe('TeacherViewComponent', () => {
     let compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('We could not load course publish readiness');
 
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: false,
-      blocking_issue_count: 2,
-      warning_count: 0,
-      blocking_issues: [
-        { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'review_status_not_approved', message: 'Lesson must be approved before it is publish-ready for learners.' },
-        { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'missing_readiness_field', message: 'Lesson is missing required publish-readiness field: sources.' },
-      ],
-      warnings: [],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      publish_readiness: {
+        is_ready: false,
+        blocking_issue_count: 2,
+        warning_count: 0,
+        blocking_issues: [
+          { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'review_status_not_approved', message: 'Lesson must be approved before it is publish-ready for learners.' },
+          { entity_type: 'lesson', entity_id: 'lesson-1', entity_title: 'Draft Lesson', code: 'missing_readiness_field', message: 'Lesson is missing required publish-readiness field: sources.' },
+        ],
+        warnings: [],
+      },
+    }));
 
     const retryButton = Array.from(compiled.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'Retry',
@@ -294,7 +325,8 @@ describe('TeacherViewComponent', () => {
     fixture.detectChanges();
 
     compiled = fixture.nativeElement as HTMLElement;
-    expect(coursesService.getCoursePublishReadiness).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCoursePublishReadiness).not.toHaveBeenCalled();
     expect(compiled.textContent).toContain('Not ready');
     expect(compiled.textContent).toContain('Draft Lesson');
     expect(coursesService.assignCourseToStudent).not.toHaveBeenCalled();
@@ -303,33 +335,22 @@ describe('TeacherViewComponent', () => {
 
   it('renders safe-publish safe state in the teacher staff surface', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 1,
-      blocking_issues: [],
-      warnings: [
-        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
-      ],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      safe_publish_validation: {
+        warning_count: 1,
+        warnings: [
+          { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
+        ],
+      },
+    }));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
 
     fixture.detectChanges();
 
-    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseSafePublishValidation).not.toHaveBeenCalled();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Safe publish validation');
     expect(compiled.textContent).toContain('Safe');
@@ -339,45 +360,22 @@ describe('TeacherViewComponent', () => {
 
   it('renders competency integrity valid and explainable state in the teacher staff surface', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.competencyIntegrityResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_valid: true,
-      is_explainable: true,
-      blocking_issue_count: 0,
-      warning_count: 1,
-      blocking_issues: [],
-      warnings: [
-        { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
-      ],
-      affected_assessments: [],
-      affected_competency_identifiers: [],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      competency_evidence_integrity: {
+        warning_count: 1,
+        warnings: [
+          { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
+        ],
+      },
+    }));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
 
     fixture.detectChanges();
 
-    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).not.toHaveBeenCalled();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Competency evidence integrity');
     expect(compiled.textContent).toContain('Valid');
@@ -388,25 +386,7 @@ describe('TeacherViewComponent', () => {
 
   it('renders competency integrity affected assessments, competencies, and issues with retry and no mutation actions', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.competencyIntegrityResponse = throwError(() => new Error('integrity failed'));
+    coursesService.governanceSummaryResponse = throwError(() => new Error('integrity failed'));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
@@ -415,25 +395,25 @@ describe('TeacherViewComponent', () => {
     let compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('We could not load competency evidence integrity');
 
-    coursesService.competencyIntegrityResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_valid: false,
-      is_explainable: false,
-      blocking_issue_count: 1,
-      warning_count: 1,
-      blocking_issues: [
-        { entity_type: 'assessment', entity_id: 'assessment-1', entity_title: 'Final Assessment', code: 'missing_attempt_event_for_mastery_evidence', message: 'Attempt evidence is missing an authoritative event.' },
-      ],
-      warnings: [
-        { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
-      ],
-      affected_assessments: [
-        { assessment_id: 'assessment-1', assessment_title: 'Final Assessment', competency_identifiers: ['evidence', 'analysis'] },
-        { assessment_id: 'assessment-2', assessment_title: 'Practice Quiz', competency_identifiers: [] },
-      ],
-      affected_competency_identifiers: ['evidence', 'analysis'],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      competency_evidence_integrity: {
+        is_valid: false,
+        is_explainable: false,
+        blocking_issue_count: 1,
+        warning_count: 1,
+        blocking_issues: [
+          { entity_type: 'assessment', entity_id: 'assessment-1', entity_title: 'Final Assessment', code: 'missing_attempt_event_for_mastery_evidence', message: 'Attempt evidence is missing an authoritative event.' },
+        ],
+        warnings: [
+          { entity_type: 'assessment', entity_id: 'assessment-2', entity_title: 'Practice Quiz', code: 'unaligned_assessment_mastery_evidence', message: 'Assessment evidence is not aligned to a competency.' },
+        ],
+        affected_assessments: [
+          { assessment_id: 'assessment-1', assessment_title: 'Final Assessment', competency_identifiers: ['evidence', 'analysis'] },
+          { assessment_id: 'assessment-2', assessment_title: 'Practice Quiz', competency_identifiers: [] },
+        ],
+        affected_competency_identifiers: ['evidence', 'analysis'],
+      },
+    }));
 
     const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
       (button) => button.textContent?.trim() === 'Retry',
@@ -442,7 +422,8 @@ describe('TeacherViewComponent', () => {
     fixture.detectChanges();
 
     compiled = fixture.nativeElement as HTMLElement;
-    expect(coursesService.getCourseCompetencyEvidenceIntegrity).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseCompetencyEvidenceIntegrity).not.toHaveBeenCalled();
     expect(compiled.textContent).toContain('Not valid');
     expect(compiled.textContent).toContain('Not explainable');
     expect(compiled.textContent).toContain('Affected competencies');
@@ -456,67 +437,40 @@ describe('TeacherViewComponent', () => {
 
   it('renders runtime intervention recommendation states, evidence basis, and caution flags in the teacher staff surface', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.competencyIntegrityResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_valid: true,
-      is_explainable: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-      affected_assessments: [],
-      affected_competency_identifiers: [],
-    });
-    coursesService.runtimeInterventionResponse = of([
-      {
-        student_id: 'student-1',
-        student_name: 'Ada Lovelace',
-        student_course_id: 'student-course-1',
-        course_id: 'course-1',
-        course_title: 'Introduction to Africa',
-        recommendation_state: 'reteach',
-        educator_attention_level: 'high',
-        summary: 'Recent evidence suggests a brief reteach cycle may help.',
-        evidence_basis: [
-          {
-            source: 'attempt_events',
-            detail: 'Recent attempts show repeated weak evidence.',
-            assessment_id: 'assessment-1',
-            assessment_title: 'Exit Check',
-            competency_identifiers: ['analysis'],
-          },
-        ],
-        confidence_level: 'high',
-        caution_flags: ['incomplete_evidence'],
-        learner_safe_message: 'Rebuild understanding with calm support and one step at a time.',
-      },
-    ]);
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      runtime_intervention_recommendations: [
+        {
+          student_id: 'student-1',
+          student_name: 'Ada Lovelace',
+          student_course_id: 'student-course-1',
+          course_id: 'course-1',
+          course_title: 'Introduction to Africa',
+          recommendation_state: 'reteach',
+          educator_attention_level: 'high',
+          summary: 'Recent evidence suggests a brief reteach cycle may help.',
+          evidence_basis: [
+            {
+              source: 'attempt_events',
+              detail: 'Recent attempts show repeated weak evidence.',
+              assessment_id: 'assessment-1',
+              assessment_title: 'Exit Check',
+              competency_identifiers: ['analysis'],
+            },
+          ],
+          confidence_level: 'high',
+          caution_flags: ['incomplete_evidence'],
+          learner_safe_message: 'Rebuild understanding with calm support and one step at a time.',
+        },
+      ],
+    }));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
 
     fixture.detectChanges();
 
-    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledWith('course-1');
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).not.toHaveBeenCalled();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Runtime intervention recommendations');
     expect(compiled.textContent).toContain('Ada Lovelace');
@@ -534,37 +488,7 @@ describe('TeacherViewComponent', () => {
 
   it('renders runtime intervention error state and retries read-only loading in the teacher staff surface', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.competencyIntegrityResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_valid: true,
-      is_explainable: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-      affected_assessments: [],
-      affected_competency_identifiers: [],
-    });
-    coursesService.runtimeInterventionResponse = throwError(() => new Error('runtime intervention failed'));
+    coursesService.governanceSummaryResponse = throwError(() => new Error('runtime intervention failed'));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
@@ -573,7 +497,7 @@ describe('TeacherViewComponent', () => {
     let compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('We could not load runtime intervention recommendations');
 
-    coursesService.runtimeInterventionResponse = of([]);
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary());
     const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
       (button) => button.textContent?.trim() === 'Retry',
     ) as HTMLButtonElement[];
@@ -581,7 +505,8 @@ describe('TeacherViewComponent', () => {
     fixture.detectChanges();
 
     compiled = fixture.nativeElement as HTMLElement;
-    expect(coursesService.getCourseRuntimeInterventionRecommendations).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseRuntimeInterventionRecommendations).not.toHaveBeenCalled();
     expect(coursesService.assignCourseToStudent).not.toHaveBeenCalled();
     expect(coursesService.deleteCourse).not.toHaveBeenCalled();
     expect(compiled.textContent).toContain('Runtime intervention recommendations will appear here');
@@ -589,16 +514,7 @@ describe('TeacherViewComponent', () => {
 
   it('renders blocked safe-publish issues with retry and no mutation actions', () => {
     coursesService.coursesResponse = of([{ id: 'course-1', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } }]);
-    coursesService.publishReadinessResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_ready: true,
-      blocking_issue_count: 0,
-      warning_count: 0,
-      blocking_issues: [],
-      warnings: [],
-    });
-    coursesService.safePublishResponse = throwError(() => new Error('safe publish failed'));
+    coursesService.governanceSummaryResponse = throwError(() => new Error('safe publish failed'));
     usersService.studentsResponse = of([{ id: 'student-1', firstname: 'Ada', lastname: 'Lovelace' }]);
     analyticsService.summaryResponse = of([]);
     analyticsService.runtimeSupportResponse = of([]);
@@ -607,19 +523,19 @@ describe('TeacherViewComponent', () => {
     let compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('We could not load course safe-publish validation');
 
-    coursesService.safePublishResponse = of({
-      course_id: 'course-1',
-      course_title: 'Introduction to Africa',
-      is_safe: false,
-      blocking_issue_count: 1,
-      warning_count: 1,
-      blocking_issues: [
-        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'blocked_revision_status', message: 'Deprecated or archived content is not safe to republish for learners.' },
-      ],
-      warnings: [
-        { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
-      ],
-    });
+    coursesService.governanceSummaryResponse = of(buildGovernanceSummary({
+      safe_publish_validation: {
+        is_safe: false,
+        blocking_issue_count: 1,
+        warning_count: 1,
+        blocking_issues: [
+          { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'blocked_revision_status', message: 'Deprecated or archived content is not safe to republish for learners.' },
+        ],
+        warnings: [
+          { entity_type: 'course', entity_id: 'course-1', entity_title: 'Introduction to Africa', code: 'draft_has_published_at', message: 'Draft revisions should not already have a published timestamp.' },
+        ],
+      },
+    }));
 
     const retryButtons = Array.from(compiled.querySelectorAll('button')).filter(
       (button) => button.textContent?.trim() === 'Retry',
@@ -628,7 +544,8 @@ describe('TeacherViewComponent', () => {
     fixture.detectChanges();
 
     compiled = fixture.nativeElement as HTMLElement;
-    expect(coursesService.getCourseSafePublishValidation).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseGovernanceSummary).toHaveBeenCalledTimes(2);
+    expect(coursesService.getCourseSafePublishValidation).not.toHaveBeenCalled();
     expect(compiled.textContent).toContain('Not safe');
     expect(compiled.textContent).toContain('Deprecated or archived content is not safe to republish for learners.');
     expect(coursesService.assignCourseToStudent).not.toHaveBeenCalled();

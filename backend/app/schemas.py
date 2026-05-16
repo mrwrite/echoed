@@ -927,6 +927,29 @@ class CourseRuntimeInterventionRecommendationResponse(BaseModel):
     learner_safe_message: str
 
 
+class CourseLineageSafetyVisibilityResponse(BaseModel):
+    course_id: UUID
+    course_title: str
+    is_coherent: bool
+    is_safe: bool
+    blocking_issue_count: int
+    warning_count: int
+    blocking_issues: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+    warnings: List[PublishReadinessIssueResponse] = Field(default_factory=list)
+
+
+class CourseGovernanceSummaryResponse(BaseModel):
+    course_id: UUID
+    course_title: str
+    publish_readiness: CoursePublishReadinessResponse
+    safe_publish_validation: CourseSafePublishValidationResponse
+    lineage_safety_visibility: CourseLineageSafetyVisibilityResponse
+    competency_evidence_integrity: CourseCompetencyEvidenceIntegrityResponse
+    runtime_intervention_recommendations: List[CourseRuntimeInterventionRecommendationResponse] = Field(
+        default_factory=list
+    )
+
+
 class AssessmentEvidenceSummaryResponse(BaseModel):
     assessment_id: UUID
     assessment_title: str

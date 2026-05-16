@@ -67,7 +67,7 @@ export class StudentViewComponent implements OnInit {
   /** Number of courses shown initially before "View More" is clicked */
   availableCoursesVisibleCount = 4;
   demoTimeline = [
-    { label: 'Yesterday', detail: 'Completed “Roots of Rhythm” lesson', status: 'completed' },
+    { label: 'Yesterday', detail: 'Completed "Roots of Rhythm" lesson', status: 'completed' },
     { label: 'Today', detail: 'Continue African kingdoms storytelling', status: 'active' },
     { label: 'Next', detail: 'Interactive map: The Trans-Saharan routes', status: 'upcoming' }
   ];

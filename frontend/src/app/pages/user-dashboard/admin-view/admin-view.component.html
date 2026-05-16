@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center p-6 flex-wrap gap-4">
       <div>
         <h2 class="text-2xl font-bold text-ink"> Welcome, {{userInfo.fullname}}</h2>
-        <p class="text-muted">Here's a snapshot of what's happening on EchoEd.</p>
+        <p class="text-muted">Here is a stable snapshot of the flagship EchoEd demo environment.</p>
       </div>
     </div>
   </div>
@@ -74,7 +74,7 @@
               <td class="py-2">{{ user.role }}</td>
               <td class="py-2">{{ user.created_at| date: 'MMM d, y' }}</td>
               <td class="py-2 text-right">
-                <button class="text-red-600 text-sm hover:underline" (click)="deleteUser(user.id)">Delete</button>
+                <span class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Managed in admin tools</span>
               </td>
             </tr>
           </tbody>
@@ -93,7 +93,7 @@
               <p class="mt-1 text-slate-700">{{ user.created_at | date: 'MMM d, y' }}</p>
             </div>
           </div>
-          <button class="mt-3 text-red-600 text-sm font-semibold" (click)="deleteUser(user.id)">Delete</button>
+          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Managed in admin tools</p>
         </article>
       </div>
       <a *ngIf="users.length > visibleCount" class="text-primary underline cursor-pointer" (click)="viewAllUsers()">View More</a>
@@ -141,8 +141,9 @@
   <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-semibold text-ink tracking-tight leading-snug">Course Management</h3>
-      <span class="text-sm hover:text-[#4A90E2] px-3 py-1 rounded-md transition-colors duration-200" (click)="onAddCourse()"><lucide-icon name="Plus"/></span>
+      <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Demo-safe view</span>
     </div>
+    <p class="mb-4 text-sm text-muted">The live demo stays on read-only catalog visibility. Destructive catalog tools remain outside this dashboard path.</p>
     <app-echo-loading-state
       *ngIf="coursesLoading"
       density="section"
@@ -172,7 +173,6 @@
           <span>{{ course.title }}</span>
           <div class="flex flex-wrap gap-3" data-educator-responsive="admin-courses">
             <button class="text-sm text-blue-600 hover:underline" (click)="onManageCourse(course.id)">Manage</button>
-            <button class="text-sm text-red-600 hover:underline" (click)="deleteCourse(course.id)">Delete</button>
           </div>
         </li>
       </ul>
@@ -511,7 +511,7 @@
                         ({{ basis.assessment_title }})
                       </span>
                       <span *ngIf="basis.competency_identifiers.length > 0">
-                        • {{ basis.competency_identifiers.join(', ') }}
+                        - {{ basis.competency_identifiers.join(', ') }}
                       </span>
                     </li>
                   </ul>
@@ -539,8 +539,8 @@
   <div class="surface-card p-6 rounded-xl shadow col-span-1 md:col-span-2 xl:col-span-1">
     <h3 class="text-lg font-semibold text-ink mb-4">Announcements</h3>
     <ul class="space-y-3 text-sm text-gray-700">
-      <li><span class="font-semibold">Apr 7, 2024:</span> Don't forget the summit tomorrow!</li>
-      <li><span class="font-semibold">Apr 4, 2024:</span> New Course: Web Development</li>
+      <li><span class="font-semibold">Flagship demo:</span> Introduction to Africa is ready for the guided learner, teacher, and admin walkthrough.</li>
+      <li><span class="font-semibold">Staff focus:</span> Use the governance summary and runtime recommendations to narrate publish safety, evidence integrity, and learner support.</li>
     </ul>
   </div>
 </div>

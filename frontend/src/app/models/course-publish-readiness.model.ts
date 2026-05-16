@@ -26,6 +26,17 @@ export interface CourseSafePublishValidation {
   warnings: PublishReadinessIssue[];
 }
 
+export interface CourseLineageSafetyVisibility {
+  course_id: string;
+  course_title: string;
+  is_coherent: boolean;
+  is_safe: boolean;
+  blocking_issue_count: number;
+  warning_count: number;
+  blocking_issues: PublishReadinessIssue[];
+  warnings: PublishReadinessIssue[];
+}
+
 export interface CompetencyEvidenceAffectedAssessment {
   assessment_id?: string | null;
   assessment_title: string;
@@ -66,4 +77,14 @@ export interface CourseRuntimeInterventionRecommendation {
   confidence_level: string;
   caution_flags: string[];
   learner_safe_message: string;
+}
+
+export interface CourseGovernanceSummary {
+  course_id: string;
+  course_title: string;
+  publish_readiness: CoursePublishReadiness;
+  safe_publish_validation: CourseSafePublishValidation;
+  lineage_safety_visibility: CourseLineageSafetyVisibility;
+  competency_evidence_integrity: CourseCompetencyEvidenceIntegrity;
+  runtime_intervention_recommendations: CourseRuntimeInterventionRecommendation[];
 }

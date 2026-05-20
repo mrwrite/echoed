@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" data-testid="student-dashboard">
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
     <div class="col-span-2 p-6 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white shadow-soft-card">
       <div class="flex justify-between items-start">
@@ -43,7 +43,7 @@
         (action)="retryCourseLoad()"
       ></app-echo-state-panel>
       <ng-container *ngIf="!coursesLoading && !coursesLoadError && activeStudentCourse; else noActive">
-        <p class="text-lg font-semibold mt-2">{{ activeStudentCourse.course.title }}</p>
+        <p class="text-lg font-semibold mt-2" data-testid="student-active-course-title">{{ activeStudentCourse.course.title }}</p>
         <p class="text-sm text-slate-600">{{ activeStudentCourse.course.description }}</p>
         <p
           class="mt-2 text-xs font-semibold uppercase tracking-[0.18em]"
@@ -125,7 +125,11 @@
           <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
             <div class="h-full bg-gradient-to-r from-primary to-accent" [style.width.%]="activeStudentCourse.progress || 0"></div>
           </div>
-          <button class="mt-4 w-full py-2 rounded-xl bg-primary text-white font-semibold" (click)="startCourse(activeStudentCourse)">
+          <button
+            class="mt-4 w-full py-2 rounded-xl bg-primary text-white font-semibold"
+            data-testid="student-continue-lesson"
+            (click)="startCourse(activeStudentCourse)"
+          >
             Continue lesson
           </button>
         </div>

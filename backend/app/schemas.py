@@ -27,6 +27,30 @@ class UserDto(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+class AuthOrganizationResponse(BaseModel):
+    id: UUID
+    role: str
+
+class ActiveOrganizationResponse(BaseModel):
+    id: UUID
+    name: str
+    type: str
+    role: str
+
+class AuthTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    organizations: list[AuthOrganizationResponse] = []
+    active_org_id: Optional[str] = None
+    active_org_role: Optional[str] = None
+    active_organization: Optional[ActiveOrganizationResponse] = None
+
+class OrganizationSwitchResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    active_org_id: str
+    active_org_role: str
+    active_organization: ActiveOrganizationResponse
 
 class OrganizationCreate(BaseModel):
     name: str

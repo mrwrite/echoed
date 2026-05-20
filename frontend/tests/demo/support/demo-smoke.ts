@@ -1,0 +1,25 @@
+import { expect, Page } from '@playwright/test';
+
+export const DEMO_STUDENT_USERNAME =
+  process.env['DEMO_STUDENT_USERNAME'] || 'normalstudent';
+export const DEMO_STUDENT_PASSWORD =
+  process.env['DEMO_STUDENT_PASSWORD'] || 'password';
+export const FLAGSHIP_COURSE_TITLE =
+  process.env['DEMO_FLAGSHIP_COURSE_TITLE'] || 'Introduction to Africa';
+
+export async function loginAsDemoStudent(page: Page): Promise<void> {
+  await page.goto('/login');
+
+  await expect(page.getByRole('heading', { name: 'Welcome to EchoEd' })).toBeVisible();
+  await page.getByLabel('Email or Username').fill(DEMO_STUDENT_USERNAME);
+  await page.getByLabel('Password').fill(DEMO_STUDENT_PASSWORD);
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByTestId('student-dashboard')).toBeVisible();
+}
+
+export async function expectFlagshipCourseOnStudentDashboard(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'My Courses' })).toBeVisible();
+  await expect(page.getByTestId('student-active-course-title')).toHaveText(FLAGSHIP_COURSE_TITLE);
+}

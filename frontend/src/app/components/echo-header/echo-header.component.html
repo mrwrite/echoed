@@ -21,7 +21,7 @@
         ></app-echo-loading-state>
         <app-echo-state-panel
           *ngIf="!orgsLoading && orgsLoadError"
-          compact
+          [compact]="true"
           align="left"
           variant="error"
           eyebrow="Organization access unavailable"
@@ -32,7 +32,7 @@
         ></app-echo-state-panel>
         <app-echo-state-panel
           *ngIf="!orgsLoading && !orgsLoadError && organizations.length === 0"
-          compact
+          [compact]="true"
           align="left"
           variant="empty"
           eyebrow="No organizations"
@@ -61,7 +61,7 @@
           ></app-echo-loading-state>
           <app-echo-state-panel
             *ngIf="switchError"
-            compact
+            [compact]="true"
             align="left"
             variant="error"
             eyebrow="Switch failed"

@@ -35,7 +35,7 @@
               [attr.aria-label]="collapsed ? item.label : null"
               [attr.title]="collapsed ? item.label : null"
             >
-              <lucide-icon [name]="item.icon" class="h-5 w-5 shrink-0"></lucide-icon>
+            <span aria-hidden="true" class="inline-block h-5 w-5 shrink-0 rounded-full bg-current opacity-70"></span>
               <span *ngIf="!collapsed" class="font-semibold truncate">{{ item.label }}</span>
             </a>
           </div>

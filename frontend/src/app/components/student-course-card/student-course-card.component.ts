@@ -8,16 +8,32 @@ import { IconModule } from '../../shared/icon/icon.module';
   imports: [CommonModule, IconModule],
   template: `
     <div class="bg-white rounded-xl shadow w-full overflow-hidden relative">
-      <img *ngIf="thumbnailUrl" [src]="thumbnailUrl" alt="Course image" class="w-full h-48 object-cover">
+      <img
+        *ngIf="thumbnailUrl"
+        [src]="thumbnailUrl"
+        alt="Course image"
+        class="w-full h-48 object-cover"
+      />
       <div class="p-6">
         <p class="text-xl font-bold text-primary">{{ title }}</p>
-        <p *ngIf="instructor" class="text-xs text-gray-500 mb-1">By {{ instructor }}</p>
+        <p *ngIf="instructor" class="text-xs text-gray-500 mb-1">
+          By {{ instructor }}
+        </p>
         <p class="text-xs text-gray-500">{{ description }}</p>
-        <div *ngIf="rating" class="flex items-center text-sm text-yellow-500 mt-1">
-          <ng-container *ngFor="let star of [1,2,3,4,5]">
-            <lucide-icon [name]="star <= (rating || 0) ? 'star' : 'star'" class="h-4 w-4" [class.opacity-30]="star > (rating || 0)"></lucide-icon>
+        <div
+          *ngIf="rating"
+          class="flex items-center text-sm text-yellow-500 mt-1"
+        >
+          <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
+            <span
+              aria-hidden="true"
+              class="inline-block h-4 w-4 rounded-full bg-current"
+              [class.opacity-30]="star > (rating || 0)"
+            ></span>
           </ng-container>
-          <span *ngIf="ratingCount" class="text-gray-500 ml-1">({{ ratingCount }})</span>
+          <span *ngIf="ratingCount" class="text-gray-500 ml-1"
+            >({{ ratingCount }})</span
+          >
         </div>
         <div *ngIf="progress !== undefined" class="mt-2">
           <div class="flex items-center gap-2">
@@ -32,7 +48,8 @@ import { IconModule } from '../../shared/icon/icon.module';
       <span
         *ngIf="status === 'completed'"
         class="absolute top-1 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded"
-      >Completed</span>
+        >Completed</span
+      >
     </div>
   `,
 })

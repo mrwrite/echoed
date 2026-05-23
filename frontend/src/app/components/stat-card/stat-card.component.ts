@@ -9,7 +9,10 @@ import { IconModule } from '../../shared/icon/icon.module';
   template: `
     <div class="bg-white p-6 rounded-xl shadow flex flex-col space-y-1">
       <div class="flex items-start space-x-2">
-        <lucide-icon [name]="icon" class="text-gray-500 w-6 h-6 flex-shrink-0"></lucide-icon>
+        <span
+          aria-hidden="true"
+          class="inline-block h-6 w-6 flex-shrink-0 rounded-full bg-current opacity-70"
+        ></span>
         <div class="flex flex-col">
           <p class="text-2xl font-bold text-[#1A1A40]">{{ value }}</p>
           <p class="text-gray-500 tracking-tight leading-snug">{{ label }}</p>

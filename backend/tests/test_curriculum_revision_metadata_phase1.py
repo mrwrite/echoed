@@ -170,7 +170,7 @@ def test_revision_metadata_serialization_does_not_mutate_progress_or_evidence_re
 
 
 def test_revision_metadata_migration_is_additive():
-    migration_path = Path("backend/alembic/versions/7d3c9a1e5b2f_add_curriculum_revision_metadata.py")
+    migration_path = Path("alembic/versions/7d3c9a1e5b2f_add_curriculum_revision_metadata.py")
     contents = migration_path.read_text(encoding="utf-8")
 
     assert 'for table_name in ("courses", "units", "lessons", "assessments")' in contents

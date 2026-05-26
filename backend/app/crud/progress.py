@@ -84,90 +84,160 @@ def create_segment_progress(
     db.refresh(progress)
     return progress
 
-
 def update_segment_progress_status(db: Session, progress_id: UUID, new_status: str):
     progress = db.get(SegmentProgress, progress_id)
-    if progress:
-        if isinstance(new_status, ProgressStatus):
-            status_value = new_status
-        else:
-            status_value = ProgressStatus[new_status.upper()]
-        progress.status = status_value
-        if status_value == ProgressStatus.IN_PROGRESS and not progress.started_at:
-            progress.started_at = datetime.utcnow()
-        if status_value == ProgressStatus.COMPLETED:
-            progress.completed_at = datetime.utcnow()
-        progress.last_updated = datetime.utcnow()
-        db.commit()
-        db.refresh(progress)
 
-        if progress.status == ProgressStatus.IN_PROGRESS:
-            unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
-            if unit_progress:
-                student_course = db.get(StudentCourse, unit_progress.student_course_id)
-                if student_course:
-                    student_course.last_activity_at = datetime.utcnow()
-                    db.commit()
+    if not progress:
+        return None
 
-        # If the segment was completed, advance progress within the unit or to the
-        # next unit as needed.
-        if progress.status == ProgressStatus.COMPLETED:
-            unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
-            unit = db.get(Unit, unit_progress.unit_id) if unit_progress else None
-            governed_selection = governed_lessons_for_unit(unit)
-            next_seg = None
-            if (
-                unit_progress
-                and governed_selection.state == GOVERNED_AVAILABLE
-            ):
-                next_seg = _governed_current_segment_for_unit_progress(
-                    db,
-                    unit_progress,
-                    governed_selection.lessons,
+    # Resolve enum safely
+    if isinstance(new_status, ProgressStatus):
+        status_value = new_status
+    else:
+        status_value = ProgressStatus(new_status.strip().lower())
+
+    # Update segment status FIRST
+    progress.status = status_value
+
+    if status_value == ProgressStatus.IN_PROGRESS and not progress.started_at:
+        progress.started_at = datetime.utcnow()
+
+    if status_value in [ProgressStatus.COMPLETED, ProgressStatus.SKIPPED]:
+        progress.completed_at = datetime.utcnow()
+
+    progress.last_updated = datetime.utcnow()
+
+    db.commit()
+    db.refresh(progress)
+
+    # Update course activity timestamp
+    unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
+
+    if unit_progress:
+        student_course = db.get(StudentCourse, unit_progress.student_course_id)
+
+        if student_course:
+            student_course.last_activity_at = datetime.utcnow()
+            db.commit()
+
+    # Progression logic
+    if progress.status in [ProgressStatus.COMPLETED, ProgressStatus.SKIPPED]:
+        if unit_progress:
+            all_segments = (
+                db.query(SegmentProgress)
+                .filter(SegmentProgress.student_unit_id == unit_progress.id)
+                .all()
+            )
+
+            all_complete = all(
+                seg.status in [ProgressStatus.COMPLETED, ProgressStatus.SKIPPED]
+                for seg in all_segments
+            )
+
+            if all_complete:
+                unit_progress.status = ProgressStatus.COMPLETED
+                unit_progress.completed_at = datetime.utcnow()
+            else:
+                unit_progress.status = ProgressStatus.IN_PROGRESS
+
+            if not all_complete:
+                next_seg = (
+                    db.query(SegmentProgress)
+                    .filter(
+                        SegmentProgress.student_unit_id == unit_progress.id,
+                        SegmentProgress.status == ProgressStatus.NOT_STARTED,
+                    )
+                    .order_by(SegmentProgress.last_updated.asc())
+                    .first()
                 )
 
-            if next_seg:
-                # Move to the next lesson within the unit
-                next_seg.status = ProgressStatus.IN_PROGRESS
-                next_seg.last_updated = datetime.utcnow()
-                if unit_progress and unit_progress.status != ProgressStatus.COMPLETED:
-                    unit_progress.status = ProgressStatus.IN_PROGRESS
-                    if not unit_progress.started_at:
-                        unit_progress.started_at = datetime.utcnow()
-                    unit_progress.last_updated = datetime.utcnow()
-                student_course = db.get(StudentCourse, unit_progress.student_course_id) if unit_progress else None
-                if student_course:
-                    student_course.last_activity_at = datetime.utcnow()
-                db.commit()
-            else:
-                # All lessons in the unit are complete; mark unit complete and
-                # advance to the next unit if available
-                unit_progress = db.get(StudentUnitProgress, progress.student_unit_id)
-                if unit_progress:
-                    unit_progress.status = ProgressStatus.COMPLETED
-                    unit_progress.completed_at = datetime.utcnow()
-                    unit_progress.last_updated = datetime.utcnow()
-                    db.commit()
+                if next_seg:
+                    next_seg.status = ProgressStatus.IN_PROGRESS
 
-                    next_state = resolve_governed_progression(
-                        db, unit_progress.student_course_id
-                    )
-                    if next_state["delivery_state"] == "completed":
-                        # No more units left; mark entire course as completed
-                        student_course = db.get(
-                            StudentCourse, unit_progress.student_course_id
+                    if not next_seg.started_at:
+                        next_seg.started_at = datetime.utcnow()
+
+                    next_seg.last_updated = datetime.utcnow()    
+
+            if not unit_progress.started_at:
+                unit_progress.started_at = datetime.utcnow()
+
+            unit_progress.last_updated = datetime.utcnow()
+
+            db.commit()
+
+            student_course = db.get(StudentCourse, unit_progress.student_course_id)
+
+            # Create next unit or complete course
+            if all_complete and student_course:
+                current_unit = db.get(Unit, unit_progress.unit_id)
+
+                if current_unit and current_unit.order is not None:
+                    next_unit = (
+                        db.query(Unit)
+                        .filter(
+                            Unit.course_id == current_unit.course_id,
+                            Unit.order > current_unit.order,
                         )
-                        if student_course:
-                            student_course.status = "completed"
-                            student_course.completed_at = datetime.utcnow()
-                            student_course.last_activity_at = datetime.utcnow()
-                            db.commit()
-            if unit_progress:
-                student_course = db.get(StudentCourse, unit_progress.student_course_id)
-                if student_course:
-                    award_badges_for_student(db, student_course.student_id)
-    return progress
+                        .order_by(Unit.order.asc())
+                        .first()
+                    )
+                else:
+                    next_unit = None
 
+                if next_unit:
+                    existing_next = (
+                        db.query(StudentUnitProgress)
+                        .filter(
+                            StudentUnitProgress.student_course_id == student_course.id,
+                            StudentUnitProgress.unit_id == next_unit.id,
+                        )
+                        .first()
+                    )
+
+                    if not existing_next:
+                        new_progress = create_student_unit_progress(
+                            db,
+                            student_course.id,
+                            next_unit.id,
+                        )
+
+                        new_progress.status = ProgressStatus.IN_PROGRESS
+                        new_progress.started_at = datetime.utcnow()
+                        new_progress.last_updated = datetime.utcnow()
+                        next_unit_lessons = (
+                            db.query(Lesson)
+                            .filter(Lesson.unit_id == next_unit.id)
+                            .order_by(Lesson.order.asc())
+                            .all()
+                        )
+
+                        for lesson in next_unit_lessons:
+                            seg = create_segment_progress(
+                                db,
+                                new_progress.id,
+                                lesson.id,
+                            )
+
+                            # First lesson becomes active immediately
+                            if lesson == next_unit_lessons[0]:
+                                seg.status = ProgressStatus.IN_PROGRESS
+                                seg.started_at = datetime.utcnow()
+                                seg.last_updated = datetime.utcnow()
+
+                        
+                        db.commit()
+
+                else:
+                    student_course.status = "completed"
+                    student_course.completed_at = datetime.utcnow()
+                    student_course.last_activity_at = datetime.utcnow()
+
+                db.commit()
+            if student_course:
+                award_badges_for_student(db, student_course.student_id)
+
+    return progress
 
 def get_segment_progress(db: Session, student_unit_id: UUID, lesson_id: UUID):
     return (

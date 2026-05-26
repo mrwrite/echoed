@@ -421,7 +421,16 @@ class SegmentProgress(Base):
         ForeignKey('lessons.id', ondelete='CASCADE'),
         nullable=False
     )
-    status = Column(SqlEnum(ProgressStatus, name="segment_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
+    status = Column(
+    SqlEnum(
+        ProgressStatus,
+        name="segment_status_enum",
+        values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        create_constraint=True,
+    ),
+    default=ProgressStatus.NOT_STARTED,
+    nullable=False,
+    )
     last_updated = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
@@ -433,12 +442,12 @@ class SegmentProgress(Base):
 
 
 
-user_units = Table(
+    user_units = Table(
     "user_units",
     Base.metadata,
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
     Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
-)
+    )
 
 
 class Badge(Base):

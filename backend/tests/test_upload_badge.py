@@ -1,63 +1,45 @@
 import os
 import uuid
-import shutil
-import pytest
-
-# Use an in-memory SQLite database for tests and a temp directory for uploads
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
-os.environ["BADGES_PATH"] = "./test_badges"
 
 from fastapi.testclient import TestClient
-from app import main as app_main
-from app.main import app
 
-BADGES_PATH = os.environ["BADGES_PATH"]
-app_main.BADGES_PATH = BADGES_PATH
+from app.api.routes import uploads
+from app.deps import get_current_user
+from app.main import app
 from app.models import User
-from app.database import SessionLocal
-from app.auth import get_current_user
 
 client = TestClient(app)
 
-@pytest.fixture
-def test_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-@pytest.fixture
-def test_user(test_db):
-    user = User(
+def test_upload_badge_image(db_session, tmp_path, monkeypatch):
+    admin_user = User(
         id=uuid.uuid4(),
         firstname="Badge",
         lastname="Uploader",
-        username=f"badge_{uuid.uuid4()}",
-        email=f"badge_{uuid.uuid4()}@example.com",
+        username=f"badge_{uuid.uuid4().hex[:8]}",
+        email=f"badge_{uuid.uuid4().hex[:8]}@example.com",
         hashed_password="fake",
-        role="teacher",
+        role="admin",
     )
-    test_db.add(user)
-    test_db.commit()
-    return user
+    db_session.add(admin_user)
+    db_session.commit()
 
+    badges_path = tmp_path / "badges"
+    badges_path.mkdir()
+    monkeypatch.setattr(uploads, "BADGES_PATH", str(badges_path))
+    app.dependency_overrides[get_current_user] = lambda: admin_user
 
-def test_upload_badge_image(test_db, test_user):
-    app.dependency_overrides[get_current_user] = lambda: test_user
-    os.makedirs(BADGES_PATH, exist_ok=True)
-    content = b"\x89PNG\r\n\x1a\n"
-    files = {"file": ("badge.png", content, "image/png")}
-    response = client.post("/api/upload/badge", files=files)
-    assert response.status_code == 200
-    data = response.json()
-    assert "file_path" in data
+    try:
+        content = b"\x89PNG\r\n\x1a\n"
+        files = {"file": ("badge.png", content, "image/png")}
+        response = client.post("/api/upload/badge", files=files)
+        assert response.status_code == 200
 
-    filename = data["file_path"].split("/")[-1]
-    file_path = os.path.join(BADGES_PATH, filename)
-    assert os.path.exists(file_path)
+        data = response.json()
+        assert "file_path" in data
 
-    os.remove(file_path)
-    if os.path.exists(BADGES_PATH):
-        shutil.rmtree(BADGES_PATH)
-    app.dependency_overrides = {}
+        filename = data["file_path"].rstrip("/").split("/")[-1]
+        file_path = os.path.join(uploads.BADGES_PATH, filename)
+        assert os.path.exists(file_path)
+    finally:
+        app.dependency_overrides = {}

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.database import get_db
 from app.deps import get_current_user, require_roles, require_org_roles
@@ -404,39 +404,39 @@ def get_course_runtime_intervention_recommendations(
     course = (
         db.query(Course)
         .options(
-            joinedload(Course.assessments)
-            .joinedload(Assessment.attempts)
-            .joinedload(StudentAssessmentAttempt.events),
-            joinedload(Course.assessments).joinedload(Assessment.events),
-            joinedload(Course.assessments).joinedload(Assessment.competency_alignments),
-            joinedload(Course.units)
-            .joinedload(Unit.assessments)
-            .joinedload(Assessment.attempts)
-            .joinedload(StudentAssessmentAttempt.events),
-            joinedload(Course.units)
-            .joinedload(Unit.assessments)
-            .joinedload(Assessment.events),
-            joinedload(Course.units)
-            .joinedload(Unit.assessments)
-            .joinedload(Assessment.competency_alignments),
-            joinedload(Course.units)
-            .joinedload(Unit.lessons)
-            .joinedload(Lesson.assessments)
-            .joinedload(Assessment.attempts)
-            .joinedload(StudentAssessmentAttempt.events),
-            joinedload(Course.units)
-            .joinedload(Unit.lessons)
-            .joinedload(Lesson.assessments)
-            .joinedload(Assessment.events),
-            joinedload(Course.units)
-            .joinedload(Unit.lessons)
-            .joinedload(Lesson.assessments)
-            .joinedload(Assessment.competency_alignments),
-            joinedload(Course.student_courses)
+            selectinload(Course.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.assessments).selectinload(Assessment.events),
+            selectinload(Course.assessments).selectinload(Assessment.competency_alignments),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.events),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.competency_alignments),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.events),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.competency_alignments),
+            selectinload(Course.student_courses)
             .joinedload(StudentCourse.student),
-            joinedload(Course.student_courses)
-            .joinedload(StudentCourse.unit_progress)
-            .joinedload(StudentUnitProgress.segments),
+            selectinload(Course.student_courses)
+            .selectinload(StudentCourse.unit_progress)
+            .selectinload(StudentUnitProgress.segments),
         )
         .filter(Course.id == parsed_course_id)
         .first()

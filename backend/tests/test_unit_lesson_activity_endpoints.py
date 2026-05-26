@@ -1,49 +1,83 @@
-import os
 import uuid
+
 import pytest
-
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
-
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from app.main import app
-from app.database import SessionLocal
-from app.models import Course, Unit, Lesson, Activity, Source
 
-client = TestClient(app)
+from app.api.routes import activities, lessons, units
+from app.database import get_db
+from app.deps import get_current_user
+from app.models import Activity, Course, Lesson, Source, Unit, User
 
-@pytest.fixture
-def test_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @pytest.fixture
-def test_course(test_db):
+def api_client(db_session):
+    test_app = FastAPI()
+    test_app.include_router(units.router, prefix="/api")
+    test_app.include_router(lessons.router, prefix="/api")
+    test_app.include_router(activities.router, prefix="/api")
+
+    current_user = {"value": None}
+
+    def override_get_db():
+        yield db_session
+
+    def override_get_current_user():
+        return current_user["value"]
+
+    test_app.dependency_overrides[get_db] = override_get_db
+    test_app.dependency_overrides[get_current_user] = override_get_current_user
+
+    return TestClient(test_app), current_user
+
+
+@pytest.fixture
+def admin_user(db_session):
+    user = User(
+        id=uuid.uuid4(),
+        firstname="Admin",
+        lastname="User",
+        username=f"admin_{uuid.uuid4().hex[:8]}",
+        email=f"admin_{uuid.uuid4().hex[:8]}@example.com",
+        hashed_password="hashed",
+        role="admin",
+    )
+    db_session.add(user)
+    db_session.commit()
+    return user
+
+
+@pytest.fixture
+def test_course(db_session):
     course = Course(id=uuid.uuid4(), title="T", description="D")
-    test_db.add(course)
-    test_db.commit()
+    db_session.add(course)
+    db_session.commit()
     return course
 
+
 @pytest.fixture
-def test_unit(test_db, test_course):
+def test_unit(db_session, test_course):
     unit = Unit(id=uuid.uuid4(), title="U", course_id=test_course.id)
-    test_db.add(unit)
-    test_db.commit()
+    db_session.add(unit)
+    db_session.commit()
     return unit
 
+
 @pytest.fixture
-def test_lesson(test_db, test_unit):
+def test_lesson(db_session, test_unit):
     lesson = Lesson(id=uuid.uuid4(), title="L", unit_id=test_unit.id)
-    test_db.add(lesson)
-    test_db.commit()
+    db_session.add(lesson)
+    db_session.commit()
     return lesson
 
-def test_unit_crud(test_db, test_course):
+
+def test_unit_crud(api_client, admin_user, db_session, test_course):
+    client, current_user = api_client
+    current_user["value"] = admin_user
+
     resp = client.post(
         "/api/units",
-        json={"course_id": str(test_course.id), "title": "Unit1"}
+        json={"course_id": str(test_course.id), "title": "Unit1"},
     )
     assert resp.status_code == 200
     unit_id = resp.json()["id"]
@@ -54,16 +88,20 @@ def test_unit_crud(test_db, test_course):
 
     resp = client.put(
         f"/api/units/{unit_id}",
-        json={"course_id": str(test_course.id), "title": "UnitNew"}
+        json={"course_id": str(test_course.id), "title": "UnitNew"},
     )
     assert resp.status_code == 200
     assert resp.json()["title"] == "UnitNew"
 
     resp = client.delete(f"/api/units/{unit_id}")
     assert resp.status_code == 200
-    assert test_db.query(Unit).filter_by(id=uuid.UUID(unit_id)).first() is None
+    assert db_session.query(Unit).filter_by(id=uuid.UUID(unit_id)).first() is None
 
-def test_lesson_crud(test_db, test_unit):
+
+def test_lesson_crud(api_client, admin_user, db_session, test_unit):
+    client, current_user = api_client
+    current_user["value"] = admin_user
+
     resp = client.post(
         "/api/lessons",
         json={
@@ -82,10 +120,10 @@ def test_lesson_crud(test_db, test_unit):
             "sources": [
                 {
                     "citation": "Example Source, 2024",
-                    "url": "https://example.com/source"
+                    "url": "https://example.com/source",
                 }
-            ]
-        }
+            ],
+        },
     )
     assert resp.status_code == 200
     lesson_id = resp.json()["id"]
@@ -117,26 +155,30 @@ def test_lesson_crud(test_db, test_unit):
             "sources": [
                 {
                     "citation": "Updated Source, 2025",
-                    "url": "https://example.com/updated-source"
+                    "url": "https://example.com/updated-source",
                 }
-            ]
-        }
+            ],
+        },
     )
     assert resp.status_code == 200
     assert resp.json()["title"] == "LessonNew"
     assert resp.json()["review_status"] == "approved"
     assert resp.json()["sources"][0]["citation"] == "Updated Source, 2025"
-    assert test_db.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 1
+    assert db_session.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 1
 
     resp = client.delete(f"/api/lessons/{lesson_id}")
     assert resp.status_code == 200
-    assert test_db.query(Lesson).filter_by(id=uuid.UUID(lesson_id)).first() is None
-    assert test_db.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 0
+    assert db_session.query(Lesson).filter_by(id=uuid.UUID(lesson_id)).first() is None
+    assert db_session.query(Source).filter_by(lesson_id=uuid.UUID(lesson_id)).count() == 0
 
-def test_activity_crud(test_db, test_lesson):
+
+def test_activity_crud(api_client, admin_user, db_session, test_lesson):
+    client, current_user = api_client
+    current_user["value"] = admin_user
+
     resp = client.post(
         "/api/activities",
-        json={"lesson_id": str(test_lesson.id), "type": "video", "title": "A", "content": "C"}
+        json={"lesson_id": str(test_lesson.id), "type": "video", "title": "A", "content": "C"},
     )
     assert resp.status_code == 200
     act_id = resp.json()["id"]
@@ -147,11 +189,11 @@ def test_activity_crud(test_db, test_lesson):
 
     resp = client.put(
         f"/api/activities/{act_id}",
-        json={"lesson_id": str(test_lesson.id), "type": "video", "title": "B", "content": "C"}
+        json={"lesson_id": str(test_lesson.id), "type": "video", "title": "B", "content": "C"},
     )
     assert resp.status_code == 200
     assert resp.json()["title"] == "B"
 
     resp = client.delete(f"/api/activities/{act_id}")
     assert resp.status_code == 200
-    assert test_db.query(Activity).filter_by(id=uuid.UUID(act_id)).first() is None
+    assert db_session.query(Activity).filter_by(id=uuid.UUID(act_id)).first() is None

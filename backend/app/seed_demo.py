@@ -19,22 +19,31 @@ from app.models import (
     Assessment,
     AssessmentAttemptEvent,
     AssessmentCompetencyAlignment,
+    AssignmentSubmission,
     Course,
     CourseVersion,
     Enrollment,
     Lesson,
+    LessonSession,
     Organization,
     OrganizationMembership,
+    OrganizationInvite,
+    Post,
     Question,
     SegmentProgress,
     Section,
     Source,
+    StudentBadge,
     StudentAssessmentAnswer,
     StudentAssessmentAttempt,
+    StudentCertification,
     StudentCourse,
+    StudentProgramProgress,
     StudentUnitProgress,
+    Thread,
     Unit,
     User,
+    UserPreferences,
 )
 
 DEMO_PASSWORD = "password"
@@ -1293,14 +1302,14 @@ def _upsert_demo_user(db, profile: dict[str, str]) -> User:
     user = (
         db.query(User)
         .filter(User.username == profile["username"])
-        .one_or_none()
+        .first()
     )
 
     if user is None:
         user = (
             db.query(User)
             .filter(User.email == profile["email"])
-            .one_or_none()
+            .first()
         )
 
     if user is None:
@@ -1317,6 +1326,167 @@ def _upsert_demo_user(db, profile: dict[str, str]) -> User:
 
     db.flush()
     return user
+
+
+def _cleanup_demo_users(db) -> None:
+    demo_usernames = [profile["username"] for profile in DEMO_USERS.values()]
+    demo_emails = [profile["email"] for profile in DEMO_USERS.values()]
+    existing_demo_users = (
+        db.query(User)
+        .filter(
+            or_(
+                User.username.in_(demo_usernames),
+                User.email.in_(demo_emails),
+            )
+        )
+        .order_by(User.id.asc())
+        .all()
+    )
+
+    kept_user_ids = set()
+    users_to_delete: list[User] = []
+
+    for profile in DEMO_USERS.values():
+        matching_users = [
+            user
+            for user in existing_demo_users
+            if user.id not in kept_user_ids
+            and (
+                user.username == profile["username"]
+                or user.email == profile["email"]
+            )
+        ]
+        if not matching_users:
+            continue
+
+        survivor = next(
+            (user for user in matching_users if user.username == profile["username"]),
+            None,
+        )
+        if survivor is None:
+            survivor = next(
+                (user for user in matching_users if user.email == profile["email"]),
+                None,
+            )
+        if survivor is None:
+            continue
+
+        kept_user_ids.add(survivor.id)
+        users_to_delete.extend(
+            user for user in matching_users if user.id != survivor.id
+        )
+
+    users_to_delete.extend(
+        user for user in existing_demo_users if user.id not in kept_user_ids
+    )
+
+    deleted_user_ids = set()
+    for user in users_to_delete:
+        if user.id in deleted_user_ids:
+            continue
+        deleted_user_ids.add(user.id)
+        db.delete(user)
+
+    db.flush()
+
+
+def _cleanup_non_demo_users(db) -> None:
+    demo_usernames = [profile["username"] for profile in DEMO_USERS.values()]
+    demo_emails = [profile["email"] for profile in DEMO_USERS.values()]
+    non_demo_users = (
+        db.query(User)
+        .filter(
+            ~User.username.in_(demo_usernames),
+            ~User.email.in_(demo_emails),
+        )
+        .all()
+    )
+    if not non_demo_users:
+        return
+
+    non_demo_user_ids = [user.id for user in non_demo_users]
+    student_course_ids = [
+        row.id
+        for row in db.query(StudentCourse.id)
+        .filter(StudentCourse.student_id.in_(non_demo_user_ids))
+        .all()
+    ]
+    student_unit_progress_ids = []
+    if student_course_ids:
+        student_unit_progress_ids = [
+            row.id
+            for row in db.query(StudentUnitProgress.id)
+            .filter(StudentUnitProgress.student_course_id.in_(student_course_ids))
+            .all()
+        ]
+
+    attempt_ids = [
+        row.id
+        for row in db.query(StudentAssessmentAttempt.id)
+        .filter(StudentAssessmentAttempt.student_id.in_(non_demo_user_ids))
+        .all()
+    ]
+    student_program_progress_ids = [
+        row.id
+        for row in db.query(StudentProgramProgress.id)
+        .filter(StudentProgramProgress.student_id.in_(non_demo_user_ids))
+        .all()
+    ]
+
+    if student_unit_progress_ids:
+        for row in db.query(SegmentProgress).filter(
+            SegmentProgress.student_unit_id.in_(student_unit_progress_ids)
+        ):
+            db.delete(row)
+        for row in db.query(StudentUnitProgress).filter(
+            StudentUnitProgress.id.in_(student_unit_progress_ids)
+        ):
+            db.delete(row)
+
+    if attempt_ids:
+        for row in db.query(AssessmentAttemptEvent).filter(
+            or_(
+                AssessmentAttemptEvent.student_id.in_(non_demo_user_ids),
+                AssessmentAttemptEvent.attempt_id.in_(attempt_ids),
+            )
+        ):
+            db.delete(row)
+        for row in db.query(StudentAssessmentAnswer).filter(
+            StudentAssessmentAnswer.attempt_id.in_(attempt_ids)
+        ):
+            db.delete(row)
+        for row in db.query(StudentAssessmentAttempt).filter(
+            StudentAssessmentAttempt.id.in_(attempt_ids)
+        ):
+            db.delete(row)
+    else:
+        for row in db.query(AssessmentAttemptEvent).filter(
+            AssessmentAttemptEvent.student_id.in_(non_demo_user_ids)
+        ):
+            db.delete(row)
+
+    for model, column_name in (
+        (StudentBadge, "student_id"),
+        (StudentCertification, "student_id"),
+        (Enrollment, "user_id"),
+        (OrganizationMembership, "user_id"),
+        (UserPreferences, "user_id"),
+        (LessonSession, "started_by"),
+        (AssignmentSubmission, "user_id"),
+        (Post, "user_id"),
+        (Thread, "user_id"),
+        (OrganizationInvite, "invited_by_user_id"),
+        (StudentProgramProgress, "student_id"),
+        (StudentCourse, "student_id"),
+    ):
+        column = getattr(model, column_name)
+        for row in db.query(model).filter(column.in_(non_demo_user_ids)):
+            db.delete(row)
+
+    for user in non_demo_users:
+        db.delete(user)
+
+    db.flush()
 
 
 def _ensure_membership(db, org: Organization, user: User, role: OrganizationRole) -> None:
@@ -2224,6 +2394,9 @@ def run() -> None:
     db = SessionLocal()
     try:
         org = _get_or_create_demo_org(db)
+        _cleanup_non_demo_users(db)
+        _cleanup_demo_users(db)
+
         users = {
             key: _upsert_demo_user(db, profile)
             for key, profile in DEMO_USERS.items()

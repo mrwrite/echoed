@@ -123,15 +123,28 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
     # Progression logic
     if progress.status in [ProgressStatus.COMPLETED, ProgressStatus.SKIPPED]:
         if unit_progress:
+            unit = db.get(Unit, unit_progress.unit_id) if unit_progress else None
+            governed_selection = governed_lessons_for_unit(unit) if unit else None
             all_segments = (
                 db.query(SegmentProgress)
                 .filter(SegmentProgress.student_unit_id == unit_progress.id)
                 .all()
             )
+            relevant_segments = all_segments
+            if (
+                governed_selection is not None
+                and governed_selection.state == GOVERNED_AVAILABLE
+            ):
+                governed_lesson_ids = {
+                    lesson.id for lesson in governed_selection.lessons
+                }
+                relevant_segments = [
+                    seg for seg in all_segments if seg.lesson_id in governed_lesson_ids
+                ]
 
             all_complete = all(
                 seg.status in [ProgressStatus.COMPLETED, ProgressStatus.SKIPPED]
-                for seg in all_segments
+                for seg in relevant_segments
             )
 
             if all_complete:
@@ -140,7 +153,13 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
             else:
                 unit_progress.status = ProgressStatus.IN_PROGRESS
 
-            if not all_complete:
+            if (
+                not all_complete
+                and (
+                    governed_selection is None
+                    or governed_selection.state != GOVERNED_AVAILABLE
+                )
+            ):
                 next_seg = (
                     db.query(SegmentProgress)
                     .filter(

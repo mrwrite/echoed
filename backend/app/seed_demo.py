@@ -1292,14 +1292,16 @@ def _get_or_create_demo_org(db) -> Organization:
 def _upsert_demo_user(db, profile: dict[str, str]) -> User:
     user = (
         db.query(User)
-        .filter(
-            or_(
-                User.username == profile["username"],
-                User.email == profile["email"],
-            )
-        )
-        .first()
+        .filter(User.username == profile["username"])
+        .one_or_none()
     )
+
+    if user is None:
+        user = (
+            db.query(User)
+            .filter(User.email == profile["email"])
+            .one_or_none()
+        )
 
     if user is None:
         user = User(username=profile["username"], email=profile["email"])

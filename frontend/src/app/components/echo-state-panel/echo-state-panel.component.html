@@ -1,0 +1,35 @@
+<section
+  class="echo-state-panel surface-card w-full"
+  [class.echo-state-panel--compact]="compact"
+  [class.echo-state-panel--center]="align === 'center'"
+  [class.echo-state-panel--empty]="variant === 'empty'"
+  [class.echo-state-panel--error]="variant === 'error'"
+  [class.echo-state-panel--unavailable]="variant === 'unavailable'"
+  [class.echo-state-panel--blocked]="variant === 'blocked'"
+  [attr.data-echo-state]="variant"
+  [attr.role]="role"
+  [attr.aria-live]="ariaLive"
+  [attr.aria-label]="resolvedAriaLabel"
+>
+  <div class="echo-state-panel__inner">
+    <div class="echo-state-panel__icon-shell" aria-hidden="true">
+      <span aria-hidden="true" class="inline-block h-5 w-5 rounded-full bg-current opacity-70"></span>
+    </div>
+
+    <div class="echo-state-panel__content">
+      <p *ngIf="eyebrow" class="echo-state-panel__eyebrow">{{ eyebrow }}</p>
+      <h3 class="echo-state-panel__title">{{ title }}</h3>
+      <p *ngIf="body" class="echo-state-panel__body">{{ body }}</p>
+
+      <button
+        *ngIf="actionLabel"
+        type="button"
+        class="echo-state-panel__action"
+        [attr.aria-label]="actionAriaLabel || actionLabel"
+        (click)="action.emit()"
+      >
+        {{ actionLabel }}
+      </button>
+    </div>
+  </div>
+</section>

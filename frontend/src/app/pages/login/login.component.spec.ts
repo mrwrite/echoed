@@ -3,32 +3,12 @@ import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
-import { OrganizationService } from '../../services/organization.service';
 import { PermissionsService } from '../../services/permissions.service';
+import { BootstrapOutcome } from '../../services/permissions.service';
 
 class MockAuthService {
-  role = 'teacher';
-
   login() {
     return of({ access_token: 'token' });
-  }
-
-  getToken() {
-    return 'token';
-  }
-
-  getTokenPayload() {
-    return { role: this.role };
-  }
-
-  isSuperAdminRole(role?: string) {
-    return role === 'super_admin';
-  }
-}
-
-class MockOrganizationService {
-  refreshOrganizations() {
-    return of([{ id: 'org-1', type: 'school', role: 'teacher' }]);
   }
 }
 
@@ -37,20 +17,36 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let router: jasmine.SpyObj<Router>;
   let permissionsService: jasmine.SpyObj<PermissionsService>;
-  let authService: MockAuthService;
+
+  const readyOutcome: BootstrapOutcome = {
+    status: 'ready',
+    authenticated: true,
+    ready: true,
+    onboardingRequired: false,
+    failed: false,
+    activeOrgId: 'org-1',
+    activeOrgRole: 'teacher',
+    organizations: [{ id: 'org-1', type: 'school', role: 'teacher' }],
+  };
 
   beforeEach(async () => {
     router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
     router.navigateByUrl.and.resolveTo(true);
 
-    permissionsService = jasmine.createSpyObj<PermissionsService>('PermissionsService', ['bootstrapSession']);
+    permissionsService = jasmine.createSpyObj<PermissionsService>('PermissionsService', ['bootstrapSession', 'getCurrentOutcome']);
+    permissionsService.getCurrentOutcome.and.returnValue(readyOutcome);
+
+    TestBed.overrideComponent(LoginComponent, {
+      set: {
+        template: '',
+      },
+    });
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
         { provide: Router, useValue: router },
         { provide: AuthService, useClass: MockAuthService },
-        { provide: OrganizationService, useClass: MockOrganizationService },
         { provide: PermissionsService, useValue: permissionsService },
       ]
     })
@@ -58,7 +54,7 @@ describe('LoginComponent', () => {
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
-    authService = TestBed.inject(AuthService) as unknown as MockAuthService;
+    sessionStorage.clear();
     fixture.detectChanges();
   });
 
@@ -84,15 +80,61 @@ describe('LoginComponent', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
   }));
 
-  it('routes super admin to dashboard instead of onboarding when org list is empty', fakeAsync(() => {
-    authService.role = 'super_admin';
-    spyOn(TestBed.inject(OrganizationService), 'refreshOrganizations').and.returnValue(of([]));
+  it('routes login to home when bootstrap outcome is ready', fakeAsync(() => {
     permissionsService.bootstrapSession.and.resolveTo();
+    permissionsService.getCurrentOutcome.and.returnValue(readyOutcome);
 
     component.login(new Event('submit'));
     tick();
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
     expect(router.navigateByUrl).not.toHaveBeenCalledWith('/onboarding/organization');
+  }));
+
+  it('routes login to onboarding when bootstrap outcome is onboardingRequired', fakeAsync(() => {
+    permissionsService.bootstrapSession.and.resolveTo();
+    permissionsService.getCurrentOutcome.and.returnValue({
+      ...readyOutcome,
+      status: 'onboardingRequired',
+      onboardingRequired: true,
+    });
+
+    component.login(new Event('submit'));
+    tick();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/onboarding/organization');
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/home');
+  }));
+
+  it('handles failed bootstrap without navigating to home', fakeAsync(() => {
+    permissionsService.bootstrapSession.and.resolveTo();
+    permissionsService.getCurrentOutcome.and.returnValue({
+      ...readyOutcome,
+      status: 'failed',
+      ready: false,
+      failed: true,
+      error: 'org_hydration_failed',
+    });
+
+    component.login(new Event('submit'));
+    tick();
+
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/home');
+    expect(component.errorMessage).toContain('Unable to complete session bootstrap');
+  }));
+
+  it('keeps super-admin-equivalent ready outcomes on the home route', fakeAsync(() => {
+    permissionsService.bootstrapSession.and.resolveTo();
+    permissionsService.getCurrentOutcome.and.returnValue({
+      ...readyOutcome,
+      activeOrgId: null,
+      activeOrgRole: null,
+      organizations: [],
+    });
+
+    component.login(new Event('submit'));
+    tick();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
   }));
 });

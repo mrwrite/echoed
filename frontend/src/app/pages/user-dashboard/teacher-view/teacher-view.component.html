@@ -4,7 +4,7 @@
       <div>
         <p class="text-sm uppercase tracking-[0.2em] text-on-dark-muted">Teacher Control Center</p>
         <h2 class="text-3xl font-bold">Welcome, {{userInfo.fullname}}</h2>
-        <p class="text-on-dark">Monitor classes, manage courses, and take quick actions in one place.</p>
+        <p class="text-on-dark">Monitor the flagship class story, review governance signals, and keep the live demo on a stable path.</p>
       </div>
       <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">Demo ready</span>
     </div>
@@ -28,36 +28,438 @@
     <div class="surface-card p-6 lg:col-span-2">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-bold text-primary">Course Management</h3>
-        <button class="px-3 py-2 rounded-xl bg-primary text-white text-sm font-semibold" (click)="onAddCourse()">+ Add Course</button>
+        <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Demo-safe view</span>
       </div>
-      <ng-container *ngIf="courses.length > 0; else noCourses">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-slate-500 border-b">
-              <th class="py-2">Title</th>
-              <th class="py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr *ngFor="let course of visibleCourses" class="hover:bg-slate-50">
-              <td class="py-3 font-semibold text-ink">{{ course.title }}</td>
-              <td class="py-3 space-x-2 text-right">
-                <button class="text-sm text-primary font-semibold" (click)="onManageCourse(course.id)">Manage</button>
-                <button class="text-sm text-red-600 font-semibold" (click)="deleteCourse(course.id)">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <p class="mb-4 text-sm text-slate-600">The recommended live demo stays on read-only course visibility and governance context. Off-script catalog actions are intentionally de-emphasized here.</p>
+      <app-echo-loading-state
+        *ngIf="coursesLoading"
+        density="section"
+        ariaLabel="teacher-courses-loading"
+        title="Loading course management"
+        body="We are preparing the latest educator course list."
+      ></app-echo-loading-state>
+      <app-echo-state-panel
+        *ngIf="!coursesLoading && coursesError"
+        variant="error"
+        eyebrow="Course data unavailable"
+        title="We could not load educator courses"
+        [body]="coursesError"
+        actionLabel="Retry"
+        (action)="retryCourses()"
+      ></app-echo-state-panel>
+      <app-echo-state-panel
+        *ngIf="!coursesLoading && !coursesError && courses.length === 0"
+        variant="empty"
+        eyebrow="No courses yet"
+        title="Course management will appear here"
+        body="Create a course to begin assigning and managing instruction."
+      ></app-echo-state-panel>
+      <ng-container *ngIf="!coursesLoading && !coursesError && courses.length > 0">
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-slate-500 border-b">
+                <th class="py-2">Title</th>
+                <th class="py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let course of visibleCourses" class="hover:bg-slate-50">
+                <td class="py-3 font-semibold text-ink">{{ course.title }}</td>
+                <td class="py-3 space-x-2 text-right">
+                  <button class="text-sm text-primary font-semibold" (click)="onManageCourse(course.id)">Manage</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="md:hidden space-y-3" data-educator-responsive="teacher-courses">
+          <article *ngFor="let course of visibleCourses" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Course</p>
+            <p class="mt-2 font-semibold text-ink">{{ course.title }}</p>
+            <div class="mt-3 flex flex-wrap gap-3">
+              <button class="text-sm text-primary font-semibold" (click)="onManageCourse(course.id)">Manage</button>
+            </div>
+          </article>
+        </div>
         <a *ngIf="courses.length > visibleCount" class="text-primary underline cursor-pointer text-sm" (click)="viewAllCourses()">View More</a>
       </ng-container>
-      <ng-template #noCourses>
-        <p class="text-sm text-gray-500">No courses available. Use the button above to add one.</p>
-      </ng-template>
+
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <div class="mb-4">
+          <h4 class="text-base font-semibold text-ink">Publish readiness</h4>
+          <p class="text-sm text-slate-600">Read-only readiness checks for the visible educator course set.</p>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="publishReadinessLoading"
+          density="section"
+          ariaLabel="teacher-publish-readiness-loading"
+          title="Loading publish readiness"
+          body="We are restoring course governance checks for your visible course list."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!publishReadinessLoading && publishReadinessError"
+          variant="error"
+          eyebrow="Readiness unavailable"
+          title="We could not load course publish readiness"
+          [body]="publishReadinessError"
+          actionLabel="Retry"
+          (action)="retryPublishReadiness()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="publishReadinessSectionEmpty"
+          variant="empty"
+          eyebrow="No readiness data yet"
+          title="Publish readiness will appear here"
+          body="As visible educator courses become available, their bounded readiness checks will appear here."
+        ></app-echo-state-panel>
+
+        <div *ngIf="!publishReadinessLoading && !publishReadinessError && courseReadiness.length > 0" class="space-y-3">
+          <article
+            *ngFor="let readiness of courseReadiness"
+            class="rounded-2xl border border-slate-200 bg-white p-4"
+            data-publish-readiness-row
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ readiness.course_title }}</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  {{ readiness.blocking_issue_count }} blocking issue<span *ngIf="readiness.blocking_issue_count !== 1">s</span>
+                  &bull; {{ readiness.warning_count }} warning<span *ngIf="readiness.warning_count !== 1">s</span>
+                </p>
+              </div>
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                [ngClass]="readinessStateClasses(readiness.is_ready)"
+              >
+                {{ readinessStateLabel(readiness.is_ready) }}
+              </span>
+            </div>
+
+            <div *ngIf="readiness.blocking_issues.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Blocking issues</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let issue of readiness.blocking_issues" class="rounded-xl bg-amber-50 px-3 py-2">
+                  <span class="font-semibold">{{ issue.entity_title }}</span>: {{ issue.message }}
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="readiness.warnings.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Warnings</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let warning of readiness.warnings" class="rounded-xl bg-sky-50 px-3 py-2">
+                  <span class="font-semibold">{{ warning.entity_title }}</span>: {{ warning.message }}
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <div class="mb-4">
+          <h4 class="text-base font-semibold text-ink">Safe publish validation</h4>
+          <p class="text-sm text-slate-600">Read-only learner-safety checks for the visible educator course set.</p>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="safePublishLoading"
+          density="section"
+          ariaLabel="teacher-safe-publish-loading"
+          title="Loading safe publish validation"
+          body="We are restoring learner-safety validation for your visible course list."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!safePublishLoading && safePublishError"
+          variant="error"
+          eyebrow="Safe publish unavailable"
+          title="We could not load course safe-publish validation"
+          [body]="safePublishError"
+          actionLabel="Retry"
+          (action)="retrySafePublish()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="safePublishSectionEmpty"
+          variant="empty"
+          eyebrow="No safe-publish data yet"
+          title="Safe publish validation will appear here"
+          body="As visible educator courses become available, their bounded learner-safety validation will appear here."
+        ></app-echo-state-panel>
+
+        <div *ngIf="!safePublishLoading && !safePublishError && safePublishValidations.length > 0" class="space-y-3">
+          <article
+            *ngFor="let validation of safePublishValidations"
+            class="rounded-2xl border border-slate-200 bg-white p-4"
+            data-safe-publish-row
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ validation.course_title }}</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  {{ validation.blocking_issue_count }} blocking issue<span *ngIf="validation.blocking_issue_count !== 1">s</span>
+                  &bull; {{ validation.warning_count }} warning<span *ngIf="validation.warning_count !== 1">s</span>
+                </p>
+              </div>
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                [ngClass]="validation.is_safe ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-rose-100 text-rose-900 border border-rose-200'"
+              >
+                {{ safePublishStateLabel(validation.is_safe) }}
+              </span>
+            </div>
+
+            <div *ngIf="validation.blocking_issues.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Blocking issues</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let issue of validation.blocking_issues" class="rounded-xl bg-rose-50 px-3 py-2">
+                  <span class="font-semibold">{{ issue.entity_title }}</span>: {{ issue.message }}
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="validation.warnings.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Warnings</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let warning of validation.warnings" class="rounded-xl bg-sky-50 px-3 py-2">
+                  <span class="font-semibold">{{ warning.entity_title }}</span>: {{ warning.message }}
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <div class="mb-4">
+          <h4 class="text-base font-semibold text-ink">Competency evidence integrity</h4>
+          <p class="text-sm text-slate-600">Read-only mastery explainability checks for the visible educator course set.</p>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="competencyIntegrityLoading"
+          density="section"
+          ariaLabel="teacher-competency-integrity-loading"
+          title="Loading competency evidence integrity"
+          body="We are restoring course-level mastery explainability checks for your visible course list."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!competencyIntegrityLoading && competencyIntegrityError"
+          variant="error"
+          eyebrow="Competency integrity unavailable"
+          title="We could not load competency evidence integrity"
+          [body]="competencyIntegrityError"
+          actionLabel="Retry"
+          (action)="retryCompetencyIntegrity()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="competencyIntegritySectionEmpty"
+          variant="empty"
+          eyebrow="No competency integrity data yet"
+          title="Competency evidence integrity will appear here"
+          body="As visible educator courses become available, their bounded mastery explainability checks will appear here."
+        ></app-echo-state-panel>
+
+        <div *ngIf="!competencyIntegrityLoading && !competencyIntegrityError && competencyIntegrities.length > 0" class="space-y-3">
+          <article
+            *ngFor="let integrity of competencyIntegrities"
+            class="rounded-2xl border border-slate-200 bg-white p-4"
+            data-competency-integrity-row
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ integrity.course_title }}</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  {{ integrity.blocking_issue_count }} blocking issue<span *ngIf="integrity.blocking_issue_count !== 1">s</span>
+                  &bull; {{ integrity.warning_count }} warning<span *ngIf="integrity.warning_count !== 1">s</span>
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                  [ngClass]="integrity.is_valid ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-rose-100 text-rose-900 border border-rose-200'"
+                >
+                  {{ competencyIntegrityStateLabel(integrity.is_valid) }}
+                </span>
+                <span
+                  class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                  [ngClass]="integrity.is_explainable ? 'bg-sky-100 text-sky-900 border border-sky-200' : 'bg-amber-100 text-amber-900 border border-amber-200'"
+                >
+                  {{ competencyExplainabilityLabel(integrity.is_explainable) }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="integrity.affected_competency_identifiers.length > 0" class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Affected competencies</p>
+              <p class="mt-2 text-sm text-slate-700">{{ integrity.affected_competency_identifiers.join(', ') }}</p>
+            </div>
+
+            <div *ngIf="integrity.affected_assessments.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Affected assessments</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let assessment of integrity.affected_assessments" class="rounded-xl bg-slate-50 px-3 py-2">
+                  <span class="font-semibold">{{ assessment.assessment_title }}</span>
+                  <span *ngIf="assessment.competency_identifiers.length > 0">
+                    : {{ assessment.competency_identifiers.join(', ') }}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="integrity.blocking_issues.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Blocking issues</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let issue of integrity.blocking_issues" class="rounded-xl bg-rose-50 px-3 py-2">
+                  <span class="font-semibold">{{ issue.entity_title }}</span>: {{ issue.message }}
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="integrity.warnings.length > 0" class="mt-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Warnings</p>
+              <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let warning of integrity.warnings" class="rounded-xl bg-amber-50 px-3 py-2">
+                  <span class="font-semibold">{{ warning.entity_title }}</span>: {{ warning.message }}
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <div class="mb-4">
+          <h4 class="text-base font-semibold text-ink">Runtime intervention recommendations</h4>
+          <p class="text-sm text-slate-600">Course-level recommendation detail for each learner, including evidence basis, confidence, and caution flags.</p>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="runtimeInterventionLoading"
+          density="section"
+          ariaLabel="teacher-runtime-intervention-loading"
+          title="Loading runtime intervention recommendations"
+          body="We are restoring course-level educator guidance from governed learner evidence."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!runtimeInterventionLoading && runtimeInterventionError"
+          variant="error"
+          eyebrow="Runtime intervention unavailable"
+          title="We could not load runtime intervention recommendations"
+          [body]="runtimeInterventionError"
+          actionLabel="Retry"
+          (action)="retryRuntimeInterventions()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="runtimeInterventionSectionEmpty"
+          variant="empty"
+          eyebrow="No runtime intervention data yet"
+          title="Runtime intervention recommendations will appear here"
+          body="As governed learner evidence becomes available for your visible courses, bounded educator guidance will appear here."
+        ></app-echo-state-panel>
+
+        <div *ngIf="!runtimeInterventionLoading && !runtimeInterventionError && runtimeInterventionGroups.length > 0" class="space-y-4">
+          <section
+            *ngFor="let group of runtimeInterventionGroups"
+            class="rounded-2xl border border-slate-200 bg-white p-4"
+            data-runtime-intervention-course
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ group.courseTitle }}</p>
+                <p class="mt-1 text-sm text-slate-600">
+                  {{ group.recommendations.length }} learner recommendation<span *ngIf="group.recommendations.length !== 1">s</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-3 space-y-3">
+              <article
+                *ngFor="let recommendation of group.recommendations"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                data-runtime-intervention-row
+              >
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold text-ink">{{ recommendation.student_name }}</p>
+                    <p class="mt-1 text-sm text-slate-600">{{ recommendation.summary }}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                      [ngClass]="runtimeInterventionStateClasses(recommendation.recommendation_state)"
+                    >
+                      {{ formatRuntimeLabel(recommendation.recommendation_state) }}
+                    </span>
+                    <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+                      {{ formatRuntimeLabel(recommendation.educator_attention_level) }} attention
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid gap-3 md:grid-cols-2">
+                  <div class="rounded-xl border border-slate-200 bg-white p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Confidence</p>
+                    <p class="mt-2 text-sm text-slate-700">{{ formatRuntimeLabel(recommendation.confidence_level) }}</p>
+                  </div>
+                  <div class="rounded-xl border border-slate-200 bg-white p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Learner-safe message</p>
+                    <p class="mt-2 text-sm text-slate-700">{{ recommendation.learner_safe_message }}</p>
+                  </div>
+                </div>
+
+                <div *ngIf="recommendation.evidence_basis.length > 0" class="mt-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Evidence basis</p>
+                  <ul class="mt-2 space-y-2 text-sm text-slate-700">
+                    <li *ngFor="let basis of recommendation.evidence_basis" class="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <span class="font-semibold">{{ formatRuntimeLabel(basis.source) }}</span>: {{ basis.detail }}
+                      <span *ngIf="basis.assessment_title">
+                        ({{ basis.assessment_title }})
+                      </span>
+                      <span *ngIf="basis.competency_identifiers.length > 0">
+                        - {{ basis.competency_identifiers.join(', ') }}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div *ngIf="recommendation.caution_flags.length > 0" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Caution flags</p>
+                  <p class="mt-2 text-sm text-slate-700">{{ formatRuntimeLabels(recommendation.caution_flags) }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
 
     <div class="surface-card p-6">
-      <h3 class="text-xl font-bold text-primary mb-4">Quick Actions</h3>
-      <div class="space-y-3">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h3 class="text-xl font-bold text-primary">Advanced actions</h3>
+          <p class="text-sm text-slate-600">Useful outside the scripted demo path. Keep focus on governance and runtime visibility during the live walkthrough.</p>
+        </div>
+        <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Off-script</span>
+      </div>
+      <app-echo-loading-state
+        *ngIf="quickActionsLoading"
+        density="compact"
+        ariaLabel="teacher-quick-actions-loading"
+        title="Loading quick actions"
+        body="We are preparing your learner roster and assignable courses."
+      ></app-echo-loading-state>
+      <app-echo-state-panel
+        *ngIf="!quickActionsLoading && quickActionsError"
+        variant="error"
+        eyebrow="Quick actions unavailable"
+        title="We could not prepare educator actions"
+        [body]="quickActionsError"
+        actionLabel="Retry"
+        (action)="retryQuickActions()"
+      ></app-echo-state-panel>
+      <div *ngIf="!quickActionsLoading && !quickActionsError" class="space-y-3">
         <div class="space-y-2">
           <label class="text-sm text-muted">Assign a course</label>
           <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" [(ngModel)]="selectedStudentId" aria-label="Select student">
@@ -70,8 +472,8 @@
           </select>
           <button class="w-full py-2 rounded-xl bg-primary text-white font-semibold hover:-translate-y-0.5 transition" (click)="assignCourse()">Assign Course</button>
         </div>
-        <button class="w-full py-2 rounded-xl bg-accent text-ink font-semibold hover:-translate-y-0.5 transition" (click)="startLiveLesson()">Start Live Lesson</button>
-        <button class="w-full py-2 rounded-xl border border-primary text-primary font-semibold hover:-translate-y-0.5 transition" (click)="viewReports()">View Reports</button>
+        <button class="w-full py-2 rounded-xl bg-accent text-ink font-semibold hover:-translate-y-0.5 transition opacity-75" (click)="startLiveLesson()">Start Live Lesson</button>
+        <button class="w-full py-2 rounded-xl border border-primary text-primary font-semibold hover:-translate-y-0.5 transition opacity-75" (click)="viewReports()">View Reports</button>
       </div>
     </div>
   </div>
@@ -79,36 +481,159 @@
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
     <div class="surface-card p-6 lg:col-span-2">
       <h3 class="text-xl font-bold text-primary mb-3">Student Progress</h3>
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
-          <tr class="text-left">
-            <th class="py-2 px-2">Student</th>
-            <th class="py-2 px-2">Course</th>
-            <th class="py-2 px-2">Progress</th>
-            <th class="py-2 px-2">Last Active</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          <tr *ngFor="let row of teacherSummary" class="hover:bg-slate-50">
-            <td class="py-3 px-2 font-semibold text-ink">{{ row.student_name }}</td>
-            <td class="py-3 px-2">{{ row.course_title }}</td>
-            <td class="py-3 px-2">{{ row.progress }}%</td>
-            <td class="py-3 px-2 text-slate-500">{{ row.last_active ? (row.last_active | date: 'MMM d, y') : 'Not started' }}</td>
-          </tr>
-          <tr *ngIf="teacherSummary.length === 0">
-            <td colspan="4" class="py-4 text-center text-slate-500">No enrolled students yet.</td>
-          </tr>
-        </tbody>
-      </table>
+      <app-echo-loading-state
+        *ngIf="summaryLoading"
+        density="section"
+        ariaLabel="teacher-summary-loading"
+        title="Loading student progress"
+        body="We are restoring the latest classroom progress snapshot."
+      ></app-echo-loading-state>
+      <app-echo-state-panel
+        *ngIf="!summaryLoading && summaryError"
+        variant="error"
+        eyebrow="Progress unavailable"
+        title="We could not load learner progress"
+        [body]="summaryError"
+        actionLabel="Retry"
+        (action)="retryTeacherSummary()"
+      ></app-echo-state-panel>
+      <app-echo-state-panel
+        *ngIf="!summaryLoading && !summaryError && teacherSummary.length === 0"
+        variant="empty"
+        eyebrow="No learner progress yet"
+        title="Student progress will appear here"
+        body="Assigned learner activity will populate this classroom progress summary."
+      ></app-echo-state-panel>
+      <ng-container *ngIf="!summaryLoading && !summaryError && teacherSummary.length > 0">
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr class="text-left">
+                <th class="py-2 px-2">Student</th>
+                <th class="py-2 px-2">Course</th>
+                <th class="py-2 px-2">Progress</th>
+                <th class="py-2 px-2">Last Active</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let row of teacherSummary" class="hover:bg-slate-50">
+                <td class="py-3 px-2 font-semibold text-ink">{{ row.student_name }}</td>
+                <td class="py-3 px-2">{{ row.course_title }}</td>
+                <td class="py-3 px-2">{{ row.progress }}%</td>
+                <td class="py-3 px-2 text-slate-500">{{ row.last_active ? (row.last_active | date: 'MMM d, y') : 'Not started' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="md:hidden space-y-3" data-educator-responsive="teacher-summary">
+          <article *ngFor="let row of teacherSummary" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p class="font-semibold text-ink">{{ row.student_name }}</p>
+            <p class="mt-1 text-sm text-slate-600">{{ row.course_title }}</p>
+            <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Progress</p>
+                <p class="mt-1 text-slate-700">{{ row.progress }}%</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Last active</p>
+                <p class="mt-1 text-slate-700">{{ row.last_active ? (row.last_active | date: 'MMM d, y') : 'Not started' }}</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </ng-container>
     </div>
 
-    <div class="surface-card p-6">
-      <h3 class="text-xl font-bold text-primary mb-3">Upcoming Events</h3>
-      <ul class="space-y-3 text-sm text-slate-700">
-        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Parent-Teacher Conference — March 15</li>
-        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Live project showcase — March 20</li>
-        <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Course feedback survey — March 30</li>
-      </ul>
+    <div class="space-y-4">
+      <div class="surface-card p-6">
+        <div class="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h3 class="text-xl font-bold text-primary">Runtime Support</h3>
+            <p class="text-sm text-slate-600">Flagship spotlight for fast live-demo narration about who needs support, who is ready for extension, and who is moving steadily.</p>
+          </div>
+          <span
+            *ngIf="flagshipCourse"
+            class="rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary"
+          >
+            Flagship
+          </span>
+        </div>
+
+        <app-echo-loading-state
+          *ngIf="runtimeSupportLoading"
+          density="compact"
+          ariaLabel="teacher-runtime-support-loading"
+          title="Loading runtime support"
+          body="We are restoring learner remediation and enrichment visibility for the flagship pathway."
+        ></app-echo-loading-state>
+        <app-echo-state-panel
+          *ngIf="!runtimeSupportLoading && runtimeSupportError"
+          variant="error"
+          eyebrow="Runtime support unavailable"
+          title="We could not load learner support visibility"
+          [body]="runtimeSupportError"
+          actionLabel="Retry"
+          (action)="retryRuntimeSupport()"
+        ></app-echo-state-panel>
+        <app-echo-state-panel
+          *ngIf="runtimeSupportSectionEmpty"
+          variant="empty"
+          eyebrow="No support rows yet"
+          [title]="flagshipCourse ? 'Runtime support will appear here' : 'Flagship runtime support is not available yet'"
+          [body]="flagshipCourse
+            ? 'Flagship learner evidence will populate this bounded runtime support summary as learners complete checks-for-understanding.'
+            : 'This teacher dashboard only shows runtime support for the Introduction to Africa flagship pathway when that course is available.'"
+        ></app-echo-state-panel>
+
+        <div *ngIf="!runtimeSupportLoading && !runtimeSupportError && educatorRuntimeSupport.length > 0" class="space-y-3">
+          <article
+            *ngFor="let row of educatorRuntimeSupport"
+            class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            data-runtime-support-row
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-semibold text-ink">{{ row.student_name }}</p>
+                <p class="mt-1 text-sm text-slate-600">{{ row.course_title }}</p>
+              </div>
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]"
+                [ngClass]="supportStateClasses(row.support_state)"
+              >
+                {{ runtimeSupportStateLabel[row.support_state] || runtimeSupportStateLabel['unknown'] }}
+              </span>
+            </div>
+
+            <p class="mt-3 text-sm text-slate-700">{{ row.support_summary }}</p>
+
+            <div *ngIf="row.context_lesson_title || row.context_prompts.length > 0" class="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Context</p>
+              <p *ngIf="row.context_lesson_title" class="mt-2 text-sm font-semibold text-ink">{{ row.context_lesson_title }}</p>
+              <p *ngIf="row.context_key_concepts.length > 0" class="mt-1 text-sm text-slate-600">
+                Focus concepts: {{ row.context_key_concepts.join(', ') }}
+              </p>
+              <ul *ngIf="row.context_prompts.length > 0" class="mt-2 space-y-2 text-sm text-slate-700">
+                <li *ngFor="let prompt of row.context_prompts | slice:0:2" class="rounded-xl bg-slate-50 px-3 py-2">
+                  {{ prompt }}
+                </li>
+              </ul>
+            </div>
+
+            <p *ngIf="row.last_evidence_at" class="mt-3 text-xs text-slate-500">
+              Latest evidence: {{ row.last_evidence_at | date: 'MMM d, y' }}
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="surface-card p-6">
+        <h3 class="text-xl font-bold text-primary mb-3">Upcoming Events</h3>
+        <ul class="space-y-3 text-sm text-slate-700">
+          <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Parent-Teacher Conference - March 15</li>
+          <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Live project showcase - March 20</li>
+          <li class="p-3 rounded-xl bg-slate-50 border border-slate-100">Course feedback survey - March 30</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

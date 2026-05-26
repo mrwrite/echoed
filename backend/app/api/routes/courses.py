@@ -1,29 +1,110 @@
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.database import get_db
 from app.deps import get_current_user, require_roles, require_org_roles
+from app.enum import MembershipStatus
 from app.enum import CourseVersionStatus
-from app.models import Course, CourseVersion, Unit, Lesson, Activity, Media, StorybookPage, StudentCourse
+from app.api.routes.analytics import build_course_continuation_guidance
+from app.lesson_governance import (
+    evaluate_course_competency_evidence_integrity,
+    evaluate_course_safe_publish,
+    evaluate_course_publish_readiness,
+    evaluate_lesson_readiness,
+    resolve_review_fields,
+    serialize_course,
+)
+from app.models import (
+    Course,
+    CourseVersion,
+    Unit,
+    Lesson,
+    Assessment,
+    Activity,
+    StorybookPage,
+    StudentCourse,
+    StudentAssessmentAttempt,
+    Source,
+    OrganizationMembership,
+    StudentUnitProgress,
+)
+from app.crud.progress import resolve_governed_progression
+from app.course_governance_summary import (
+    build_course_governance_summary,
+    load_course_governance_summary_course,
+)
+from app.runtime_intervention_intelligence import evaluate_runtime_intervention_recommendation
 from app.schemas import (
+    CourseGovernanceSummaryResponse,
+    CourseRuntimeInterventionRecommendationResponse,
     CourseDto,
     CourseResponse,
-    UnitResponse,
-    LessonResponse,
-    ActivityResponse,
-    MediaResponse,
-    StorybookPageResponse,
     StudentCourseWithDetails,
     CourseCreateRequest,
     CourseVersionCreateRequest,
     CourseVersionResponse,
+    CourseCompetencyEvidenceIntegrityResponse,
+    CompetencyEvidenceAffectedAssessmentResponse,
+    CoursePublishReadinessResponse,
+    CourseSafePublishValidationResponse,
     CourseSummaryResponse,
+    PublishReadinessIssueResponse,
+    RuntimeInterventionEvidenceBasisResponse,
 )
-from app.enum import ProgressStatus
-
 router = APIRouter()
+
+
+def _can_view_course_publish_readiness(db: Session, current_user, course: Course) -> bool:
+    if current_user.role in {"admin", "teacher"}:
+        return True
+
+    if course.organization_id is None:
+        return False
+
+    membership = (
+        db.query(OrganizationMembership)
+        .filter(
+            OrganizationMembership.organization_id == course.organization_id,
+            OrganizationMembership.user_id == current_user.id,
+        )
+        .first()
+    )
+    if membership is None:
+        return False
+
+    membership_role = getattr(membership.role, "value", membership.role)
+    membership_status = getattr(membership.status, "value", membership.status)
+    return membership_role in {"content_admin", "org_admin"} and membership_status == MembershipStatus.ACTIVE.value
+
+
+def _serialize_publish_readiness_issue(issue) -> PublishReadinessIssueResponse:
+    return PublishReadinessIssueResponse(
+        entity_type=issue.entity_type,
+        entity_id=issue.entity_id,
+        entity_title=issue.entity_title,
+        code=issue.code,
+        message=issue.message,
+    )
+
+
+def _serialize_affected_assessment(context) -> CompetencyEvidenceAffectedAssessmentResponse:
+    return CompetencyEvidenceAffectedAssessmentResponse(
+        assessment_id=context.assessment_id,
+        assessment_title=context.assessment_title,
+        competency_identifiers=list(context.competency_identifiers),
+    )
+
+
+def _serialize_runtime_intervention_evidence_basis(basis) -> RuntimeInterventionEvidenceBasisResponse:
+    return RuntimeInterventionEvidenceBasisResponse(
+        source=basis.source,
+        detail=basis.detail,
+        assessment_id=basis.assessment_id,
+        assessment_title=basis.assessment_title,
+        competency_identifiers=list(basis.competency_identifiers),
+    )
 
 
 @router.get("/courses", response_model=list[CourseSummaryResponse])
@@ -62,16 +143,16 @@ def get_student_courses(
     )
 
     results = []
-    for sc in student_courses:
-        active_progress = next(
-            (up for up in sc.unit_progress if up.status == ProgressStatus.IN_PROGRESS),
-            None,
-        )
-        unit_progress_id = (
-            active_progress.id
-            if active_progress
-            else (sc.unit_progress[0].id if sc.unit_progress else None)
-        )
+    for sc in sorted(
+        student_courses,
+        key=lambda row: (
+            row.enrolled_on or datetime.min,
+            (row.course.title if row.course else ""),
+            str(row.id),
+        ),
+    ):
+        progression_state = resolve_governed_progression(db, sc.id)
+        unit_progress_id = progression_state.get("unit_progress_id")
 
         results.append(
             {
@@ -80,8 +161,14 @@ def get_student_courses(
                 "course_id": sc.course_id,
                 "enrolled_on": sc.enrolled_on,
                 "status": sc.status,
-                "course": CourseResponse.from_orm(sc.course),
+                "course": serialize_course(sc.course, viewer_role=current_user.role),
                 "unit_progress_id": unit_progress_id,
+                "continuation_guidance": build_course_continuation_guidance(
+                    db,
+                    sc.course,
+                    current_user.id,
+                    educator_visible=False,
+                ),
             }
         )
 
@@ -94,61 +181,309 @@ def get_course_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("admin", "teacher", "student")),
 ):
-    course = db.query(Course).filter(Course.id == course_id).first()
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = db.query(Course).filter(Course.id == parsed_course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return serialize_course(course, viewer_role=current_user.role)
+
+
+@router.get("/courses/{course_id}/governance-summary", response_model=CourseGovernanceSummaryResponse)
+def get_course_governance_summary(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = load_course_governance_summary_course(db, parsed_course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    course_data = CourseResponse(
-        id=course.id,
-        title=course.title,
-        description=course.description,
-        units=[
-            UnitResponse(
-                id=unit.id,
-                title=unit.title,
-                content=unit.content,
-                order=unit.order,
-                lessons=[
-                    LessonResponse(
-                        id=lesson.id,
-                        title=lesson.title,
-                        objective=lesson.objective,
-                        order=lesson.order,
-                        duration_minutes=lesson.duration_minutes,
-                        activities=[
-                            ActivityResponse(
-                                id=activity.id,
-                                type=activity.type,
-                                title=activity.title,
-                                content=activity.content,
-                                order=activity.order,
-                                media=(
-                                    MediaResponse(
-                                        id=activity.media.id,
-                                        type=activity.media.type,
-                                        title=activity.media.title,
-                                        url=activity.media.url,
-                                        description=activity.media.description,
-                                    )
-                                    if activity.media
-                                    else None
-                                ),
-                                pages=[
-                                    StorybookPageResponse.from_orm(p)
-                                    for p in activity.storybook_pages
-                                ],
-                            )
-                            for activity in lesson.activities
-                        ],
-                    )
-                    for lesson in unit.lessons
-                ],
-            )
-            for unit in course.units
-        ],
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    return build_course_governance_summary(db, course)
+
+
+@router.get("/courses/{course_id}/publish-readiness", response_model=CoursePublishReadinessResponse)
+def get_course_publish_readiness(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.units).joinedload(Unit.lessons).joinedload(Lesson.sources),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    readiness = evaluate_course_publish_readiness(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in readiness.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in readiness.warnings]
+
+    return CoursePublishReadinessResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_ready=readiness.is_ready,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
     )
 
-    return course_data
+
+@router.get("/courses/{course_id}/safe-publish-validation", response_model=CourseSafePublishValidationResponse)
+def get_course_safe_publish_validation(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.student_courses),
+            joinedload(Course.assessments).joinedload(Assessment.attempts),
+            joinedload(Course.assessments).joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.sources),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.attempts),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.attempts),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.events),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    validation = evaluate_course_safe_publish(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in validation.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in validation.warnings]
+
+    return CourseSafePublishValidationResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_safe=validation.is_safe,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
+    )
+
+
+@router.get("/courses/{course_id}/competency-evidence-integrity", response_model=CourseCompetencyEvidenceIntegrityResponse)
+def get_course_competency_evidence_integrity(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            joinedload(Course.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.assessments).joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.assessments)
+            .joinedload(Assessment.competency_alignments),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.attempts)
+            .joinedload(StudentAssessmentAttempt.events),
+            joinedload(Course.units)
+            .joinedload(Unit.lessons)
+            .joinedload(Lesson.assessments)
+            .joinedload(Assessment.competency_alignments),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    integrity = evaluate_course_competency_evidence_integrity(course)
+    blocking_issues = [_serialize_publish_readiness_issue(issue) for issue in integrity.blocking_issues]
+    warnings = [_serialize_publish_readiness_issue(issue) for issue in integrity.warnings]
+    affected_assessments = [_serialize_affected_assessment(context) for context in integrity.affected_assessments]
+
+    return CourseCompetencyEvidenceIntegrityResponse(
+        course_id=course.id,
+        course_title=course.title,
+        is_valid=integrity.is_valid,
+        is_explainable=integrity.is_explainable,
+        blocking_issue_count=len(blocking_issues),
+        warning_count=len(warnings),
+        blocking_issues=blocking_issues,
+        warnings=warnings,
+        affected_assessments=affected_assessments,
+        affected_competency_identifiers=list(integrity.affected_competency_identifiers),
+    )
+
+
+@router.get(
+    "/courses/{course_id}/runtime-intervention-recommendations",
+    response_model=list[CourseRuntimeInterventionRecommendationResponse],
+)
+def get_course_runtime_intervention_recommendations(
+    course_id: str,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    try:
+        parsed_course_id = uuid.UUID(course_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid course id")
+
+    course = (
+        db.query(Course)
+        .options(
+            selectinload(Course.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.assessments).selectinload(Assessment.events),
+            selectinload(Course.assessments).selectinload(Assessment.competency_alignments),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.events),
+            selectinload(Course.units)
+            .selectinload(Unit.assessments)
+            .selectinload(Assessment.competency_alignments),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.attempts)
+            .selectinload(StudentAssessmentAttempt.events),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.events),
+            selectinload(Course.units)
+            .selectinload(Unit.lessons)
+            .selectinload(Lesson.assessments)
+            .selectinload(Assessment.competency_alignments),
+            selectinload(Course.student_courses)
+            .joinedload(StudentCourse.student),
+            selectinload(Course.student_courses)
+            .selectinload(StudentCourse.unit_progress)
+            .selectinload(StudentUnitProgress.segments),
+        )
+        .filter(Course.id == parsed_course_id)
+        .first()
+    )
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if not _can_view_course_publish_readiness(db, current_user, course):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+
+    recommendations: list[CourseRuntimeInterventionRecommendationResponse] = []
+    for student_course in sorted(
+        course.student_courses or [],
+        key=lambda row: (
+            row.student.firstname.lower() if row.student and row.student.firstname else "",
+            row.student.lastname.lower() if row.student and row.student.lastname else "",
+            row.enrolled_on or datetime.min,
+            str(row.id),
+        ),
+    ):
+        recommendation = evaluate_runtime_intervention_recommendation(db, student_course)
+        recommendations.append(
+            CourseRuntimeInterventionRecommendationResponse(
+                student_id=student_course.student_id,
+                student_name=(f"{student_course.student.firstname} {student_course.student.lastname}".strip()
+                              if student_course.student is not None
+                              else "Unknown learner"),
+                student_course_id=student_course.id,
+                course_id=course.id,
+                course_title=course.title,
+                recommendation_state=recommendation.recommendation_state,
+                educator_attention_level=recommendation.educator_attention_level,
+                summary=recommendation.summary,
+                evidence_basis=[
+                    _serialize_runtime_intervention_evidence_basis(basis)
+                    for basis in recommendation.evidence_basis
+                ],
+                confidence_level=recommendation.confidence_level,
+                caution_flags=list(recommendation.caution_flags),
+                learner_safe_message=recommendation.learner_safe_tone,
+            )
+        )
+
+    return recommendations
 
 
 @router.post("/courses")
@@ -162,6 +497,9 @@ def create_course(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
         )
     new_course = Course(title=course.title, description=course.description)
+    new_course.learning_objectives = course.learning_objectives
+    new_course.skill_tags = course.skill_tags
+    new_course.standards_metadata = course.standards_metadata
     db.add(new_course)
     db.flush()
 
@@ -176,15 +514,56 @@ def create_course(
         db.flush()
 
         for lesson_data in unit_data.lessons:
+            readiness = evaluate_lesson_readiness(
+                title=lesson_data.title,
+                objective=lesson_data.objective,
+                learning_objectives=lesson_data.learning_objectives,
+                key_concepts=lesson_data.key_concepts,
+                hook=lesson_data.hook,
+                content=lesson_data.content,
+                guided_practice=lesson_data.guided_practice,
+                independent_practice=lesson_data.independent_practice,
+                assessment=lesson_data.assessment,
+                sources=lesson_data.sources,
+            )
+            review_status, reviewed_by = resolve_review_fields(
+                db=db,
+                current_user=current_user,
+                requested_status=lesson_data.review_status,
+                unit_id=new_unit.id,
+                readiness=readiness,
+            )
             new_lesson = Lesson(
                 title=lesson_data.title,
                 objective=lesson_data.objective,
+                learning_objectives=lesson_data.learning_objectives,
+                key_concepts=lesson_data.key_concepts,
+                teacher_notes=lesson_data.teacher_notes,
+                discussion_questions=lesson_data.discussion_questions,
+                hook=lesson_data.hook,
+                content=lesson_data.content,
+                guided_practice=lesson_data.guided_practice,
+                independent_practice=lesson_data.independent_practice,
+                assessment=lesson_data.assessment,
+                review_status=review_status,
+                reviewed_by=reviewed_by,
+                skill_tags=lesson_data.skill_tags,
+                standards_metadata=lesson_data.standards_metadata,
                 order=lesson_data.order,
                 duration_minutes=lesson_data.duration_minutes,
                 unit_id=new_unit.id,
             )
             db.add(new_lesson)
             db.flush()
+
+            for source_data in lesson_data.sources:
+                db.add(
+                    Source(
+                        lesson_id=new_lesson.id,
+                        citation=source_data.citation,
+                        url=source_data.url,
+                    )
+                )
 
             for activity_data in lesson_data.activities:
                 new_activity = Activity(
@@ -228,6 +607,9 @@ def create_course_authoring(
         age_band_min=course.age_band_min,
         age_band_max=course.age_band_max,
         default_locale=course.default_locale,
+        learning_objectives=course.learning_objectives,
+        skill_tags=course.skill_tags,
+        standards_metadata=course.standards_metadata,
         created_by=current_user.id,
         organization_id=membership.organization_id,
     )
@@ -339,6 +721,9 @@ def update_course(
     try:
         existing_course.title = course_dto.title
         existing_course.description = course_dto.description
+        existing_course.learning_objectives = course_dto.learning_objectives
+        existing_course.skill_tags = course_dto.skill_tags
+        existing_course.standards_metadata = course_dto.standards_metadata
 
         for unit in list(existing_course.units):
             db.delete(unit)
@@ -355,15 +740,56 @@ def update_course(
             db.flush()
 
             for lesson_dto in unit_dto.lessons:
-                new_lesson = Lesson(
+                readiness = evaluate_lesson_readiness(
                     title=lesson_dto.title,
                     objective=lesson_dto.objective,
-                    order=lesson_dto.order,
-                    duration_minutes=lesson_dto.duration_minutes,
+                    learning_objectives=lesson_dto.learning_objectives,
+                    key_concepts=lesson_dto.key_concepts,
+                    hook=lesson_dto.hook,
+                    content=lesson_dto.content,
+                    guided_practice=lesson_dto.guided_practice,
+                    independent_practice=lesson_dto.independent_practice,
+                    assessment=lesson_dto.assessment,
+                    sources=lesson_dto.sources,
+                )
+                review_status, reviewed_by = resolve_review_fields(
+                    db=db,
+                    current_user=current_user,
+                    requested_status=lesson_dto.review_status,
                     unit_id=new_unit.id,
+                    readiness=readiness,
+                )
+                new_lesson = Lesson(
+                title=lesson_dto.title,
+                objective=lesson_dto.objective,
+                learning_objectives=lesson_dto.learning_objectives,
+                key_concepts=lesson_dto.key_concepts,
+                teacher_notes=lesson_dto.teacher_notes,
+                discussion_questions=lesson_dto.discussion_questions,
+                hook=lesson_dto.hook,
+                content=lesson_dto.content,
+                guided_practice=lesson_dto.guided_practice,
+                independent_practice=lesson_dto.independent_practice,
+                assessment=lesson_dto.assessment,
+                review_status=review_status,
+                reviewed_by=reviewed_by,
+                skill_tags=lesson_dto.skill_tags,
+                standards_metadata=lesson_dto.standards_metadata,
+                order=lesson_dto.order,
+                duration_minutes=lesson_dto.duration_minutes,
+                unit_id=new_unit.id,
                 )
                 db.add(new_lesson)
                 db.flush()
+
+                for source_data in lesson_dto.sources:
+                    db.add(
+                        Source(
+                            lesson_id=new_lesson.id,
+                            citation=source_data.citation,
+                            url=source_data.url,
+                        )
+                    )
 
                 for activity_dto in lesson_dto.activities:
                     new_activity = Activity(

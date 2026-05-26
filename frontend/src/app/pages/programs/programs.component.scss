@@ -1,0 +1,17 @@
+.programs-hero {
+  background:
+    linear-gradient(135deg, rgba(46, 41, 78, 0.96), rgba(68, 53, 107, 0.9)),
+    radial-gradient(circle at top right, rgba(239, 183, 0, 0.18), transparent 40%);
+  color: white;
+}
+
+.programs-hero h2,
+.programs-hero p,
+.programs-hero .badge-soft {
+  color: white;
+}
+
+.programs-hero .badge-soft {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}

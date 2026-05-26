@@ -5,28 +5,71 @@ import { Router } from '@angular/router';
 import { UserInfo } from '../../../models/user-info';
 import { CoursesService } from '../../../services/courses.service';
 import { Course } from '../../../models/course';
+import {
+  CourseCompetencyEvidenceIntegrity,
+  CourseGovernanceSummary,
+  CoursePublishReadiness,
+  CourseRuntimeInterventionRecommendation,
+  CourseSafePublishValidation,
+} from '../../../models/course-publish-readiness.model';
 import { IconModule } from '../../../shared/icon/icon.module';
 import { ToastService } from '../../../services/toast.service';
-import { AnalyticsService, TeacherSummaryRow } from '../../../services/analytics.service';
+import {
+  AnalyticsService,
+  EducatorRuntimeSupportSummary,
+  TeacherSummaryRow,
+} from '../../../services/analytics.service';
 import { UsersService } from '../../../services/users.service';
 import { User } from '../../../models/user';
+import { EchoStatePanelComponent } from '../../../components/echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../../../components/echo-loading-state/echo-loading-state.component';
+import { forkJoin } from 'rxjs';
+
+interface RuntimeInterventionCourseGroup {
+  courseId: string;
+  courseTitle: string;
+  recommendations: CourseRuntimeInterventionRecommendation[];
+}
 
 @Component({
   selector: 'echoed-teacher-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconModule],
+  imports: [CommonModule, FormsModule, IconModule, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './teacher-view.component.html',
   styleUrl: './teacher-view.component.scss'
 })
 export class TeacherViewComponent implements OnInit {
   @Input() userInfo!: UserInfo;
+  private readonly flagshipPathwayKey = 'introduction-to-africa';
 
   courses: Course[] = [];
   readonly visibleCount = 5;
   students: User[] = [];
   teacherSummary: TeacherSummaryRow[] = [];
+  educatorRuntimeSupport: EducatorRuntimeSupportSummary[] = [];
   selectedCourseId = '';
   selectedStudentId = '';
+  coursesLoading = true;
+  studentsLoading = true;
+  summaryLoading = true;
+  runtimeSupportLoading = true;
+  publishReadinessLoading = true;
+  safePublishLoading = true;
+  competencyIntegrityLoading = true;
+  runtimeInterventionLoading = true;
+  coursesError = '';
+  studentsError = '';
+  summaryError = '';
+  runtimeSupportError = '';
+  publishReadinessError = '';
+  safePublishError = '';
+  competencyIntegrityError = '';
+  runtimeInterventionError = '';
+  courseReadiness: CoursePublishReadiness[] = [];
+  safePublishValidations: CourseSafePublishValidation[] = [];
+  competencyIntegrities: CourseCompetencyEvidenceIntegrity[] = [];
+  runtimeInterventionRecommendations: CourseRuntimeInterventionRecommendation[] = [];
+  courseGovernanceSummaries: CourseGovernanceSummary[] = [];
 
   constructor(
     private coursesService: CoursesService,
@@ -37,15 +80,9 @@ export class TeacherViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.coursesService.getCourses().subscribe(courses => {
-      this.courses = courses;
-    });
-    this.usersService.getStudents().subscribe(students => {
-      this.students = students;
-    });
-    this.analyticsService.getTeacherSummary().subscribe(summary => {
-      this.teacherSummary = summary;
-    });
+    this.loadCourses();
+    this.loadStudents();
+    this.loadTeacherSummary();
   }
 
   get visibleCourses(): Course[] {
@@ -64,6 +101,297 @@ export class TeacherViewComponent implements OnInit {
     return Math.round(total / this.teacherSummary.length);
   }
 
+  get quickActionsLoading(): boolean {
+    return this.coursesLoading || this.studentsLoading;
+  }
+
+  get quickActionsError(): string {
+    return this.coursesError || this.studentsError;
+  }
+
+  get flagshipCourse(): Course | undefined {
+    return this.courses.find((course) => {
+      const pathwayKey = course.standards_metadata?.['pathway_key'];
+      return pathwayKey === this.flagshipPathwayKey || course.title === 'Introduction to Africa';
+    });
+  }
+
+  get runtimeSupportStateLabel(): Record<string, string> {
+    return {
+      remediation: 'Needs review support',
+      enrichment: 'Ready for enrichment',
+      normal: 'Continuing normally',
+      completed: 'Completed pathway',
+      unknown: 'Support state unknown',
+    };
+  }
+
+  get runtimeSupportSectionEmpty(): boolean {
+    return !this.runtimeSupportLoading && !this.runtimeSupportError && this.educatorRuntimeSupport.length === 0;
+  }
+
+  get publishReadinessSectionEmpty(): boolean {
+    return !this.publishReadinessLoading && !this.publishReadinessError && this.courseReadiness.length === 0;
+  }
+
+  get safePublishSectionEmpty(): boolean {
+    return !this.safePublishLoading && !this.safePublishError && this.safePublishValidations.length === 0;
+  }
+
+  get competencyIntegritySectionEmpty(): boolean {
+    return !this.competencyIntegrityLoading && !this.competencyIntegrityError && this.competencyIntegrities.length === 0;
+  }
+
+  get runtimeInterventionSectionEmpty(): boolean {
+    return !this.runtimeInterventionLoading && !this.runtimeInterventionError && this.runtimeInterventionRecommendations.length === 0;
+  }
+
+  get runtimeInterventionGroups(): RuntimeInterventionCourseGroup[] {
+    const groups = new Map<string, RuntimeInterventionCourseGroup>();
+    for (const recommendation of this.runtimeInterventionRecommendations) {
+      if (!groups.has(recommendation.course_id)) {
+        groups.set(recommendation.course_id, {
+          courseId: recommendation.course_id,
+          courseTitle: recommendation.course_title,
+          recommendations: [],
+        });
+      }
+      groups.get(recommendation.course_id)?.recommendations.push(recommendation);
+    }
+
+    return this.visibleCourses
+      .map((course) => groups.get(course.id))
+      .filter((group): group is RuntimeInterventionCourseGroup => !!group);
+  }
+
+  loadCourses(): void {
+    this.coursesLoading = true;
+    this.coursesError = '';
+    this.coursesService.getCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
+        this.coursesLoading = false;
+        this.loadCourseGovernanceSummary();
+        this.loadEducatorRuntimeSupport();
+      },
+      error: () => {
+        this.courses = [];
+        this.coursesLoading = false;
+        this.coursesError = 'We could not load educator courses right now. Retry to restore course management.';
+        this.courseGovernanceSummaries = [];
+        this.runtimeSupportLoading = false;
+        this.educatorRuntimeSupport = [];
+        this.publishReadinessLoading = false;
+        this.courseReadiness = [];
+        this.publishReadinessError = '';
+        this.safePublishLoading = false;
+        this.safePublishValidations = [];
+        this.safePublishError = '';
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrities = [];
+        this.competencyIntegrityError = '';
+        this.runtimeInterventionLoading = false;
+        this.runtimeInterventionRecommendations = [];
+        this.runtimeInterventionError = '';
+      },
+    });
+  }
+
+  loadStudents(): void {
+    this.studentsLoading = true;
+    this.studentsError = '';
+    this.usersService.getStudents().subscribe({
+      next: (students) => {
+        this.students = students;
+        this.studentsLoading = false;
+      },
+      error: () => {
+        this.students = [];
+        this.studentsLoading = false;
+        this.studentsError = 'We could not load learner roster data right now. Retry to restore course assignment.';
+      },
+    });
+  }
+
+  loadTeacherSummary(): void {
+    this.summaryLoading = true;
+    this.summaryError = '';
+    this.analyticsService.getTeacherSummary().subscribe({
+      next: (summary) => {
+        this.teacherSummary = summary;
+        this.summaryLoading = false;
+      },
+      error: () => {
+        this.teacherSummary = [];
+        this.summaryLoading = false;
+        this.summaryError = 'We could not load learner progress right now. Retry to restore the latest classroom summary.';
+      },
+    });
+  }
+
+  loadEducatorRuntimeSupport(): void {
+    const flagshipCourse = this.flagshipCourse;
+    this.runtimeSupportLoading = true;
+    this.runtimeSupportError = '';
+
+    if (!flagshipCourse) {
+      this.educatorRuntimeSupport = [];
+      this.runtimeSupportLoading = false;
+      return;
+    }
+
+    this.analyticsService.getEducatorRuntimeSupport(flagshipCourse.id).subscribe({
+      next: (rows) => {
+        this.educatorRuntimeSupport = rows;
+        this.runtimeSupportLoading = false;
+      },
+      error: () => {
+        this.educatorRuntimeSupport = [];
+        this.runtimeSupportLoading = false;
+        this.runtimeSupportError = 'We could not load runtime learner support right now. Retry to restore remediation and enrichment visibility.';
+      },
+    });
+  }
+
+  supportStateClasses(state: string): string {
+    switch (state) {
+      case 'remediation':
+        return 'bg-amber-100 text-amber-900 border border-amber-200';
+      case 'enrichment':
+        return 'bg-emerald-100 text-emerald-900 border border-emerald-200';
+      case 'completed':
+        return 'bg-sky-100 text-sky-900 border border-sky-200';
+      case 'normal':
+        return 'bg-slate-100 text-slate-800 border border-slate-200';
+      default:
+        return 'bg-white text-slate-700 border border-slate-200';
+    }
+  }
+
+  readinessStateClasses(isReady: boolean): string {
+    return isReady
+      ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+      : 'bg-amber-100 text-amber-900 border border-amber-200';
+  }
+
+  readinessStateLabel(isReady: boolean): string {
+    return isReady ? 'Ready' : 'Not ready';
+  }
+
+  safePublishStateLabel(isSafe: boolean): string {
+    return isSafe ? 'Safe' : 'Not safe';
+  }
+
+  competencyIntegrityStateLabel(isValid: boolean): string {
+    return isValid ? 'Valid' : 'Not valid';
+  }
+
+  competencyExplainabilityLabel(isExplainable: boolean): string {
+    return isExplainable ? 'Explainable' : 'Not explainable';
+  }
+
+  runtimeInterventionStateClasses(state: string): string {
+    switch (state) {
+      case 'enrichment':
+        return 'bg-emerald-100 text-emerald-900 border border-emerald-200';
+      case 'normal':
+        return 'bg-slate-100 text-slate-800 border border-slate-200';
+      case 'monitor':
+        return 'bg-amber-100 text-amber-900 border border-amber-200';
+      case 'review':
+        return 'bg-sky-100 text-sky-900 border border-sky-200';
+      case 'reteach':
+        return 'bg-rose-100 text-rose-900 border border-rose-200';
+      default:
+        return 'bg-white text-slate-700 border border-slate-200';
+    }
+  }
+
+  formatRuntimeLabel(value: string): string {
+    return value
+      .split(/[_-]/g)
+      .filter((part) => part.length > 0)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  formatRuntimeLabels(values: string[]): string {
+    return values.map((value) => this.formatRuntimeLabel(value)).join(', ');
+  }
+
+  loadCourseGovernanceSummary(): void {
+    this.publishReadinessLoading = true;
+    this.safePublishLoading = true;
+    this.competencyIntegrityLoading = true;
+    this.runtimeInterventionLoading = true;
+    this.publishReadinessError = '';
+    this.safePublishError = '';
+    this.competencyIntegrityError = '';
+    this.runtimeInterventionError = '';
+
+    if (this.visibleCourses.length === 0) {
+      this.courseGovernanceSummaries = [];
+      this.courseReadiness = [];
+      this.publishReadinessLoading = false;
+      this.safePublishValidations = [];
+      this.safePublishLoading = false;
+      this.safePublishError = '';
+      this.competencyIntegrities = [];
+      this.competencyIntegrityLoading = false;
+      this.competencyIntegrityError = '';
+      this.runtimeInterventionRecommendations = [];
+      this.runtimeInterventionLoading = false;
+      this.runtimeInterventionError = '';
+      return;
+    }
+
+    forkJoin(
+      this.visibleCourses.map((course) => this.coursesService.getCourseGovernanceSummary(course.id)),
+    ).subscribe({
+      next: (summaries) => {
+        this.courseGovernanceSummaries = summaries;
+        this.courseReadiness = summaries.map((summary) => summary.publish_readiness);
+        this.safePublishValidations = summaries.map((summary) => summary.safe_publish_validation);
+        this.competencyIntegrities = summaries.map((summary) => summary.competency_evidence_integrity);
+        this.runtimeInterventionRecommendations = summaries.reduce(
+          (all, summary) => all.concat(summary.runtime_intervention_recommendations),
+          [] as CourseRuntimeInterventionRecommendation[],
+        );
+        this.publishReadinessLoading = false;
+        this.safePublishLoading = false;
+        this.competencyIntegrityLoading = false;
+        this.runtimeInterventionLoading = false;
+      },
+      error: () => {
+        this.courseGovernanceSummaries = [];
+        this.courseReadiness = [];
+        this.publishReadinessLoading = false;
+        this.publishReadinessError = 'We could not load course publish readiness right now. Retry to restore governance checks.';
+        this.safePublishValidations = [];
+        this.safePublishLoading = false;
+        this.safePublishError = 'We could not load course safe-publish validation right now. Retry to restore learner-safety checks.';
+        this.competencyIntegrities = [];
+        this.competencyIntegrityLoading = false;
+        this.competencyIntegrityError = 'We could not load competency evidence integrity right now. Retry to restore mastery explainability checks.';
+        this.runtimeInterventionRecommendations = [];
+        this.runtimeInterventionLoading = false;
+        this.runtimeInterventionError = 'We could not load runtime intervention guidance right now. Retry to restore educator recommendation visibility.';
+      },
+    });
+  }
+
+  loadCourseSafePublishValidation(): void {
+    this.loadCourseGovernanceSummary();
+  }
+
+  loadCourseCompetencyIntegrity(): void {
+    this.loadCourseGovernanceSummary();
+  }
+
+  loadCourseRuntimeInterventions(): void {
+    this.loadCourseGovernanceSummary();
+  }
+
   onAddCourse() {
     this.router.navigate(['/home/courses/new']);
   }
@@ -73,8 +401,17 @@ export class TeacherViewComponent implements OnInit {
   }
 
   deleteCourse(courseId: string) {
-    this.coursesService.deleteCourse(courseId).subscribe(() => {
-      this.courses = this.courses.filter(c => c.id !== courseId);
+    this.coursesService.deleteCourse(courseId).subscribe({
+      next: () => {
+        this.courses = this.courses.filter(c => c.id !== courseId);
+        this.courseReadiness = this.courseReadiness.filter((readiness) => readiness.course_id !== courseId);
+        this.safePublishValidations = this.safePublishValidations.filter((validation) => validation.course_id !== courseId);
+        this.competencyIntegrities = this.competencyIntegrities.filter((integrity) => integrity.course_id !== courseId);
+        this.runtimeInterventionRecommendations = this.runtimeInterventionRecommendations.filter((recommendation) => recommendation.course_id !== courseId);
+      },
+      error: () => {
+        this.toastService.show('We could not delete that course right now.', 'error');
+      },
     });
   }
 
@@ -92,9 +429,7 @@ export class TeacherViewComponent implements OnInit {
         this.toastService.show('Course assigned successfully.', 'success');
         this.selectedCourseId = '';
         this.selectedStudentId = '';
-        this.analyticsService.getTeacherSummary().subscribe(summary => {
-          this.teacherSummary = summary;
-        });
+        this.loadTeacherSummary();
       },
       error: (err) => {
         this.toastService.show(err?.error?.detail || 'Assignment failed.', 'error');
@@ -113,5 +448,53 @@ export class TeacherViewComponent implements OnInit {
 
   viewReports() {
     this.toastService.show('Reports are listed in the Student Progress table.', 'info');
+  }
+
+  retryCourses(): void {
+    this.loadCourses();
+  }
+
+  retryPublishReadiness(): void {
+    if (this.coursesLoading) {
+      return;
+    }
+    this.loadCourseGovernanceSummary();
+  }
+
+  retrySafePublish(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseSafePublishValidation();
+  }
+
+  retryCompetencyIntegrity(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseCompetencyIntegrity();
+  }
+
+  retryRuntimeInterventions(): void {
+    if (this.coursesLoading || this.publishReadinessLoading || !!this.publishReadinessError) {
+      return;
+    }
+    this.loadCourseRuntimeInterventions();
+  }
+
+  retryQuickActions(): void {
+    this.loadCourses();
+    this.loadStudents();
+  }
+
+  retryTeacherSummary(): void {
+    this.loadTeacherSummary();
+  }
+
+  retryRuntimeSupport(): void {
+    if (this.coursesLoading) {
+      return;
+    }
+    this.loadEducatorRuntimeSupport();
   }
 }

@@ -5,7 +5,7 @@
     <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8 text-ink">
       <p class="text-sm text-primary font-semibold">Create Account</p>
       <h2 class="text-3xl font-bold mb-2">Build your EchoEd profile</h2>
-      <p class="muted-text mb-6">
+      <p class="registration-helper mb-6">
         For educators, families, and school leaders exploring the K–5 demo and
         beyond.
       </p>
@@ -56,7 +56,7 @@
             placeholder="you@example.com"
             class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
           />
-          <p class="text-xs text-slate-500">
+          <p class="registration-helper text-xs">
             We use this for secure sign-in and demo follow-ups.
           </p>
         </div>
@@ -82,13 +82,13 @@
           </select>
         </div>
 
-        <div class="rounded-2xl border border-primary/10 bg-primary/5 p-4 space-y-3">
+        <div class="rounded-2xl border border-primary/15 bg-primary/5 p-4 space-y-3">
           <label class="flex items-center gap-3 text-sm font-semibold text-primary">
             <input type="checkbox" formControlName="createOrganization" />
             Create an organization now
           </label>
-          <p class="text-sm text-muted">
-            If you do not have an organization yet, we can set one up for you after sign-up.
+          <p class="registration-helper text-sm">
+            Choose this if you want your first sign-in to continue directly into organization setup.
           </p>
           <div *ngIf="registrationForm.get('createOrganization')?.value" class="space-y-3">
             <div class="space-y-2">
@@ -98,19 +98,31 @@
                 type="text"
                 formControlName="organizationName"
                 placeholder="e.g. Bright Futures Academy"
-                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
+                class="registration-input w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-accent/50"
               />
-              <p class="text-xs text-muted">
+              <p class="registration-helper text-xs">
                 We will save this and guide you through setup after you sign in.
               </p>
+              <p
+                class="form-state-text form-state-text--error"
+                *ngIf="
+                  registrationForm.get('organizationName')?.hasError('required') &&
+                  (registrationForm.get('organizationName')?.touched || registrationSubmitted)
+                "
+              >
+                Add an organization name to continue with setup.
+              </p>
             </div>
-            <div class="text-xs text-muted">
+            <div class="registration-helper text-xs">
               Suggested type: <span class="font-semibold text-main">{{ inferredOrgTypeLabel }}</span>
             </div>
-            <p class="text-xs text-muted" *ngIf="showStudentOrgHint">
+            <p class="form-state-text form-state-text--warning text-xs" *ngIf="showStudentOrgHint">
               Students usually join an existing organization, but you can create a family space if needed.
             </p>
           </div>
+          <p class="form-state-text form-state-text--info text-sm">
+            {{ organizationSetupSummary }}
+          </p>
         </div>
 
         <div class="grid md:grid-cols-2 gap-4">
@@ -160,7 +172,7 @@
               class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
             />
             <p
-              class="text-sm text-red-600"
+              class="form-state-text form-state-text--error text-sm"
               *ngIf="
                 registrationForm.get('confirmPassword')?.errors?.[
                   'passwordMismatch'
@@ -172,16 +184,16 @@
           </div>
         </div>
 
-        <p class="text-sm text-red-600" *ngIf="errorMessage">
+        <p class="form-state-text form-state-text--error text-sm" *ngIf="errorMessage">
           {{ errorMessage }}
         </p>
 
         <button
           type="submit"
-          class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition"
+          class="registration-submit w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:cursor-not-allowed disabled:opacity-60"
           [disabled]="registrationForm.invalid"
         >
-          Register
+          {{ submitLabel }}
         </button>
       </form>
       <p class="text-sm text-center mt-4">

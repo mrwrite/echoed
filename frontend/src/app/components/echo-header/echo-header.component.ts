@@ -22,12 +22,14 @@ import { EchoBreadcrumbsComponent } from '../echo-breadcrumbs/echo-breadcrumbs.c
 import { OrganizationService } from '../../services/organization.service';
 import { Organization } from '../../models/organization';
 import { PermissionsService } from '../../services/permissions.service';
+import { EchoStatePanelComponent } from '../echo-state-panel/echo-state-panel.component';
+import { EchoLoadingStateComponent } from '../echo-loading-state/echo-loading-state.component';
 
 
 @Component({
   selector: 'echo-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, EchoBreadcrumbsComponent, FormsModule],
+  imports: [CommonModule, RouterModule, EchoBreadcrumbsComponent, FormsModule, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './echo-header.component.html',
   styleUrl: './echo-header.component.scss',
   animations: [
@@ -48,6 +50,11 @@ export class EchoHeaderComponent implements OnInit {
   menuOpen: boolean = false;
   organizations: Organization[] = [];
   activeOrgId: string | null = null;
+  orgsLoading = true;
+  orgsLoadError = '';
+  switchPending = false;
+  switchError = '';
+  switchSuccess = '';
 
   @ViewChild('menuContainer') menuContainer!: ElementRef;
 
@@ -61,13 +68,12 @@ export class EchoHeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.activeOrgId = this.organizationService.getActiveOrgId();
-    this.organizationService.refreshOrganizations().subscribe();
+    this.refreshOrganizations();
+    this.organizationService.activeOrg$.subscribe((activeOrgId) => {
+      this.activeOrgId = activeOrgId;
+    });
     this.organizationService.organizations$.subscribe(orgs => {
       this.organizations = orgs;
-      if (!this.activeOrgId && this.organizations.length > 0) {
-        const defaultOrg = this.organizations[0];
-        this.switchOrg(defaultOrg.id);
-      }
     });
   }
 
@@ -81,6 +87,10 @@ export class EchoHeaderComponent implements OnInit {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
+  }
+
+  get activeOrganizationName(): string {
+    return this.organizations.find((org) => org.id === this.activeOrgId)?.name || 'No confirmed organization';
   }
 
   logout(): void {
@@ -101,12 +111,43 @@ export class EchoHeaderComponent implements OnInit {
     }
   }
 
+  refreshOrganizations(): void {
+    this.orgsLoading = true;
+    this.orgsLoadError = '';
+    this.organizationService.refreshOrganizations().subscribe({
+      next: () => {
+        this.orgsLoading = false;
+      },
+      error: () => {
+        this.orgsLoading = false;
+        this.orgsLoadError = 'We could not load organizations right now. Retry to restore your confirmed access context.';
+      },
+    });
+  }
+
   switchOrg(orgId: string) {
-    const role = this.organizations.find(org => org.id === orgId)?.role;
-    this.organizationService.setActiveOrg(orgId, role).subscribe(async () => {
-      this.activeOrgId = orgId;
-      this.permissionsService.resetSession();
-      await this.permissionsService.bootstrapSession();
+    if (!orgId || orgId === this.activeOrgId || this.switchPending) {
+      return;
+    }
+
+    this.switchPending = true;
+    this.switchError = '';
+    this.switchSuccess = '';
+    this.organizationService.setActiveOrg(orgId).subscribe({
+      next: async () => {
+        this.activeOrgId = this.organizationService.getActiveOrgId();
+        this.permissionsService.resetSession();
+        await this.permissionsService.bootstrapSession();
+        this.switchPending = false;
+        this.switchSuccess = this.activeOrganizationName === 'No confirmed organization'
+          ? 'Organization context updated.'
+          : `Confirmed organization: ${this.activeOrganizationName}.`;
+      },
+      error: () => {
+        // Preserve the prior confirmed org state when switch confirmation fails.
+        this.switchPending = false;
+        this.switchError = 'We could not switch organizations. Your confirmed organization context has not changed.';
+      },
     });
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { TokenResponse } from '../models/token-response';
 import { environment } from '../../environments/environment';
@@ -28,13 +28,7 @@ export class AuthService {
     }).pipe (
 
       tap(response => {
-        localStorage.setItem(this.authTokenKey, response.access_token);
-        if (response.active_org_id) {
-          localStorage.setItem(this.activeOrgKey, response.active_org_id);
-        }
-        if (response.organizations && response.organizations.length > 0) {
-          localStorage.setItem(this.activeOrgRoleKey, response.organizations[0].role);
-        }
+        this.applyTokenResponse(response);
       })
     );
   }
@@ -55,6 +49,59 @@ export class AuthService {
 
   getToken(): string | null{
     return localStorage.getItem(this.authTokenKey);
+  }
+
+  applyTokenResponse(response: TokenResponse): void {
+    this.applySessionResponse(response);
+  }
+
+  isTokenExpired(token: string): boolean {
+    const payload = this.getTokenPayload(token);
+    const exp = payload?.exp;
+
+    if (typeof exp !== 'number') {
+      return true;
+    }
+
+    return Date.now() >= exp * 1000;
+  }
+
+  private applySessionResponse(response: TokenResponse): void {
+    localStorage.setItem(this.authTokenKey, response.access_token);
+
+    const activeOrgId = response.active_org_id ?? null;
+    if (activeOrgId) {
+      localStorage.setItem(this.activeOrgKey, activeOrgId);
+    } else {
+      localStorage.removeItem(this.activeOrgKey);
+    }
+
+    const activeOrgRole = this.resolveActiveOrgRole(response);
+    if (activeOrgRole) {
+      localStorage.setItem(this.activeOrgRoleKey, activeOrgRole);
+    } else {
+      localStorage.removeItem(this.activeOrgRoleKey);
+    }
+  }
+
+  private resolveActiveOrgRole(response: TokenResponse): string | null {
+    if (response.active_org_role) {
+      return response.active_org_role;
+    }
+
+    if (response.active_organization?.role) {
+      return response.active_organization.role;
+    }
+
+    if (!response.active_org_id || !response.organizations?.length) {
+      return null;
+    }
+
+    const matchingOrganization = response.organizations.find(
+      (organization) => organization.id === response.active_org_id,
+    );
+
+    return matchingOrganization?.role ?? null;
   }
 
   getTokenPayload(token: string): any {

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
 
 export interface AdminOverviewResponse {
   totals: {
@@ -45,32 +44,52 @@ export interface StudentProgressResponse {
   }[];
 }
 
+export type EducatorRuntimeSupportState =
+  | 'normal'
+  | 'remediation'
+  | 'enrichment'
+  | 'completed'
+  | 'unknown';
+
+export interface EducatorRuntimeSupportSummary {
+  student_id: string;
+  student_name: string;
+  student_course_id: string;
+  course_id: string;
+  course_title: string;
+  support_state: EducatorRuntimeSupportState;
+  support_summary: string;
+  evidence_source: string;
+  recommended_action: string;
+  last_evidence_at: string | null;
+  context_lesson_id: string | null;
+  context_lesson_title: string | null;
+  context_key_concepts: string[];
+  context_prompts: string[];
+  educator_intervention_hint: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
   private apiUrl = `${environment.apiUrl}/api/analytics`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || ''
-    });
-  }
+  constructor(private http: HttpClient) {}
 
   getAdminOverview(): Observable<AdminOverviewResponse> {
-    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/overview`, { headers: this.getHeaders() });
+    return this.http.get<AdminOverviewResponse>(`${this.apiUrl}/overview`);
   }
 
   getTeacherSummary(): Observable<TeacherSummaryRow[]> {
-    return this.http.get<TeacherSummaryRow[]>(`${this.apiUrl}/teacher-summary`, { headers: this.getHeaders() });
+    return this.http.get<TeacherSummaryRow[]>(`${this.apiUrl}/teacher-summary`);
+  }
+
+  getEducatorRuntimeSupport(courseId: string): Observable<EducatorRuntimeSupportSummary[]> {
+    return this.http.get<EducatorRuntimeSupportSummary[]>(
+      `${this.apiUrl}/educator-runtime-support?course_id=${courseId}`
+    );
   }
 
   getStudentProgress(): Observable<StudentProgressResponse> {
-    return this.http.get<StudentProgressResponse>(`${this.apiUrl}/student-progress`, { headers: this.getHeaders() });
+    return this.http.get<StudentProgressResponse>(`${this.apiUrl}/student-progress`);
   }
 }

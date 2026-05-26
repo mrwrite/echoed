@@ -25,7 +25,7 @@ class OrganizationRole(enum.Enum):
     PARENT = "parent"
     STUDENT = "student"
     INSTRUCTOR = "instructor"
-    VIEWER = "viewer",
+    VIEWER = "viewer"
     SUPER_ADMIN = "super_admin"
 
 

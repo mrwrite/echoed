@@ -1,30 +1,59 @@
-<div class="min-h-screen bg-gradient-to-br from-primary/5 via-white to-accent/10 py-6">
+<main class="min-h-screen bg-gradient-to-br from-primary/5 via-white to-accent/10 py-6" aria-label="Lesson experience">
   <div class="max-w-5xl mx-auto surface-card p-6">
-    <div class="flex items-center justify-between mb-4">
+    <header class="flex items-center justify-between mb-4" aria-labelledby="lesson-page-title">
       <div>
         <p class="section-heading text-primary text-sm">Immersive Lesson</p>
-        <h2 class="text-2xl font-bold text-ink">{{ lesson?.title || 'Loading lesson...' }}</h2>
-        <p class="muted-text">Step through segments with consistent navigation and clear focus.</p>
+        <h2 id="lesson-page-title" class="text-2xl font-bold text-ink">{{ lesson?.title || 'Preparing your next lesson' }}</h2>
+        <p class="muted-text">Step through each governed activity with clear focus and consistent learner guidance.</p>
       </div>
-      <button class="px-3 py-2 rounded-xl border border-primary text-primary font-semibold" (click)="returnToDashboard()">Exit lesson</button>
-    </div>
+      <button aria-label="Exit lesson and return to dashboard" class="px-3 py-2 rounded-xl border border-primary text-primary font-semibold" (click)="returnToDashboard()">Exit lesson</button>
+    </header>
 
-    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson">
+    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson" aria-label="Lesson state">
       <span class="px-3 py-1 rounded-full bg-primary/10 text-primary">Active segment</span>
       <span class="px-3 py-1 rounded-full bg-accent/30 text-ink">Guided reading & activities</span>
       <span *ngIf="demoMode" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Demo preview</span>
     </div>
 
-    <echoed-lesson-viewer
-      *ngIf="lesson"
-      [lesson]="lesson!"
-      [isTeacherLed]="false"
-      (segmentCompleted)="onLessonCompleted()"
-    />
+    <app-echo-loading-state
+      *ngIf="loading"
+      density="page"
+      ariaLabel="lesson-loading"
+      title="Preparing lesson delivery"
+      body="We are resolving the current governed lesson segment and restoring your next activity."
+    ></app-echo-loading-state>
 
-    <p *ngIf="!lesson && !courseCompleted" class="text-center text-slate-500">Loading lesson...</p>
+    <section *ngIf="lesson && !loading" aria-label="Lesson content">
+      <echoed-lesson-viewer
+        [lesson]="lesson!"
+        [isTeacherLed]="false"
+        (segmentCompleted)="onLessonCompleted()"
+      />
+    </section>
+
+    <app-echo-state-panel
+      *ngIf="!lesson && !loading && governedDeliveryState && governedDeliveryState !== 'completed'"
+      variant="blocked"
+      eyebrow="Governed lesson state"
+      [title]="governedStateTitle"
+      [body]="governedStateBody"
+      actionLabel="Return to dashboard"
+      actionAriaLabel="Return to the learner dashboard"
+      (action)="returnToDashboard()"
+    ></app-echo-state-panel>
+
+    <app-echo-state-panel
+      *ngIf="!lesson && !loading && loadErrorMessage"
+      variant="error"
+      eyebrow="Lesson load failed"
+      title="We could not prepare this lesson"
+      [body]="loadErrorMessage"
+      actionLabel="Retry"
+      actionAriaLabel="Retry loading this lesson"
+      (action)="retryLoad()"
+    ></app-echo-state-panel>
   </div>
-</div>
+</main>
 
 <app-echo-modal
   [open]="courseCompleted"

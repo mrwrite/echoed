@@ -36,6 +36,20 @@ export class LessonViewerComponent implements OnChanges {
     return this.lesson?.activities[this.currentActivityIndex];
   }
 
+  get instructionalSections(): Array<{ label: string; content?: string }> {
+    return [
+      { label: 'Hook', content: this.lesson?.hook },
+      { label: 'Content', content: this.lesson?.content },
+      { label: 'Guided Practice', content: this.lesson?.guided_practice },
+      { label: 'Independent Practice', content: this.lesson?.independent_practice },
+      { label: 'Assessment', content: this.lesson?.assessment },
+    ].filter(section => !!section.content);
+  }
+
+  get showEducatorContent(): boolean {
+    return this.isTeacherLed;
+  }
+
   goToNextActivity(): void {
     if (this.lesson && this.currentActivityIndex < this.lesson.activities.length - 1) {
       this.currentActivityIndex++;

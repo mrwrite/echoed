@@ -4,6 +4,9 @@ export interface Course {
     id: string;
     title: string;
     description: string;
+    learning_objectives?: string;
+    skill_tags?: string[];
+    standards_metadata?: Record<string, unknown>;
     /** Optional thumbnail URL for course card */
     thumbnailUrl?: string;
     /** Optional instructor name */

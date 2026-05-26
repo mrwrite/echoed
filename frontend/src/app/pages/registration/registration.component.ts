@@ -5,6 +5,10 @@ import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { RegisterDto } from '../../models/register-dto';
 import { MetaService, EnumOption } from '../../services/meta.service';
+import {
+  normalizePendingOrganizationSetup,
+  writePendingOrganizationSetup,
+} from '../../shared/onboarding-flow';
 
 
 @Component({
@@ -25,6 +29,7 @@ export class RegistrationComponent implements OnInit {
   inferredOrgTypeLabel = '';
   inferredOrgTypeValue = '';
   showStudentOrgHint = false;
+  registrationSubmitted = false;
 
   constructor(
     private router: Router,
@@ -104,7 +109,11 @@ export class RegistrationComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.registrationForm.invalid) return;
+    this.registrationSubmitted = true;
+    if (this.registrationForm.invalid) {
+      this.registrationForm.markAllAsTouched();
+      return;
+    }
 
     const formValue = this.registrationForm.value;
     const user: RegisterDto = {
@@ -119,15 +128,12 @@ export class RegistrationComponent implements OnInit {
     this.authService.register(user).subscribe(
       (response) => {
         console.log('Registration successful');
-        if (formValue.createOrganization && formValue.organizationName) {
-          const payload = {
-            name: formValue.organizationName,
-            type: this.inferredOrgTypeValue,
-          };
-          sessionStorage.setItem('pending_org_creation', JSON.stringify(payload));
-        } else {
-          sessionStorage.removeItem('pending_org_creation');
-        }
+        const pendingSetup = normalizePendingOrganizationSetup({
+          createOrganization: formValue.createOrganization,
+          organizationName: formValue.organizationName,
+          organizationType: this.inferredOrgTypeValue,
+        });
+        writePendingOrganizationSetup(pendingSetup);
         this.router.navigate(['/login']);
       },
       (error) => {
@@ -146,6 +152,20 @@ export class RegistrationComponent implements OnInit {
     const match = this.organizationTypes.find((t) => t.value === inferredType);
     this.inferredOrgTypeLabel = match?.label ?? inferredType;
     this.showStudentOrgHint = role === 'student';
+  }
+
+  get createOrganizationSelected(): boolean {
+    return !!this.registrationForm.get('createOrganization')?.value;
+  }
+
+  get organizationSetupSummary(): string {
+    return this.createOrganizationSelected
+      ? 'After you sign in, we will bring you directly into organization setup with your details prefilled.'
+      : 'After you sign in, you can explore with your personal workspace and skip organization setup for now.';
+  }
+
+  get submitLabel(): string {
+    return this.createOrganizationSelected ? 'Create account and continue to setup' : 'Create account';
   }
 
   private getOrgTypeForRole(role: string): string {

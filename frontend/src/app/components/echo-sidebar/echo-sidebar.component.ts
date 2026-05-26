@@ -5,6 +5,7 @@ import { combineLatest, map } from 'rxjs';
 import { UserInfo } from '../../models/user-info';
 import { IconModule } from '../../shared/icon/icon.module';
 import { PermissionsService } from '../../services/permissions.service';
+import { EchoLoadingStateComponent } from '../echo-loading-state/echo-loading-state.component';
 
 interface NavItem {
   label: string;
@@ -21,7 +22,7 @@ interface NavSection {
 @Component({
   selector: 'echo-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconModule],
+  imports: [CommonModule, RouterModule, IconModule, EchoLoadingStateComponent],
   styleUrls: ['./echo-sidebar.component.scss'],
   templateUrl: './echo-sidebar.component.html',
 })
@@ -36,6 +37,8 @@ export class SidebarComponent {
       items: [
         { label: 'Dashboard', route: '/home', icon: 'Home', permission: 'nav:dashboard' },
         { label: 'Courses', route: '/home/courses', icon: 'Book', permission: 'nav:courses' },
+        { label: 'Programs', route: '/home/programs', icon: 'BookOpen', permission: 'nav:programs' },
+        { label: 'Certifications', route: '/home/certifications', icon: 'Award', permission: 'nav:certifications' },
       ]
     },
     {

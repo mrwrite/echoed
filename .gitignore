@@ -30,7 +30,6 @@ yarn-error.log*
 .DS_Store
 angular.json
 !/frontend/angular.json
-package-lock.json
 yarn.lock
 
 # ---- General IDE / System ----
@@ -39,3 +38,6 @@ yarn.lock
 *.sublime-workspace
 *.sublime-project
 Thumbs.db
+
+frontend/test-results/
+frontend/playwright-report/

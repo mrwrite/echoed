@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
 import { Badge, BadgeCreate, StudentBadge } from '../models/badge';
 
 @Injectable({
@@ -11,52 +10,27 @@ import { Badge, BadgeCreate, StudentBadge } from '../models/badge';
 export class BadgesService {
   private apiUrl = `${environment.apiUrl}/api`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    } else if (!token) {
-      token = `Bearer ${this.authService.getToken()}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || ''
-    });
-  }
-
-  private getFileHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    } else if (!token) {
-      token = `Bearer ${this.authService.getToken()}`;
-    }
-    return new HttpHeaders({ Authorization: token || '' });
-  }
+  constructor(private http: HttpClient) {}
 
   getBadges(): Observable<Badge[]> {
-    return this.http.get<Badge[]>(`${this.apiUrl}/badges`, { headers: this.getHeaders() });
+    return this.http.get<Badge[]>(`${this.apiUrl}/badges`);
   }
 
   getStudentBadges(studentId: string): Observable<StudentBadge[]> {
-    return this.http.get<StudentBadge[]>(`${this.apiUrl}/students/${studentId}/badges`, { headers: this.getHeaders() });
+    return this.http.get<StudentBadge[]>(`${this.apiUrl}/students/${studentId}/badges`);
   }
 
   createBadge(badge: BadgeCreate): Observable<Badge> {
-    return this.http.post<Badge>(`${this.apiUrl}/badges`, badge, { headers: this.getHeaders() });
+    return this.http.post<Badge>(`${this.apiUrl}/badges`, badge);
   }
 
   uploadBadgeImage(file: File): Observable<{ file_path: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ file_path: string }>(`${this.apiUrl}/upload/badge`, formData, { headers: this.getFileHeaders() });
+    return this.http.post<{ file_path: string }>(`${this.apiUrl}/upload/badge`, formData);
   }
 
   assignBadge(studentId: string, badgeId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/students/${studentId}/badges/${badgeId}`, {}, {
-      headers: this.getHeaders()
-    });
+    return this.http.post(`${this.apiUrl}/students/${studentId}/badges/${badgeId}`, {});
   }
 }

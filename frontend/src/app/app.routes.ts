@@ -20,6 +20,9 @@ import { SectionDetailComponent } from './pages/section-detail/section-detail.co
 import { PreferencesComponent } from './pages/preferences/preferences.component';
 import { OnboardingOrganizationComponent } from './pages/onboarding-organization/onboarding-organization.component';
 import { HomeSessionGuard } from './guards/home-session.guard';
+import { ProgramsComponent } from './pages/programs/programs.component';
+import { AssessmentDetailComponent } from './pages/assessment-detail/assessment-detail.component';
+import { CertificationsComponent } from './pages/certifications/certifications.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -50,6 +53,9 @@ export const routes: Routes = [
             data: { roles: ['admin', 'teacher'] }
           },
           { path: 'courses', component: AvailableCoursesComponent },
+          { path: 'programs', component: ProgramsComponent },
+          { path: 'assessments/:id', component: AssessmentDetailComponent },
+          { path: 'certifications', component: CertificationsComponent },
           {
             path: 'org/invites',
             component: OrgInvitesComponent,

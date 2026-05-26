@@ -17,9 +17,9 @@
   --echo-rose: #E46D6D;
   --echo-surface: #ffffff;
   --echo-text-main: #111827;
-  --echo-text-muted: #334155;
+  --echo-text-muted: #1f2937;
   --echo-text-on-dark: #F9FAFB;
-  --echo-text-on-dark-muted: #F1F5F9;
+  --echo-text-on-dark-muted: #E2E8F0;
   --echo-muted: var(--echo-text-muted);
   --echo-shadow: 0 16px 40px -18px rgba(15, 23, 42, 0.3);
   --echo-radius: 18px;
@@ -57,12 +57,14 @@ blockquote, cite {
   font-style: italic;
 }
 
-a, button, [role='button'], input, select, textarea {
-  outline: none;
+:where(a, button, [role='button'], input, select, textarea, summary) {
+  outline-offset: 3px;
 }
 
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  box-shadow: 0 0 0 3px rgba(239, 183, 0, 0.25);
+:where(a, button, [role='button'], input, select, textarea, summary):focus,
+:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
+  outline: 2px solid rgba(239, 183, 0, 0.8);
+  box-shadow: 0 0 0 4px rgba(239, 183, 0, 0.22);
   border-radius: 10px;
 }
 
@@ -139,8 +141,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   color: var(--echo-primary);
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: #475569;
+  opacity: 1;
+}
+
 .card-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 767px) {
+  .surface-card {
+    padding: 1rem;
+  }
 }

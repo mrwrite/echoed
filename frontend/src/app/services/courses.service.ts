@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
 import { CourseDto } from '../models/course-dto';
@@ -10,6 +9,13 @@ import { StartCourseRequest, SegmentResponse, CompleteSegmentResponse } from '..
 import { Lesson } from '../models/lesson';
 import { StudentCourse } from '../models/student-course';
 import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
+import {
+  CourseCompetencyEvidenceIntegrity,
+  CourseGovernanceSummary,
+  CoursePublishReadiness,
+  CourseRuntimeInterventionRecommendation,
+  CourseSafePublishValidation,
+} from '../models/course-publish-readiness.model';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -19,132 +25,107 @@ export class CoursesService {
   private apiUrl = `${environment.apiUrl}/api/courses`;
   private startCourseUrl = `${environment.apiUrl}/api/start-course`;
 
-  constructor(private http: HttpClient, private authService: AuthService) { }
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    } else if (!token) {
-      token = `Bearer ${this.authService.getToken()}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || ''
-    });
-  }
+  constructor(private http: HttpClient) { }
 
   getCourses(): Observable<Course[]> {
-    return this.http.get<Course[]>(`${this.apiUrl}`, { headers: this.getHeaders() });
+    return this.http.get<Course[]>(`${this.apiUrl}`);
   }
 
   getCourseById(courseId: string): Observable<CourseDraft> {
-    return this.http.get<CourseDraft>(`${this.apiUrl}/${courseId}`, { headers: this.getHeaders() });
+    return this.http.get<CourseDraft>(`${this.apiUrl}/${courseId}`);
+  }
+
+  getCoursePublishReadiness(courseId: string): Observable<CoursePublishReadiness> {
+    return this.http.get<CoursePublishReadiness>(`${this.apiUrl}/${courseId}/publish-readiness`);
+  }
+
+  getCourseSafePublishValidation(courseId: string): Observable<CourseSafePublishValidation> {
+    return this.http.get<CourseSafePublishValidation>(`${this.apiUrl}/${courseId}/safe-publish-validation`);
+  }
+
+  getCourseCompetencyEvidenceIntegrity(courseId: string): Observable<CourseCompetencyEvidenceIntegrity> {
+    return this.http.get<CourseCompetencyEvidenceIntegrity>(`${this.apiUrl}/${courseId}/competency-evidence-integrity`);
+  }
+
+  getCourseRuntimeInterventionRecommendations(courseId: string): Observable<CourseRuntimeInterventionRecommendation[]> {
+    return this.http.get<CourseRuntimeInterventionRecommendation[]>(`${this.apiUrl}/${courseId}/runtime-intervention-recommendations`);
+  }
+
+  getCourseGovernanceSummary(courseId: string): Observable<CourseGovernanceSummary> {
+    return this.http.get<CourseGovernanceSummary>(`${this.apiUrl}/${courseId}/governance-summary`);
   }
 
   getLessonById(lessonId: string): Observable<Lesson> {
-  return this.http.get<Lesson>(`${environment.apiUrl}/api/lessons/${lessonId}`, {
-    headers: this.getHeaders()
-  });
-}
+    return this.http.get<Lesson>(`${environment.apiUrl}/api/lessons/${lessonId}`);
+  }
 
   uploadColoring(file: File): Observable<{ file_path: string }> {
     const formData = new FormData();
     formData.append('file', file);
-
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    }
-
-    const headers = new HttpHeaders({
-      Authorization: token || ''
-    });
-
     return this.http.post<{ file_path: string }>(
       `${environment.apiUrl}/api/upload/coloring`,
-      formData,
-      { headers }
+      formData
     );
   }
 
   uploadStorybookPage(file: File): Observable<{ file_path: string }> {
     const formData = new FormData();
     formData.append('file', file);
-
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    }
-
-    const headers = new HttpHeaders({
-      Authorization: token || ''
-    });
-
     return this.http.post<{ file_path: string }>(
       `${environment.apiUrl}/api/upload/storybook`,
-      formData,
-      { headers }
+      formData
     );
   }
 
-getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
-  return this.http.get<SegmentResponse>(
-    `${environment.apiUrl}/api/progress/segment?student_unit_id=${studentUnitId}`,
-    { headers: this.getHeaders() }
-  );
-}
+  getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
+    return this.http.get<SegmentResponse>(
+      `${environment.apiUrl}/api/progress/segment?student_unit_id=${studentUnitId}`
+    );
+  }
 
 
   updateCourse(courseId: string, course: CourseDraft): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${courseId}`, course, { headers: this.getHeaders() });
+    return this.http.put(`${this.apiUrl}/${courseId}`, course);
   }
 
   deleteCourse(courseId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${courseId}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/${courseId}`);
   }
 
   enrollInCourse(courseId: string): Observable<any> {
-  const payload = { course_id: courseId };
-  return this.http.post(`${environment.apiUrl}/api/enroll`, payload, {
-    headers: this.getHeaders()
-  });
-}
+    const payload = { course_id: courseId };
+    return this.http.post(`${environment.apiUrl}/api/enroll`, payload);
+  }
 
   assignCourseToStudent(courseId: string, studentId: string): Observable<any> {
     const payload = { course_id: courseId, student_id: studentId };
-    return this.http.post(`${environment.apiUrl}/api/assign-course`, payload, {
-      headers: this.getHeaders()
-    });
+    return this.http.post(`${environment.apiUrl}/api/assign-course`, payload);
   }
 
 
   createCourse(course: CourseDraft): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, course, { headers: this.getHeaders() });
+    return this.http.post(`${this.apiUrl}`, course);
   }
 
-   startCourse(request: StartCourseRequest): Observable<SegmentResponse> {
-    return this.http.post<SegmentResponse>(this.startCourseUrl, request, {
-      headers: this.getHeaders()
-    });
+  startCourse(request: StartCourseRequest): Observable<SegmentResponse> {
+    return this.http.post<SegmentResponse>(this.startCourseUrl, request);
   }
 
   getStudentCourses(): Observable<StudentCourseWithDetails[]> {
-  return this.http.get<StudentCourseWithDetails[]>(`${environment.apiUrl}/api/student-courses`, {
-    headers: this.getHeaders()
-  });
-}
+    return this.http.get<StudentCourseWithDetails[]>(`${environment.apiUrl}/api/student-courses`);
+  }
 
 
   markSegmentCompleted(studentUnitId: string, lessonId: string): Observable<CompleteSegmentResponse> {
-  const payload = {
-    student_unit_id: studentUnitId,
-    lesson_id: lessonId
-  };
+    const payload = {
+      student_unit_id: studentUnitId,
+      lesson_id: lessonId
+    };
 
-  return this.http.post<CompleteSegmentResponse>(`${environment.apiUrl}/api/progress/segment/complete`, payload, {
-    headers: this.getHeaders()
-  });
+    return this.http.post<CompleteSegmentResponse>(
+      `${environment.apiUrl}/api/progress/segment/complete`,
+      payload
+    );
   }
 
   /**
@@ -159,6 +140,12 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
     }
     return this.getCurrentSegment(unitProgressId).pipe(
       map(segment => {
+        if (segment.delivery_state === 'completed') {
+          return 100;
+        }
+        if (!segment.lesson_id) {
+          return 0;
+        }
         const units = sc.course.units ?? [];
         const unit = units.find(u => u.lessons.some(l => l.id === segment.lesson_id));
         const lessons = unit ? unit.lessons : [];
@@ -170,10 +157,6 @@ getCurrentSegment(studentUnitId: string): Observable<SegmentResponse> {
         return (index / total) * 100;
       }),
       catchError(err => {
-        // If API returns 404 no segment found => all lessons completed
-        if (err.status === 404) {
-          return of(100);
-        }
         return of(0);
       })
     );

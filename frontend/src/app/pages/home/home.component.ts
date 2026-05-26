@@ -3,6 +3,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../components/echo-sidebar/echo-sidebar.component';
 import { EchoHeaderComponent } from '../../components/echo-header/echo-header.component';
+import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { filter } from 'rxjs/operators';
 import { DemoTourService } from '../../services/demo-tour.service';
@@ -11,7 +12,7 @@ import { PermissionsService } from '../../services/permissions.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, EchoHeaderComponent, RouterOutlet],
+  imports: [CommonModule, SidebarComponent, EchoHeaderComponent, EchoLoadingStateComponent, RouterOutlet],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   animations: [
@@ -31,6 +32,7 @@ export class HomeComponent implements OnInit {
   lessonMode = false;
   private readonly permissionsService = inject(PermissionsService);
   readonly userInfo$ = this.permissionsService.user$;
+  readonly ready$ = this.permissionsService.ready$;
 
   constructor(
     private router: Router,
@@ -38,8 +40,7 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    void this.permissionsService.bootstrapSession();
-
+    this.lessonMode = this.router.url.includes('/lesson/');
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -49,5 +50,11 @@ export class HomeComponent implements OnInit {
 
   startDemoTour() {
     this.demoTourService.startTour();
+  }
+
+  get sidebarWidth(): string {
+    return this.sidebarCollapsed
+      ? 'var(--echo-sidebar-collapsed-width)'
+      : 'var(--echo-sidebar-expanded-width)';
   }
 }

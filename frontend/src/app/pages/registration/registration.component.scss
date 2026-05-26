@@ -1,4 +1,38 @@
-// Minimal overrides — layout and visuals are driven by Tailwind utility classes
 .glass-panel {
   box-shadow: 0 20px 60px -30px rgba(0, 0, 0, 0.5);
+}
+
+.registration-helper {
+  color: #475569;
+}
+
+.registration-input {
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.registration-input::placeholder {
+  color: #64748b;
+}
+
+.registration-submit:disabled {
+  background: #756a9a;
+  box-shadow: none;
+}
+
+.form-state-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form-state-text--info {
+  color: #334155;
+}
+
+.form-state-text--warning {
+  color: #92400e;
+}
+
+.form-state-text--error {
+  color: #b91c1c;
 }

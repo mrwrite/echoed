@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { AuthService } from './auth.service';
-import { tap } from 'rxjs/operators';
-import { TokenResponse } from '../models/token-response';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User } from '../models/user';
 
@@ -15,30 +12,17 @@ import { User } from '../models/user';
 export class UsersService {
   private apiUrl = `${environment.apiUrl}/api/users`;
   
-  constructor(private http: HttpClient, private authService: AuthService) { }
-
-  private getHeaders(): HttpHeaders {
-    let token = this.authService.getToken();
-    if (token && !token.startsWith('Bearer ')) {
-      token = `Bearer ${token}`;
-    } else if (!token) {
-      token = `Bearer ${this.authService.getToken()}`;
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: token || '' }); 
-      
-  }
+  constructor(private http: HttpClient) { }
 
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}`, { headers: this.getHeaders() });
+    return this.http.get<User[]>(`${this.apiUrl}`);
   }
 
   deleteUser(userId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${userId}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/${userId}`);
   }
 
   getStudents(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/students`, { headers: this.getHeaders() });
+    return this.http.get<User[]>(`${this.apiUrl}/students`);
   }
 }

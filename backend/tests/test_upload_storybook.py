@@ -1,64 +1,45 @@
 import os
 import uuid
-import shutil
-import pytest
-
-# Use an in-memory SQLite database for tests and a temp directory for uploads
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
-os.environ["STORYBOOK_PATH"] = "./test_storybook"
 
 from fastapi.testclient import TestClient
-from app import main as app_main
-from app.main import app
 
-STORYBOOK_PATH = os.environ["STORYBOOK_PATH"]
-app_main.STORYBOOK_PATH = STORYBOOK_PATH
+from app.api.routes import uploads
+from app.deps import get_current_user
+from app.main import app
 from app.models import User
-from app.database import SessionLocal
-from app.auth import get_current_user
 
 client = TestClient(app)
 
-@pytest.fixture
-def test_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-@pytest.fixture
-def test_user(test_db):
-    user = User(
+def test_upload_storybook_page(db_session, tmp_path, monkeypatch):
+    teacher_user = User(
         id=uuid.uuid4(),
         firstname="Story",
         lastname="Tester",
-        username=f"story_{uuid.uuid4()}",
-        email=f"story_{uuid.uuid4()}@example.com",
+        username=f"story_{uuid.uuid4().hex[:8]}",
+        email=f"story_{uuid.uuid4().hex[:8]}@example.com",
         hashed_password="fake",
         role="teacher",
     )
-    test_db.add(user)
-    test_db.commit()
-    return user
+    db_session.add(teacher_user)
+    db_session.commit()
 
+    storybook_path = tmp_path / "storybook"
+    storybook_path.mkdir()
+    monkeypatch.setattr(uploads, "STORYBOOK_PATH", str(storybook_path))
+    app.dependency_overrides[get_current_user] = lambda: teacher_user
 
-def test_upload_storybook_page(test_db, test_user):
-    app.dependency_overrides[get_current_user] = lambda: test_user
-    os.makedirs(STORYBOOK_PATH, exist_ok=True)
-    content = b"\x89PNG\r\n\x1a\n"
-    files = {"file": ("page.png", content, "image/png")}
-    response = client.post("/api/upload/storybook", files=files)
-    assert response.status_code == 200
-    data = response.json()
-    assert "file_path" in data
+    try:
+        content = b"\x89PNG\r\n\x1a\n"
+        files = {"file": ("page.png", content, "image/png")}
+        response = client.post("/api/upload/storybook", files=files)
+        assert response.status_code == 200
 
-    filename = data["file_path"].split("/")[-1]
-    file_path = os.path.join(STORYBOOK_PATH, filename)
-    assert os.path.exists(file_path)
+        data = response.json()
+        assert "file_path" in data
 
-    os.remove(file_path)
-    # Clean up temporary directory after test
-    if os.path.exists(STORYBOOK_PATH):
-        shutil.rmtree(STORYBOOK_PATH)
-    app.dependency_overrides = {}
+        filename = data["file_path"].rstrip("/").split("/")[-1]
+        file_path = os.path.join(uploads.STORYBOOK_PATH, filename)
+        assert os.path.exists(file_path)
+    finally:
+        app.dependency_overrides = {}

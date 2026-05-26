@@ -1,30 +1,30 @@
-<div class="space-y-6" data-testid="student-dashboard">
+<div class="student-dashboard space-y-5 md:space-y-6" data-testid="student-dashboard">
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
-    <div class="col-span-2 p-6 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white shadow-soft-card">
-      <div class="flex justify-between items-start">
+    <div class="student-dashboard__hero col-span-2 rounded-2xl bg-gradient-to-br from-primary to-secondary p-5 text-white shadow-soft-card md:p-6">
+      <div class="flex flex-wrap justify-between gap-4 items-start">
         <div>
           <p class="text-sm uppercase tracking-[0.2em] text-on-dark-muted">Welcome back</p>
-          <h2 class="text-3xl font-bold">{{userInfo.fullname}}</h2>
-          <p class="text-on-dark">Here is a guided overview of your EchoEd learning journey.</p>
+          <h2 class="text-2xl font-bold md:text-3xl">{{userInfo.fullname}}</h2>
+          <p class="mt-1 max-w-2xl text-on-dark">Here is a guided overview of your EchoEd learning journey.</p>
         </div>
-        <span class="px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">K-5 Demo</span>
+        <span class="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">K-5 Demo</span>
       </div>
-      <div class="mt-6 grid sm:grid-cols-3 gap-4 text-sm">
-        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+      <div class="mt-5 grid gap-3 text-sm sm:grid-cols-3 md:mt-6 md:gap-4">
+        <div class="rounded-xl border border-white/10 bg-white/10 p-4">
           <p class="text-on-dark-muted">Active courses</p>
           <p class="text-2xl font-bold">{{ studentCourses.length }}</p>
         </div>
-        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+        <div class="rounded-xl border border-white/10 bg-white/10 p-4">
           <p class="text-on-dark-muted">Streak</p>
           <p class="text-2xl font-bold">{{ streakDays }} day<span *ngIf="streakDays !== 1">s</span></p>
         </div>
-        <div class="p-4 bg-white/10 rounded-xl border border-white/10">
+        <div class="rounded-xl border border-white/10 bg-white/10 p-4">
           <p class="text-on-dark-muted">Badges</p>
           <p class="text-2xl font-bold">{{ studentBadges.length }} earned</p>
         </div>
       </div>
     </div>
-    <div class="surface-card p-6">
+    <section class="student-dashboard__continuation surface-card p-5 md:p-6" aria-labelledby="student-continuation-heading">
       <p class="section-heading text-primary text-sm">Today's Learning</p>
       <app-echo-loading-state
         *ngIf="coursesLoading"
@@ -43,10 +43,17 @@
         (action)="retryCourseLoad()"
       ></app-echo-state-panel>
       <ng-container *ngIf="!coursesLoading && !coursesLoadError && activeStudentCourse; else noActive">
-        <p class="text-lg font-semibold mt-2" data-testid="student-active-course-title">{{ activeStudentCourse.course.title }}</p>
-        <p class="text-sm text-slate-600">{{ activeStudentCourse.course.description }}</p>
+        <div class="mt-3 flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p id="student-continuation-heading" class="text-lg font-semibold text-ink md:text-xl" data-testid="student-active-course-title">{{ activeStudentCourse.course.title }}</p>
+            <p class="mt-1 text-sm leading-6 text-slate-700">{{ activeStudentCourse.course.description }}</p>
+          </div>
+          <span class="student-dashboard__status-pill rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            {{ activeCourseStatusLabel }}
+          </span>
+        </div>
         <p
-          class="mt-2 text-xs font-semibold uppercase tracking-[0.18em]"
+          class="mt-3 text-xs font-semibold uppercase tracking-[0.18em]"
           [ngClass]="{
             'text-primary': activeContinuationState === 'normal',
             'text-amber-700': activeContinuationState === 'remediation',
@@ -55,8 +62,31 @@
         >
           {{ activeContinuationEyebrow }}
         </p>
-        <p class="mt-1 text-sm font-semibold text-ink">{{ activeContinuationTitle }}</p>
-        <p class="mt-1 text-sm text-slate-600">{{ activeStudentCourseReason }}</p>
+        <p class="mt-1 text-base font-semibold text-ink">{{ activeContinuationTitle }}</p>
+        <p class="mt-1 text-sm leading-6 text-slate-700">{{ activeStudentCourseReason }}</p>
+        <div class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">Governed course progress</p>
+              <p class="mt-1 text-sm text-slate-700">Your next lesson follows the current approved learning path and saves progress automatically.</p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-primary">{{ activeCourseProgress | number:'1.0-0' }}%</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Completed</p>
+            </div>
+          </div>
+          <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+              [style.width.%]="activeCourseProgress"
+              role="progressbar"
+              aria-label="Active course progress"
+              [attr.aria-valuenow]="activeCourseProgress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+        </div>
         <div
           *ngIf="activeReinforcementMessage"
           class="mt-3 rounded-2xl border p-4"
@@ -117,21 +147,18 @@
             </li>
           </ul>
         </div>
-        <div class="mt-4">
-          <div class="flex justify-between text-sm text-slate-500 mb-1">
-            <span>Progress</span>
-            <span>{{ (activeStudentCourse.progress || 0) | number:'1.0-0' }}%</span>
-          </div>
-          <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-primary to-accent" [style.width.%]="activeStudentCourse.progress || 0"></div>
-          </div>
+        <div class="mt-4 rounded-2xl bg-primary/[0.03] p-4">
+          <p class="text-sm font-semibold text-ink">Ready for your next step?</p>
+          <p class="mt-1 text-sm text-slate-700">Continue into the next governed lesson from exactly where your learning path left off.</p>
           <button
-            class="mt-4 w-full py-2 rounded-xl bg-primary text-white font-semibold"
+            class="mt-4 w-full rounded-xl bg-primary px-4 py-3 text-base font-semibold text-white shadow-soft-card transition hover:-translate-y-0.5 hover:bg-secondary"
             data-testid="student-continue-lesson"
+            aria-label="Continue your active lesson"
             (click)="startCourse(activeStudentCourse)"
           >
             Continue lesson
           </button>
+          <p class="mt-2 text-xs text-slate-600">You can safely return here after each lesson.</p>
         </div>
       </ng-container>
       <ng-template #noActive>
@@ -145,14 +172,14 @@
           (action)="goToAvailableCourses()"
         ></app-echo-state-panel>
       </ng-template>
-    </div>
+    </section>
   </div>
 
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
-    <div class="surface-card p-6 lg:col-span-2">
-      <div class="flex items-center justify-between mb-4">
+    <section class="surface-card p-5 md:p-6 lg:col-span-2" aria-labelledby="student-courses-heading">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-xl font-bold text-primary">My Courses</h3>
-        <button class="text-sm text-primary underline" (click)="goToAvailableCourses()">Explore catalog</button>
+        <button class="text-sm font-semibold text-primary underline underline-offset-4" aria-label="Explore the full course catalog" (click)="goToAvailableCourses()">Explore catalog</button>
       </div>
       <app-echo-loading-state
         *ngIf="coursesLoading"
@@ -179,7 +206,7 @@
         actionLabel="Explore catalog"
         (action)="goToAvailableCourses()"
       ></app-echo-state-panel>
-      <div *ngIf="!coursesLoading && !coursesLoadError && studentCourses.length > 0" class="grid md:grid-cols-2 gap-4">
+      <div *ngIf="!coursesLoading && !coursesLoadError && studentCourses.length > 0" class="grid gap-4 md:grid-cols-2">
         <ng-container *ngFor="let sc of studentCourses">
           <app-student-course-card
             [title]="sc.course.title"
@@ -193,17 +220,17 @@
           >
             <app-echo-button
               *ngIf="sc.status !== 'completed'"
-              class="mt-2"
+              class="mt-3"
               color="primary"
-              label="Start / Resume"
+              [label]="getCourseActionLabel(sc)"
               (click)="startCourse(sc)"
             ></app-echo-button>
           </app-student-course-card>
         </ng-container>
       </div>
-    </div>
+    </section>
 
-    <div class="surface-card p-6">
+    <div class="surface-card p-5 md:p-6">
       <h3 class="text-xl font-bold text-primary mb-3">What's next</h3>
       <ul class="space-y-3">
         <li *ngFor="let item of demoTimeline" class="flex items-start gap-3">
@@ -219,13 +246,13 @@
   </div>
 
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
-    <div class="surface-card p-6 lg:col-span-2">
-      <div class="flex items-center justify-between mb-4">
+    <div class="surface-card p-5 md:p-6 lg:col-span-2">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 class="text-xl font-bold text-primary">Certification Paths</h3>
-          <p class="text-sm text-slate-600">Program progress now groups existing courses into structured outcomes.</p>
+          <p class="text-sm leading-6 text-slate-700">Program progress now groups existing courses into structured outcomes.</p>
         </div>
-        <button class="text-sm text-primary underline" (click)="goToPrograms()">Open all programs</button>
+        <button class="text-sm font-semibold text-primary underline underline-offset-4" (click)="goToPrograms()">Open all programs</button>
       </div>
       <div class="grid md:grid-cols-2 gap-4">
         <div *ngFor="let program of programs | slice:0:2" class="rounded-2xl border border-slate-200 bg-white p-4">
@@ -244,12 +271,12 @@
       </div>
     </div>
 
-    <div class="surface-card p-6 bg-gradient-to-br from-emerald-50 to-white">
-      <div class="flex items-center justify-between mb-3">
+    <div class="surface-card bg-gradient-to-br from-emerald-50 to-white p-5 md:p-6">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-xl font-bold text-primary">Certifications</h3>
-        <button class="text-sm text-primary underline" (click)="goToCertifications()">View all</button>
+        <button class="text-sm font-semibold text-primary underline underline-offset-4" (click)="goToCertifications()">View all</button>
       </div>
-      <div *ngIf="certifications.length === 0" class="text-sm text-slate-600">
+      <div *ngIf="certifications.length === 0" class="text-sm leading-6 text-slate-700">
         Complete required courses and assessments to unlock certifications.
       </div>
       <div *ngFor="let issued of certifications | slice:0:2" class="rounded-xl border border-emerald-100 bg-white p-4 mb-3">
@@ -260,8 +287,8 @@
   </div>
 
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-3">
-    <div class="surface-card p-6 lg:col-span-2">
-      <div class="flex items-center justify-between mb-3">
+    <div class="surface-card p-5 md:p-6 lg:col-span-2">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-xl font-bold text-primary">Achievements & Streaks</h3>
         <span class="badge-soft">Motivation</span>
       </div>
@@ -301,7 +328,7 @@
         </div>
       </div>
     </div>
-    <div class="surface-card p-6 bg-gradient-to-br from-primary/5 to-accent/10">
+    <div class="surface-card bg-gradient-to-br from-primary/5 to-accent/10 p-5 md:p-6">
       <h3 class="text-xl font-bold text-primary mb-3">Available Courses</h3>
       <div class="space-y-3">
         <ng-container *ngFor="let course of visibleAvailableCourses">
@@ -319,7 +346,7 @@
       </div>
       <a
         *ngIf="availableCourses.length > 4"
-        class="inline-flex mt-3 text-primary underline cursor-pointer"
+        class="inline-flex mt-3 cursor-pointer font-semibold text-primary underline underline-offset-4"
         (click)="goToAvailableCourses()"
       >
         View More

@@ -1,0 +1,18 @@
+.student-dashboard {
+  min-width: 0;
+}
+
+.student-dashboard__hero,
+.student-dashboard__continuation {
+  min-width: 0;
+}
+
+.student-dashboard__status-pill {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .student-dashboard__hero {
+    border-radius: 20px;
+  }
+}

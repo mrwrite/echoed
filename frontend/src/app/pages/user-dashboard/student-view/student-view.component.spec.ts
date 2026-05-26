@@ -244,11 +244,14 @@ describe('StudentViewComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Active Learning Path');
+    expect(compiled.textContent).toContain('In progress');
     expect(compiled.textContent).toContain('Selected continuation');
     expect(compiled.textContent).toContain('Your next lesson is ready');
     expect(compiled.textContent).toContain('Keep your momentum with the next governed lesson.');
     expect(compiled.textContent).toContain('Steady progress matters');
     expect(compiled.textContent).toContain('Your effort is adding up.');
+    expect(compiled.textContent).toContain('Governed course progress');
+    expect(compiled.textContent).toContain('saves progress automatically');
   });
 
   it('renders remediation-aware continuation guidance when present', () => {
@@ -424,5 +427,18 @@ describe('StudentViewComponent', () => {
     continueAction.click();
 
     expect(component.startCourse).toHaveBeenCalledWith(remediationCourse);
+  });
+
+  it('uses clearer start and resume labels for course cards', () => {
+    coursesService.studentCoursesResponse = of([
+      buildStudentCourse({ id: 'course-start', title: 'New Course', status: 'enrolled', progress: 0 }),
+      buildStudentCourse({ id: 'course-resume', title: 'Resume Course', status: 'active', progress: 24 }),
+    ]);
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Start course');
+    expect(compiled.textContent).toContain('Resume lesson');
   });
 });

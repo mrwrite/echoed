@@ -76,6 +76,26 @@ export class StudentViewComponent implements OnInit {
     return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
   }
 
+  get activeCourseProgress(): number {
+    return Math.max(0, Math.min(100, this.activeStudentCourse?.progress || 0));
+  }
+
+  get activeCourseStatusLabel(): string {
+    if (!this.activeStudentCourse) {
+      return '';
+    }
+
+    if (this.activeStudentCourse.status === 'completed') {
+      return 'Completed';
+    }
+
+    if (this.activeCourseProgress > 0) {
+      return 'In progress';
+    }
+
+    return 'Ready to begin';
+  }
+
   get allEnrolledCoursesCompleted(): boolean {
     return this.studentCourses.length > 0 && this.studentCourses.every((course) => course.status === 'completed');
   }
@@ -360,5 +380,11 @@ enrollInCourse(courseId: string): void {
 
   retryCourseLoad(): void {
     this.loadStudentCourses();
+  }
+
+  getCourseActionLabel(course: StudentCourseWithDetails): string {
+    return (course.progress ?? 0) > 0 || course.status === 'active'
+      ? 'Resume lesson'
+      : 'Start course';
   }
 }

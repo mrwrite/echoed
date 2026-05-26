@@ -6,9 +6,9 @@
 
 ## 2. Student dashboard polish
 
-- [ ] 2.1 Audit the current student dashboard continuation path, active course card, and available-course surfaces against pilot readiness expectations
-- [ ] 2.2 Harden continuation, empty, and retry behavior so students can reliably understand their next governed learning step
-- [ ] 2.3 Verify the student can log in, see the active course, enter the lesson, and return safely without contradictory dashboard state
+- [x] 2.1 Audit the current student dashboard continuation path, active course card, and available-course surfaces against pilot readiness expectations
+- [x] 2.2 Harden continuation, empty, and retry behavior so students can reliably understand their next governed learning step
+- [x] 2.3 Verify the student can log in, see the active course, enter the lesson, and return safely without contradictory dashboard state
 
 ## 3. Lesson runtime polish
 

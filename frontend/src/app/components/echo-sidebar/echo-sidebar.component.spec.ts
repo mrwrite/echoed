@@ -87,8 +87,12 @@ describe('SidebarComponent', () => {
 
     const nav = fixture.nativeElement.querySelector('nav') as HTMLElement;
     const toggleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    const shell = fixture.nativeElement.querySelector('aside') as HTMLElement;
+    expect(shell.getAttribute('aria-label')).toBe('Sidebar navigation');
     expect(nav.getAttribute('aria-label')).toBe('Primary navigation');
+    expect(nav.getAttribute('id')).toBe('echo-primary-navigation');
     expect(toggleButton.getAttribute('aria-label')).toBe('Toggle sidebar');
     expect(toggleButton.getAttribute('aria-expanded')).toBe('true');
+    expect(toggleButton.getAttribute('aria-controls')).toBe('echo-primary-navigation');
   });
 });

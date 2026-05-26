@@ -93,6 +93,15 @@ describe('HomeComponent', () => {
     expect(fixture.nativeElement.querySelector('echo-sidebar')).toBeNull();
   });
 
+  it('exposes skip navigation and a focusable main landmark', () => {
+    const skipLink = fixture.nativeElement.querySelector('.skip-link') as HTMLAnchorElement;
+    const main = fixture.nativeElement.querySelector('main') as HTMLElement;
+
+    expect(skipLink.getAttribute('href')).toBe('#echoed-main-content');
+    expect(main.getAttribute('id')).toBe('echoed-main-content');
+    expect(main.getAttribute('tabindex')).toBe('-1');
+  });
+
   it('preserves lesson-mode shell behavior after readiness', () => {
     component.lessonMode = true;
     fixture.detectChanges();

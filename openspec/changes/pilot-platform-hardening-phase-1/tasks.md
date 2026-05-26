@@ -30,9 +30,9 @@
 
 ## 6. Accessibility pass
 
-- [ ] 6.1 Review pilot-critical student, teacher, shell, and lesson surfaces for contrast, focus visibility, keyboard order, and labeling defects
-- [ ] 6.2 Fix obvious unreadable text, weak contrast, and missing actionable semantics in core pilot flows
-- [ ] 6.3 Document any remaining accessibility limitations that are intentionally deferred beyond Phase 1
+- [x] 6.1 Review pilot-critical student, teacher, shell, and lesson surfaces for contrast, focus visibility, keyboard order, and labeling defects
+- [x] 6.2 Fix obvious unreadable text, weak contrast, and missing actionable semantics in core pilot flows
+- [x] 6.3 Document any remaining accessibility limitations that are intentionally deferred beyond Phase 1
 
 ## 7. Backend runtime verification
 

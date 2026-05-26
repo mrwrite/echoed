@@ -92,6 +92,12 @@ describe('LessonViewComponent', () => {
     expect(exitButton).not.toBeNull();
   });
 
+  it('keeps lesson error and governed states labeled for assistive technology', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const blockedState = compiled.querySelector('[data-echo-state="blocked"]') as HTMLElement;
+    expect(blockedState.getAttribute('aria-label')).toBe('governed-lesson-state');
+  });
+
   it('renders a generic retryable error state when the governed segment cannot be restored', () => {
     const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
     coursesService.getCurrentSegment.and.returnValue(throwError(() => new Error('segment failed')));

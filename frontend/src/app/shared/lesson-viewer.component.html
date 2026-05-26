@@ -25,7 +25,7 @@
             <span *ngIf="isLastActivity">You are on the final activity for this lesson.</span>
           </p>
         </div>
-        <p class="text-right text-sm font-semibold text-slate-700" role="status" aria-live="polite">
+        <p id="lesson-activity-progress-summary" class="text-right text-sm font-semibold text-slate-700" role="status" aria-live="polite">
           {{ activityProgressPercent }}% complete
         </p>
       </div>
@@ -34,6 +34,7 @@
           class="h-full rounded-full bg-gradient-to-r from-primary to-accent"
           role="progressbar"
           aria-label="Lesson activity progress"
+          aria-describedby="lesson-activity-progress-summary"
           [attr.aria-valuenow]="activityProgressPercent"
           aria-valuemin="0"
           aria-valuemax="100"

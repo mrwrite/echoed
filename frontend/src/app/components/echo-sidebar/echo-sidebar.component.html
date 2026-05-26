@@ -1,7 +1,8 @@
-<div
+<aside
   class="sidebar-shell bg-white/95 backdrop-blur-lg text-ink h-screen flex flex-col border-r border-slate-200/80 shadow-soft-card"
   [class.sidebar-shell--collapsed]="collapsed"
   [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'"
+  aria-label="Sidebar navigation"
 >
   <div class="flex items-center justify-between p-4 gap-3">
     <div class="flex items-center gap-3 min-w-0" *ngIf="!collapsed">
@@ -16,6 +17,7 @@
       class="sidebar-toggle shrink-0 rounded-xl p-2"
       aria-label="Toggle sidebar"
       [attr.aria-expanded]="!collapsed"
+      aria-controls="echo-primary-navigation"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor">
@@ -25,11 +27,11 @@
     </button>
   </div>
 
-  <nav class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto" aria-label="Primary navigation">
+  <nav id="echo-primary-navigation" class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto" aria-label="Primary navigation">
     <ng-container *ngIf="ready$ | async; else navSkeleton">
       <ng-container *ngIf="visibleNavSections$ | async as sections">
-        <div *ngFor="let section of sections">
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-700 mb-2 px-2" *ngIf="!collapsed">{{ section.title }}</p>
+        <section *ngFor="let section of sections; let sectionIndex = index" [attr.aria-label]="collapsed ? section.title : null" [attr.aria-labelledby]="!collapsed ? 'sidebar-section-' + sectionIndex : null">
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-700 mb-2 px-2" *ngIf="!collapsed" [id]="'sidebar-section-' + sectionIndex">{{ section.title }}</p>
           <div class="space-y-1">
             <a
               *ngFor="let item of section.items"
@@ -45,7 +47,7 @@
               <span *ngIf="!collapsed" class="font-semibold truncate">{{ item.label }}</span>
             </a>
           </div>
-        </div>
+        </section>
       </ng-container>
     </ng-container>
 
@@ -65,4 +67,4 @@
     <p class="font-semibold text-primary">{{ userInfo.fullname }}</p>
     <p class="text-xs text-slate-700">{{ userInfo.role | titlecase }}</p>
   </div>
-</div>
+</aside>

@@ -1,0 +1,131 @@
+:host {
+  display: block;
+}
+
+.teacher-dashboard {
+  color: var(--echo-text, #0f172a);
+}
+
+.teacher-dashboard__hero-badge,
+.teacher-dashboard__hero-panel {
+  backdrop-filter: blur(16px);
+}
+
+.teacher-dashboard__section-heading,
+.teacher-dashboard__subsection-heading {
+  position: relative;
+}
+
+.teacher-dashboard__section-heading::after {
+  content: '';
+  display: block;
+  margin-top: 0.9rem;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0));
+}
+
+.teacher-dashboard__subsection-heading h4,
+.teacher-dashboard__section-heading h3 {
+  letter-spacing: -0.01em;
+}
+
+.teacher-dashboard__link-button,
+.teacher-dashboard__text-link,
+.teacher-dashboard__primary-button,
+.teacher-dashboard__secondary-button,
+.teacher-dashboard__control {
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.teacher-dashboard__link-button {
+  border-radius: 9999px;
+  padding: 0.45rem 0.85rem;
+}
+
+.teacher-dashboard__link-button:hover,
+.teacher-dashboard__link-button:focus-visible {
+  background: rgba(14, 116, 144, 0.08);
+}
+
+.teacher-dashboard__text-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.teacher-dashboard__text-link:hover,
+.teacher-dashboard__text-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.teacher-dashboard__control {
+  color: #0f172a;
+}
+
+.teacher-dashboard__control:hover {
+  border-color: rgba(14, 116, 144, 0.32);
+}
+
+.teacher-dashboard__control:focus-visible,
+.teacher-dashboard__link-button:focus-visible,
+.teacher-dashboard__text-link:focus-visible,
+.teacher-dashboard__primary-button:focus-visible,
+.teacher-dashboard__secondary-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
+}
+
+.teacher-dashboard__primary-button:hover,
+.teacher-dashboard__secondary-button:hover {
+  transform: translateY(-1px);
+}
+
+.teacher-dashboard__primary-button {
+  background: linear-gradient(135deg, var(--color-primary, #0e7490), #155e75);
+}
+
+.teacher-dashboard__primary-button:hover {
+  filter: brightness(1.02);
+}
+
+.teacher-dashboard__secondary-button {
+  border: 1px solid rgba(14, 116, 144, 0.2);
+  background: #fff;
+}
+
+.teacher-dashboard__secondary-button:hover {
+  border-color: rgba(14, 116, 144, 0.32);
+  background: rgba(14, 116, 144, 0.04);
+}
+
+.teacher-dashboard__secondary-button--accent {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.75), rgba(254, 240, 138, 0.82));
+}
+
+.teacher-dashboard__secondary-button--accent:hover {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.92), rgba(254, 240, 138, 0.96));
+}
+
+@media (max-width: 1023px) {
+  .teacher-dashboard__section-heading::after {
+    margin-top: 0.75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .teacher-dashboard__hero-panel {
+    padding: 1rem;
+  }
+
+  .teacher-dashboard__link-button {
+    padding-inline: 0;
+  }
+}

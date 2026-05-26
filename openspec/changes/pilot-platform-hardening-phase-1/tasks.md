@@ -18,9 +18,9 @@
 
 ## 4. Teacher dashboard baseline polish
 
-- [ ] 4.1 Audit the current teacher dashboard for pilot-demo readiness, focusing on course visibility, learner progress context, runtime support visibility, and responsive usability
-- [ ] 4.2 Harden teacher dashboard loading, empty, and retry behavior so the core pilot narrative remains usable even when some datasets are unavailable
-- [ ] 4.3 Verify a teacher can log in and see enough stable dashboard state to demonstrate course, learner, and runtime context
+- [x] 4.1 Audit the current teacher dashboard for pilot-demo readiness, focusing on course visibility, learner progress context, runtime support visibility, and responsive usability
+- [x] 4.2 Harden teacher dashboard loading, empty, and retry behavior so the core pilot narrative remains usable even when some datasets are unavailable
+- [x] 4.3 Verify a teacher can log in and see enough stable dashboard state to demonstrate course, learner, and runtime context
 
 ## 5. Error/loading/empty states
 

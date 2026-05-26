@@ -24,6 +24,7 @@ describe('EchoLoadingStateComponent', () => {
 
     expect(panel.getAttribute('role')).toBe('status');
     expect(panel.getAttribute('aria-live')).toBe('polite');
+    expect(panel.getAttribute('aria-busy')).toBe('true');
     expect(panel.getAttribute('aria-label')).toBe('shell-loading');
   });
 

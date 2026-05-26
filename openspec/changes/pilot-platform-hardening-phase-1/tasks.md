@@ -24,9 +24,9 @@
 
 ## 5. Error/loading/empty states
 
-- [ ] 5.1 Inventory route-local loading, error, blocked, and empty states across shell, student dashboard, teacher dashboard, and lesson runtime
-- [ ] 5.2 Align pilot-critical flows to the canonical UX state system and remove ambiguous placeholders where stale content remains visible
-- [ ] 5.3 Add or update tests that lock in the intended user-friendly state behavior where practical
+- [x] 5.1 Inventory route-local loading, error, blocked, and empty states across shell, student dashboard, teacher dashboard, and lesson runtime
+- [x] 5.2 Align pilot-critical flows to the canonical UX state system and remove ambiguous placeholders where stale content remains visible
+- [x] 5.3 Add or update tests that lock in the intended user-friendly state behavior where practical
 
 ## 6. Accessibility pass
 

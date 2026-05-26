@@ -48,6 +48,8 @@
     <app-echo-state-panel
       *ngIf="!lesson && !loading && governedDeliveryState && governedDeliveryState !== 'completed'"
       variant="blocked"
+      align="center"
+      ariaLabel="governed-lesson-state"
       eyebrow="Governed lesson state"
       [title]="governedStateTitle"
       [body]="governedStateBody"
@@ -59,6 +61,8 @@
     <app-echo-state-panel
       *ngIf="!lesson && !loading && loadErrorMessage"
       variant="error"
+      align="center"
+      ariaLabel="lesson-load-error"
       eyebrow="Lesson load failed"
       title="We could not prepare this lesson"
       [body]="loadErrorMessage"

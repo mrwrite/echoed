@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { LessonViewComponent } from './lesson-view.component';
 import { CoursesService } from '../services/courses.service';
@@ -90,5 +90,20 @@ describe('LessonViewComponent', () => {
       .find((button) => (button as HTMLButtonElement).getAttribute('aria-label') === 'Exit lesson and return to dashboard') as HTMLButtonElement;
 
     expect(exitButton).not.toBeNull();
+  });
+
+  it('renders a generic retryable error state when the governed segment cannot be restored', () => {
+    const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    coursesService.getCurrentSegment.and.returnValue(throwError(() => new Error('segment failed')));
+
+    fixture = TestBed.createComponent(LessonViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('[data-echo-state="error"]')).not.toBeNull();
+    expect(compiled.textContent).toContain('We could not prepare this lesson');
+    expect(compiled.textContent).toContain('Retry');
+    expect(compiled.textContent).not.toContain('Course completed!');
   });
 });

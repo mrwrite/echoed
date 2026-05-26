@@ -89,10 +89,13 @@ export class LessonViewComponent implements OnInit {
         this.fetchLesson(segment.lesson_id);
       },
       error: (err) => {
-          console.warn('All segments may be complete or none found.', err);
+          console.warn('Failed to restore the current governed lesson segment.', err);
           this.segment = undefined;
           this.lesson = undefined;
-          this.courseCompleted = true;
+          this.courseCompleted = false;
+          this.governedDeliveryState = null;
+          this.governedDeliveryDetail = '';
+          this.loadErrorMessage = 'We could not restore your lesson path right now. Retry to continue from your dashboard-safe progress point.';
           this.loading = false;
       }
     });

@@ -1,0 +1,32 @@
+.echo-header {
+  min-width: 0;
+}
+
+.echo-header__row,
+.echo-header__brand,
+.echo-header__actions {
+  min-width: 0;
+}
+
+echo-breadcrumbs {
+  display: block;
+  min-width: 0;
+  color: #475569;
+}
+
+@media (max-width: 1023px) {
+  .echo-header__actions {
+    align-items: center;
+  }
+}
+
+@media (max-width: 639px) {
+  .echo-header {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .echo-header__row {
+    gap: 0.75rem;
+  }
+}

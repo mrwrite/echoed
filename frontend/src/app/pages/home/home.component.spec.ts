@@ -60,6 +60,10 @@ describe('HomeComponent', () => {
   });
 
   it('binds shell width to the expanded sidebar by default', () => {
+    component.compactShell = false;
+    component.sidebarCollapsed = false;
+    fixture.detectChanges();
+
     const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
 
     expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('var(--echo-sidebar-expanded-width)');
@@ -96,5 +100,27 @@ describe('HomeComponent', () => {
     const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
     expect(shell.classList).toContain('home-shell--lesson');
     expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('0px');
+  });
+
+  it('collapses the sidebar by default on compact viewports', () => {
+    component.compactShell = true;
+    component.sidebarCollapsed = true;
+    fixture.detectChanges();
+
+    expect(component.compactShell).toBeTrue();
+    expect(component.sidebarCollapsed).toBeTrue();
+    expect(component.sidebarWidth).toBe('var(--echo-sidebar-collapsed-width)');
+  });
+
+  it('keeps shell width stable when compact navigation expands as an overlay', () => {
+    component.compactShell = true;
+    component.sidebarCollapsed = false;
+    fixture.detectChanges();
+
+    const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
+    const sidebar = fixture.nativeElement.querySelector('echo-sidebar') as HTMLElement;
+    expect(component.sidebarOverlayMode).toBeTrue();
+    expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('var(--echo-sidebar-collapsed-width)');
+    expect(sidebar.classList).toContain('home-shell__sidebar--overlay');
   });
 });

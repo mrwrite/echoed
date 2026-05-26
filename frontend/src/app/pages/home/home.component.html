@@ -3,11 +3,13 @@
     <div
       class="home-shell min-h-screen"
       [class.home-shell--lesson]="lessonMode"
+      [class.home-shell--compact]="compactShell"
       [style.--echo-shell-sidebar-width]="lessonMode ? '0px' : sidebarWidth"
     >
       <echo-sidebar
         *ngIf="!lessonMode"
         class="home-shell__sidebar"
+        [class.home-shell__sidebar--overlay]="sidebarOverlayMode"
         [userInfo]="userInfo"
         [collapsed]="sidebarCollapsed"
         (toggle)="sidebarCollapsed = !sidebarCollapsed"
@@ -15,14 +17,14 @@
       ></echo-sidebar>
       <div class="home-shell__main flex flex-col min-h-screen">
         <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" @fade></echo-header>
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="home-shell__content flex-1 overflow-y-auto p-4 md:p-5 xl:p-6">
           <div *ngIf="!lessonMode" class="max-w-7xl mx-auto">
-            <div class="mb-4 surface-card p-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="mb-4 surface-card flex flex-wrap items-center justify-between gap-3 p-4 md:p-5">
               <div>
                 <p class="text-xs uppercase tracking-[0.25em] text-primary">Demo Mode: K-5 African & African-American History</p>
-                <p class="text-sm text-muted">Guide stakeholders through landing -> login -> dashboards -> lessons -> admin.</p>
+                <p class="text-sm text-slate-700">Guide stakeholders through landing -> login -> dashboards -> lessons -> admin.</p>
               </div>
-              <button (click)="startDemoTour()" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold hover:-translate-y-0.5 transition">
+              <button (click)="startDemoTour()" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-secondary">
                 Start Demo Tour
               </button>
             </div>

@@ -1,17 +1,17 @@
-<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl shadow-elevated border-b border-primary/10 px-6 py-4">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center gap-4">
+<header class="echo-header sticky top-0 z-30 bg-white/95 backdrop-blur-xl shadow-elevated border-b border-primary/10 px-4 py-4 md:px-5 xl:px-6">
+  <div class="echo-header__row flex flex-wrap items-start justify-between gap-4">
+    <div class="echo-header__brand flex min-w-0 items-center gap-3 md:gap-4">
       <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold">EE</div>
-      <div>
+      <div class="min-w-0">
         <p class="text-xs uppercase tracking-[0.25em] text-primary">EchoEd Dashboard</p>
-        <h1 class="text-xl font-bold text-ink">Command center</h1>
-        <echo-breadcrumbs class="text-sm text-slate-500"></echo-breadcrumbs>
+        <h1 class="text-lg font-bold text-ink md:text-xl">Command center</h1>
+        <echo-breadcrumbs class="text-sm text-slate-600"></echo-breadcrumbs>
       </div>
-      <span class="badge-soft hidden md:inline-flex">Investor-ready demo</span>
+      <span class="badge-soft hidden lg:inline-flex">Investor-ready demo</span>
     </div>
 
-    <div class="flex items-center gap-3">
-      <div class="hidden md:flex flex-col items-end gap-2">
+    <div class="echo-header__actions flex w-full flex-wrap items-start justify-end gap-3 lg:w-auto lg:flex-nowrap">
+      <div class="hidden lg:flex flex-col items-end gap-2">
         <app-echo-loading-state
           *ngIf="orgsLoading"
           density="compact"
@@ -40,10 +40,10 @@
           body="Your confirmed access will appear here when organization memberships are available."
         ></app-echo-state-panel>
         <div *ngIf="!orgsLoading && !orgsLoadError && organizations.length > 0" class="flex flex-col items-end gap-2">
-          <div class="flex items-center gap-2 bg-white/70 border border-primary/10 rounded-full px-3 py-2">
-            <span class="text-xs font-semibold text-slate-500">Org</span>
+          <div class="flex items-center gap-2 rounded-full border border-primary/10 bg-white/80 px-3 py-2 shadow-sm">
+            <span class="text-xs font-semibold text-slate-600">Org</span>
             <select
-              class="text-sm bg-transparent focus:outline-none disabled:opacity-60"
+              class="min-w-0 max-w-[14rem] bg-transparent text-sm text-slate-800 focus:outline-none disabled:opacity-60"
               [ngModel]="activeOrgId"
               (ngModelChange)="switchOrg($event)"
               [disabled]="switchPending"
@@ -70,13 +70,13 @@
           ></app-echo-state-panel>
           <div *ngIf="!switchPending && !switchError" class="text-right">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Confirmed organization</p>
-            <p class="text-sm text-slate-600">{{ activeOrganizationName }}</p>
+            <p class="text-sm text-slate-700">{{ activeOrganizationName }}</p>
             <p *ngIf="switchSuccess" class="mt-1 text-xs text-emerald-700">{{ switchSuccess }}</p>
           </div>
         </div>
       </div>
       <button aria-label="Open help and support" class="px-3 py-2 rounded-full border border-primary/20 text-primary bg-primary/5 text-sm font-semibold hidden sm:inline-flex hover:bg-primary/10">Help & Support</button>
-      <button aria-label="Start guided tour" class="px-3 py-2 rounded-full border border-primary/20 text-white bg-primary text-sm font-semibold hidden sm:inline-flex hover:-translate-y-0.5 transition" (click)="startGuidedTour()">Start Guided Tour</button>
+      <button aria-label="Start guided tour" class="hidden sm:inline-flex rounded-full border border-primary/20 bg-primary px-3 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-secondary" (click)="startGuidedTour()">Start Guided Tour</button>
       <div class="relative" #menuContainer>
         <button
           (click)="toggleMenu()"
@@ -92,7 +92,7 @@
         >
           <div class="px-4 py-3 border-b border-slate-100">
             <p class="font-semibold text-primary">{{ userinfo.fullname }}</p>
-            <p class="text-xs text-slate-500">{{ userinfo.role | titlecase }}</p>
+            <p class="text-xs text-slate-600">{{ userinfo.role | titlecase }}</p>
           </div>
           <ul class="py-1 text-sm">
             <li>

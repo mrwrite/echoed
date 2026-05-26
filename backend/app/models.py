@@ -30,6 +30,13 @@ import uuid
 
 Base = declarative_base()
 
+user_units = Table(
+"user_units",
+Base.metadata,
+Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
+Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
+)
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -442,12 +449,7 @@ class SegmentProgress(Base):
 
 
 
-    user_units = Table(
-    "user_units",
-    Base.metadata,
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
-    Column("unit_id", UUID(as_uuid=True), ForeignKey("units.id"), primary_key=True),
-    )
+
 
 
 class Badge(Base):

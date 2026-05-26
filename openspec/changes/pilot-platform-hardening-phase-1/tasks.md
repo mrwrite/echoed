@@ -42,9 +42,9 @@
 
 ## 8. Smoke tests / docs
 
-- [ ] 8.1 Review existing demo seed, smoke validation, and pilot-readiness documentation for drift against current student and teacher flows
-- [ ] 8.2 Update bounded smoke and manual verification docs so a pilot operator can prepare the demo environment and validate core student/teacher flows deterministically
-- [ ] 8.3 Verify the existing student Playwright smoke remains green and document any intentionally manual teacher checks
+- [x] 8.1 Review existing demo seed, smoke validation, and pilot-readiness documentation for drift against current student and teacher flows
+- [x] 8.2 Update bounded smoke and manual verification docs so a pilot operator can prepare the demo environment and validate core student/teacher flows deterministically
+- [x] 8.3 Verify the existing student Playwright smoke remains green and document any intentionally manual teacher checks
 
 ## 9. Final validation
 

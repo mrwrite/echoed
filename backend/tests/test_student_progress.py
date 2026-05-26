@@ -95,7 +95,7 @@ def test_create_segment_progress(db_session, test_user, test_course, test_unit, 
     segment_progress = SegmentProgress(
         student_unit_id=unit_progress.id,
         lesson_id=test_lesson.id,
-        status=ProgressStatus.DELIVERED.name
+        status=ProgressStatus.DELIVERED
     )
     db_session.add(segment_progress)
     db_session.commit()

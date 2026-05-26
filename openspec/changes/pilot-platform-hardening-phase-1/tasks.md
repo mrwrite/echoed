@@ -48,7 +48,7 @@
 
 ## 9. Final validation
 
-- [ ] 9.1 Run the full backend pytest suite and confirm it remains green
-- [ ] 9.2 Run the existing Angular test suite and confirm it remains green
-- [ ] 9.3 Run the existing student Playwright smoke and confirm the pilot-critical student path remains green
-- [ ] 9.4 Confirm no production auth was weakened, demo seed remains deterministic, and new Phase 1 behavior is covered by tests or documented manual verification
+- [x] 9.1 Run the full backend pytest suite and confirm it remains green
+- [x] 9.2 Run the existing Angular test suite and confirm it remains green
+- [x] 9.3 Run the existing student Playwright smoke and confirm the pilot-critical student path remains green
+- [x] 9.4 Confirm no production auth was weakened, demo seed remains deterministic, and new Phase 1 behavior is covered by tests or documented manual verification

@@ -42,6 +42,18 @@ export class LessonViewComponent implements OnInit {
     return this.governedDeliveryDetail || 'This lesson is not currently available for governed learner delivery. Return to your dashboard and try again later.';
   }
 
+  get lessonActivityCount(): number {
+    return this.lesson?.activities?.length || 0;
+  }
+
+  get lessonStatusLabel(): string {
+    if (this.demoMode) {
+      return 'Demo preview';
+    }
+
+    return 'Governed delivery';
+  }
+
   constructor(
     private route: ActivatedRoute,
     private coursesService: CoursesService,

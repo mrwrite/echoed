@@ -68,4 +68,27 @@ describe('LessonViewComponent', () => {
     expect(compiled.querySelector('[data-echo-loading="page"]')).not.toBeNull();
     expect(compiled.textContent).toContain('Preparing lesson delivery');
   });
+
+  it('preserves the learner-safe exit control label used by the smoke flow', () => {
+    const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    coursesService.getCurrentSegment.and.returnValue(of({
+      delivery_state: 'governed_available',
+      lesson_id: 'lesson-1',
+      unit_progress_id: 'student-unit-1',
+    }));
+    coursesService.getLessonById.and.returnValue(of({
+      id: 'lesson-1',
+      title: 'Introduction to Africa',
+      activities: [{ title: 'Warm Up', type: 'story', content: 'Read together.' }],
+    }));
+
+    fixture = TestBed.createComponent(LessonViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const exitButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
+      .find((button) => (button as HTMLButtonElement).getAttribute('aria-label') === 'Exit lesson and return to dashboard') as HTMLButtonElement;
+
+    expect(exitButton).not.toBeNull();
+  });
 });

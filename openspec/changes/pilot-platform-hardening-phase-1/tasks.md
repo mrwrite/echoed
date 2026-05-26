@@ -12,9 +12,9 @@
 
 ## 3. Lesson runtime polish
 
-- [ ] 3.1 Audit the lesson runtime entry, governed blocked state, error recovery, and exit-to-dashboard behavior for readability and continuity
-- [ ] 3.2 Harden lesson runtime state rendering so loading, blocked, error, and completed outcomes remain distinct and user-friendly
-- [ ] 3.3 Verify the lesson runtime preserves governed delivery semantics and safe navigation across refresh and return flows
+- [x] 3.1 Audit the lesson runtime entry, governed blocked state, error recovery, and exit-to-dashboard behavior for readability and continuity
+- [x] 3.2 Harden lesson runtime state rendering so loading, blocked, error, and completed outcomes remain distinct and user-friendly
+- [x] 3.3 Verify the lesson runtime preserves governed delivery semantics and safe navigation across refresh and return flows
 
 ## 4. Teacher dashboard baseline polish
 

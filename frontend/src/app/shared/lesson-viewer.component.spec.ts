@@ -112,4 +112,21 @@ describe('LessonViewerComponent', () => {
     expect(text).toContain('Reflection Prompt');
     expect(text).toContain('Activity 2 of 3');
   });
+
+  it('renders a lesson activity progress bar for learner continuity', () => {
+    component.lesson = {
+      ...component.lesson,
+      activities: [
+        { title: 'Story Prompt', type: 'story', content: 'Listen for a clue.' } as any,
+        { title: 'Wrap Up', type: 'checkpoint', content: 'Share one key idea.' } as any,
+      ],
+    };
+
+    fixture.detectChanges();
+
+    const progressbar = fixture.nativeElement.querySelector('[aria-label="Lesson activity progress"]') as HTMLElement;
+    expect(progressbar).not.toBeNull();
+    expect(progressbar.getAttribute('aria-valuenow')).toBe('50');
+    expect(fixture.nativeElement.textContent).toContain('50% complete');
+  });
 });

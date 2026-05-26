@@ -395,3 +395,88 @@ def test_completion_does_not_advance_to_stale_non_governed_segment(db_session, t
     assert stale_draft_segment.status == ProgressStatus.NOT_STARTED
     assert unit_progress.status == ProgressStatus.COMPLETED
     assert student_course.status == "completed"
+
+
+def test_completed_governed_unit_returns_pending_review_when_next_unit_has_no_approved_lessons(
+    db_session, test_student
+):
+    course = Course(id=uuid.uuid4(), title="Course F", description="Governed block after completion")
+    unit1 = Unit(id=uuid.uuid4(), title="Unit 1", course_id=course.id, order=1)
+    unit2 = Unit(id=uuid.uuid4(), title="Unit 2", course_id=course.id, order=2)
+    lesson1 = Lesson(
+        id=uuid.uuid4(),
+        title="Approved Lesson",
+        unit_id=unit1.id,
+        duration_minutes=5,
+        order=1,
+        objective="Objective",
+        learning_objectives="Learning objective",
+        key_concepts=["concept"],
+        hook="Hook",
+        content="Content",
+        guided_practice="Guided",
+        independent_practice="Independent",
+        assessment="Assessment",
+        review_status="approved",
+    )
+    reviewed_lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Reviewed Lesson",
+        unit_id=unit2.id,
+        duration_minutes=5,
+        order=1,
+        objective="Objective",
+        learning_objectives="Learning objective",
+        key_concepts=["concept"],
+        hook="Hook",
+        content="Content",
+        guided_practice="Guided",
+        independent_practice="Independent",
+        assessment="Assessment",
+        review_status="reviewed",
+    )
+    db_session.add_all([course, unit1, unit2, lesson1, reviewed_lesson])
+    db_session.commit()
+    db_session.add_all([
+        Source(lesson_id=lesson1.id, citation="Source 1", url="https://example.com/1"),
+        Source(lesson_id=reviewed_lesson.id, citation="Source 2", url="https://example.com/2"),
+    ])
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_student.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+    db_session.refresh(student_course)
+
+    start_state = progress_crud.resolve_governed_progression(db_session, student_course.id)
+    assert start_state["delivery_state"] == "governed_available"
+    assert start_state["lesson_id"] == lesson1.id
+
+    current_segment = (
+        db_session.query(SegmentProgress)
+        .filter_by(
+            student_unit_id=start_state["unit_progress_id"],
+            lesson_id=lesson1.id,
+        )
+        .one()
+    )
+    progress_crud.update_segment_progress_status(
+        db_session, current_segment.id, ProgressStatus.COMPLETED
+    )
+
+    next_state = progress_crud.resolve_governed_progression(db_session, student_course.id)
+    assert next_state["delivery_state"] == "pending_review"
+    assert "review" in next_state["detail"].lower()
+
+    blocked_unit_progress = (
+        db_session.query(StudentUnitProgress)
+        .filter_by(student_course_id=student_course.id, unit_id=unit2.id)
+        .first()
+    )
+    if blocked_unit_progress is not None:
+        blocked_segments = (
+            db_session.query(SegmentProgress)
+            .filter_by(student_unit_id=blocked_unit_progress.id)
+            .all()
+        )
+        assert blocked_segments == []

@@ -36,9 +36,9 @@
 
 ## 7. Backend runtime verification
 
-- [ ] 7.1 Audit progression and runtime routes that govern course start, lesson continuation, segment completion, and governed blocked behavior
-- [ ] 7.2 Fix or reinforce any targeted progression/runtime defects while preserving real auth and governed delivery rules
-- [ ] 7.3 Extend or refresh backend pytest coverage for governed progression safety, non-governed progression continuity, and deterministic demo seed behavior
+- [x] 7.1 Audit progression and runtime routes that govern course start, lesson continuation, segment completion, and governed blocked behavior
+- [x] 7.2 Fix or reinforce any targeted progression/runtime defects while preserving real auth and governed delivery rules
+- [x] 7.3 Extend or refresh backend pytest coverage for governed progression safety, non-governed progression continuity, and deterministic demo seed behavior
 
 ## 8. Smoke tests / docs
 

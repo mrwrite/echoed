@@ -125,16 +125,17 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
         if unit_progress:
             unit = db.get(Unit, unit_progress.unit_id) if unit_progress else None
             governed_selection = governed_lessons_for_unit(unit) if unit else None
+            governed_delivery_active = (
+                governed_selection is not None
+                and governed_selection.state == GOVERNED_AVAILABLE
+            )
             all_segments = (
                 db.query(SegmentProgress)
                 .filter(SegmentProgress.student_unit_id == unit_progress.id)
                 .all()
             )
             relevant_segments = all_segments
-            if (
-                governed_selection is not None
-                and governed_selection.state == GOVERNED_AVAILABLE
-            ):
+            if governed_delivery_active:
                 governed_lesson_ids = {
                     lesson.id for lesson in governed_selection.lessons
                 }
@@ -205,47 +206,47 @@ def update_segment_progress_status(db: Session, progress_id: UUID, new_status: s
                     next_unit = None
 
                 if next_unit:
-                    existing_next = (
-                        db.query(StudentUnitProgress)
-                        .filter(
-                            StudentUnitProgress.student_course_id == student_course.id,
-                            StudentUnitProgress.unit_id == next_unit.id,
-                        )
-                        .first()
-                    )
-
-                    if not existing_next:
-                        new_progress = create_student_unit_progress(
-                            db,
-                            student_course.id,
-                            next_unit.id,
+                    if not governed_delivery_active:
+                        existing_next = (
+                            db.query(StudentUnitProgress)
+                            .filter(
+                                StudentUnitProgress.student_course_id == student_course.id,
+                                StudentUnitProgress.unit_id == next_unit.id,
+                            )
+                            .first()
                         )
 
-                        new_progress.status = ProgressStatus.IN_PROGRESS
-                        new_progress.started_at = datetime.utcnow()
-                        new_progress.last_updated = datetime.utcnow()
-                        next_unit_lessons = (
-                            db.query(Lesson)
-                            .filter(Lesson.unit_id == next_unit.id)
-                            .order_by(Lesson.order.asc())
-                            .all()
-                        )
-
-                        for lesson in next_unit_lessons:
-                            seg = create_segment_progress(
+                        if not existing_next:
+                            new_progress = create_student_unit_progress(
                                 db,
-                                new_progress.id,
-                                lesson.id,
+                                student_course.id,
+                                next_unit.id,
                             )
 
-                            # First lesson becomes active immediately
-                            if lesson == next_unit_lessons[0]:
-                                seg.status = ProgressStatus.IN_PROGRESS
-                                seg.started_at = datetime.utcnow()
-                                seg.last_updated = datetime.utcnow()
+                            new_progress.status = ProgressStatus.IN_PROGRESS
+                            new_progress.started_at = datetime.utcnow()
+                            new_progress.last_updated = datetime.utcnow()
+                            next_unit_lessons = (
+                                db.query(Lesson)
+                                .filter(Lesson.unit_id == next_unit.id)
+                                .order_by(Lesson.order.asc())
+                                .all()
+                            )
 
-                        
-                        db.commit()
+                            for lesson in next_unit_lessons:
+                                seg = create_segment_progress(
+                                    db,
+                                    new_progress.id,
+                                    lesson.id,
+                                )
+
+                                # First lesson becomes active immediately
+                                if lesson == next_unit_lessons[0]:
+                                    seg.status = ProgressStatus.IN_PROGRESS
+                                    seg.started_at = datetime.utcnow()
+                                    seg.last_updated = datetime.utcnow()
+
+                            db.commit()
 
                 else:
                     student_course.status = "completed"

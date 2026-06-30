@@ -33,29 +33,30 @@ export class SidebarComponent {
 
   private readonly navSections: NavSection[] = [
     {
-      title: 'Overview',
+      title: 'Workspace',
       items: [
-        { label: 'Dashboard', route: '/home', icon: 'Home', permission: 'nav:dashboard' },
-        { label: 'Courses', route: '/home/courses', icon: 'Book', permission: 'nav:courses' },
-        { label: 'Programs', route: '/home/programs', icon: 'BookOpen', permission: 'nav:programs' },
-        { label: 'Certifications', route: '/home/certifications', icon: 'Award', permission: 'nav:certifications' },
+        { label: 'Workspace', route: '/workspace', icon: 'Home', permission: 'nav:workspace' },
+        { label: 'Projects', route: '/workspace/projects', icon: 'ClipboardList', permission: 'nav:projects' },
+        { label: 'Product Studio', route: '/workspace/product-studio', icon: 'BookOpen', permission: 'nav:product-studio' },
+        { label: 'Products', route: '/workspace/products', icon: 'Book', permission: 'nav:products' },
       ]
     },
     {
-      title: 'Reports & Admin',
+      title: 'Knowledge Ops',
       items: [
-        { label: 'Badges', route: '/home/admin/badges', icon: 'Award', permission: 'nav:admin-badges' },
-        { label: 'Users', route: '/home/admin/users', icon: 'User', permission: 'nav:admin-users' },
-        { label: 'Admin Courses', route: '/home/admin/courses', icon: 'ClipboardList', permission: 'nav:admin-courses' },
+        { label: 'Knowledge Sources', route: '/workspace/knowledge-sources', icon: 'BookOpen', permission: 'nav:knowledge-sources' },
+        { label: 'Artifacts', route: '/workspace/artifacts', icon: 'Award', permission: 'nav:artifacts' },
+        { label: 'Review Center', route: '/workspace/review-center', icon: 'ClipboardList', permission: 'nav:review-center' },
+        { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access' },
+        { label: 'Analytics', route: '/workspace/analytics', icon: 'SlidersHorizontal', permission: 'nav:analytics' },
       ]
     },
     {
-      title: 'Org & Studio',
+      title: 'People & Settings',
       items: [
-        { label: 'Invites', route: '/home/org/invites', icon: 'Mail', permission: 'nav:org-invites' },
-        { label: 'Studio Courses', route: '/home/studio/courses', icon: 'BookOpen', permission: 'nav:studio-courses' },
-        { label: 'Sections', route: '/home/sections', icon: 'Users', permission: 'nav:sections' },
-        { label: 'Preferences', route: '/home/me/preferences', icon: 'SlidersHorizontal', permission: 'nav:preferences' },
+        { label: 'Learners', route: '/workspace/learners', icon: 'User', permission: 'nav:learners' },
+        { label: 'Cohorts', route: '/workspace/learners/cohorts', icon: 'Users', permission: 'nav:cohorts' },
+        { label: 'Settings', route: '/workspace/settings', icon: 'SlidersHorizontal', permission: 'nav:settings' },
       ]
     },
   ];

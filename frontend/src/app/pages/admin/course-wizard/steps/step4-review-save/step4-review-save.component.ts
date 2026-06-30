@@ -49,7 +49,6 @@ export class Step4ReviewSaveComponent implements OnInit {
       this.coursesService.updateCourse(this.courseId, draft).subscribe({
         next: () => {
           this.isSaving = false;
-          console.log('Course updated successfully!');
           this.toastService.show('Course updated successfully', 'success');
           this.router.navigate(['/home/admin/courses']);
         },
@@ -64,7 +63,6 @@ export class Step4ReviewSaveComponent implements OnInit {
       this.coursesService.createCourse(draft).subscribe({
         next: () => {
           this.isSaving = false;
-          console.log('Course saved successfully!');
           this.toastService.show('Course created successfully', 'success');
           this.courseWizardService.resetDraft();
           this.router.navigate(['/home/admin/courses']);

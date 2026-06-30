@@ -1,8 +1,47 @@
-<article class="lesson-viewer p-4 md:p-6 bg-white rounded-xl shadow space-y-6" aria-label="Lesson viewer">
-  <header class="space-y-3">
-    <h2 class="text-2xl font-bold text-[#1A1A40]">{{ lesson.title }}</h2>
-    <p class="text-sm text-gray-600" *ngIf="lesson.objective">{{ lesson.objective }}</p>
-    <p class="text-xs text-gray-500" *ngIf="lesson.duration_minutes">Duration: {{ lesson.duration_minutes }} minutes</p>
+<article class="lesson-viewer space-y-6 rounded-2xl bg-white p-4 shadow md:p-6" aria-label="Lesson viewer">
+  <header class="space-y-4">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h2 class="text-2xl font-bold text-[#1A1A40]">{{ lesson.title }}</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-700" *ngIf="lesson.objective">{{ lesson.objective }}</p>
+      </div>
+      <div class="lesson-viewer__meta flex flex-wrap gap-2">
+        <span *ngIf="lesson.duration_minutes" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+          {{ lesson.duration_minutes }} min
+        </span>
+        <span class="rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+          {{ activityCount }} activit<span *ngIf="activityCount !== 1">ies</span><span *ngIf="activityCount === 1">y</span>
+        </span>
+      </div>
+    </div>
+
+    <section class="lesson-viewer__progress rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-labelledby="lesson-progress-heading">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p id="lesson-progress-heading" class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Activity progress</p>
+          <p class="mt-1 text-sm text-slate-700">
+            Activity {{ currentActivityIndex + 1 }} of {{ activityCount }}.
+            <span *ngIf="!isLastActivity">Move at your own pace and continue when you are ready.</span>
+            <span *ngIf="isLastActivity">You are on the final activity for this lesson.</span>
+          </p>
+        </div>
+        <p id="lesson-activity-progress-summary" class="text-right text-sm font-semibold text-slate-700" role="status" aria-live="polite">
+          {{ activityProgressPercent }}% complete
+        </p>
+      </div>
+      <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+        <div
+          class="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+          role="progressbar"
+          aria-label="Lesson activity progress"
+          aria-describedby="lesson-activity-progress-summary"
+          [attr.aria-valuenow]="activityProgressPercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [style.width.%]="activityProgressPercent"
+        ></div>
+      </div>
+    </section>
 
     <div class="rounded-2xl border border-primary/10 bg-primary/[0.03] p-4 space-y-3" *ngIf="lesson.learning_objectives || (lesson.key_concepts?.length ?? 0) > 0">
       <div *ngIf="lesson.learning_objectives">
@@ -43,15 +82,18 @@
     </section>
   </header>
 
-  <section *ngIf="currentActivity" class="border-t pt-4 space-y-3" aria-labelledby="current-activity-title">
+  <section *ngIf="currentActivity" class="lesson-viewer__activity border-t pt-5 space-y-4" aria-labelledby="current-activity-title">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h3 id="current-activity-title" class="font-semibold text-lg text-ink">{{ currentActivity.title }}</h3>
-      <p class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600" role="status" aria-live="polite">
+      <div class="min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Current activity</p>
+        <h3 id="current-activity-title" class="mt-1 font-semibold text-lg text-ink">{{ currentActivity.title }}</h3>
+      </div>
+      <p class="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700" role="status" aria-live="polite">
         Activity {{ currentActivityIndex + 1 }} of {{ lesson.activities.length }}
       </p>
     </div>
 
-    <div class="text-sm">
+    <div class="lesson-viewer__activity-body rounded-2xl border border-slate-200 bg-white p-4 text-sm md:p-5">
       <ng-container [ngSwitch]="currentActivity.type">
         <div *ngSwitchCase="'video'">
           <ng-container *ngIf="isYouTubeLink(currentActivity.content); else standardVideo">
@@ -83,24 +125,24 @@
           <audio class="w-full" controls [src]="currentActivity.content"></audio>
         </div>
         <div *ngSwitchCase="'story'">
-          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
             {{ currentActivity.content }}
           </div>
         </div>
         <div *ngSwitchCase="'reflection'">
-          <p class="text-sm text-slate-600 mb-2">{{ currentActivity.content }}</p>
+          <p class="mb-2 text-sm leading-6 text-slate-700">{{ currentActivity.content }}</p>
           <textarea
             rows="4"
             [(ngModel)]="reflectionResponse"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm leading-6"
             aria-label="Reflection response"
             placeholder="Share your reflection..."
           ></textarea>
         </div>
         <div *ngSwitchCase="'checkpoint'">
           <div class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-            <p class="font-semibold text-ink mb-2">Checkpoint</p>
-            <p>{{ currentActivity.content }}</p>
+            <p class="mb-2 font-semibold text-ink">Checkpoint</p>
+            <p class="leading-6">{{ currentActivity.content }}</p>
           </div>
         </div>
         <div *ngSwitchCase="'quiz'">
@@ -130,24 +172,24 @@
           </ng-template>
         </div>
         <div *ngSwitchDefault>
-          <p>{{ currentActivity.content }}</p>
+          <p class="leading-6 text-slate-700">{{ currentActivity.content }}</p>
         </div>
       </ng-container>
     </div>
   </section>
 
-  <nav class="pt-4 flex justify-end space-x-2" aria-label="Lesson activity navigation">
+  <nav class="lesson-viewer__actions flex flex-wrap justify-end gap-3 border-t pt-4" aria-label="Lesson activity navigation">
     <button
-      *ngIf="currentActivityIndex < lesson.activities.length - 1"
-      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+      *ngIf="!isLastActivity"
+      class="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft-card transition hover:-translate-y-0.5 hover:bg-secondary"
       aria-label="Go to the next lesson activity"
       (click)="goToNextActivity()"
     >
       Next Activity
     </button>
     <button
-      *ngIf="currentActivityIndex === lesson.activities.length - 1"
-      class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+      *ngIf="isLastActivity"
+      class="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-soft-card transition hover:-translate-y-0.5 hover:bg-emerald-700"
       [attr.aria-label]="isTeacherLed ? 'Mark lesson delivered' : 'Complete lesson'"
       (click)="onMarkComplete()"
     >

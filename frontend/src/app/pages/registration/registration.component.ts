@@ -59,7 +59,6 @@ export class RegistrationComponent implements OnInit {
 
     this.metaService.getEnums().subscribe({
       next: (enums) => {
-        console.log('Enums response:', enums);
         const allowed = new Set(['student', 'teacher', 'parent', 'instructor']);
         this.roleOptions = (enums.organizationRoles ?? []).filter((r) =>
           allowed.has(r.value),
@@ -127,7 +126,6 @@ export class RegistrationComponent implements OnInit {
 
     this.authService.register(user).subscribe(
       (response) => {
-        console.log('Registration successful');
         const pendingSetup = normalizePendingOrganizationSetup({
           createOrganization: formValue.createOrganization,
           organizationName: formValue.organizationName,
@@ -137,7 +135,6 @@ export class RegistrationComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       (error) => {
-        console.log('Registration failed');
         this.errorMessage =
           error?.error?.detail ||
           'Registration failed. Please check your details and try again.';

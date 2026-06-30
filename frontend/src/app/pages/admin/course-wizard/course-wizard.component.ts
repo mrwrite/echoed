@@ -42,7 +42,6 @@ export class CourseWizardComponent implements OnInit {
       this.courseId = params.get('courseId');
   
       if (this.courseId) {
-        console.log('Edit mode. Load course:', this.courseId);
         this.isEditMode = true;
         this.isLoading = true;
 
@@ -58,7 +57,6 @@ export class CourseWizardComponent implements OnInit {
       });
 
       } else {
-        console.log('New course mode.');
         this.courseWizardService.resetDraft(); // Start fresh
         this.isEditMode = false;
         this.isLoading = false;
@@ -86,13 +84,11 @@ export class CourseWizardComponent implements OnInit {
 
   saveDraft() {
     const draft = this.courseWizardService.draftValue;
-    console.log('Saving draft...', draft);
   
     if (this.isEditMode && this.courseId) {
       // PUT update existing course
       this.courseService.updateCourse(this.courseId, draft).subscribe({
         next: () => {
-          console.log('Course updated successfully!');
           this.router.navigate(['/home']); // Redirect back to dashboard
         },
         error: (err) => {
@@ -103,7 +99,6 @@ export class CourseWizardComponent implements OnInit {
       // POST create new course
       this.courseService.createCourse(draft).subscribe({
         next: () => {
-          console.log('Course created successfully!');
           this.router.navigate(['/home']); // Redirect back to dashboard
         },
         error: (err) => {

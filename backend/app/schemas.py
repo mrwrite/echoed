@@ -87,6 +87,254 @@ class OrganizationMembershipResponse(BaseModel):
         from_attributes = True
 
 
+class WorkspaceResponse(BaseModel):
+    id: UUID
+    organization_id: Optional[UUID] = None
+    name: str
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="workspace_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="project_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectCreateRequest(BaseModel):
+    workspace_id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str = "active"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProductResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    product_type: str
+    title: str
+    description: Optional[str] = None
+    status: str
+    review_state: str
+    access_state: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="product_metadata")
+    published_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProductCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    product_type: str
+    title: str
+    description: Optional[str] = None
+    status: str = "draft"
+    review_state: str = "not_reviewed"
+    access_state: str = "private"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class AccessGrantResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    product_id: UUID
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    grant_type: str
+    status: str
+    source: str
+    starts_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    revoked_at: Optional[datetime] = None
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="grant_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AccessGrantCreateRequest(BaseModel):
+    user_id: UUID
+    product_id: UUID
+    workspace_id: Optional[UUID] = None
+    project_id: Optional[UUID] = None
+    grant_type: str = "manual"
+    status: str = "active"
+    source: str = "manual"
+    starts_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class KnowledgeSourceResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    source_id: Optional[UUID] = None
+    title: str
+    source_type: str
+    uri: Optional[str] = None
+    citation: Optional[str] = None
+    content_hash: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="source_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class KnowledgeSourceCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: UUID
+    source_id: Optional[UUID] = None
+    title: str
+    source_type: str
+    uri: Optional[str] = None
+    citation: Optional[str] = None
+    content_hash: Optional[str] = None
+    status: str = "available"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ArtifactResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    generation_run_id: Optional[UUID] = None
+    knowledge_source_id: Optional[UUID] = None
+    artifact_type: str
+    title: str
+    body: Optional[str] = None
+    uri: Optional[str] = None
+    status: str
+    review_state: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="artifact_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ArtifactCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    generation_run_id: Optional[UUID] = None
+    knowledge_source_id: Optional[UUID] = None
+    artifact_type: str
+    title: str
+    body: Optional[str] = None
+    uri: Optional[str] = None
+    status: str = "draft"
+    review_state: str = "review_required"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReviewStatusUpdateRequest(BaseModel):
+    status: str
+
+
+class ReviewCenterItemResponse(BaseModel):
+    id: UUID
+    item_type: str
+    title: str
+    status: str
+    review_state: Optional[str] = None
+    owner: Optional[str] = None
+    source_coverage: str
+    readiness: str
+    required_decision: str
+    blocked: bool = False
+    detail_route: Optional[str] = None
+    governance_route: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+class ReviewCenterActivityResponse(BaseModel):
+    id: str
+    message: str
+    created_at: Optional[datetime] = None
+
+
+class ReviewCenterResponse(BaseModel):
+    pending_artifacts: list[ReviewCenterItemResponse]
+    draft_products: list[ReviewCenterItemResponse]
+    lesson_governance_items: list[ReviewCenterItemResponse]
+    recent_activity: list[ReviewCenterActivityResponse]
+
+
+class LearnerProductResponse(BaseModel):
+    id: UUID
+    product_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    title: str
+    description: Optional[str] = None
+    product_type: str = "course"
+    product_status: Optional[str] = None
+    review_state: Optional[str] = None
+    access_state: Optional[str] = None
+    enrollment_id: Optional[UUID] = None
+    enrollment_status: Optional[str] = None
+    enrolled_on: Optional[datetime] = None
+    access_grant_id: Optional[UUID] = None
+    access_grant_status: Optional[str] = None
+    is_enrolled: bool = False
+    source: str
+    learner_visibility: str
+    next_action: str
+
+
+class GenerationRunResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    status: str
+    provider: Optional[str] = None
+    model_name: Optional[str] = None
+    prompt: Optional[str] = None
+    output_summary: Optional[str] = None
+    input_metadata: dict[str, Any] = Field(default_factory=dict)
+    output_metadata: dict[str, Any] = Field(default_factory=dict)
+    error_message: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class OrganizationInviteCreate(BaseModel):
     email: str
     role: str
@@ -421,7 +669,7 @@ class CourseResponse(RevisionMetadataResponseMixin):
     title: str
     description: str
     learning_objectives: Optional[str] = None
-    skill_tags: List[str] = Field(default_factory=list)
+    skill_tags: list[str] = Field(default_factory=list)
     standards_metadata: dict[str, Any] = Field(default_factory=dict)
     units: List[UnitResponse] = Field(default_factory=list)
 

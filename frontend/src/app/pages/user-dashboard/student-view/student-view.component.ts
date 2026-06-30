@@ -64,6 +64,14 @@ export class StudentViewComponent implements OnInit {
   coursesCompleted = 0;
   coursesLoading = true;
   coursesLoadError = '';
+  badgesLoading = true;
+  badgesLoadError = '';
+  programsLoading = true;
+  programsLoadError = '';
+  certificationsLoading = true;
+  certificationsLoadError = '';
+  availableCoursesLoading = true;
+  availableCoursesLoadError = '';
   /** Number of courses shown initially before "View More" is clicked */
   availableCoursesVisibleCount = 4;
   demoTimeline = [
@@ -74,6 +82,26 @@ export class StudentViewComponent implements OnInit {
 
   get visibleAvailableCourses(): Course[] {
     return this.availableCourses.slice(0, this.availableCoursesVisibleCount);
+  }
+
+  get activeCourseProgress(): number {
+    return Math.max(0, Math.min(100, this.activeStudentCourse?.progress || 0));
+  }
+
+  get activeCourseStatusLabel(): string {
+    if (!this.activeStudentCourse) {
+      return '';
+    }
+
+    if (this.activeStudentCourse.status === 'completed') {
+      return 'Completed';
+    }
+
+    if (this.activeCourseProgress > 0) {
+      return 'In progress';
+    }
+
+    return 'Ready to begin';
   }
 
   get allEnrolledCoursesCompleted(): boolean {
@@ -130,46 +158,71 @@ export class StudentViewComponent implements OnInit {
 
   loadBadges(): void {
     if (!this.userInfo?.user_id) {
+      this.badgesLoading = false;
       return;
     }
+    this.badgesLoading = true;
+    this.badgesLoadError = '';
     this.badgesService.getStudentBadges(this.userInfo.user_id).subscribe({
       next: (badges) => {
         this.studentBadges = badges;
+        this.badgesLoading = false;
       },
       error: (err) => {
         console.error('Failed to load badges', err);
+        this.studentBadges = [];
+        this.badgesLoadError = 'We could not load your earned badges right now. Retry after your dashboard finishes refreshing.';
+        this.badgesLoading = false;
       }
     });
   }
 
   loadProgramsOverview(): void {
+    this.programsLoading = true;
+    this.programsLoadError = '';
     this.programsService.getPrograms().subscribe({
       next: (programs) => {
         this.programs = programs;
+        this.programsLoading = false;
       },
       error: (err) => {
         console.error('Failed to load programs', err);
+        this.programs = [];
+        this.programsLoadError = 'We could not load your program pathways right now. Retry to restore this progress overview.';
+        this.programsLoading = false;
       }
     });
 
+    this.certificationsLoading = true;
+    this.certificationsLoadError = '';
     this.programsService.getMyCertifications().subscribe({
       next: (certifications) => {
         this.certifications = certifications;
+        this.certificationsLoading = false;
       },
       error: (err) => {
         console.error('Failed to load certifications', err);
+        this.certifications = [];
+        this.certificationsLoadError = 'We could not load your certification history right now. Retry to restore your completion records.';
+        this.certificationsLoading = false;
       }
     });
   }
 
   loadAvailableCourses(): void {
+  this.availableCoursesLoading = true;
+  this.availableCoursesLoadError = '';
   this.coursesService.getCourses().subscribe({
     next: (courses) => {
       const enrolledCourseIds = this.studentCourses.map(sc => sc.course_id);
       this.availableCourses = courses.filter(course => !enrolledCourseIds.includes(course.id));
+      this.availableCoursesLoading = false;
     },
     error: (err) => {
       console.error('Failed to load available courses', err);
+      this.availableCourses = [];
+      this.availableCoursesLoadError = 'We could not load additional courses right now. Retry after your current learning path is restored.';
+      this.availableCoursesLoading = false;
     }
   });
 }
@@ -198,6 +251,8 @@ export class StudentViewComponent implements OnInit {
       this.activeStudentCourse = undefined;
       this.activeStudentCourseReason = '';
       this.availableCourses = [];
+      this.availableCoursesLoading = false;
+      this.availableCoursesLoadError = '';
       this.coursesLoadError = 'We could not load your learning dashboard right now. Retry to restore your active courses and continuation path.';
       this.coursesLoading = false;
     }
@@ -360,5 +415,23 @@ enrollInCourse(courseId: string): void {
 
   retryCourseLoad(): void {
     this.loadStudentCourses();
+  }
+
+  retryProgramsLoad(): void {
+    this.loadProgramsOverview();
+  }
+
+  retryBadgesLoad(): void {
+    this.loadBadges();
+  }
+
+  retryAvailableCoursesLoad(): void {
+    this.loadAvailableCourses();
+  }
+
+  getCourseActionLabel(course: StudentCourseWithDetails): string {
+    return (course.progress ?? 0) > 0 || course.status === 'active'
+      ? 'Resume lesson'
+      : 'Start course';
   }
 }

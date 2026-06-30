@@ -107,6 +107,33 @@ def _serialize_runtime_intervention_evidence_basis(basis) -> RuntimeIntervention
     )
 
 
+def _serialize_course_summary(course: Course) -> CourseSummaryResponse:
+    return CourseSummaryResponse(
+        id=course.id,
+        title=course.title,
+        description=course.description,
+        subject=course.subject,
+        age_band_min=course.age_band_min,
+        age_band_max=course.age_band_max,
+        default_locale=course.default_locale,
+        learning_objectives=course.learning_objectives,
+        skill_tags=course.skill_tags or [],
+        standards_metadata=course.standards_metadata or {},
+        revision_number=course.revision_number,
+        revision_label=course.revision_label,
+        revision_status=course.revision_status,
+        revision_metadata=course.revision_metadata or {},
+        previous_revision_id=course.previous_revision_id,
+        superseded_by_id=course.superseded_by_id,
+        lineage_status=course.lineage_status,
+        lineage_metadata=course.lineage_metadata or {},
+        published_at=course.published_at,
+        deprecated_at=course.deprecated_at,
+        created_by=course.created_by,
+        organization_id=course.organization_id,
+    )
+
+
 @router.get("/courses", response_model=list[CourseSummaryResponse])
 def get_courses(
     subject: str | None = Query(default=None),
@@ -128,7 +155,7 @@ def get_courses(
         query = query.filter(Course.default_locale == locale)
     if org_id:
         query = query.filter(Course.organization_id == org_id)
-    return query.all()
+    return [_serialize_course_summary(course) for course in query.all()]
 
 
 @router.get("/student-courses", response_model=list[StudentCourseWithDetails])

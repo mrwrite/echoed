@@ -204,5 +204,7 @@ describe('EchoHeaderComponent', () => {
     expect(helpButton.getAttribute('aria-label')).toBe('Open help and support');
     expect(guidedTourButton.getAttribute('aria-label')).toBe('Start guided tour');
     expect(profileButton).not.toBeNull();
+    expect(profileButton.getAttribute('aria-haspopup')).toBe('menu');
+    expect(profileButton.getAttribute('aria-controls')).toBe('echo-header-profile-menu');
   });
 });

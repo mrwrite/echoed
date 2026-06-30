@@ -23,6 +23,23 @@ import { HomeSessionGuard } from './guards/home-session.guard';
 import { ProgramsComponent } from './pages/programs/programs.component';
 import { AssessmentDetailComponent } from './pages/assessment-detail/assessment-detail.component';
 import { CertificationsComponent } from './pages/certifications/certifications.component';
+import { V2PlatformPageComponent } from './pages/v2-platform/v2-platform-page.component';
+import { ProductStudioComponent } from './pages/product-studio/product-studio.component';
+import { V2CollectionPageComponent } from './pages/v2-platform/v2-collection-page.component';
+import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
+import { ProjectDetailComponent } from './pages/project-detail/project-detail.component';
+import { ArtifactDetailComponent } from './pages/artifact-detail/artifact-detail.component';
+import { GenerationRunDetailComponent } from './pages/generation-run-detail/generation-run-detail.component';
+import { ReviewCenterComponent } from './pages/review-center/review-center.component';
+import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
+import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
+import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
+import { AccessGrantsComponent } from './pages/access-grants/access-grants.component';
+import { WorkspaceAnalyticsComponent } from './pages/workspace-analytics/workspace-analytics.component';
+
+const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
+const studioRoles = ['content_admin', 'org_admin'];
+const sectionRoles = ['teacher', 'org_admin', 'instructor'];
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -99,6 +116,228 @@ export const routes: Routes = [
             canActivate: [RoleGuard],
             data: { roles: ['admin'] }
           },
+          { path: 'lesson/:id', component: LessonViewComponent },
+        ]
+      }
+    ]
+  },
+  {
+    path: 'workspace',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      {
+        path: '',
+        component: V2PlatformPageComponent,
+        data: {
+          eyebrow: 'Workspace',
+          title: 'EchoEd workspace',
+          description: 'A platform view of your organization knowledge, learning products, review workflow, learners, and operational readiness.',
+          status: 'Phase 1 maps the existing education runtime into the V2 platform shell without replacing courses, lessons, progress, or governance.',
+          links: [
+            { label: 'View products', route: '/workspace/products' },
+            { label: 'Open learner portal', route: '/workspace/learners' },
+            { label: 'Review center', route: '/workspace/review-center' }
+          ]
+        }
+      },
+      {
+        path: 'projects',
+        component: V2CollectionPageComponent,
+        canActivate: [RoleGuard],
+        data: {
+          roles: creatorRoles,
+          eyebrow: 'Projects',
+          title: 'Project knowledge pipeline',
+          status: 'Real V2 project shell data. Creating projects is available through Product Studio.',
+          emptyText: 'Create your first project shell from Product Studio.',
+          collection: 'projects'
+        }
+      },
+      {
+        path: 'projects/:projectId',
+        component: ProjectDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio',
+        component: ProductStudioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio/create',
+        component: ProductStudioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio/generation-runs',
+        component: V2CollectionPageComponent,
+        canActivate: [RoleGuard],
+        data: {
+          roles: creatorRoles,
+          eyebrow: 'Generation Runs',
+          title: 'AI generation attempts',
+          status: 'Read-only generation metadata. Execution is not implemented in Phase 3.',
+          emptyText: 'Generation run history will appear here after future AI execution workflows are implemented.',
+          collection: 'generation-runs'
+        }
+      },
+      {
+        path: 'product-studio/generation-runs/:generationRunId',
+        component: GenerationRunDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio/courses',
+        component: StudioCoursesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: studioRoles }
+      },
+      {
+        path: 'product-studio/courses/new',
+        component: CourseWizardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin', 'teacher'] }
+      },
+      {
+        path: 'product-studio/courses/:courseId/edit',
+        component: CourseWizardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin', 'teacher'] }
+      },
+      {
+        path: 'products',
+        component: V2CollectionPageComponent,
+        data: {
+          eyebrow: 'Products',
+          title: 'Product catalog',
+          status: 'Real V2 product wrappers. Course-backed products link to the existing education runtime.',
+          emptyText: 'Create product shells from Product Studio, or run the Phase 2 backfill migration for existing courses.',
+          collection: 'products'
+        }
+      },
+      {
+        path: 'products/:productId',
+        component: ProductDetailComponent,
+      },
+      {
+        path: 'products/manage',
+        component: AdminCoursesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      {
+        path: 'knowledge-sources',
+        component: V2CollectionPageComponent,
+        canActivate: [RoleGuard],
+        data: {
+          roles: creatorRoles,
+          eyebrow: 'Knowledge Sources',
+          title: 'Source-aware knowledge intake',
+          status: 'Read-only knowledge source wrappers. Source import and management arrive in a later phase.',
+          emptyText: 'No project-level knowledge sources exist yet.',
+          collection: 'knowledge-sources'
+        }
+      },
+      {
+        path: 'artifacts',
+        component: V2CollectionPageComponent,
+        canActivate: [RoleGuard],
+        data: {
+          roles: creatorRoles,
+          eyebrow: 'Artifacts',
+          title: 'Generated documentation and learning assets',
+          status: 'Read-only artifact wrappers. Review, packaging, and publishing arrive in later phases.',
+          emptyText: 'No generated or uploaded artifacts exist yet.',
+          collection: 'artifacts'
+        }
+      },
+      {
+        path: 'artifacts/:artifactId',
+        component: ArtifactDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'review-center',
+        component: ReviewCenterComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'access',
+        component: AccessGrantsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'learners',
+        component: UserDashboardComponent,
+        children: [
+          { path: '', component: EchoedRoleSelectorComponent },
+          { path: 'products', component: AvailableCoursesComponent },
+          { path: 'paths', component: ProgramsComponent },
+          { path: 'certificates', component: CertificationsComponent },
+          {
+            path: 'users',
+            component: AdminUsersComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['admin'] }
+          },
+          {
+            path: 'cohorts',
+            component: SectionsComponent,
+            canActivate: [RoleGuard],
+            data: { roles: sectionRoles }
+          },
+          {
+            path: 'cohorts/:id',
+            component: SectionDetailComponent,
+            canActivate: [RoleGuard],
+            data: { roles: sectionRoles }
+          }
+        ]
+      },
+      {
+        path: 'analytics',
+        component: WorkspaceAnalyticsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      { path: 'settings', component: PreferencesComponent },
+      {
+        path: 'settings/invites',
+        component: OrgInvitesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['org_admin', 'content_admin'] }
+      },
+      {
+        path: 'settings/badges',
+        component: AdminBadgesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] }
+      },
+      { path: 'lesson/:id', component: LessonViewComponent },
+    ]
+  },
+  {
+    path: 'learn',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      {
+        path: '',
+        component: UserDashboardComponent,
+        children: [
+          { path: '', component: LearnerPortalComponent },
+          { path: 'products', component: LearnerProductsComponent },
+          { path: 'paths', component: ProgramsComponent },
+          { path: 'certificates', component: CertificationsComponent },
+          { path: 'resources', component: LearnerResourcesComponent },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]
       }

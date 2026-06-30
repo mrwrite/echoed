@@ -54,6 +54,12 @@ def get_segment(
     if not unit_progress:
         raise HTTPException(status_code=404, detail="Unit progress not found.")
 
+    current_segment = crud.resolve_governed_segment_for_unit_progress(
+        db, student_unit_id
+    )
+    if current_segment is not None:
+        return SegmentResponse(**current_segment)
+
     progression = crud.resolve_governed_progression(db, unit_progress.student_course_id)
     if progression["delivery_state"] != "governed_available":
         return SegmentResponse(

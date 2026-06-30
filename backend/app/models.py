@@ -81,6 +81,7 @@ class User(Base):
         back_populates="student",
         cascade="all, delete-orphan",
     )
+    access_grants = relationship("AccessGrant", back_populates="user")
 
 
 class Organization(Base):
@@ -116,6 +117,7 @@ class Organization(Base):
     courses = relationship("Course", back_populates="organization")
     sections = relationship("Section", back_populates="organization")
     programs = relationship("Program", back_populates="organization")
+    workspaces = relationship("Workspace", back_populates="organization")
 
 
 class OrganizationMembership(Base):
@@ -230,6 +232,7 @@ class Course(Base):
         cascade="all, delete-orphan",
     )
     assessments = relationship("Assessment", back_populates="course")
+    products = relationship("Product", back_populates="course")
 
 
 class CourseVersion(Base):
@@ -340,6 +343,7 @@ class Source(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     lesson = relationship("Lesson", back_populates="sources")
+    knowledge_sources = relationship("KnowledgeSource", back_populates="source")
 
 
 class Activity(Base):
@@ -507,6 +511,185 @@ class Program(Base):
         back_populates="program",
         cascade="all, delete-orphan",
     )
+    products = relationship("Product", back_populates="program")
+
+
+class Workspace(Base):
+    __tablename__ = "workspaces"
+    __table_args__ = (
+        UniqueConstraint("organization_id", name="uq_workspace_organization"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=True)
+    name = Column(String, nullable=False)
+    slug = Column(String, nullable=True, unique=True, index=True)
+    description = Column(Text, nullable=True)
+    status = Column(String, nullable=False, default="active")
+    workspace_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    organization = relationship("Organization", back_populates="workspaces")
+    projects = relationship("Project", back_populates="workspace", cascade="all, delete-orphan")
+    products = relationship("Product", back_populates="workspace", cascade="all, delete-orphan")
+    knowledge_sources = relationship("KnowledgeSource", back_populates="workspace", cascade="all, delete-orphan")
+    artifacts = relationship("Artifact", back_populates="workspace", cascade="all, delete-orphan")
+    generation_runs = relationship("GenerationRun", back_populates="workspace", cascade="all, delete-orphan")
+    access_grants = relationship("AccessGrant", back_populates="workspace", cascade="all, delete-orphan")
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(String, nullable=False, default="active")
+    project_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="projects")
+    products = relationship("Product", back_populates="project")
+    knowledge_sources = relationship("KnowledgeSource", back_populates="project", cascade="all, delete-orphan")
+    artifacts = relationship("Artifact", back_populates="project", cascade="all, delete-orphan")
+    generation_runs = relationship("GenerationRun", back_populates="project", cascade="all, delete-orphan")
+    access_grants = relationship("AccessGrant", back_populates="project")
+
+
+class Product(Base):
+    __tablename__ = "products"
+    __table_args__ = (
+        UniqueConstraint("course_id", name="uq_product_course"),
+        UniqueConstraint("program_id", name="uq_product_program"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True)
+    course_id = Column(UUID(as_uuid=True), ForeignKey("courses.id"), nullable=True)
+    program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=True)
+    product_type = Column(String, nullable=False, default="course")
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(String, nullable=False, default="draft")
+    review_state = Column(String, nullable=False, default="not_reviewed")
+    access_state = Column(String, nullable=False, default="private")
+    product_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    published_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="products")
+    project = relationship("Project", back_populates="products")
+    course = relationship("Course", back_populates="products")
+    program = relationship("Program", back_populates="products")
+    artifacts = relationship("Artifact", back_populates="product")
+    generation_runs = relationship("GenerationRun", back_populates="product")
+    access_grants = relationship("AccessGrant", back_populates="product", cascade="all, delete-orphan")
+
+
+class AccessGrant(Base):
+    __tablename__ = "access_grants"
+    __table_args__ = (
+        UniqueConstraint("user_id", "product_id", "grant_type", name="uq_access_grant_user_product_type"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True)
+    grant_type = Column(String, nullable=False, default="manual")
+    status = Column(String, nullable=False, default="active")
+    source = Column(String, nullable=False, default="manual")
+    starts_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+    grant_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="access_grants")
+    product = relationship("Product", back_populates="access_grants")
+    workspace = relationship("Workspace", back_populates="access_grants")
+    project = relationship("Project", back_populates="access_grants")
+
+
+class KnowledgeSource(Base):
+    __tablename__ = "knowledge_sources"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
+    source_id = Column(UUID(as_uuid=True), ForeignKey("sources.id"), nullable=True)
+    title = Column(String, nullable=False)
+    source_type = Column(String, nullable=False, default="document")
+    uri = Column(String, nullable=True)
+    citation = Column(Text, nullable=True)
+    content_hash = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="available")
+    source_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="knowledge_sources")
+    project = relationship("Project", back_populates="knowledge_sources")
+    source = relationship("Source", back_populates="knowledge_sources")
+    artifacts = relationship("Artifact", back_populates="knowledge_source")
+
+
+class GenerationRun(Base):
+    __tablename__ = "generation_runs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=True)
+    status = Column(String, nullable=False, default="queued")
+    provider = Column(String, nullable=True)
+    model_name = Column(String, nullable=True)
+    prompt = Column(Text, nullable=True)
+    output_summary = Column(Text, nullable=True)
+    input_metadata = Column(JSON, nullable=True, default=dict)
+    output_metadata = Column(JSON, nullable=True, default=dict)
+    error_message = Column(Text, nullable=True)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="generation_runs")
+    project = relationship("Project", back_populates="generation_runs")
+    product = relationship("Product", back_populates="generation_runs")
+    artifacts = relationship("Artifact", back_populates="generation_run")
+
+
+class Artifact(Base):
+    __tablename__ = "artifacts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=True)
+    generation_run_id = Column(UUID(as_uuid=True), ForeignKey("generation_runs.id"), nullable=True)
+    knowledge_source_id = Column(UUID(as_uuid=True), ForeignKey("knowledge_sources.id"), nullable=True)
+    artifact_type = Column(String, nullable=False, default="documentation")
+    title = Column(String, nullable=False)
+    body = Column(Text, nullable=True)
+    uri = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="draft")
+    review_state = Column(String, nullable=False, default="review_required")
+    artifact_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="artifacts")
+    project = relationship("Project", back_populates="artifacts")
+    product = relationship("Product", back_populates="artifacts")
+    generation_run = relationship("GenerationRun", back_populates="artifacts")
+    knowledge_source = relationship("KnowledgeSource", back_populates="artifacts")
 
 
 class ProgramCourse(Base):

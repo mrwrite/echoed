@@ -1,18 +1,32 @@
 <main class="min-h-screen bg-gradient-to-br from-primary/5 via-white to-accent/10 py-6" aria-label="Lesson experience">
-  <div class="max-w-5xl mx-auto surface-card p-6">
-    <header class="flex items-center justify-between mb-4" aria-labelledby="lesson-page-title">
-      <div>
+  <div class="lesson-runtime mx-auto max-w-5xl surface-card p-4 md:p-6">
+    <header class="mb-5 flex flex-wrap items-start justify-between gap-4" aria-labelledby="lesson-page-title">
+      <div class="min-w-0">
         <p class="section-heading text-primary text-sm">Immersive Lesson</p>
         <h2 id="lesson-page-title" class="text-2xl font-bold text-ink">{{ lesson?.title || 'Preparing your next lesson' }}</h2>
-        <p class="muted-text">Step through each governed activity with clear focus and consistent learner guidance.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-700">Step through each governed activity with clear focus and consistent learner guidance.</p>
       </div>
-      <button aria-label="Exit lesson and return to dashboard" class="px-3 py-2 rounded-xl border border-primary text-primary font-semibold" (click)="returnToDashboard()">Exit lesson</button>
+      <div class="flex flex-col items-stretch gap-3 sm:items-end">
+        <div class="flex flex-wrap gap-2" *ngIf="lesson">
+          <span class="rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            {{ lessonStatusLabel }}
+          </span>
+          <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+            {{ lessonActivityCount }} activit<span *ngIf="lessonActivityCount !== 1">ies</span><span *ngIf="lessonActivityCount === 1">y</span>
+          </span>
+          <span *ngIf="lesson?.duration_minutes" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+            {{ lesson?.duration_minutes }} min
+          </span>
+        </div>
+        <button aria-label="Exit lesson and return to dashboard" class="lesson-runtime__exit-button rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5" (click)="returnToDashboard()">Exit lesson</button>
+      </div>
     </header>
 
-    <div class="flex flex-wrap items-center gap-3 mb-4 text-sm text-slate-600" *ngIf="lesson" aria-label="Lesson state">
-      <span class="px-3 py-1 rounded-full bg-primary/10 text-primary">Active segment</span>
-      <span class="px-3 py-1 rounded-full bg-accent/30 text-ink">Guided reading & activities</span>
-      <span *ngIf="demoMode" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Demo preview</span>
+    <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-slate-700" *ngIf="lesson" aria-label="Lesson state">
+      <span class="rounded-full bg-primary/10 px-3 py-1 text-primary">Active segment</span>
+      <span class="rounded-full bg-accent/30 px-3 py-1 text-ink">Guided reading & activities</span>
+      <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Safe to return to dashboard at any time</span>
+      <span *ngIf="demoMode" class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">Demo preview</span>
     </div>
 
     <app-echo-loading-state
@@ -34,6 +48,8 @@
     <app-echo-state-panel
       *ngIf="!lesson && !loading && governedDeliveryState && governedDeliveryState !== 'completed'"
       variant="blocked"
+      align="center"
+      ariaLabel="governed-lesson-state"
       eyebrow="Governed lesson state"
       [title]="governedStateTitle"
       [body]="governedStateBody"
@@ -45,6 +61,8 @@
     <app-echo-state-panel
       *ngIf="!lesson && !loading && loadErrorMessage"
       variant="error"
+      align="center"
+      ariaLabel="lesson-load-error"
       eyebrow="Lesson load failed"
       title="We could not prepare this lesson"
       [body]="loadErrorMessage"
@@ -58,7 +76,7 @@
 <app-echo-modal
   [open]="courseCompleted"
   title="Course completed!"
-  description="Return to the dashboard to explore more courses or review your progress."
+  description="You finished this governed lesson path. Return to the dashboard to review your progress or continue with your next available course."
   confirmText="Back to Dashboard"
   [showCancel]="false"
   (confirm)="returnToDashboard()"

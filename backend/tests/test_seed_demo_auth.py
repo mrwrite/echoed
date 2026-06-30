@@ -57,6 +57,42 @@ def test_seed_demo_is_idempotent_and_resets_passwords(db_engine, monkeypatch):
         session.close()
 
 
+def test_seed_demo_reseed_restores_demo_identity_by_username_and_email(db_engine, monkeypatch):
+    session_factory = _build_session_factory(db_engine)
+
+    _seed_with_factory(monkeypatch, session_factory)
+
+    session = session_factory()
+    try:
+        student = session.query(User).filter(User.username == "student1").one()
+        teacher = session.query(User).filter(User.username == "teacher").one()
+        student.username = "legacy_student1"
+        teacher.email = "legacy-teacher@example.com"
+        session.commit()
+    finally:
+        session.close()
+
+    _seed_with_factory(monkeypatch, session_factory)
+
+    session = session_factory()
+    try:
+        restored_student = session.query(User).filter(User.username == "student1").one()
+        restored_teacher = session.query(User).filter(User.username == "teacher").one()
+
+        assert restored_student.email == seed_demo.DEMO_USERS["student1"]["email"]
+        assert restored_student.firstname == seed_demo.DEMO_USERS["student1"]["firstname"]
+        assert verify_password(seed_demo.DEMO_PASSWORD, restored_student.hashed_password)
+
+        assert restored_teacher.email == seed_demo.DEMO_USERS["teacher"]["email"]
+        assert restored_teacher.firstname == seed_demo.DEMO_USERS["teacher"]["firstname"]
+        assert verify_password(seed_demo.DEMO_PASSWORD, restored_teacher.hashed_password)
+
+        assert session.query(User).filter(User.username == "legacy_student1").count() == 0
+        assert session.query(User).filter(User.email == "legacy-teacher@example.com").count() == 0
+    finally:
+        session.close()
+
+
 def test_seed_demo_creates_governed_ordered_student_path(db_engine, monkeypatch):
     session_factory = _build_session_factory(db_engine)
     _seed_with_factory(monkeypatch, session_factory)

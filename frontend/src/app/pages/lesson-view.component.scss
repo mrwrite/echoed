@@ -1,0 +1,8 @@
+.lesson-runtime {
+  min-width: 0;
+}
+
+.lesson-runtime__exit-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
+}

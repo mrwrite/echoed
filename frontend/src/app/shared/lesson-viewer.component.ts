@@ -36,6 +36,22 @@ export class LessonViewerComponent implements OnChanges {
     return this.lesson?.activities[this.currentActivityIndex];
   }
 
+  get activityCount(): number {
+    return this.lesson?.activities?.length || 0;
+  }
+
+  get activityProgressPercent(): number {
+    if (!this.activityCount) {
+      return 0;
+    }
+
+    return Math.round(((this.currentActivityIndex + 1) / this.activityCount) * 100);
+  }
+
+  get isLastActivity(): boolean {
+    return this.currentActivityIndex === this.activityCount - 1;
+  }
+
   get instructionalSections(): Array<{ label: string; content?: string }> {
     return [
       { label: 'Hook', content: this.lesson?.hook },

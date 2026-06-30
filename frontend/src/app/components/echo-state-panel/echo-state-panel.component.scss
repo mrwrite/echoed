@@ -3,6 +3,7 @@
   border-width: 1px;
   border-style: solid;
   border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.05);
 }
 
 .echo-state-panel--compact {
@@ -50,7 +51,8 @@
   height: 2.75rem;
   border-radius: 999px;
   color: var(--echo-primary);
-  background: rgba(46, 41, 78, 0.08);
+  background: linear-gradient(135deg, rgba(14, 116, 144, 0.12), rgba(245, 158, 11, 0.18));
+  box-shadow: inset 0 0 0 1px rgba(14, 116, 144, 0.08);
 }
 
 .echo-state-panel--error .echo-state-panel__icon-shell {
@@ -63,10 +65,21 @@
   background: rgba(239, 183, 0, 0.16);
 }
 
+.echo-state-panel--blocked .echo-state-panel__icon-shell {
+  color: #433875;
+  background: rgba(67, 56, 117, 0.12);
+}
+
+.echo-state-panel--empty .echo-state-panel__icon-shell {
+  color: #0f172a;
+  background: rgba(148, 163, 184, 0.12);
+}
+
 .echo-state-panel__content {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 44rem;
 }
 
 .echo-state-panel__eyebrow {
@@ -90,7 +103,7 @@
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--echo-text-muted);
+  color: #475569;
 }
 
 .echo-state-panel__action {
@@ -103,13 +116,16 @@
   padding: 0.65rem 1rem;
   font-size: 0.92rem;
   font-weight: 700;
-  transition: transform 160ms ease, background-color 160ms ease;
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .echo-state-panel__action:hover,
 .echo-state-panel__action:focus-visible {
   background: rgba(46, 41, 78, 0.08);
   transform: translateY(-1px);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.16);
+  border-color: rgba(14, 116, 144, 0.22);
 }
 
 .echo-state-panel--center .echo-state-panel__action {

@@ -1,3 +1,42 @@
 .lesson-viewer {
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
+
+.lesson-viewer__activity-body,
+.lesson-viewer__progress {
+  min-width: 0;
+}
+
+.lesson-viewer button,
+.lesson-viewer a,
+.lesson-viewer textarea,
+.lesson-viewer input,
+.lesson-viewer iframe,
+.lesson-viewer audio,
+.lesson-viewer video {
+  transition:
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.lesson-viewer button:focus-visible,
+.lesson-viewer a:focus-visible,
+.lesson-viewer textarea:focus-visible,
+.lesson-viewer input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
+}
+
+.lesson-viewer textarea:focus-visible,
+.lesson-viewer input:focus-visible {
+  border-color: rgba(14, 116, 144, 0.32);
+}
+
+@media (max-width: 767px) {
+  .lesson-viewer__actions button {
+    width: 100%;
+  }
+}

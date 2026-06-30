@@ -1,0 +1,39 @@
+.student-dashboard {
+  min-width: 0;
+}
+
+.student-dashboard__hero,
+.student-dashboard__continuation {
+  min-width: 0;
+}
+
+.student-dashboard__status-pill {
+  white-space: nowrap;
+}
+
+.student-dashboard button,
+.student-dashboard a {
+  transition:
+    box-shadow 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.student-dashboard button:focus-visible,
+.student-dashboard a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
+}
+
+.student-dashboard__text-link:hover,
+.student-dashboard__text-link:focus-visible {
+  text-decoration-thickness: 2px;
+}
+
+@media (max-width: 767px) {
+  .student-dashboard__hero {
+    border-radius: 20px;
+  }
+}

@@ -87,6 +87,167 @@ class OrganizationMembershipResponse(BaseModel):
         from_attributes = True
 
 
+class WorkspaceResponse(BaseModel):
+    id: UUID
+    organization_id: Optional[UUID] = None
+    name: str
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="workspace_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="project_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectCreateRequest(BaseModel):
+    workspace_id: UUID
+    name: str
+    description: Optional[str] = None
+    status: str = "active"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProductResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    product_type: str
+    title: str
+    description: Optional[str] = None
+    status: str
+    review_state: str
+    access_state: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="product_metadata")
+    published_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ProductCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    program_id: Optional[UUID] = None
+    product_type: str
+    title: str
+    description: Optional[str] = None
+    status: str = "draft"
+    review_state: str = "not_reviewed"
+    access_state: str = "private"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class KnowledgeSourceResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    source_id: Optional[UUID] = None
+    title: str
+    source_type: str
+    uri: Optional[str] = None
+    citation: Optional[str] = None
+    content_hash: Optional[str] = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="source_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class KnowledgeSourceCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: UUID
+    source_id: Optional[UUID] = None
+    title: str
+    source_type: str
+    uri: Optional[str] = None
+    citation: Optional[str] = None
+    content_hash: Optional[str] = None
+    status: str = "available"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ArtifactResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    generation_run_id: Optional[UUID] = None
+    knowledge_source_id: Optional[UUID] = None
+    artifact_type: str
+    title: str
+    body: Optional[str] = None
+    uri: Optional[str] = None
+    status: str
+    review_state: str
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="artifact_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ArtifactCreateRequest(BaseModel):
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    generation_run_id: Optional[UUID] = None
+    knowledge_source_id: Optional[UUID] = None
+    artifact_type: str
+    title: str
+    body: Optional[str] = None
+    uri: Optional[str] = None
+    status: str = "draft"
+    review_state: str = "review_required"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class GenerationRunResponse(BaseModel):
+    id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    product_id: Optional[UUID] = None
+    status: str
+    provider: Optional[str] = None
+    model_name: Optional[str] = None
+    prompt: Optional[str] = None
+    output_summary: Optional[str] = None
+    input_metadata: dict[str, Any] = Field(default_factory=dict)
+    output_metadata: dict[str, Any] = Field(default_factory=dict)
+    error_message: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class OrganizationInviteCreate(BaseModel):
     email: str
     role: str

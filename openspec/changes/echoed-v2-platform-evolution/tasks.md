@@ -14,31 +14,31 @@
 
 ## Phase 2: Wrapper Models For Workspace, Project, Product, Artifact, KnowledgeSource, GenerationRun
 
-- [ ] Design additive SQLAlchemy models and Alembic migrations for workspace, project, product, knowledge source, artifact, and generation run wrappers
-- [ ] Backfill workspace records from existing organizations
-- [ ] Backfill course-backed product records from existing courses
-- [ ] Add nullable or join-based links from new wrapper records to existing runtime records
-- [ ] Preserve existing course, program, lesson, progress, assessment, and certification schemas
-- [ ] Add backend tests for non-destructive backfill behavior
-- [ ] Add API read endpoints for wrapper records without replacing existing course APIs
+- [x] Design additive SQLAlchemy models and Alembic migrations for workspace, project, product, knowledge source, artifact, and generation run wrappers
+- [x] Backfill workspace records from existing organizations
+- [x] Backfill course-backed product records from existing courses
+- [x] Add nullable or join-based links from new wrapper records to existing runtime records
+- [x] Preserve existing course, program, lesson, progress, assessment, and certification schemas
+- [x] Add backend tests for non-destructive backfill behavior
+- [x] Add API read endpoints for wrapper records without replacing existing course APIs
 
 ## Phase 3: Product Studio Foundation
 
-- [ ] Reframe the existing course wizard as the first Product Studio workflow
-- [ ] Add product type selection with course-backed product as the initial supported type
-- [ ] Add project connection step that can be skipped for existing course creation
-- [ ] Preserve current course create/edit behavior
-- [ ] Add draft publishing checklist using existing lesson readiness and governance signals
-- [ ] Add tests for course creation through the Product Studio route alias
+- [x] Reframe the existing course wizard as the first Product Studio workflow
+- [x] Add product type selection with course-backed product as the initial supported type
+- [x] Add project connection step that can be skipped for existing course creation
+- [x] Preserve current course create/edit behavior
+- [x] Add draft publishing checklist using existing lesson readiness and governance signals
+- [x] Add tests for course creation through the Product Studio route alias
 
 ## Phase 4: Knowledge Pipeline And Artifact Registry
 
-- [ ] Add knowledge source management screens and APIs
-- [ ] Add artifact registry screens and APIs
-- [ ] Link artifacts to projects, products, knowledge sources, and existing course/lesson records where applicable
-- [ ] Represent current source-backed lesson data in the knowledge pipeline without deleting original source rows
-- [ ] Add generation run history for future AI-assisted workflows
-- [ ] Add tests for source and artifact linkage
+- [x] Add knowledge source management screens and APIs
+- [x] Add artifact registry screens and APIs
+- [x] Link artifacts to projects, products, knowledge sources, and existing course/lesson records where applicable
+- [x] Represent current source-backed lesson data in the knowledge pipeline without deleting original source rows
+- [x] Add generation run history for future AI-assisted workflows
+- [x] Add tests for source and artifact linkage
 
 ## Phase 5: Review Center Expansion
 

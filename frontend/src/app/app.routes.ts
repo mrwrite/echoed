@@ -24,6 +24,12 @@ import { ProgramsComponent } from './pages/programs/programs.component';
 import { AssessmentDetailComponent } from './pages/assessment-detail/assessment-detail.component';
 import { CertificationsComponent } from './pages/certifications/certifications.component';
 import { V2PlatformPageComponent } from './pages/v2-platform/v2-platform-page.component';
+import { ProductStudioComponent } from './pages/product-studio/product-studio.component';
+import { V2CollectionPageComponent } from './pages/v2-platform/v2-collection-page.component';
+import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
+import { ProjectDetailComponent } from './pages/project-detail/project-detail.component';
+import { ArtifactDetailComponent } from './pages/artifact-detail/artifact-detail.component';
+import { GenerationRunDetailComponent } from './pages/generation-run-detail/generation-run-detail.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -131,31 +137,53 @@ export const routes: Routes = [
       },
       {
         path: 'projects',
-        component: V2PlatformPageComponent,
+        component: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
           eyebrow: 'Projects',
           title: 'Project knowledge pipeline',
-          description: 'Projects will group source material, AI analysis, generated artifacts, and product outputs for a business or technical initiative.',
-          status: 'Placeholder route: wrapper models arrive in a later phase; existing course runtime remains unchanged.'
+          status: 'Real V2 project shell data. Creating projects is available through Product Studio.',
+          emptyText: 'Create your first project shell from Product Studio.',
+          collection: 'projects'
         }
       },
       {
+        path: 'projects/:projectId',
+        component: ProjectDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
         path: 'product-studio',
-        component: V2PlatformPageComponent,
+        component: ProductStudioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio/create',
+        component: ProductStudioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'product-studio/generation-runs',
+        component: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
-          eyebrow: 'Product Studio',
-          title: 'Create trusted learning products',
-          description: 'Product Studio will orchestrate source import, AI generation, human review, approval, publishing, and delivery.',
-          status: 'Phase 1 exposes the Studio entry point and links to existing course creation tools.',
-          links: [
-            { label: 'Existing studio courses', route: '/workspace/product-studio/courses' },
-            { label: 'Create course-backed product', route: '/workspace/product-studio/courses/new' }
-          ]
+          eyebrow: 'Generation Runs',
+          title: 'AI generation attempts',
+          status: 'Read-only generation metadata. Execution is not implemented in Phase 3.',
+          emptyText: 'Generation run history will appear here after future AI execution workflows are implemented.',
+          collection: 'generation-runs'
         }
+      },
+      {
+        path: 'product-studio/generation-runs/:generationRunId',
+        component: GenerationRunDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
       },
       {
         path: 'product-studio/courses',
@@ -175,7 +203,21 @@ export const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: ['admin', 'teacher'] }
       },
-      { path: 'products', component: AvailableCoursesComponent },
+      {
+        path: 'products',
+        component: V2CollectionPageComponent,
+        data: {
+          eyebrow: 'Products',
+          title: 'Product catalog',
+          status: 'Real V2 product wrappers. Course-backed products link to the existing education runtime.',
+          emptyText: 'Create product shells from Product Studio, or run the Phase 2 backfill migration for existing courses.',
+          collection: 'products'
+        }
+      },
+      {
+        path: 'products/:productId',
+        component: ProductDetailComponent,
+      },
       {
         path: 'products/manage',
         component: AdminCoursesComponent,
@@ -184,27 +226,35 @@ export const routes: Routes = [
       },
       {
         path: 'knowledge-sources',
-        component: V2PlatformPageComponent,
+        component: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
           eyebrow: 'Knowledge Sources',
           title: 'Source-aware knowledge intake',
-          description: 'Knowledge Sources will collect documentation, project references, files, and source-backed material used by AI-assisted generation.',
-          status: 'Placeholder route: source-backed lesson readiness remains available through existing governance flows.'
+          status: 'Read-only knowledge source wrappers. Source import and management arrive in a later phase.',
+          emptyText: 'No project-level knowledge sources exist yet.',
+          collection: 'knowledge-sources'
         }
       },
       {
         path: 'artifacts',
-        component: V2PlatformPageComponent,
+        component: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
           eyebrow: 'Artifacts',
           title: 'Generated documentation and learning assets',
-          description: 'Artifacts will track AI-generated documentation, playbooks, downloads, and reusable assets before they become learning products.',
-          status: 'Placeholder route: artifact registry models and packaging workflows are planned for a later phase.'
+          status: 'Read-only artifact wrappers. Review, packaging, and publishing arrive in later phases.',
+          emptyText: 'No generated or uploaded artifacts exist yet.',
+          collection: 'artifacts'
         }
+      },
+      {
+        path: 'artifacts/:artifactId',
+        component: ArtifactDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
       },
       {
         path: 'review-center',

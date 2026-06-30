@@ -182,4 +182,255 @@ describe('V2PlatformService', () => {
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
+
+  it('loads the Review Center aggregate queue', () => {
+    service.getReviewCenter().subscribe(center => {
+      expect(center.pending_artifacts[0].title).toBe('Pending Artifact');
+      expect(center.draft_products[0].status).toBe('draft');
+      expect(center.lesson_governance_items[0].blocked).toBeTrue();
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/review-center`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      pending_artifacts: [
+        {
+          id: 'artifact-1',
+          item_type: 'artifact',
+          title: 'Pending Artifact',
+          status: 'in_review',
+          review_state: 'in_review',
+          owner: null,
+          source_coverage: 'Linked knowledge source',
+          readiness: 'Wrapper review only; not learner-deliverable',
+          required_decision: 'Review artifact wrapper',
+          blocked: false,
+          detail_route: '/workspace/artifacts/artifact-1',
+          governance_route: null,
+          updated_at: '2026-01-01T00:00:00',
+        },
+      ],
+      draft_products: [
+        {
+          id: 'product-1',
+          item_type: 'product',
+          title: 'Draft Product',
+          status: 'draft',
+          review_state: 'not_reviewed',
+          owner: null,
+          source_coverage: 'Course-backed runtime link',
+          readiness: 'Existing lesson governance remains authoritative',
+          required_decision: 'Review product wrapper',
+          blocked: false,
+          detail_route: '/workspace/products/product-1',
+          governance_route: '/workspace/product-studio/courses/course-1/edit',
+          updated_at: '2026-01-01T00:00:00',
+        },
+      ],
+      lesson_governance_items: [
+        {
+          id: 'course-1',
+          item_type: 'lesson_governance',
+          title: 'Blocked Course',
+          status: 'blocked',
+          review_state: 'existing_governance',
+          owner: null,
+          source_coverage: '1 blocking issue(s), 0 warning(s)',
+          readiness: 'Blocked',
+          required_decision: 'Resolve lesson governance blockers',
+          blocked: true,
+          detail_route: '/workspace/product-studio/courses/course-1/edit',
+          governance_route: '/workspace/product-studio/courses/course-1/edit',
+          updated_at: '2026-01-01T00:00:00',
+        },
+      ],
+      recent_activity: [
+        {
+          id: 'review-activity-placeholder',
+          message: 'Review activity history will appear here after audit records are introduced.',
+          created_at: null,
+        },
+      ],
+    });
+  });
+
+  it('updates artifact review status through the wrapper API', () => {
+    service.updateArtifactReviewStatus('artifact-1', { status: 'approved' }).subscribe(artifact => {
+      expect(artifact.status).toBe('approved');
+      expect(artifact.review_state).toBe('approved');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/artifacts/artifact-1/review-status`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body.status).toBe('approved');
+    request.flush({
+      id: 'artifact-1',
+      workspace_id: 'workspace-1',
+      project_id: 'project-1',
+      product_id: null,
+      generation_run_id: null,
+      knowledge_source_id: null,
+      artifact_type: 'guide',
+      title: 'Artifact',
+      body: null,
+      uri: null,
+      status: 'approved',
+      review_state: 'approved',
+      metadata: {},
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-01T00:00:00',
+    });
+  });
+
+  it('updates product review status through the wrapper API', () => {
+    service.updateProductReviewStatus('product-1', { status: 'approved' }).subscribe(product => {
+      expect(product.status).toBe('approved');
+      expect(product.review_state).toBe('approved');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/products/product-1/review-status`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body.status).toBe('approved');
+    request.flush({
+      id: 'product-1',
+      workspace_id: 'workspace-1',
+      project_id: 'project-1',
+      course_id: 'course-1',
+      program_id: null,
+      product_type: 'course',
+      title: 'Product',
+      description: null,
+      status: 'approved',
+      review_state: 'approved',
+      access_state: 'private',
+      metadata: {},
+      published_at: null,
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-01T00:00:00',
+    });
+  });
+
+  it('loads learner portal products from the V2 learner API', () => {
+    service.getLearnerProducts().subscribe(products => {
+      expect(products.length).toBe(2);
+      expect(products[0].is_enrolled).toBeTrue();
+      expect(products[1].product_status).toBe('approved');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/learner-portal/products`);
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        id: 'product-1',
+        product_id: 'product-1',
+        course_id: 'course-1',
+        title: 'Enrolled Product',
+        description: 'Existing runtime enrollment',
+        product_type: 'course',
+        product_status: 'draft',
+        review_state: 'draft',
+        access_state: 'private',
+        enrollment_id: 'student-course-1',
+        enrollment_status: 'active',
+        enrolled_on: '2026-01-01T00:00:00',
+        is_enrolled: true,
+        source: 'product_wrapper',
+        learner_visibility: 'Existing enrollment controls access; lesson governance controls content.',
+        next_action: 'Continue governed course runtime',
+      },
+      {
+        id: 'product-2',
+        product_id: 'product-2',
+        course_id: 'course-2',
+        title: 'Available Product',
+        description: 'Approved wrapper',
+        product_type: 'course',
+        product_status: 'approved',
+        review_state: 'approved',
+        access_state: 'private',
+        enrollment_id: null,
+        enrollment_status: null,
+        enrolled_on: null,
+        is_enrolled: false,
+        source: 'product_wrapper',
+        learner_visibility: 'Available wrapper; enrollment still uses existing course runtime.',
+        next_action: 'Enroll through existing course enrollment',
+      },
+    ]);
+  });
+
+  it('manages access grants through the V2 access API', () => {
+    service.getAccessGrants({ productId: 'product-1' }).subscribe(grants => {
+      expect(grants[0].grant_type).toBe('manual');
+    });
+    const listRequest = httpMock.expectOne(`${environment.apiUrl}/api/access-grants?product_id=product-1`);
+    expect(listRequest.request.method).toBe('GET');
+    listRequest.flush([
+      {
+        id: 'grant-1',
+        user_id: 'user-1',
+        product_id: 'product-1',
+        workspace_id: 'workspace-1',
+        project_id: null,
+        grant_type: 'manual',
+        status: 'active',
+        source: 'manual',
+        starts_at: null,
+        expires_at: null,
+        revoked_at: null,
+        metadata: {},
+        created_at: '2026-01-01T00:00:00',
+        updated_at: '2026-01-01T00:00:00',
+      },
+    ]);
+
+    service.createAccessGrant({
+      user_id: 'user-1',
+      product_id: 'product-1',
+      grant_type: 'manual',
+    }).subscribe(grant => {
+      expect(grant.status).toBe('active');
+    });
+    const createRequest = httpMock.expectOne(`${environment.apiUrl}/api/access-grants`);
+    expect(createRequest.request.method).toBe('POST');
+    expect(createRequest.request.body.user_id).toBe('user-1');
+    createRequest.flush({
+      id: 'grant-1',
+      user_id: 'user-1',
+      product_id: 'product-1',
+      workspace_id: 'workspace-1',
+      project_id: null,
+      grant_type: 'manual',
+      status: 'active',
+      source: 'manual',
+      starts_at: null,
+      expires_at: null,
+      revoked_at: null,
+      metadata: {},
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-01T00:00:00',
+    });
+
+    service.revokeAccessGrant('grant-1').subscribe(grant => {
+      expect(grant.status).toBe('revoked');
+    });
+    const revokeRequest = httpMock.expectOne(`${environment.apiUrl}/api/access-grants/grant-1/revoke`);
+    expect(revokeRequest.request.method).toBe('PATCH');
+    revokeRequest.flush({
+      id: 'grant-1',
+      user_id: 'user-1',
+      product_id: 'product-1',
+      workspace_id: 'workspace-1',
+      project_id: null,
+      grant_type: 'manual',
+      status: 'revoked',
+      source: 'manual',
+      starts_at: null,
+      expires_at: null,
+      revoked_at: '2026-01-02T00:00:00',
+      metadata: {},
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-02T00:00:00',
+    });
+  });
 });

@@ -159,6 +159,39 @@ class ProductCreateRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class AccessGrantResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    product_id: UUID
+    workspace_id: UUID
+    project_id: Optional[UUID] = None
+    grant_type: str
+    status: str
+    source: str
+    starts_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    revoked_at: Optional[datetime] = None
+    metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="grant_metadata")
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AccessGrantCreateRequest(BaseModel):
+    user_id: UUID
+    product_id: UUID
+    workspace_id: Optional[UUID] = None
+    project_id: Optional[UUID] = None
+    grant_type: str = "manual"
+    status: str = "active"
+    source: str = "manual"
+    starts_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class KnowledgeSourceResponse(BaseModel):
     id: UUID
     workspace_id: UUID
@@ -225,6 +258,60 @@ class ArtifactCreateRequest(BaseModel):
     status: str = "draft"
     review_state: str = "review_required"
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReviewStatusUpdateRequest(BaseModel):
+    status: str
+
+
+class ReviewCenterItemResponse(BaseModel):
+    id: UUID
+    item_type: str
+    title: str
+    status: str
+    review_state: Optional[str] = None
+    owner: Optional[str] = None
+    source_coverage: str
+    readiness: str
+    required_decision: str
+    blocked: bool = False
+    detail_route: Optional[str] = None
+    governance_route: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+class ReviewCenterActivityResponse(BaseModel):
+    id: str
+    message: str
+    created_at: Optional[datetime] = None
+
+
+class ReviewCenterResponse(BaseModel):
+    pending_artifacts: list[ReviewCenterItemResponse]
+    draft_products: list[ReviewCenterItemResponse]
+    lesson_governance_items: list[ReviewCenterItemResponse]
+    recent_activity: list[ReviewCenterActivityResponse]
+
+
+class LearnerProductResponse(BaseModel):
+    id: UUID
+    product_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    title: str
+    description: Optional[str] = None
+    product_type: str = "course"
+    product_status: Optional[str] = None
+    review_state: Optional[str] = None
+    access_state: Optional[str] = None
+    enrollment_id: Optional[UUID] = None
+    enrollment_status: Optional[str] = None
+    enrolled_on: Optional[datetime] = None
+    access_grant_id: Optional[UUID] = None
+    access_grant_status: Optional[str] = None
+    is_enrolled: bool = False
+    source: str
+    learner_visibility: str
+    next_action: str
 
 
 class GenerationRunResponse(BaseModel):

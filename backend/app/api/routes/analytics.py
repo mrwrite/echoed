@@ -1,24 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import or_
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session, selectinload
 from uuid import UUID
 
 from app.crud.badges import BADGE_RULES, calculate_streak_days, get_or_create_badge
 from app.database import get_db
 from app.deps import require_roles, require_org_roles
-from app.enum import ProgressStatus
+from app.enum import MembershipStatus, ProgressStatus
 from app.models import (
+    AccessGrant,
     Assessment,
+    Artifact,
     StudentAssessmentAttempt,
+    Certification,
     Course,
+    GenerationRun,
+    KnowledgeSource,
     Lesson,
+    OrganizationMembership,
+    Product,
+    Project,
     SegmentProgress,
     StudentBadge,
+    StudentCertification,
     StudentCourse,
+    StudentProgramProgress,
     StudentUnitProgress,
     Unit,
     User,
     Enrollment,
+    Workspace,
 )
 from app.schemas import (
     AssessmentEvidenceSummaryResponse,
@@ -33,6 +44,164 @@ from app.schemas import (
 router = APIRouter()
 
 FLAGSHIP_PATHWAY_KEY = "introduction-to-africa"
+V2_ANALYTICS_ROLES = ("admin", "teacher", "content_admin", "org_admin", "instructor", "super_admin")
+
+
+def _visible_v2_workspace_ids(db: Session, current_user: User) -> list[UUID] | None:
+    if current_user.role in {"admin", "super_admin"}:
+        return None
+
+    memberships = db.query(OrganizationMembership).filter(
+        OrganizationMembership.user_id == current_user.id,
+    ).all()
+    organization_ids = [
+        membership.organization_id
+        for membership in memberships
+        if getattr(membership.status, "value", membership.status) == MembershipStatus.ACTIVE.value
+    ]
+    if not organization_ids:
+        return []
+
+    return [
+        workspace.id
+        for workspace in db.query(Workspace.id)
+        .filter(Workspace.organization_id.in_(organization_ids))
+        .all()
+    ]
+
+
+def _normalize_workspace_scope(
+    db: Session,
+    current_user: User,
+    workspace_id: UUID | None = None,
+) -> list[UUID] | None:
+    visible_ids = _visible_v2_workspace_ids(db, current_user)
+    if workspace_id is None:
+        return visible_ids
+    if visible_ids is not None and workspace_id not in visible_ids:
+        return []
+    return [workspace_id]
+
+
+def _scope_v2_query(query, model, workspace_ids: list[UUID] | None):
+    if workspace_ids is None:
+        return query
+    if not workspace_ids:
+        return query.filter(False)
+    return query.filter(model.workspace_id.in_(workspace_ids))
+
+
+def _count_by(db: Session, model, column, workspace_ids: list[UUID] | None) -> dict[str, int]:
+    rows = (
+        _scope_v2_query(db.query(column, func.count(model.id)), model, workspace_ids)
+        .group_by(column)
+        .all()
+    )
+    return {str(value or "unknown"): count for value, count in rows}
+
+
+def _recent_items(db: Session, model, workspace_ids: list[UUID] | None, *, item_type: str, limit: int = 5):
+    rows = (
+        _scope_v2_query(db.query(model), model, workspace_ids)
+        .order_by(desc(model.created_at), model.id.asc())
+        .limit(limit)
+        .all()
+    )
+    items = []
+    for row in rows:
+        items.append(
+            {
+                "id": row.id,
+                "item_type": item_type,
+                "title": getattr(row, "title", getattr(row, "name", "Untitled")),
+                "status": getattr(row, "status", "unknown"),
+                "subtype": getattr(row, "product_type", getattr(row, "artifact_type", getattr(row, "source_type", None))),
+                "created_at": row.created_at,
+            }
+        )
+    return items
+
+
+def _scoped_product_ids(db: Session, workspace_ids: list[UUID] | None) -> list[UUID]:
+    return [row.id for row in _scope_v2_query(db.query(Product.id), Product, workspace_ids).all()]
+
+
+def _scoped_course_ids(db: Session, workspace_ids: list[UUID] | None) -> list[UUID]:
+    return [
+        row.course_id
+        for row in _scope_v2_query(db.query(Product.course_id), Product, workspace_ids)
+        .filter(Product.course_id.isnot(None))
+        .all()
+    ]
+
+
+def _scoped_program_ids(db: Session, workspace_ids: list[UUID] | None) -> list[UUID]:
+    return [
+        row.program_id
+        for row in _scope_v2_query(db.query(Product.program_id), Product, workspace_ids)
+        .filter(Product.program_id.isnot(None))
+        .all()
+    ]
+
+
+def _learner_engagement_summary(db: Session, workspace_ids: list[UUID] | None) -> dict:
+    course_ids = _scoped_course_ids(db, workspace_ids)
+    program_ids = _scoped_program_ids(db, workspace_ids)
+    product_ids = _scoped_product_ids(db, workspace_ids)
+
+    course_enrollments = db.query(StudentCourse)
+    if course_ids:
+        course_enrollments = course_enrollments.filter(StudentCourse.course_id.in_(course_ids))
+    elif workspace_ids is not None:
+        course_enrollments = course_enrollments.filter(False)
+
+    program_enrollments = db.query(StudentProgramProgress)
+    if program_ids:
+        program_enrollments = program_enrollments.filter(StudentProgramProgress.program_id.in_(program_ids))
+    elif workspace_ids is not None:
+        program_enrollments = program_enrollments.filter(False)
+
+    access_grants = db.query(AccessGrant)
+    if product_ids:
+        access_grants = access_grants.filter(AccessGrant.product_id.in_(product_ids))
+    elif workspace_ids is not None:
+        access_grants = access_grants.filter(False)
+
+    course_rows = course_enrollments.all()
+    program_rows = program_enrollments.all()
+    grant_rows = access_grants.all()
+    learner_ids = {row.student_id for row in course_rows} | {row.student_id for row in program_rows} | {row.user_id for row in grant_rows}
+
+    completed_courses = sum(1 for row in course_rows if row.status == "completed")
+    lesson_completion_count = (
+        db.query(SegmentProgress)
+        .join(StudentUnitProgress, StudentUnitProgress.id == SegmentProgress.student_unit_id)
+        .join(StudentCourse, StudentCourse.id == StudentUnitProgress.student_course_id)
+        .filter(
+            SegmentProgress.status == ProgressStatus.COMPLETED,
+            StudentCourse.id.in_([row.id for row in course_rows]) if course_rows else False,
+        )
+        .count()
+    )
+    issued_certifications = db.query(StudentCertification).count() if workspace_ids is None else 0
+    if program_ids:
+        issued_certifications = (
+            db.query(StudentCertification)
+            .join(Certification, Certification.id == StudentCertification.certification_id)
+            .filter(Certification.program_id.in_(program_ids))
+            .count()
+        )
+
+    return {
+        "learner_count": len(learner_ids),
+        "enrollment_count": len(course_rows) + len(program_rows),
+        "course_enrollment_count": len(course_rows),
+        "program_enrollment_count": len(program_rows),
+        "completed_course_count": completed_courses,
+        "lesson_completion_count": lesson_completion_count,
+        "issued_certification_count": issued_certifications,
+        "access_granted_learner_count": len({row.user_id for row in grant_rows}),
+    }
 
 
 def _latest_attempt_for_assessment(assessment: Assessment, student_id):
@@ -558,6 +727,159 @@ def _build_assessment_evidence_summary(
         )
     rows.sort(key=lambda row: (row.latest_attempt_at or row.assessment_title, row.assessment_title))
     return rows
+
+
+@router.get("/analytics/workspace")
+def get_v2_workspace_analytics(
+    workspace_id: UUID | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles(*V2_ANALYTICS_ROLES)),
+):
+    workspace_ids = _normalize_workspace_scope(db, current_user, workspace_id)
+    learner_summary = _learner_engagement_summary(db, workspace_ids)
+    product_ids = _scoped_product_ids(db, workspace_ids)
+
+    return {
+        "totals": {
+            "total_products": _scope_v2_query(db.query(Product), Product, workspace_ids).count(),
+            "total_projects": _scope_v2_query(db.query(Project), Project, workspace_ids).count(),
+            "total_knowledge_sources": _scope_v2_query(db.query(KnowledgeSource), KnowledgeSource, workspace_ids).count(),
+            "total_artifacts": _scope_v2_query(db.query(Artifact), Artifact, workspace_ids).count(),
+            "total_generation_runs": _scope_v2_query(db.query(GenerationRun), GenerationRun, workspace_ids).count(),
+            "total_access_grants": _scope_v2_query(db.query(AccessGrant), AccessGrant, workspace_ids).count(),
+            "learner_count": learner_summary["learner_count"],
+            "enrollment_count": learner_summary["enrollment_count"],
+            "course_backed_product_count": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.course_id.isnot(None)).count(),
+            "program_backed_product_count": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.program_id.isnot(None)).count(),
+        },
+        "products_by_type": _count_by(db, Product, Product.product_type, workspace_ids),
+        "products_by_status": _count_by(db, Product, Product.status, workspace_ids),
+        "artifacts_by_status": _count_by(db, Artifact, Artifact.status, workspace_ids),
+        "artifacts_by_type": _count_by(db, Artifact, Artifact.artifact_type, workspace_ids),
+        "generation_runs_by_status": _count_by(db, GenerationRun, GenerationRun.status, workspace_ids),
+        "access_grants_by_status": _count_by(db, AccessGrant, AccessGrant.status, workspace_ids),
+        "access_grants_by_type": _count_by(db, AccessGrant, AccessGrant.grant_type, workspace_ids),
+        "review_health": {
+            "draft_products": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.status == "draft").count(),
+            "in_review_products": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.status == "in_review").count(),
+            "approved_products": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.status == "approved").count(),
+            "published_products": _scope_v2_query(db.query(Product), Product, workspace_ids).filter(Product.status == "published").count(),
+            "review_required_artifacts": _scope_v2_query(db.query(Artifact), Artifact, workspace_ids).filter(Artifact.status.in_(["draft", "in_review", "needs_changes"])).count(),
+        },
+        "learner_engagement": learner_summary,
+        "recent": {
+            "products": _recent_items(db, Product, workspace_ids, item_type="product"),
+            "artifacts": _recent_items(db, Artifact, workspace_ids, item_type="artifact"),
+            "knowledge_sources": _recent_items(db, KnowledgeSource, workspace_ids, item_type="knowledge_source"),
+        },
+        "event_tracking": {
+            "status": "unavailable",
+            "message": "Analytics V2 foundations use current wrapper and runtime state; event tracking has not been introduced.",
+        },
+        "scoped_product_count": len(product_ids),
+    }
+
+
+@router.get("/analytics/products")
+def get_v2_product_analytics(
+    workspace_id: UUID | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles(*V2_ANALYTICS_ROLES)),
+):
+    workspace_ids = _normalize_workspace_scope(db, current_user, workspace_id)
+    products = (
+        _scope_v2_query(db.query(Product), Product, workspace_ids)
+        .order_by(Product.updated_at.desc(), Product.title.asc())
+        .all()
+    )
+    product_rows = []
+    for product in products:
+        enrollment_count = 0
+        if product.course_id:
+            enrollment_count = db.query(StudentCourse).filter(StudentCourse.course_id == product.course_id).count()
+        if product.program_id:
+            enrollment_count += db.query(StudentProgramProgress).filter(StudentProgramProgress.program_id == product.program_id).count()
+        product_rows.append(
+            {
+                "id": product.id,
+                "title": product.title,
+                "product_type": product.product_type,
+                "status": product.status,
+                "review_state": product.review_state,
+                "access_state": product.access_state,
+                "course_id": product.course_id,
+                "program_id": product.program_id,
+                "artifact_count": db.query(Artifact).filter(Artifact.product_id == product.id).count(),
+                "generation_run_count": db.query(GenerationRun).filter(GenerationRun.product_id == product.id).count(),
+                "access_grant_count": db.query(AccessGrant).filter(AccessGrant.product_id == product.id).count(),
+                "enrollment_count": enrollment_count,
+                "created_at": product.created_at,
+                "updated_at": product.updated_at,
+            }
+        )
+
+    return {
+        "total_products": len(products),
+        "course_backed_product_count": sum(1 for product in products if product.course_id is not None),
+        "program_backed_product_count": sum(1 for product in products if product.program_id is not None),
+        "products_by_type": _count_by(db, Product, Product.product_type, workspace_ids),
+        "products_by_status": _count_by(db, Product, Product.status, workspace_ids),
+        "products": product_rows,
+    }
+
+
+@router.get("/analytics/learners")
+def get_v2_learner_analytics(
+    workspace_id: UUID | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles(*V2_ANALYTICS_ROLES)),
+):
+    workspace_ids = _normalize_workspace_scope(db, current_user, workspace_id)
+    course_ids = _scoped_course_ids(db, workspace_ids)
+    enrollment_query = db.query(StudentCourse.status, func.count(StudentCourse.id))
+    if course_ids:
+        enrollment_query = enrollment_query.filter(StudentCourse.course_id.in_(course_ids))
+    elif workspace_ids is not None:
+        enrollment_query = enrollment_query.filter(False)
+
+    return {
+        "summary": _learner_engagement_summary(db, workspace_ids),
+        "enrollments_by_status": {
+            str(status or "unknown"): count
+            for status, count in enrollment_query.group_by(StudentCourse.status).all()
+        },
+        "access_grants_by_status": _count_by(db, AccessGrant, AccessGrant.status, workspace_ids),
+        "access_grants_by_type": _count_by(db, AccessGrant, AccessGrant.grant_type, workspace_ids),
+    }
+
+
+@router.get("/analytics/knowledge-pipeline")
+def get_v2_knowledge_pipeline_analytics(
+    workspace_id: UUID | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles(*V2_ANALYTICS_ROLES)),
+):
+    workspace_ids = _normalize_workspace_scope(db, current_user, workspace_id)
+    return {
+        "total_projects": _scope_v2_query(db.query(Project), Project, workspace_ids).count(),
+        "total_knowledge_sources": _scope_v2_query(db.query(KnowledgeSource), KnowledgeSource, workspace_ids).count(),
+        "total_artifacts": _scope_v2_query(db.query(Artifact), Artifact, workspace_ids).count(),
+        "total_generation_runs": _scope_v2_query(db.query(GenerationRun), GenerationRun, workspace_ids).count(),
+        "knowledge_sources_by_type": _count_by(db, KnowledgeSource, KnowledgeSource.source_type, workspace_ids),
+        "knowledge_sources_by_status": _count_by(db, KnowledgeSource, KnowledgeSource.status, workspace_ids),
+        "artifacts_by_status": _count_by(db, Artifact, Artifact.status, workspace_ids),
+        "artifacts_by_type": _count_by(db, Artifact, Artifact.artifact_type, workspace_ids),
+        "generation_runs_by_status": _count_by(db, GenerationRun, GenerationRun.status, workspace_ids),
+        "recent": {
+            "artifacts": _recent_items(db, Artifact, workspace_ids, item_type="artifact"),
+            "knowledge_sources": _recent_items(db, KnowledgeSource, workspace_ids, item_type="knowledge_source"),
+        },
+        "source_coverage": {
+            "status": "advisory",
+            "artifacts_with_knowledge_source": _scope_v2_query(db.query(Artifact), Artifact, workspace_ids).filter(Artifact.knowledge_source_id.isnot(None)).count(),
+            "artifacts_without_knowledge_source": _scope_v2_query(db.query(Artifact), Artifact, workspace_ids).filter(Artifact.knowledge_source_id.is_(None)).count(),
+        },
+    }
 
 
 @router.get("/analytics/overview")

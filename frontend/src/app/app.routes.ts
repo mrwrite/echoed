@@ -30,6 +30,12 @@ import { ProductDetailComponent } from './pages/product-detail/product-detail.co
 import { ProjectDetailComponent } from './pages/project-detail/project-detail.component';
 import { ArtifactDetailComponent } from './pages/artifact-detail/artifact-detail.component';
 import { GenerationRunDetailComponent } from './pages/generation-run-detail/generation-run-detail.component';
+import { ReviewCenterComponent } from './pages/review-center/review-center.component';
+import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
+import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
+import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
+import { AccessGrantsComponent } from './pages/access-grants/access-grants.component';
+import { WorkspaceAnalyticsComponent } from './pages/workspace-analytics/workspace-analytics.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -258,19 +264,15 @@ export const routes: Routes = [
       },
       {
         path: 'review-center',
-        component: V2PlatformPageComponent,
+        component: ReviewCenterComponent,
         canActivate: [RoleGuard],
-        data: {
-          roles: creatorRoles,
-          eyebrow: 'Review Center',
-          title: 'Governance and readiness review',
-          description: 'Review Center will centralize source-backed lesson readiness, approvals, and product publishing confidence.',
-          status: 'Phase 1 preserves existing governance behavior and provides links into current review-capable surfaces.',
-          links: [
-            { label: 'Studio courses', route: '/workspace/product-studio/courses' },
-            { label: 'Managed products', route: '/workspace/products/manage' }
-          ]
-        }
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'access',
+        component: AccessGrantsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
       },
       {
         path: 'learners',
@@ -302,15 +304,9 @@ export const routes: Routes = [
       },
       {
         path: 'analytics',
-        component: V2PlatformPageComponent,
+        component: WorkspaceAnalyticsComponent,
         canActivate: [RoleGuard],
-        data: {
-          roles: creatorRoles,
-          eyebrow: 'Analytics',
-          title: 'Learner and product intelligence',
-          description: 'Analytics V2 will connect progress, completion, readiness, and product performance into operational confidence views.',
-          status: 'Placeholder route: existing progress tracking remains the runtime source of truth.'
-        }
+        data: { roles: creatorRoles }
       },
       { path: 'settings', component: PreferencesComponent },
       {
@@ -337,20 +333,11 @@ export const routes: Routes = [
         path: '',
         component: UserDashboardComponent,
         children: [
-          { path: '', component: EchoedRoleSelectorComponent },
-          { path: 'products', component: AvailableCoursesComponent },
+          { path: '', component: LearnerPortalComponent },
+          { path: 'products', component: LearnerProductsComponent },
           { path: 'paths', component: ProgramsComponent },
           { path: 'certificates', component: CertificationsComponent },
-          {
-            path: 'resources',
-            component: V2PlatformPageComponent,
-            data: {
-              eyebrow: 'Resources',
-              title: 'Knowledge resources',
-              description: 'Downloadable documentation packs and knowledge hub resources will appear here as the V2 artifact registry comes online.',
-              status: 'Placeholder route: current learner course and certification routes remain unchanged.'
-            }
-          },
+          { path: 'resources', component: LearnerResourcesComponent },
           { path: 'lesson/:id', component: LessonViewComponent },
         ]
       }

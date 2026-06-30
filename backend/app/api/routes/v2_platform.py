@@ -1,25 +1,33 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.deps import get_current_user
 from app.enum import MembershipStatus
+from app.lesson_governance import evaluate_course_publish_readiness
 from app.models import (
+    AccessGrant,
     Artifact,
     GenerationRun,
     KnowledgeSource,
     OrganizationMembership,
     Product,
     Course,
+    Lesson,
     Program,
     Project,
     Source,
+    StudentCourse,
+    Unit,
     User,
     Workspace,
 )
 from app.schemas import (
+    AccessGrantCreateRequest,
+    AccessGrantResponse,
     ArtifactCreateRequest,
     ArtifactResponse,
     GenerationRunResponse,
@@ -29,6 +37,11 @@ from app.schemas import (
     ProductResponse,
     ProjectCreateRequest,
     ProjectResponse,
+    LearnerProductResponse,
+    ReviewCenterActivityResponse,
+    ReviewCenterItemResponse,
+    ReviewCenterResponse,
+    ReviewStatusUpdateRequest,
     WorkspaceResponse,
 )
 
@@ -65,6 +78,11 @@ SUPPORTED_ARTIFACT_TYPES = {
     "assessment_seed",
     "lesson_draft",
 }
+SUPPORTED_ARTIFACT_REVIEW_STATUSES = {"draft", "in_review", "approved", "rejected", "needs_changes"}
+SUPPORTED_PRODUCT_REVIEW_STATUSES = {"draft", "in_review", "approved", "published", "archived"}
+LEARNER_VISIBLE_PRODUCT_STATUSES = {"approved", "published"}
+SUPPORTED_ACCESS_GRANT_TYPES = {"manual", "enrollment", "membership", "purchase", "organization", "invitation"}
+SUPPORTED_ACCESS_GRANT_STATUSES = {"active", "pending", "expired", "revoked"}
 
 
 def _visible_workspace_ids(db: Session, current_user: User) -> list[UUID] | None:
@@ -109,6 +127,24 @@ def _scope_platform_query(query, model, db: Session, current_user: User):
     if not visible_workspace_ids:
         return query.filter(False)
     return query.filter(model.workspace_id.in_(visible_workspace_ids))
+
+
+def _visible_organization_ids(db: Session, current_user: User) -> list[UUID] | None:
+    if current_user.role in {"admin", "teacher", "super_admin"}:
+        return None
+
+    visible_workspace_ids = _visible_workspace_ids(db, current_user)
+    if visible_workspace_ids is None:
+        return None
+    if not visible_workspace_ids:
+        return []
+
+    return [
+        organization_id
+        for (organization_id,) in db.query(Workspace.organization_id)
+        .filter(Workspace.id.in_(visible_workspace_ids), Workspace.organization_id.isnot(None))
+        .all()
+    ]
 
 
 def _can_manage_workspace(db: Session, current_user: User, workspace: Workspace) -> bool:
@@ -177,6 +213,469 @@ def _require_project_in_workspace(
     if not project:
         raise HTTPException(status_code=400, detail="Project does not belong to the selected workspace.")
     return project
+
+
+def _get_visible_artifact(db: Session, current_user: User, artifact_id: UUID) -> Artifact:
+    artifact = _scope_platform_query(
+        db.query(Artifact).filter(Artifact.id == artifact_id),
+        Artifact,
+        db,
+        current_user,
+    ).first()
+    if not artifact:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    return artifact
+
+
+def _get_visible_product(db: Session, current_user: User, product_id: UUID) -> Product:
+    product = _scope_platform_query(
+        db.query(Product).filter(Product.id == product_id),
+        Product,
+        db,
+        current_user,
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
+def _require_manage_platform_record(db: Session, current_user: User, workspace_id: UUID) -> Workspace:
+    return _require_manage_workspace(db, current_user, workspace_id)
+
+
+def _scope_access_grant_query(query, db: Session, current_user: User):
+    visible_workspace_ids = _visible_workspace_ids(db, current_user)
+    if visible_workspace_ids is None:
+        return query
+    if not visible_workspace_ids:
+        return query.filter(False)
+    return query.filter(AccessGrant.workspace_id.in_(visible_workspace_ids))
+
+
+def _grant_is_active(grant: AccessGrant, now: datetime | None = None) -> bool:
+    now = now or datetime.utcnow()
+    if grant.status != "active" or grant.revoked_at is not None:
+        return False
+    if grant.starts_at is not None and grant.starts_at > now:
+        return False
+    if grant.expires_at is not None and grant.expires_at <= now:
+        return False
+    return True
+
+
+def _source_coverage_for_artifact(artifact: Artifact) -> str:
+    if artifact.knowledge_source_id:
+        return "Linked knowledge source"
+    if artifact.generation_run_id:
+        return "Generation run linked; source coverage pending"
+    return "No source link"
+
+
+def _artifact_required_decision(artifact: Artifact) -> str:
+    if artifact.status in {"approved", "rejected"}:
+        return "No decision required"
+    if artifact.status == "needs_changes":
+        return "Revise or reject artifact wrapper"
+    return "Review artifact wrapper"
+
+
+def _product_required_decision(product: Product) -> str:
+    if product.status == "published":
+        return "Monitor existing runtime governance"
+    if product.status == "archived":
+        return "No decision required"
+    if product.status == "approved":
+        return "Confirm existing governance before learner delivery"
+    return "Review product wrapper"
+
+
+def _review_item_for_artifact(artifact: Artifact) -> ReviewCenterItemResponse:
+    return ReviewCenterItemResponse(
+        id=artifact.id,
+        item_type="artifact",
+        title=artifact.title,
+        status=artifact.status,
+        review_state=artifact.review_state,
+        owner=None,
+        source_coverage=_source_coverage_for_artifact(artifact),
+        readiness="Wrapper review only; not learner-deliverable",
+        required_decision=_artifact_required_decision(artifact),
+        blocked=artifact.status in {"rejected", "needs_changes"},
+        detail_route=f"/workspace/artifacts/{artifact.id}",
+        governance_route=None,
+        updated_at=artifact.updated_at,
+    )
+
+
+def _review_item_for_product(product: Product) -> ReviewCenterItemResponse:
+    linked_runtime = "Course-backed runtime link" if product.course_id else "No runtime course link"
+    return ReviewCenterItemResponse(
+        id=product.id,
+        item_type="product",
+        title=product.title,
+        status=product.status,
+        review_state=product.review_state,
+        owner=None,
+        source_coverage=linked_runtime,
+        readiness="Existing lesson governance remains authoritative",
+        required_decision=_product_required_decision(product),
+        blocked=product.status == "archived",
+        detail_route=f"/workspace/products/{product.id}",
+        governance_route=(
+            f"/workspace/product-studio/courses/{product.course_id}/edit"
+            if product.course_id
+            else None
+        ),
+        updated_at=product.updated_at,
+    )
+
+
+def _review_item_for_course(course: Course) -> ReviewCenterItemResponse | None:
+    readiness = evaluate_course_publish_readiness(course)
+    if readiness.is_ready and not readiness.warnings:
+        return None
+
+    issue_count = len(readiness.blocking_issues)
+    warning_count = len(readiness.warnings)
+    if issue_count:
+        status = "blocked"
+        required_decision = "Resolve lesson governance blockers"
+    else:
+        status = "approved"
+        required_decision = "Review readiness warnings"
+
+    return ReviewCenterItemResponse(
+        id=course.id,
+        item_type="lesson_governance",
+        title=course.title,
+        status=status,
+        review_state="existing_governance",
+        owner=None,
+        source_coverage=f"{issue_count} blocking issue(s), {warning_count} warning(s)",
+        readiness="Ready" if readiness.is_ready else "Blocked",
+        required_decision=required_decision,
+        blocked=not readiness.is_ready,
+        detail_route=f"/workspace/product-studio/courses/{course.id}/edit",
+        governance_route=f"/workspace/product-studio/courses/{course.id}/edit",
+        updated_at=course.updated_at,
+    )
+
+
+def _review_center_course_query(db: Session, current_user: User):
+    query = db.query(Course).options(
+        joinedload(Course.units).joinedload(Unit.lessons).joinedload(Lesson.sources),
+    )
+    visible_organization_ids = _visible_organization_ids(db, current_user)
+    if visible_organization_ids is None:
+        return query
+    if not visible_organization_ids:
+        return query.filter(False)
+    return query.filter(Course.organization_id.in_(visible_organization_ids))
+
+
+def _learner_product_from_enrollment(
+    enrollment: StudentCourse,
+    product: Product | None,
+) -> LearnerProductResponse:
+    course = enrollment.course
+    return LearnerProductResponse(
+        id=product.id if product else course.id,
+        product_id=product.id if product else None,
+        course_id=course.id,
+        title=product.title if product else course.title,
+        description=(product.description if product else course.description),
+        product_type=product.product_type if product else "course",
+        product_status=product.status if product else None,
+        review_state=product.review_state if product else None,
+        access_state=product.access_state if product else None,
+        enrollment_id=enrollment.id,
+        enrollment_status=enrollment.status,
+        enrolled_on=enrollment.enrolled_on,
+        access_grant_id=None,
+        access_grant_status=None,
+        is_enrolled=True,
+        source="product_wrapper" if product else "runtime_course",
+        learner_visibility="Existing enrollment controls access; lesson governance controls content.",
+        next_action="Continue governed course runtime",
+    )
+
+
+def _learner_product_from_grant(grant: AccessGrant) -> LearnerProductResponse:
+    product = grant.product
+    course = product.course
+    return LearnerProductResponse(
+        id=product.id,
+        product_id=product.id,
+        course_id=course.id if course else None,
+        title=product.title,
+        description=product.description or (course.description if course else None),
+        product_type=product.product_type,
+        product_status=product.status,
+        review_state=product.review_state,
+        access_state=product.access_state,
+        enrollment_id=None,
+        enrollment_status=None,
+        enrolled_on=None,
+        access_grant_id=grant.id,
+        access_grant_status=grant.status,
+        is_enrolled=False,
+        source="product_wrapper",
+        learner_visibility="Active access grant permits product-level access; lesson governance still controls runtime content.",
+        next_action=(
+            "Continue governed course runtime"
+            if course is not None
+            else "Product access available; learner runtime is not implemented for this product type yet"
+        ),
+    )
+
+
+@router.get("/review-center", response_model=ReviewCenterResponse)
+def get_review_center(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    pending_artifacts = [
+        _review_item_for_artifact(artifact)
+        for artifact in _scope_platform_query(db.query(Artifact), Artifact, db, current_user)
+        .filter(Artifact.status.in_(["draft", "in_review", "needs_changes"]))
+        .order_by(Artifact.updated_at.desc(), Artifact.created_at.desc())
+        .all()
+    ]
+    draft_products = [
+        _review_item_for_product(product)
+        for product in _scope_platform_query(db.query(Product), Product, db, current_user)
+        .filter(Product.status.in_(["draft", "in_review", "approved"]))
+        .order_by(Product.updated_at.desc(), Product.created_at.desc())
+        .all()
+    ]
+    lesson_governance_items = [
+        item
+        for item in (
+            _review_item_for_course(course)
+            for course in _review_center_course_query(db, current_user)
+            .order_by(Course.updated_at.desc(), Course.created_at.desc())
+            .all()
+        )
+        if item is not None
+    ]
+
+    return ReviewCenterResponse(
+        pending_artifacts=pending_artifacts,
+        draft_products=draft_products,
+        lesson_governance_items=lesson_governance_items,
+        recent_activity=[
+            ReviewCenterActivityResponse(
+                id="review-activity-placeholder",
+                message="Review activity history will appear here after audit records are introduced.",
+                created_at=None,
+            )
+        ],
+    )
+
+
+@router.patch("/artifacts/{artifact_id}/review-status", response_model=ArtifactResponse)
+def update_artifact_review_status(
+    artifact_id: UUID,
+    payload: ReviewStatusUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.status not in SUPPORTED_ARTIFACT_REVIEW_STATUSES:
+        raise HTTPException(status_code=400, detail="Unsupported artifact review status.")
+
+    artifact = _get_visible_artifact(db, current_user, artifact_id)
+    _require_manage_platform_record(db, current_user, artifact.workspace_id)
+
+    artifact.status = payload.status
+    artifact.review_state = payload.status
+    db.commit()
+    db.refresh(artifact)
+    return artifact
+
+
+@router.patch("/products/{product_id}/review-status", response_model=ProductResponse)
+def update_product_review_status(
+    product_id: UUID,
+    payload: ReviewStatusUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.status not in SUPPORTED_PRODUCT_REVIEW_STATUSES:
+        raise HTTPException(status_code=400, detail="Unsupported product review status.")
+
+    product = _get_visible_product(db, current_user, product_id)
+    _require_manage_platform_record(db, current_user, product.workspace_id)
+
+    product.status = payload.status
+    product.review_state = payload.status
+    db.commit()
+    db.refresh(product)
+    return product
+
+
+@router.get("/learner-portal/products", response_model=list[LearnerProductResponse])
+def list_learner_products(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    enrolled_courses = (
+        db.query(StudentCourse)
+        .options(joinedload(StudentCourse.course))
+        .filter(StudentCourse.student_id == current_user.id)
+        .order_by(StudentCourse.enrolled_on.desc(), StudentCourse.id.asc())
+        .all()
+    )
+    enrolled_course_ids = [enrollment.course_id for enrollment in enrolled_courses]
+    products_by_course_id = {
+        product.course_id: product
+        for product in db.query(Product)
+        .filter(Product.course_id.in_(enrolled_course_ids))
+        .all()
+        if product.course_id is not None
+    } if enrolled_course_ids else {}
+
+    learner_products = [
+        _learner_product_from_enrollment(
+            enrollment,
+            products_by_course_id.get(enrollment.course_id),
+        )
+        for enrollment in enrolled_courses
+        if enrollment.course is not None
+    ]
+
+    granted_products_query = (
+        db.query(AccessGrant)
+        .options(joinedload(AccessGrant.product).joinedload(Product.course))
+        .join(Product, AccessGrant.product_id == Product.id)
+        .filter(
+            AccessGrant.user_id == current_user.id,
+            AccessGrant.status == "active",
+            AccessGrant.revoked_at.is_(None),
+            Product.status.in_(LEARNER_VISIBLE_PRODUCT_STATUSES),
+        )
+        .order_by(Product.title.asc())
+    )
+    if enrolled_course_ids:
+        granted_products_query = granted_products_query.filter(
+            (Product.course_id.is_(None)) | (~Product.course_id.in_(enrolled_course_ids))
+        )
+
+    now = datetime.utcnow()
+    learner_products.extend(
+        _learner_product_from_grant(grant)
+        for grant in granted_products_query.all()
+        if grant.product is not None and _grant_is_active(grant, now)
+    )
+
+    return learner_products
+
+
+@router.get("/access-grants", response_model=list[AccessGrantResponse])
+def list_access_grants(
+    workspace_id: UUID | None = Query(default=None),
+    product_id: UUID | None = Query(default=None),
+    user_id: UUID | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = _scope_access_grant_query(db.query(AccessGrant), db, current_user)
+    if current_user.role not in CREATOR_ROLES:
+        query = query.filter(AccessGrant.user_id == current_user.id)
+    if workspace_id:
+        query = query.filter(AccessGrant.workspace_id == workspace_id)
+    if product_id:
+        query = query.filter(AccessGrant.product_id == product_id)
+    if user_id:
+        query = query.filter(AccessGrant.user_id == user_id)
+    return query.order_by(AccessGrant.created_at.desc(), AccessGrant.id.asc()).all()
+
+
+@router.post("/access-grants", response_model=AccessGrantResponse, status_code=201)
+def create_access_grant(
+    payload: AccessGrantCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.grant_type not in SUPPORTED_ACCESS_GRANT_TYPES:
+        raise HTTPException(status_code=400, detail="Unsupported access grant type.")
+    if payload.status not in SUPPORTED_ACCESS_GRANT_STATUSES:
+        raise HTTPException(status_code=400, detail="Unsupported access grant status.")
+    if payload.status == "revoked":
+        raise HTTPException(status_code=400, detail="Create active or pending grants, then revoke explicitly.")
+
+    product = _get_visible_product(db, current_user, payload.product_id)
+    _require_manage_platform_record(db, current_user, product.workspace_id)
+    if payload.workspace_id and payload.workspace_id != product.workspace_id:
+        raise HTTPException(status_code=400, detail="Access grant workspace must match the product workspace.")
+    if payload.project_id and payload.project_id != product.project_id:
+        raise HTTPException(status_code=400, detail="Access grant project must match the product project.")
+
+    user = db.query(User).filter(User.id == payload.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    existing = (
+        db.query(AccessGrant)
+        .filter(
+            AccessGrant.user_id == payload.user_id,
+            AccessGrant.product_id == payload.product_id,
+            AccessGrant.grant_type == payload.grant_type,
+        )
+        .first()
+    )
+    if existing:
+        existing.status = payload.status
+        existing.source = payload.source
+        existing.workspace_id = product.workspace_id
+        existing.project_id = product.project_id
+        existing.starts_at = payload.starts_at
+        existing.expires_at = payload.expires_at
+        existing.revoked_at = None
+        existing.grant_metadata = payload.metadata
+        existing.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    grant = AccessGrant(
+        user_id=payload.user_id,
+        product_id=product.id,
+        workspace_id=product.workspace_id,
+        project_id=product.project_id,
+        grant_type=payload.grant_type,
+        status=payload.status,
+        source=payload.source,
+        starts_at=payload.starts_at,
+        expires_at=payload.expires_at,
+        grant_metadata=payload.metadata,
+    )
+    db.add(grant)
+    db.commit()
+    db.refresh(grant)
+    return grant
+
+
+@router.patch("/access-grants/{grant_id}/revoke", response_model=AccessGrantResponse)
+def revoke_access_grant(
+    grant_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    grant = _scope_access_grant_query(
+        db.query(AccessGrant).filter(AccessGrant.id == grant_id),
+        db,
+        current_user,
+    ).first()
+    if not grant:
+        raise HTTPException(status_code=404, detail="Access grant not found")
+
+    _require_manage_platform_record(db, current_user, grant.workspace_id)
+    grant.status = "revoked"
+    grant.revoked_at = datetime.utcnow()
+    grant.updated_at = grant.revoked_at
+    db.commit()
+    db.refresh(grant)
+    return grant
 
 
 @router.get("/workspaces", response_model=list[WorkspaceResponse])

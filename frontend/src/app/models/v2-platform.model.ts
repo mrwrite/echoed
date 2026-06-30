@@ -73,6 +73,73 @@ export interface Artifact {
   updated_at: string;
 }
 
+export interface ReviewCenterItem {
+  id: string;
+  item_type: 'artifact' | 'product' | 'lesson_governance' | string;
+  title: string;
+  status: string;
+  review_state?: string | null;
+  owner?: string | null;
+  source_coverage: string;
+  readiness: string;
+  required_decision: string;
+  blocked: boolean;
+  detail_route?: string | null;
+  governance_route?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ReviewCenterActivity {
+  id: string;
+  message: string;
+  created_at?: string | null;
+}
+
+export interface ReviewCenter {
+  pending_artifacts: ReviewCenterItem[];
+  draft_products: ReviewCenterItem[];
+  lesson_governance_items: ReviewCenterItem[];
+  recent_activity: ReviewCenterActivity[];
+}
+
+export interface LearnerProduct {
+  id: string;
+  product_id?: string | null;
+  course_id?: string | null;
+  title: string;
+  description?: string | null;
+  product_type: string;
+  product_status?: string | null;
+  review_state?: string | null;
+  access_state?: string | null;
+  enrollment_id?: string | null;
+  enrollment_status?: string | null;
+  enrolled_on?: string | null;
+  access_grant_id?: string | null;
+  access_grant_status?: string | null;
+  is_enrolled: boolean;
+  source: 'product_wrapper' | 'runtime_course' | string;
+  learner_visibility: string;
+  next_action: string;
+}
+
+export interface AccessGrant {
+  id: string;
+  user_id: string;
+  product_id: string;
+  workspace_id: string;
+  project_id?: string | null;
+  grant_type: string;
+  status: string;
+  source: string;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  revoked_at?: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface GenerationRun {
   id: string;
   workspace_id: string;
@@ -113,6 +180,19 @@ export interface ProductCreateRequest {
   metadata?: Record<string, unknown>;
 }
 
+export interface AccessGrantCreateRequest {
+  user_id: string;
+  product_id: string;
+  workspace_id?: string | null;
+  project_id?: string | null;
+  grant_type?: string;
+  status?: string;
+  source?: string;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 export interface KnowledgeSourceCreateRequest {
   workspace_id: string;
   project_id: string;
@@ -139,4 +219,8 @@ export interface ArtifactCreateRequest {
   status?: string;
   review_state?: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface ReviewStatusUpdateRequest {
+  status: string;
 }

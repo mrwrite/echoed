@@ -42,33 +42,33 @@
 
 ## Phase 5: Review Center Expansion
 
-- [ ] Create Review Center surfaces for lesson readiness and generated artifact review
-- [ ] Reuse existing lesson governance and readiness checks
+- [x] Create Review Center surfaces for lesson readiness and generated artifact review
+- [x] Reuse existing lesson governance and readiness checks
 - [ ] Add review request and review decision records
-- [ ] Ensure generated artifacts default to draft or review-required states
-- [ ] Add tests proving unapproved generated outputs do not become learner-deliverable
+- [x] Ensure generated artifacts default to draft or review-required states
+- [x] Add tests proving unapproved generated outputs do not become learner-deliverable
 
 ## Phase 6: Learner Portal V2
 
-- [ ] Reframe the student dashboard as Learner Portal
-- [ ] Show assigned/enrolled products using existing course/program enrollments first
-- [ ] Add learner views for learning paths, resources, downloads, progress, and certificates
-- [ ] Preserve existing governed lesson runtime and progress tracking
-- [ ] Add tests for learner portal route aliases and current progress visibility
+- [x] Reframe the student dashboard as Learner Portal
+- [x] Show assigned/enrolled products using existing course/program enrollments first
+- [x] Add learner views for learning paths, resources, downloads, progress, and certificates
+- [x] Preserve existing governed lesson runtime and progress tracking
+- [x] Add tests for learner portal route aliases and current progress visibility
 
 ## Phase 7: Access Grants
 
-- [ ] Add access grant model for product, course, program, artifact, and membership-style access
-- [ ] Backfill access grants from existing course and program enrollments where appropriate
-- [ ] Use access grants as the authorization layer for future products without weakening current role/auth rules
-- [ ] Add tests for explicit access and denied access behavior
+- [x] Add access grant model for product, course, program, artifact, and membership-style access
+- [x] Backfill access grants from existing course and program enrollments where appropriate
+- [x] Use access grants as the authorization layer for future products without weakening current role/auth rules
+- [x] Add tests for explicit access and denied access behavior
 
 ## Phase 8: Analytics V2
 
-- [ ] Define product, source, artifact, review, and learner analytics events
-- [ ] Add analytics dashboards for product engagement, learner progress, source coverage, artifact activity, and review cycle time
-- [ ] Reuse existing assessment, progress, certification, and runtime analytics
-- [ ] Add tests for analytics read models where backend behavior changes
+- [x] Define product, source, artifact, review, and learner analytics events
+- [x] Add analytics dashboards for product engagement, learner progress, source coverage, artifact activity, and review cycle time
+- [x] Reuse existing assessment, progress, certification, and runtime analytics
+- [x] Add tests for analytics read models where backend behavior changes
 
 ## Phase 9: Commercialization Readiness
 

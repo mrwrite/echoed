@@ -47,6 +47,7 @@ export class SidebarComponent {
         { label: 'Knowledge Sources', route: '/workspace/knowledge-sources', icon: 'BookOpen', permission: 'nav:knowledge-sources' },
         { label: 'Artifacts', route: '/workspace/artifacts', icon: 'Award', permission: 'nav:artifacts' },
         { label: 'Review Center', route: '/workspace/review-center', icon: 'ClipboardList', permission: 'nav:review-center' },
+        { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access' },
         { label: 'Analytics', route: '/workspace/analytics', icon: 'SlidersHorizontal', permission: 'nav:analytics' },
       ]
     },

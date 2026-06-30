@@ -255,6 +255,7 @@ export class PermissionsService {
       permissions.add('nav:knowledge-sources');
       permissions.add('nav:artifacts');
       permissions.add('nav:review-center');
+      permissions.add('nav:access');
       permissions.add('nav:analytics');
     }
 

@@ -1,5 +1,9 @@
 import { Route, Routes } from '@angular/router';
 import { routes } from './app.routes';
+import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
+import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
+import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
+import { LessonViewComponent } from './pages/lesson-view.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -50,6 +54,7 @@ describe('app routes', () => {
       'workspace/artifacts',
       'workspace/artifacts/:artifactId',
       'workspace/review-center',
+      'workspace/access',
       'workspace/learners',
       'workspace/analytics',
       'workspace/settings',
@@ -66,5 +71,15 @@ describe('app routes', () => {
       'learn/resources',
       'learn/lesson/:id',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+  });
+
+  it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {
+    const learnRoute = findRoute(routes, 'learn');
+    const learnerShell = learnRoute?.children?.find(route => route.path === '');
+    expect(learnerShell?.children?.find(route => route.path === '')?.component).toBe(LearnerPortalComponent);
+    expect(learnerShell?.children?.find(route => route.path === 'products')?.component).toBe(LearnerProductsComponent);
+    expect(learnerShell?.children?.find(route => route.path === 'resources')?.component).toBe(LearnerResourcesComponent);
+    expect(learnerShell?.children?.find(route => route.path === 'lesson/:id')?.component).toBe(LessonViewComponent);
+    expect(findRoute(routes, 'home/lesson/:id')?.component).toBe(LessonViewComponent);
   });
 });

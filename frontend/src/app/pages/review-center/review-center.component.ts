@@ -17,6 +17,21 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         <span>V2 wrapper review queues use real platform data. Existing lesson governance remains the learner-visible source of truth.</span>
       </header>
 
+      <section class="guardrails" aria-label="Review governance guardrails">
+        <article>
+          <strong>Artifact approval</strong>
+          <span>Approves a V2 knowledge output for packaging. It does not publish runtime lessons.</span>
+        </article>
+        <article>
+          <strong>Product approval</strong>
+          <span>Moves the wrapper through review. Existing lesson readiness still controls learner delivery.</span>
+        </article>
+        <article>
+          <strong>Blocked or needs changes</strong>
+          <span>Signals trust work before packaging, publishing decisions, or runtime review.</span>
+        </article>
+      </section>
+
       <div class="queues" *ngIf="reviewCenter as center">
         <article class="queue">
           <div class="queue__heading">
@@ -110,6 +125,10 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     h1, h2, h3 { letter-spacing: 0; margin: 0; }
     h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; }
     header span, .empty, .item p, dd { color: #526273; }
+    .guardrails { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+    .guardrails article { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .25rem; padding: 1rem; }
+    .guardrails strong { color: #102033; }
+    .guardrails span { color: #526273; }
     .queues { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .queue { display: grid; gap: .9rem; align-content: start; }
     .queue--wide { grid-column: 1 / -1; }

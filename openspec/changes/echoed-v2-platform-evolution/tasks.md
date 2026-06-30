@@ -70,6 +70,27 @@
 - [x] Reuse existing assessment, progress, certification, and runtime analytics
 - [x] Add tests for analytics read models where backend behavior changes
 
+## Phase 8.5: EchoEd Experience Layer
+
+- [x] Add shared V2 experience-layer UI patterns for headers, panels, metrics, badges, empty states, list rows, forms, and timelines
+- [x] Polish workspace dashboard, Product Studio, projects, artifacts, Review Center, Learner Portal, and Analytics V2 surfaces using existing APIs
+- [x] Preserve V2 navigation terminology and existing route aliases
+- [x] Verify responsive, loading, empty, and governance messaging without changing runtime behavior
+
+## Phase 8.6: EchoEd Demo Readiness & Dogfooding
+
+- [x] Add deterministic V2 dogfooding demo seed records for workspace, project, knowledge sources, artifacts, products, review status, access grant, learner portal visibility, and analytics
+- [x] Add a guided demo-readiness route and runbook updates for explaining EchoEd V2 with EchoEd data
+- [x] Preserve existing Course, Unit, Lesson, progress, enrollment, and governance behavior while seeding only wrapper data
+- [x] Add targeted tests for V2 demo seed idempotency and runtime non-regression
+
+## Phase 8.7: EchoEd Demo Polish & Pitch Readiness
+
+- [x] Improve `/workspace/demo-readiness` with a timed five-minute walkthrough script and lifecycle callouts
+- [x] Add concise pitch copy to the V2 dashboard and Product Studio without changing runtime behavior
+- [x] Update demo setup, reset/reseed, walkthrough, and known limitation documentation
+- [x] Verify OpenSpec and frontend route/build coverage for the demo-polish pass
+
 ## Phase 9: Commercialization Readiness
 
 - [ ] Design pricing, checkout, order, subscription, and entitlement concepts around access grants

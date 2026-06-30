@@ -14,6 +14,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <article>
         <p>Product</p>
         <h1 id="product-title">{{ product.title }}</h1>
+        <div class="badges">
+          <span class="ee-badge">{{ label(product.product_type) }}</span>
+          <span class="ee-badge" [ngClass]="badgeClass(product.status)">{{ label(product.status) }}</span>
+          <span class="ee-badge" [ngClass]="badgeClass(product.review_state)">{{ label(product.review_state) }}</span>
+        </div>
         <span>{{ label(product.product_type) }} · {{ product.status }} · {{ product.review_state }}</span>
         <p class="description">{{ product.description || 'No description yet.' }}</p>
 
@@ -37,7 +42,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         </div>
 
         <div class="notice">
-          Product shell details are additive. Publishing, checkout, memberships, and AI generation execution are not implemented in Phase 3.
+          Product shell details are additive. Approval does not override existing lesson governance, and checkout, memberships, public product pages, and AI execution are not implemented here.
         </div>
       </article>
     </section>
@@ -52,6 +57,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     .grid div, .notice { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; display: grid; gap: .35rem; padding: .9rem; }
     strong { color: #334155; }
     span { color: #0e7490; font-weight: 800; overflow-wrap: anywhere; }
+    .badges { display: flex; flex-wrap: wrap; gap: .5rem; }
     a { color: #0e7490; font-weight: 900; }
   `]
 })
@@ -75,5 +81,18 @@ export class ProductDetailComponent implements OnInit {
 
   label(value: string): string {
     return value.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  badgeClass(value: string): string {
+    if (['approved', 'published', 'active'].includes(value)) {
+      return 'ee-badge--approved';
+    }
+    if (['rejected', 'blocked', 'revoked', 'archived'].includes(value)) {
+      return 'ee-badge--blocked';
+    }
+    if (['draft', 'in_review', 'needs_changes', 'not_reviewed'].includes(value)) {
+      return 'ee-badge--draft';
+    }
+    return '';
   }
 }

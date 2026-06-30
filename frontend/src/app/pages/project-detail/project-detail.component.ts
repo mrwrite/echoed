@@ -27,6 +27,14 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         <p class="summary">{{ project.description || 'Project shell for source-aware products and artifacts.' }}</p>
       </header>
 
+      <section class="pipeline panel" *ngIf="project" aria-label="Project pipeline map">
+        <div><strong>Project</strong><span>{{ project.name }}</span></div>
+        <div><strong>Sources</strong><span>{{ knowledgeSources.length }}</span></div>
+        <div><strong>Generation Runs</strong><span>{{ generationRuns.length }}</span></div>
+        <div><strong>Artifacts</strong><span>{{ artifacts.length }}</span></div>
+        <div><strong>Products</strong><span>{{ products.length }}</span></div>
+      </section>
+
       <div class="grid" *ngIf="project">
         <form class="panel" (ngSubmit)="createKnowledgeSource()" aria-labelledby="source-form-title">
           <h2 id="source-form-title">Create knowledge source shell</h2>
@@ -136,6 +144,10 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     header span, a span, .record span { color: #0e7490; font-weight: 800; }
     .summary, .panel p, small { color: #475569; }
     .grid, .registry { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .pipeline { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); }
+    .pipeline div { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .3rem; padding: .85rem; }
+    .pipeline strong { color: #102033; }
+    .pipeline span { color: #0e7490; font-weight: 900; }
     form { align-content: start; display: grid; gap: .85rem; }
     label { color: #334155; display: grid; font-size: .9rem; font-weight: 800; gap: .35rem; }
     input, select, textarea { border: 1px solid #cbd5e1; border-radius: .8rem; color: #0f172a; font: inherit; padding: .75rem .85rem; }

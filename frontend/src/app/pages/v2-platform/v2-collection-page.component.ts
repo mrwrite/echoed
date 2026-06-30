@@ -19,28 +19,28 @@ interface CollectionItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <section class="collection" aria-labelledby="collection-title">
-      <header>
-        <p>{{ eyebrow }}</p>
-        <h1 id="collection-title">{{ title }}</h1>
-        <span role="status">{{ status }}</span>
+    <section class="collection ee-page" aria-labelledby="collection-title">
+      <header class="ee-page-header">
+        <p class="ee-eyebrow">{{ eyebrow }}</p>
+        <h1 id="collection-title" class="ee-page-title">{{ title }}</h1>
+        <span class="ee-page-copy" role="status">{{ status }}</span>
       </header>
 
-      <div class="empty" *ngIf="(items$ | async) as items">
+      <div class="ee-list" *ngIf="(items$ | async) as items">
         <ng-container *ngIf="items.length; else noItems">
-          <article *ngFor="let item of items">
+          <article class="ee-list-row" *ngFor="let item of items">
             <div>
               <h2>{{ item.title }}</h2>
               <p>{{ item.subtitle }}</p>
-              <span>{{ item.status }}</span>
+              <span class="ee-badge" [ngClass]="badgeClass(item.status)">{{ label(item.status) }}</span>
             </div>
-            <a *ngIf="item.detailRoute" [routerLink]="item.detailRoute">Open</a>
+            <a class="ee-link-button ee-link-button--primary" *ngIf="item.detailRoute" [routerLink]="item.detailRoute">Open</a>
           </article>
         </ng-container>
       </div>
 
       <ng-template #noItems>
-        <div class="no-items">
+        <div class="ee-state">
           <h2>No records yet</h2>
           <p>{{ emptyText }}</p>
         </div>
@@ -48,17 +48,8 @@ interface CollectionItem {
     </section>
   `,
   styles: [`
-    .collection { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); color: #0f172a; }
-    header, article, .no-items { background: #fff; border: 1px solid rgba(15,23,42,.1); border-radius: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.08); padding: clamp(1rem, 3vw, 1.5rem); }
-    header p { color: #0e7490; font-size: .76rem; font-weight: 900; letter-spacing: .22em; margin: 0 0 .5rem; text-transform: uppercase; }
-    h1, h2 { margin: 0; letter-spacing: -.03em; }
-    h1 { font-size: clamp(2rem, 5vw, 3rem); }
-    header span, article span { color: #0e7490; font-weight: 800; }
-    .empty { display: grid; gap: .75rem; }
-    article { align-items: center; display: flex; gap: 1rem; justify-content: space-between; }
-    article p, .no-items p { color: #475569; margin: .35rem 0; }
-    a { background: #0f172a; border-radius: 999px; color: #fff; font-weight: 900; padding: .7rem 1rem; text-decoration: none; }
-    a:focus-visible { outline: 3px solid rgba(14,116,144,.25); outline-offset: 3px; }
+    h2 { font-size: 1.05rem; margin: 0; }
+    article p { color: #526273; margin: .35rem 0 .55rem; }
   `]
 })
 export class V2CollectionPageComponent implements OnInit {
@@ -126,7 +117,21 @@ export class V2CollectionPageComponent implements OnInit {
     }
   }
 
-  private label(value: string): string {
+  label(value: string): string {
     return value.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  badgeClass(value: string): string {
+    const normalized = value.toLowerCase();
+    if (normalized.includes('blocked') || normalized.includes('rejected')) {
+      return 'ee-badge--blocked';
+    }
+    if (normalized.includes('draft') || normalized.includes('review') || normalized.includes('changes')) {
+      return 'ee-badge--draft';
+    }
+    if (normalized.includes('approved') || normalized.includes('published') || normalized.includes('active')) {
+      return 'ee-badge--approved';
+    }
+    return '';
   }
 }

@@ -380,6 +380,81 @@ def _governed_current_segment_for_unit_progress(
     return segments[0] if segments else None
 
 
+def ensure_current_segment_progress_for_unit(
+    db: Session, unit_progress: StudentUnitProgress
+) -> SegmentProgress | None:
+    unit = db.get(Unit, unit_progress.unit_id)
+    if unit is None:
+        return None
+
+    selection = governed_lessons_for_unit(unit)
+    if selection.state != GOVERNED_AVAILABLE:
+        return None
+
+    governed_segments = _ensure_governed_segments(db, unit_progress, selection.lessons)
+    active_segment = next(
+        (segment for segment in governed_segments if segment.status == ProgressStatus.IN_PROGRESS),
+        None,
+    )
+    if active_segment is not None:
+        return active_segment
+
+    next_segment = next(
+        (
+            segment
+            for segment in governed_segments
+            if segment.status not in {ProgressStatus.COMPLETED, ProgressStatus.SKIPPED}
+        ),
+        None,
+    )
+    if next_segment is None:
+        return None
+
+    if next_segment.status == ProgressStatus.NOT_STARTED:
+        student_course = db.get(StudentCourse, unit_progress.student_course_id)
+        next_segment.status = ProgressStatus.IN_PROGRESS
+        next_segment.started_at = next_segment.started_at or datetime.utcnow()
+        next_segment.last_updated = datetime.utcnow()
+        unit_progress.status = ProgressStatus.IN_PROGRESS
+        unit_progress.started_at = unit_progress.started_at or datetime.utcnow()
+        unit_progress.last_updated = datetime.utcnow()
+        if student_course is not None:
+            student_course.last_activity_at = datetime.utcnow()
+        db.commit()
+        db.refresh(next_segment)
+        db.refresh(unit_progress)
+
+    return next_segment
+
+
+def resolve_governed_segment_for_unit_progress(
+    db: Session, unit_progress_id: UUID | str
+) -> dict[str, object] | None:
+    unit_progress = db.get(StudentUnitProgress, unit_progress_id)
+    if unit_progress is None:
+        return None
+
+    unit = db.get(Unit, unit_progress.unit_id)
+    if unit is None:
+        return None
+
+    selection = governed_lessons_for_unit(unit)
+    if selection.state != GOVERNED_AVAILABLE:
+        return None
+
+    segment = ensure_current_segment_progress_for_unit(db, unit_progress)
+    if segment is None:
+        return None
+
+    return {
+        "delivery_state": GOVERNED_AVAILABLE,
+        "detail": selection.detail,
+        "lesson_id": segment.lesson_id,
+        "status": segment.status,
+        "unit_progress_id": unit_progress.id,
+    }
+
+
 def resolve_governed_progression(
     db: Session, student_course_id: UUID | str
 ) -> dict[str, object]:

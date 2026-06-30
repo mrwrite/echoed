@@ -4,7 +4,7 @@ import pytest
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from app.api.routes import start_course
+from app.api.routes import progress, start_course
 from app.auth import get_current_user
 from app.crud import progress as progress_crud
 from app.database import get_db
@@ -73,6 +73,7 @@ def override_get_current_user(user):
 def _build_test_client(db_session, user):
     test_app = FastAPI()
     test_app.include_router(start_course.router, prefix="/api")
+    test_app.include_router(progress.router, prefix="/api/progress")
     test_app.dependency_overrides[get_current_user] = override_get_current_user(user)
 
     def override_get_db():
@@ -480,3 +481,91 @@ def test_completed_governed_unit_returns_pending_review_when_next_unit_has_no_ap
             .all()
         )
         assert blocked_segments == []
+
+
+def test_start_course_returns_unit_progress_id_with_segment_endpoint_ready(
+    db_session, test_student
+):
+    course = Course(id=uuid.uuid4(), title="Course Recovery", description="Test")
+    unit = Unit(id=uuid.uuid4(), title="Recoverable Unit", course_id=course.id, order=1)
+    lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Approved Lesson",
+        unit_id=unit.id,
+        duration_minutes=5,
+        order=1,
+        objective="Objective",
+        learning_objectives="Learning objective",
+        key_concepts=["concept"],
+        hook="Hook",
+        content="Content",
+        guided_practice="Guided",
+        independent_practice="Independent",
+        assessment="Assessment",
+        review_status="approved",
+    )
+    draft_lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Draft Lesson",
+        unit_id=unit.id,
+        duration_minutes=5,
+        order=2,
+        review_status="draft",
+    )
+    db_session.add_all([course, unit, lesson, draft_lesson])
+    db_session.commit()
+    db_session.add(Source(lesson_id=lesson.id, citation="Source", url="https://example.com/source"))
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_student.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+    db_session.refresh(student_course)
+
+    unit_progress = StudentUnitProgress(
+        student_course_id=student_course.id,
+        unit_id=unit.id,
+        status=ProgressStatus.IN_PROGRESS,
+    )
+    db_session.add(unit_progress)
+    db_session.commit()
+    db_session.refresh(unit_progress)
+
+    client = _build_test_client(db_session, test_student)
+
+    start_response = client.post("/api/start-course", json={"course_id": str(course.id)})
+    assert start_response.status_code == 200
+    start_data = start_response.json()
+    assert start_data["delivery_state"] == "governed_available"
+    assert start_data["unit_progress_id"] == str(unit_progress.id)
+
+    db_session.query(SegmentProgress).filter_by(student_unit_id=unit_progress.id).delete()
+    db_session.commit()
+
+    segment_response = client.get(
+        f"/api/progress/segment?student_unit_id={unit_progress.id}"
+    )
+
+    assert segment_response.status_code == 200
+    segment_data = segment_response.json()
+    assert segment_data["delivery_state"] == "governed_available"
+    assert segment_data["lesson_id"] == str(lesson.id)
+    assert segment_data["status"] == ProgressStatus.IN_PROGRESS.value
+    assert segment_data["unit_progress_id"] == str(unit_progress.id)
+
+    segment_rows = (
+        db_session.query(SegmentProgress)
+        .filter_by(student_unit_id=unit_progress.id)
+        .order_by(SegmentProgress.lesson_id)
+        .all()
+    )
+    assert len(segment_rows) == 1
+    assert segment_rows[0].lesson_id == lesson.id
+    assert segment_rows[0].status == ProgressStatus.IN_PROGRESS
+
+    draft_segment = (
+        db_session.query(SegmentProgress)
+        .filter_by(student_unit_id=unit_progress.id, lesson_id=draft_lesson.id)
+        .first()
+    )
+    assert draft_segment is None

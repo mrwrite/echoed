@@ -35,26 +35,28 @@ describe('SidebarComponent', () => {
   });
 
   it('does not render Sections when permissions exclude it', () => {
-    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:preferences']));
+    permissionsService.permissions$.next(new Set(['nav:workspace', 'nav:products', 'nav:settings']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).not.toContain('Sections');
+    expect(text).not.toContain('Cohorts');
   });
 
   it('renders navigation immediately when ready emits', () => {
-    permissionsService.permissions$.next(new Set(['nav:dashboard', 'nav:courses', 'nav:programs', 'nav:certifications', 'nav:preferences']));
+    permissionsService.permissions$.next(new Set(['nav:workspace', 'nav:projects', 'nav:product-studio', 'nav:products', 'nav:learners', 'nav:settings']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Dashboard');
-    expect(text).toContain('Courses');
-    expect(text).toContain('Programs');
-    expect(text).toContain('Certifications');
+    expect(text).toContain('Workspace');
+    expect(text).toContain('Projects');
+    expect(text).toContain('Product Studio');
+    expect(text).toContain('Products');
+    expect(text).toContain('Learners');
+    expect(text).toContain('Settings');
   });
 
   it('renders loading state before readiness', () => {
@@ -63,24 +65,24 @@ describe('SidebarComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[aria-label="sidenav-loading"]')).not.toBeNull();
-    expect(fixture.nativeElement.textContent).not.toContain('Dashboard');
+    expect(fixture.nativeElement.querySelector('a')).toBeNull();
   });
 
   it('keeps compact navigation usable when collapsed', () => {
     component.collapsed = true;
-    permissionsService.permissions$.next(new Set(['nav:dashboard']));
+    permissionsService.permissions$.next(new Set(['nav:workspace']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
 
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
-    expect(firstLink.getAttribute('aria-label')).toBe('Dashboard');
-    expect(firstLink.getAttribute('title')).toBe('Dashboard');
+    expect(firstLink.getAttribute('aria-label')).toBe('Workspace');
+    expect(firstLink.getAttribute('title')).toBe('Workspace');
     expect(firstLink.textContent?.trim()).toBe('');
   });
 
   it('keeps important sidebar controls labeled for accessibility', () => {
-    permissionsService.permissions$.next(new Set(['nav:dashboard']));
+    permissionsService.permissions$.next(new Set(['nav:workspace']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();

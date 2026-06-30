@@ -1,7 +1,7 @@
 import uuid
 import pytest
 from app.models import (
-    User, Course, Unit, Lesson,
+    User, Course, Unit, Lesson, Source,
     StudentCourse, StudentUnitProgress, SegmentProgress
 )
 from app.crud import progress as crud
@@ -305,3 +305,62 @@ def test_complete_single_lesson_course_marks_course_completed(db_session, test_u
 
     updated_course = db_session.get(StudentCourse, student_course.id)
     assert updated_course.status == "completed"
+
+
+def test_resolve_governed_progression_recreates_missing_segments_for_available_unit(
+    db_session, test_user
+):
+    course = Course(id=uuid.uuid4(), title="Governed Recovery", description="Recovery path")
+    unit = Unit(id=uuid.uuid4(), title="Recoverable Unit", course_id=course.id, order=1)
+    lesson = Lesson(
+        id=uuid.uuid4(),
+        title="Recoverable Lesson",
+        unit_id=unit.id,
+        duration_minutes=5,
+        order=1,
+        objective="Objective",
+        learning_objectives="Learning objective",
+        key_concepts=["concept"],
+        hook="Hook",
+        content="Content",
+        guided_practice="Guided",
+        independent_practice="Independent",
+        assessment="Assessment",
+        review_status="approved",
+    )
+    db_session.add_all([course, unit, lesson])
+    db_session.commit()
+    db_session.add(
+        Source(lesson_id=lesson.id, citation="Source", url="https://example.com/source")
+    )
+    db_session.commit()
+
+    student_course = StudentCourse(student_id=test_user.id, course_id=course.id)
+    db_session.add(student_course)
+    db_session.commit()
+
+    unit_progress = StudentUnitProgress(
+        student_course_id=student_course.id,
+        unit_id=unit.id,
+        status=ProgressStatus.IN_PROGRESS,
+    )
+    db_session.add(unit_progress)
+    db_session.commit()
+    db_session.refresh(unit_progress)
+
+    resolved = crud.resolve_governed_segment_for_unit_progress(db_session, unit_progress.id)
+
+    assert resolved is not None
+    assert resolved["delivery_state"] == "governed_available"
+    assert resolved["lesson_id"] == lesson.id
+    assert resolved["status"] == ProgressStatus.IN_PROGRESS
+    assert resolved["unit_progress_id"] == unit_progress.id
+
+    segments = (
+        db_session.query(SegmentProgress)
+        .filter_by(student_unit_id=unit_progress.id)
+        .all()
+    )
+    assert len(segments) == 1
+    assert segments[0].lesson_id == lesson.id
+    assert segments[0].status == ProgressStatus.IN_PROGRESS

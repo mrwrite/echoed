@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.crud import progress as crud
 from app.database import get_db
 from app.deps import require_roles
+from app.lesson_governance import GOVERNED_AVAILABLE
 from app.log import logger
 from app.models import StudentCourse
 from app.schemas import SegmentResponse, StartCourseRequest
@@ -31,4 +32,13 @@ def start_course(
         raise HTTPException(status_code=400, detail="Course already completed")
 
     progression = crud.resolve_governed_progression(db, enrollment.id)
+    if (
+        progression.get("delivery_state") == GOVERNED_AVAILABLE
+        and progression.get("unit_progress_id") is not None
+    ):
+        ensured_progression = crud.resolve_governed_segment_for_unit_progress(
+            db, progression["unit_progress_id"]
+        )
+        if ensured_progression is not None:
+            progression = ensured_progression
     return SegmentResponse(**progression)

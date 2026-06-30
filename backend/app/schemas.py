@@ -421,7 +421,7 @@ class CourseResponse(RevisionMetadataResponseMixin):
     title: str
     description: str
     learning_objectives: Optional[str] = None
-    skill_tags: List[str] = Field(default_factory=list)
+    skill_tags: list[str] = Field(default_factory=list)
     standards_metadata: dict[str, Any] = Field(default_factory=dict)
     units: List[UnitResponse] = Field(default_factory=list)
 

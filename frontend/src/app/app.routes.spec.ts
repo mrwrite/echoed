@@ -1,0 +1,62 @@
+import { Route, Routes } from '@angular/router';
+import { routes } from './app.routes';
+
+function findRoute(routeList: Routes, path: string): Route | undefined {
+  const exactRoute = routeList.find(candidate => candidate.path === path);
+  if (exactRoute) {
+    return exactRoute;
+  }
+
+  const [head, ...tail] = path.split('/');
+  const route = routeList.find(candidate => candidate.path === head);
+
+  if (!route) {
+    const passthrough = routeList.find(candidate => candidate.path === '');
+    return passthrough?.children ? findRoute(passthrough.children, path) : undefined;
+  }
+
+  if (tail.length === 0) {
+    return route;
+  }
+
+  if (route.children) {
+    return findRoute(route.children, tail.join('/'));
+  }
+
+  const passthrough = routeList.find(candidate => candidate.path === '');
+  return passthrough?.children ? findRoute(passthrough.children, path) : undefined;
+}
+
+describe('app routes', () => {
+  it('preserves the legacy authenticated home route', () => {
+    expect(findRoute(routes, 'home')).toBeTruthy();
+    expect(findRoute(routes, 'home/')).toBeTruthy();
+  });
+
+  it('adds V2 workspace aliases for platform navigation', () => {
+    [
+      'workspace',
+      'workspace/projects',
+      'workspace/product-studio',
+      'workspace/products',
+      'workspace/knowledge-sources',
+      'workspace/artifacts',
+      'workspace/review-center',
+      'workspace/learners',
+      'workspace/analytics',
+      'workspace/settings',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+  });
+
+  it('adds learner portal aliases without removing existing learner pages', () => {
+    [
+      'learn',
+      'learn/',
+      'learn/products',
+      'learn/paths',
+      'learn/certificates',
+      'learn/resources',
+      'learn/lesson/:id',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+  });
+});

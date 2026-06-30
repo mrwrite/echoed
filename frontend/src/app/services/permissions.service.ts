@@ -244,6 +244,19 @@ export class PermissionsService {
     permissions.add('nav:programs');
     permissions.add('nav:certifications');
     permissions.add('nav:preferences');
+    permissions.add('nav:workspace');
+    permissions.add('nav:products');
+    permissions.add('nav:learners');
+    permissions.add('nav:settings');
+
+    if (this.hasRole(roleSet, ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'])) {
+      permissions.add('nav:projects');
+      permissions.add('nav:product-studio');
+      permissions.add('nav:knowledge-sources');
+      permissions.add('nav:artifacts');
+      permissions.add('nav:review-center');
+      permissions.add('nav:analytics');
+    }
 
     if (this.hasRole(roleSet, ['admin'])) {
       permissions.add('nav:admin-badges');
@@ -258,6 +271,7 @@ export class PermissionsService {
 
     if (this.hasRole(roleSet, ['teacher', 'org_admin', 'instructor'])) {
       permissions.add('nav:sections');
+      permissions.add('nav:cohorts');
     }
 
     return permissions;

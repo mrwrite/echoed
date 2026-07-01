@@ -135,9 +135,10 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     </section>
   `,
   styles: [`
-    .project-detail { color: #0f172a; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
+    .project-detail { animation: ee-motion-slide-up var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; color: #0f172a; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
     .back-link { color: #0e7490; font-weight: 900; text-decoration: none; width: fit-content; }
-    header, .panel, .message { background: #fff; border: 1px solid rgba(15,23,42,.1); border-radius: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.08); padding: clamp(1rem, 3vw, 1.5rem); }
+    header, .panel, .message { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: #fff; border: 1px solid rgba(15,23,42,.1); border-radius: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.08); padding: clamp(1rem, 3vw, 1.5rem); transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .panel:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
     header p:first-child { color: #0e7490; font-size: .76rem; font-weight: 900; letter-spacing: .22em; margin: 0 0 .5rem; text-transform: uppercase; }
     h1, h2 { letter-spacing: -.03em; margin: 0; }
     h1 { font-size: clamp(2rem, 5vw, 3rem); }
@@ -145,17 +146,25 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     .summary, .panel p, small { color: #475569; }
     .grid, .registry { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
     .pipeline { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); }
-    .pipeline div { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .3rem; padding: .85rem; }
+    .pipeline div { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .3rem; padding: .85rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .pipeline div:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    .pipeline div:nth-child(2), .grid > :nth-child(2), .registry > :nth-child(2) { animation-delay: 45ms; }
+    .pipeline div:nth-child(3), .registry > :nth-child(3) { animation-delay: 90ms; }
+    .pipeline div:nth-child(4), .registry > :nth-child(4) { animation-delay: 135ms; }
+    .pipeline div:nth-child(5) { animation-delay: 180ms; }
     .pipeline strong { color: #102033; }
     .pipeline span { color: #0e7490; font-weight: 900; }
     form { align-content: start; display: grid; gap: .85rem; }
     label { color: #334155; display: grid; font-size: .9rem; font-weight: 800; gap: .35rem; }
     input, select, textarea { border: 1px solid #cbd5e1; border-radius: .8rem; color: #0f172a; font: inherit; padding: .75rem .85rem; }
     input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible { outline: 3px solid rgba(14,116,144,.25); outline-offset: 3px; }
-    button, .panel a { background: #0f172a; border: 0; border-radius: 999px; color: #fff; cursor: pointer; display: inline-flex; font-weight: 900; justify-content: center; padding: .8rem 1rem; text-decoration: none; }
+    button, .panel a { background: #0f172a; border: 0; border-radius: 999px; color: #fff; cursor: pointer; display: inline-flex; font-weight: 900; justify-content: center; padding: .8rem 1rem; text-decoration: none; transition: transform var(--ee-duration-fast, 120ms) var(--ee-easing-standard, ease), opacity var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    button:active, .panel a:active { transform: var(--ee-press-scale, scale(.98)); }
     .registry .panel { align-content: start; display: grid; gap: .75rem; }
-    .record { border-top: 1px solid #e2e8f0; display: grid; gap: .25rem; padding-top: .75rem; }
+    .record { border-top: 1px solid #e2e8f0; display: grid; gap: .25rem; padding-top: .75rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .record:hover { transform: translateX(3px); }
     @media (max-width: 720px) { .project-detail { padding: 1rem; } }
+    @media (prefers-reduced-motion: reduce) { .project-detail, header, .panel, .message, .pipeline div { animation: none; } .panel:hover, .pipeline div:hover, button:active, .panel a:active, .record:hover { transform: none; } }
   `]
 })
 export class ProjectDetailComponent implements OnInit {

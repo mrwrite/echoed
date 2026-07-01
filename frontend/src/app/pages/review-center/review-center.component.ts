@@ -119,35 +119,41 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     </section>
   `,
   styles: [`
-    .review-center { color: #102033; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
-    header, .queue { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); padding: clamp(1rem, 3vw, 1.5rem); }
-    header p { color: #0f766e; font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .5rem; text-transform: uppercase; }
-    h1, h2, h3 { letter-spacing: 0; margin: 0; }
-    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; }
-    header span, .empty, .item p, dd { color: #526273; }
+    .review-center { color: var(--ee-text); display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
+    header, .queue { background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.035)), var(--ee-surface); border: 1px solid var(--ee-border); border-radius: var(--ee-radius); box-shadow: var(--ee-shadow-soft); backdrop-filter: blur(22px) saturate(1.2); padding: clamp(1rem, 3vw, 1.5rem); }
+    header { padding: clamp(1.75rem, 5vw, 4rem); }
+    header p { color: var(--ee-gold); font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .5rem; text-transform: uppercase; }
+    h1, h2, h3 { color: var(--ee-text); letter-spacing: 0; margin: 0; }
+    h1 { font-size: clamp(2.65rem, 7vw, 5.4rem); line-height: .92; max-width: 12ch; }
+    header span, .empty, .item p, dd { color: var(--ee-text-soft); }
     .guardrails { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
-    .guardrails article { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .25rem; padding: 1rem; }
-    .guardrails strong { color: #102033; }
-    .guardrails span { color: #526273; }
+    .guardrails article { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: rgba(255,255,255,.055); border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .25rem; padding: 1rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .guardrails article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    .guardrails article:nth-child(2) { animation-delay: 45ms; }
+    .guardrails article:nth-child(3) { animation-delay: 90ms; }
+    .guardrails strong { color: var(--ee-text); }
+    .guardrails span { color: var(--ee-text-soft); }
     .queues { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .queue { display: grid; gap: .9rem; align-content: start; }
     .queue--wide { grid-column: 1 / -1; }
     .queue__heading { align-items: center; display: flex; justify-content: space-between; gap: 1rem; }
-    .queue__heading > span { background: #e7f7f4; border: 1px solid #b8e1da; border-radius: 999px; color: #0f766e; font-weight: 900; min-width: 2rem; padding: .25rem .55rem; text-align: center; }
-    .item { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .8rem; padding: 1rem; }
+    .queue__heading > span { background: rgba(92,200,255,.13); border: 1px solid rgba(92,200,255,.34); border-radius: 999px; color: #c7efff; font-weight: 900; min-width: 2rem; padding: .25rem .55rem; text-align: center; }
+    .item { background: rgba(255,255,255,.045); border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .8rem; padding: 1rem; }
     .item__main { align-items: start; display: flex; gap: 1rem; justify-content: space-between; }
-    .badge { background: #e8f0fe; border: 1px solid #bfd0f5; border-radius: 999px; color: #1d4ed8; font-weight: 900; padding: .28rem .65rem; white-space: nowrap; }
-    .badge--blocked { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+    .badge { background: rgba(167,139,250,.14); border: 1px solid rgba(167,139,250,.28); border-radius: 999px; color: #ddd4ff; font-weight: 900; padding: .28rem .65rem; transition: background var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); white-space: nowrap; }
+    .badge--blocked { background: rgba(255,122,154,.14); border-color: rgba(255,122,154,.34); color: #ffc4d2; }
     dl { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 0; }
-    dt { color: #334155; font-size: .78rem; font-weight: 900; text-transform: uppercase; }
+    dt { color: var(--ee-text-muted); font-size: .78rem; font-weight: 900; text-transform: uppercase; }
     dd { margin: .15rem 0 0; }
     .actions { display: flex; flex-wrap: wrap; gap: .5rem; }
     a, button { border: 1px solid #102033; border-radius: 6px; font: inherit; font-weight: 900; padding: .55rem .75rem; text-decoration: none; }
-    a { background: #102033; color: #fff; }
-    button { background: #fff; color: #102033; cursor: pointer; }
-    button:disabled { border-color: #cbd5e1; color: #94a3b8; cursor: default; }
-    a:focus-visible, button:focus-visible { outline: 3px solid rgba(15,118,110,.25); outline-offset: 3px; }
+    a { background: linear-gradient(135deg, var(--ee-purple-strong), var(--ee-purple), var(--ee-azure)); border-color: rgba(255,255,255,.18); color: #fff; transition: transform var(--ee-duration-fast, 120ms) var(--ee-easing-standard, ease); }
+    button { background: rgba(255,255,255,.055); border-color: var(--ee-border); color: var(--ee-text); cursor: pointer; transition: transform var(--ee-duration-fast, 120ms) var(--ee-easing-standard, ease), opacity var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    a:active, button:active { transform: var(--ee-press-scale, scale(.98)); }
+    button:disabled { border-color: var(--ee-border); color: var(--ee-text-muted); cursor: default; }
+    a:focus-visible, button:focus-visible { outline: 3px solid rgba(92,200,255,.25); outline-offset: 3px; }
     @media (max-width: 900px) { .queues { grid-template-columns: 1fr; } .item__main { flex-direction: column; } }
+    @media (prefers-reduced-motion: reduce) { .guardrails article { animation: none; } .guardrails article:hover, a:active, button:active { transform: none; } }
   `]
 })
 export class ReviewCenterComponent implements OnInit {

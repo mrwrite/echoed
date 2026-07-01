@@ -1,242 +1,307 @@
-<div
-  class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531]"
->
-  <div class="max-w-5xl w-full grid lg:grid-cols-2 gap-6 glass-panel p-6">
-    <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8 text-ink">
-      <p class="text-sm text-primary font-semibold">Create Account</p>
-      <h2 class="text-3xl font-bold mb-2">Build your EchoEd profile</h2>
-      <p class="registration-helper mb-6">
-        For educators, families, and school leaders exploring the K–5 demo and
-        beyond.
-      </p>
+<main class="registration-shell">
+  <section class="registration-stage" aria-labelledby="registration-title">
+    <section class="registration-card" aria-label="Create your EchoEd account">
+      <a routerLink="/" class="brand-link" aria-label="Back to EchoEd home">
+        <span>EE</span>
+        <strong>EchoEd</strong>
+      </a>
 
-      <form
-        [formGroup]="registrationForm"
-        (ngSubmit)="onSubmit()"
-        class="space-y-4"
-      >
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label for="firstName" class="text-sm font-semibold text-primary"
-              >First Name</label
-            >
-            <input
-              type="text"
-              id="firstName"
-              formControlName="firstName"
-              required
-              placeholder="First Name"
-              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
-            />
+      <div class="card-heading">
+        <p class="eyebrow">Create account</p>
+        <h1 id="registration-title">Start with a trusted workspace.</h1>
+        <p>
+          Create your profile first. If you are setting up a school, family space, or creator workspace,
+          EchoEd will guide you through organization setup after sign in.
+        </p>
+      </div>
+
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-form" novalidate>
+        <section class="form-section" aria-labelledby="identity-heading">
+          <div class="section-title">
+            <span>01</span>
+            <div>
+              <h2 id="identity-heading">Your profile</h2>
+              <p>Use the name and email you want attached to your EchoEd workspace.</p>
+            </div>
           </div>
-          <div class="space-y-2">
-            <label for="lastName" class="text-sm font-semibold text-primary"
-              >Last Name</label
-            >
-            <input
-              type="text"
-              id="lastName"
-              formControlName="lastName"
-              required
-              placeholder="Last Name"
-              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
-            />
+
+          <div class="field-grid">
+            <label class="field" for="firstName">
+              <span>First name</span>
+              <input
+                type="text"
+                id="firstName"
+                formControlName="firstName"
+                required
+                autocomplete="given-name"
+                placeholder="Ada"
+                aria-required="true"
+              />
+              <small class="field-error" *ngIf="registrationForm.get('firstName')?.hasError('required') && registrationForm.get('firstName')?.touched">
+                First name is required.
+              </small>
+            </label>
+
+            <label class="field" for="lastName">
+              <span>Last name</span>
+              <input
+                type="text"
+                id="lastName"
+                formControlName="lastName"
+                required
+                autocomplete="family-name"
+                placeholder="Lovelace"
+                aria-required="true"
+              />
+              <small class="field-error" *ngIf="registrationForm.get('lastName')?.hasError('required') && registrationForm.get('lastName')?.touched">
+                Last name is required.
+              </small>
+            </label>
           </div>
-        </div>
 
-        <div class="space-y-2">
-          <label for="email" class="text-sm font-semibold text-primary"
-            >Email</label
-          >
-          <input
-            type="email"
-            id="email"
-            formControlName="email"
-            required
-            placeholder="you@example.com"
-            class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
-          />
-          <p class="registration-helper text-xs">
-            We use this for secure sign-in and demo follow-ups.
-          </p>
-        </div>
-
-        <div class="space-y-2">
-          <label for="role" class="text-sm font-semibold text-primary"
-            >Role</label
-          >
-          <select
-            id="role"
-            formControlName="role"
-            required
-            class="w-full rounded-xl border border-slate-200 px-4 py-3 bg-white focus:ring-2 focus:ring-accent/50"
-            [disabled]="loadingRoles"
-          >
-            <option value="" disabled>
-              {{ loadingRoles ? "Loading roles..." : "Select Role" }}
-            </option>
-
-            <option *ngFor="let r of roleOptions" [value]="r.value">
-              {{ r.label }}
-            </option>
-          </select>
-        </div>
-
-        <div class="rounded-2xl border border-primary/15 bg-primary/5 p-4 space-y-3">
-          <label class="flex items-center gap-3 text-sm font-semibold text-primary">
-            <input type="checkbox" formControlName="createOrganization" />
-            Create an organization now
+          <label class="field" for="email">
+            <span>Email</span>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com"
+              aria-required="true"
+            />
+            <small>Used for secure sign-in and workspace notifications.</small>
+            <small class="field-error" *ngIf="registrationForm.get('email')?.hasError('required') && registrationForm.get('email')?.touched">
+              Email is required.
+            </small>
+            <small class="field-error" *ngIf="registrationForm.get('email')?.hasError('email') && registrationForm.get('email')?.touched">
+              Enter a valid email address.
+            </small>
           </label>
-          <p class="registration-helper text-sm">
-            Choose this if you want your first sign-in to continue directly into organization setup.
-          </p>
-          <div *ngIf="registrationForm.get('createOrganization')?.value" class="space-y-3">
-            <div class="space-y-2">
-              <label for="organizationName" class="text-sm font-semibold text-primary">Organization name</label>
+        </section>
+
+        <section class="form-section" aria-labelledby="role-heading">
+          <div class="section-title">
+            <span>02</span>
+            <div>
+              <h2 id="role-heading">Your role</h2>
+              <p>Role selection helps EchoEd prepare the right workspace and onboarding path.</p>
+            </div>
+          </div>
+
+          <label class="field" for="role">
+            <span>Role</span>
+            <select id="role" formControlName="role" required [disabled]="loadingRoles" aria-required="true">
+              <option value="" disabled>
+                {{ loadingRoles ? "Loading roles..." : "Select your role" }}
+              </option>
+              <option *ngFor="let r of roleOptions" [value]="r.value">
+                {{ r.label }}
+              </option>
+            </select>
+            <small *ngIf="loadingRoles">Role options are loading from EchoEd metadata.</small>
+            <small class="field-error" *ngIf="registrationForm.get('role')?.hasError('required') && registrationForm.get('role')?.touched">
+              Select the role that best matches how you will use EchoEd.
+            </small>
+          </label>
+
+          <div class="role-preview" aria-label="Role explanations">
+            <article>
+              <strong>Teacher</strong>
+              <span>Create and deliver governed learning experiences.</span>
+            </article>
+            <article>
+              <strong>Parent</strong>
+              <span>Support learners through a family workspace.</span>
+            </article>
+            <article>
+              <strong>Student</strong>
+              <span>Join assigned products and continue lessons safely.</span>
+            </article>
+            <article>
+              <strong>Instructor</strong>
+              <span>Package expertise into trusted learning products.</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="org-section" aria-labelledby="organization-heading">
+          <div class="org-header">
+            <div>
+              <p class="eyebrow">Optional setup</p>
+              <h2 id="organization-heading">Create an organization now</h2>
+              <p>Use this when you are setting up a school, family, instructor, or workspace-owned demo.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" formControlName="createOrganization" />
+              <span></span>
+            </label>
+          </div>
+
+          <div class="org-disclosure" *ngIf="registrationForm.get('createOrganization')?.value">
+            <label class="field" for="organizationName">
+              <span>Organization name</span>
               <input
                 id="organizationName"
                 type="text"
                 formControlName="organizationName"
-                placeholder="e.g. Bright Futures Academy"
-                class="registration-input w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-accent/50"
+                placeholder="Bright Futures Academy"
               />
-              <p class="registration-helper text-xs">
-                We will save this and guide you through setup after you sign in.
-              </p>
-              <p
-                class="form-state-text form-state-text--error"
+              <small>We will save this and continue setup after you sign in.</small>
+              <small
+                class="field-error"
                 *ngIf="
                   registrationForm.get('organizationName')?.hasError('required') &&
                   (registrationForm.get('organizationName')?.touched || registrationSubmitted)
                 "
               >
                 Add an organization name to continue with setup.
-              </p>
+              </small>
+            </label>
+
+            <div class="setup-summary">
+              <strong>Suggested type: {{ inferredOrgTypeLabel }}</strong>
+              <span>{{ organizationSetupSummary }}</span>
+              <span class="warning" *ngIf="showStudentOrgHint">
+                Students usually join an existing organization, but a family space can be created if needed.
+              </span>
             </div>
-            <div class="registration-helper text-xs">
-              Suggested type: <span class="font-semibold text-main">{{ inferredOrgTypeLabel }}</span>
-            </div>
-            <p class="form-state-text form-state-text--warning text-xs" *ngIf="showStudentOrgHint">
-              Students usually join an existing organization, but you can create a family space if needed.
-            </p>
           </div>
-          <p class="form-state-text form-state-text--info text-sm">
+
+          <p class="setup-summary setup-summary--flat" *ngIf="!registrationForm.get('createOrganization')?.value">
             {{ organizationSetupSummary }}
           </p>
-        </div>
+        </section>
 
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label for="password" class="text-sm font-semibold text-primary"
-                >Password</label
-              >
-              <button
-                type="button"
-                class="text-sm text-primary underline"
-                (click)="showPassword = !showPassword"
-              >
-                {{ showPassword ? "Hide" : "Show" }}
-              </button>
+        <section class="form-section" aria-labelledby="security-heading">
+          <div class="section-title">
+            <span>03</span>
+            <div>
+              <h2 id="security-heading">Secure access</h2>
+              <p>Choose a password for your EchoEd account.</p>
             </div>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              formControlName="password"
-              required
-              placeholder="Password"
-              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
-            />
           </div>
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label
-                for="confirmPassword"
-                class="text-sm font-semibold text-primary"
-                >Confirm Password</label
+
+          <div class="field-grid">
+            <label class="field" for="password">
+              <span>Password</span>
+              <div class="password-row">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  formControlName="password"
+                  required
+                  autocomplete="new-password"
+                  placeholder="Minimum 6 characters"
+                  aria-required="true"
+                />
+                <button type="button" class="show-password" (click)="showPassword = !showPassword">
+                  {{ showPassword ? "Hide" : "Show" }}
+                </button>
+              </div>
+              <small>Use at least 6 characters.</small>
+              <small class="field-error" *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
+                Password is required.
+              </small>
+              <small class="field-error" *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
+                Password must be at least 6 characters.
+              </small>
+            </label>
+
+            <label class="field" for="confirmPassword">
+              <span>Confirm password</span>
+              <div class="password-row">
+                <input
+                  [type]="showConfirm ? 'text' : 'password'"
+                  id="confirmPassword"
+                  formControlName="confirmPassword"
+                  required
+                  autocomplete="new-password"
+                  placeholder="Re-enter password"
+                  aria-required="true"
+                />
+                <button type="button" class="show-password" (click)="showConfirm = !showConfirm">
+                  {{ showConfirm ? "Hide" : "Show" }}
+                </button>
+              </div>
+              <small class="field-error" *ngIf="registrationForm.get('confirmPassword')?.hasError('required') && registrationForm.get('confirmPassword')?.touched">
+                Confirm your password.
+              </small>
+              <small
+                class="field-error"
+                *ngIf="
+                  registrationForm.get('confirmPassword')?.errors?.['passwordMismatch'] &&
+                  registrationForm.get('confirmPassword')?.touched
+                "
               >
-              <button
-                type="button"
-                class="text-sm text-primary underline"
-                (click)="showConfirm = !showConfirm"
-              >
-                {{ showConfirm ? "Hide" : "Show" }}
-              </button>
-            </div>
-            <input
-              [type]="showConfirm ? 'text' : 'password'"
-              id="confirmPassword"
-              formControlName="confirmPassword"
-              required
-              placeholder="Confirm Password"
-              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
-            />
-            <p
-              class="form-state-text form-state-text--error text-sm"
-              *ngIf="
-                registrationForm.get('confirmPassword')?.errors?.[
-                  'passwordMismatch'
-                ] && registrationForm.get('confirmPassword')?.touched
-              "
-            >
-              Passwords do not match.
-            </p>
+                Passwords do not match.
+              </small>
+            </label>
           </div>
-        </div>
+        </section>
 
-        <p class="form-state-text form-state-text--error text-sm" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </p>
+        <p class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-        <button
-          type="submit"
-          class="registration-submit w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:cursor-not-allowed disabled:opacity-60"
-          [disabled]="registrationForm.invalid"
-        >
+        <button type="submit" class="registration-submit" [disabled]="registrationForm.invalid">
           {{ submitLabel }}
         </button>
       </form>
-      <p class="text-sm text-center mt-4">
-        Already registered?
-        <a routerLink="/login" class="text-primary font-semibold underline"
-          >Login here</a
-        >
-      </p>
-    </div>
 
-    <div
-      class="hidden lg:flex flex-col justify-between bg-white/5 rounded-2xl p-6 border border-white/15 text-white"
-    >
-      <div>
-        <p class="text-sm uppercase tracking-[0.25em] text-on-dark-muted">
-          Why EchoEd
-        </p>
-        <h3 class="text-2xl font-bold">Professional, warm, and future-ready</h3>
-        <p class="text-on-dark">
-          EchoEd scales from our K–5 demo to middle school, high school, and
-          district deployments without feeling childish.
-        </p>
-      </div>
-      <div class="grid gap-3">
-        <div class="p-3 rounded-xl bg-white/10 border border-white/10">
-          <p class="font-semibold">Student journeys</p>
-          <p class="text-sm text-on-dark">
-            Progress dashboards, streaks, and immersive lessons.
-          </p>
+      <p class="login-link">
+        Already registered?
+        <a routerLink="/login">Login here</a>
+      </p>
+    </section>
+
+    <aside class="registration-story" aria-label="Why create an EchoEd account">
+      <div class="image-panel" role="img" aria-label="Abstract premium product workspace preview">
+        <div class="preview-card preview-card--one">
+          <span>Product Studio</span>
+          <strong>Create governed products</strong>
         </div>
-        <div class="p-3 rounded-xl bg-white/10 border border-white/10">
-          <p class="font-semibold">Teacher controls</p>
-          <p class="text-sm text-on-dark">
-            Assign courses, run live lessons, and view reports.
-          </p>
+        <div class="preview-card preview-card--two">
+          <span>Review Center</span>
+          <strong>Trust before delivery</strong>
         </div>
-        <div class="p-3 rounded-xl bg-white/10 border border-white/10">
-          <p class="font-semibold">Admin command center</p>
-          <p class="text-sm text-on-dark">
-            User management, course creation, and badge governance.
-          </p>
+        <div class="preview-card preview-card--three">
+          <span>Learner Portal</span>
+          <strong>Product-first access</strong>
         </div>
       </div>
-    </div>
-  </div>
-</div>
+
+      <section class="story-section">
+        <p class="eyebrow">Why EchoEd</p>
+        <h2>Professional enough for operators. Warm enough for families.</h2>
+        <p>
+          EchoEd helps teams transform knowledge into learning products while preserving governance,
+          access control, and learner-safe delivery.
+        </p>
+      </section>
+
+      <section class="benefit-list" aria-label="Benefits">
+        <article>
+          <span>Trust</span>
+          <strong>Human review and readiness stay visible.</strong>
+        </article>
+        <article>
+          <span>Clarity</span>
+          <strong>Roles and organization setup are explained before onboarding.</strong>
+        </article>
+        <article>
+          <span>Momentum</span>
+          <strong>Create an account now and continue setup after sign in.</strong>
+        </article>
+      </section>
+
+      <section class="journey-preview" aria-label="Account journey preview">
+        <p class="eyebrow">Journey preview</p>
+        <ol>
+          <li><span>1</span><p>Create profile</p></li>
+          <li><span>2</span><p>Choose role</p></li>
+          <li><span>3</span><p>Optional organization setup</p></li>
+          <li><span>4</span><p>Enter EchoEd workspace</p></li>
+        </ol>
+      </section>
+    </aside>
+  </section>
+</main>

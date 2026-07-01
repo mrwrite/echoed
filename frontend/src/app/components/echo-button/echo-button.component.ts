@@ -9,11 +9,9 @@ import { CommonModule } from '@angular/common';
   template: `
     <button
       [ngClass]="[
-        'rounded-lg px-4 py-2 font-bold tracking-wide text-white transition',
-        color === 'primary' ? 'bg-primary hover:bg-primary/90' :
-        color === 'accent' ? 'bg-accent hover:bg-accent/90 text-black' :
-        color === 'tertiary' ? 'bg-tertiary hover:bg-tertiary/90' :
-        color === 'warn' ? 'bg-warn hover:bg-warn/90' : '',
+        'ee-button',
+        color === 'tertiary' ? 'ee-button--secondary' : '',
+        color === 'warn' ? 'ee-button--warn' : '',
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       ]"
       [disabled]="disabled"

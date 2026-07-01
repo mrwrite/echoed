@@ -12,26 +12,27 @@ import { RouterModule } from '@angular/router';
 export class LandingComponent {
   featureHighlights = [
     {
-      title: 'AI-native knowledge studio',
-      description: 'Turn institutional expertise, source material, and instructional goals into governed products without losing human review.',
-      kicker: 'Knowledge in'
+      title: 'Culturally grounded curriculum',
+      description: 'Stories, primary sources, and activities that celebrate African and African-American history with respect and rigor.',
+      kicker: '01'
     },
     {
-      title: 'Governed learner delivery',
-      description: 'Package learning experiences for schools, enterprises, parents, and teachers while existing lesson readiness stays authoritative.',
-      kicker: 'Trust built in'
+      title: 'Student progress intelligence',
+      description: 'Live visibility into mastery, pacing, and engagement for every learner.',
+      kicker: '02'
     },
     {
-      title: 'Product health analytics',
-      description: 'See product readiness, learner engagement, access, review, and knowledge pipeline signal from one premium workspace.',
-      kicker: 'Operator clarity'
+      title: 'Built for any learning model',
+      description: 'Perfect for private schools, microschools, homeschool families, and community learning pods.',
+      kicker: '03'
     },
   ];
 
   animatedCards = [
-    { label: 'Workspace', value: 'Command center', detail: 'Projects, products, review, learners, analytics' },
-    { label: 'Review', value: 'Human governed', detail: 'Artifact and product decisions stay separate from runtime publishing' },
-    { label: 'Learner Portal', value: 'Product first', detail: 'Existing lessons continue through governed runtime paths' },
+    { label: 'Educator-first', value: 'Admin & teacher control centers', detail: 'Curriculum tools, cohorts, and progress views' },
+    { label: 'Learner delight', value: 'Immersive lessons & achievements', detail: 'Story-led lessons, badges, and momentum' },
+    { label: 'Families', value: 'Simple onboarding', detail: 'Parent-friendly account creation and access' },
+    { label: 'Middle + HS', value: 'Coming soon', detail: 'Upper grade pathways are already in motion' },
   ];
 
   walkthroughSteps = [
@@ -61,15 +62,12 @@ export class LandingComponent {
   ];
 
   roadmap = [
-    { title: 'Commercial packaging', detail: 'Public product pages, pricing placeholders, and branded product presentation.' },
-    { title: 'Access expansion', detail: 'Manual grants today, with future memberships, teams, invitations, and enterprise seats.' },
-    { title: 'AI generation execution', detail: 'Future controlled generation runs after review and governance foundations are stable.' },
+    { title: 'Future Grades', detail: 'Middle School Suites expanding into grades 6-8 with civics-rich projects and debates.' },
+    { title: 'High School Pathways', detail: 'College-ready modules with primary-source analysis and AP-aligned rigor.' },
   ];
 
   audienceCards = [
-    'Investors evaluating a premium SaaS platform',
-    'Schools modernizing curriculum operations',
-    'Enterprises packaging internal knowledge',
-    'Parents and teachers seeking trusted learner delivery',
+    'K-5 content live today',
+    'Middle & High School in motion',
   ];
 }

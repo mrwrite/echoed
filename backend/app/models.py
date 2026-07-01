@@ -11,7 +11,7 @@ from sqlalchemy import (
     JSON,
     UniqueConstraint,
 )
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base, validates
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import Enum as SqlEnum
 from app.enum import (
@@ -29,6 +29,20 @@ from datetime import datetime
 import uuid
 
 Base = declarative_base()
+
+
+def _coerce_progress_status(value):
+    if value is None or isinstance(value, ProgressStatus):
+        return value
+    if isinstance(value, str):
+        try:
+            return ProgressStatus(value)
+        except ValueError:
+            try:
+                return ProgressStatus[value]
+            except KeyError as exc:
+                raise ValueError(f"Invalid progress status: {value}") from exc
+    raise ValueError(f"Invalid progress status: {value}")
 
 user_units = Table(
 "user_units",
@@ -430,6 +444,10 @@ class StudentUnitProgress(Base):
 
     segments = relationship("SegmentProgress", back_populates="student_unit", cascade="all, delete-orphan")
 
+    @validates("status")
+    def validate_status(self, key, value):
+        return _coerce_progress_status(value)
+
 class SegmentProgress(Base):
     __tablename__ = 'segment_progress'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
@@ -457,6 +475,10 @@ class SegmentProgress(Base):
     student_unit = relationship("StudentUnitProgress", back_populates="segments")
     lesson = relationship("Lesson")
     section = relationship("Section")
+
+    @validates("status")
+    def validate_status(self, key, value):
+        return _coerce_progress_status(value)
 
 
 

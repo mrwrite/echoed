@@ -1,174 +1,158 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531] text-white">
-  <div class="max-w-6xl mx-auto px-6 py-10">
-    <header class="flex items-center justify-between mb-10">
-      <div class="flex items-center gap-3">
-        <div class="h-12 w-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center font-bold text-lg">EE</div>
-        <div>
-          <p class="text-sm uppercase tracking-[0.25em] text-on-dark-muted">EchoEd</p>
-          <p class="text-lg font-semibold">Echoing the Past, Educating the Future</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="badge-soft bg-white/10 text-white border border-white/20">Investor demo mode</span>
-        <a routerLink="/login" class="hidden sm:inline-flex px-4 py-2 rounded-full bg-white text-primary font-semibold shadow">
-          Sign in
-        </a>
-        <a routerLink="/registration" class="hidden sm:inline-flex px-4 py-2 rounded-full border border-white/30 text-white font-semibold">
-          Create account
-        </a>
-      </div>
-    </header>
+<main class="landing-shell">
+  <div class="landing-orb landing-orb--purple"></div>
+  <div class="landing-orb landing-orb--azure"></div>
 
-    <section class="glass-panel p-8 lg:p-12 mb-10 relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-r from-white/5 via-white/0 to-white/10 pointer-events-none"></div>
-      <div class="grid lg:grid-cols-2 gap-8 relative z-10 items-center">
-        <div class="space-y-6">
-          <div class="pill">Designed for private schools, microschools & families</div>
-          <h1 class="text-4xl lg:text-5xl font-extrabold leading-tight">EchoEd — Beautiful learning journeys rooted in African & African-American history.</h1>
-          <p class="text-lg text-on-dark max-w-2xl">Showcase a credible, culturally-anchored curriculum with modern analytics, intuitive dashboards, and an immersive lesson experience that scales from K–5 today to upper grades tomorrow.</p>
-          <div class="flex flex-wrap gap-3">
-            <a routerLink="/registration" class="px-6 py-3 bg-accent text-ink font-semibold rounded-full shadow-soft-card">Book a Demo</a>
-            <a routerLink="/login" class="px-6 py-3 border border-white/30 rounded-full font-semibold">Explore EchoEd</a>
-            <a routerLink="/home" class="px-6 py-3 bg-white/10 border border-white/20 rounded-full font-semibold">Start Demo Tour</a>
-          </div>
-          <div class="flex flex-wrap gap-4 text-sm text-on-dark">
-            <div class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-accent"></span>Live K–5 demo today</div>
-            <div class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-white"></span>Middle & High School launching next</div>
-          </div>
-        </div>
-        <div class="relative">
-          <div class="bg-white/10 border border-white/20 rounded-2xl p-6 shadow-soft-card space-y-4">
-            <div class="flex items-center justify-between">
-              <p class="text-sm uppercase tracking-[0.2em] text-on-dark-muted">Demo Mode</p>
-              <span class="px-3 py-1 rounded-full bg-accent text-ink text-xs font-bold">K–5 Preview</span>
-            </div>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div class="p-4 rounded-xl bg-white/10 border border-white/10">
-                <p class="text-on-dark-muted">Educator-first</p>
-                <p class="text-2xl font-bold">Admin & Teacher control centers</p>
-              </div>
-              <div class="p-4 rounded-xl bg-white/10 border border-white/10">
-                <p class="text-on-dark-muted">Learner delight</p>
-                <p class="text-2xl font-bold">Immersive lessons & achievements</p>
-              </div>
-              <div class="p-4 rounded-xl bg-white/10 border border-white/10">
-                <p class="text-on-dark-muted">Families</p>
-                <p class="text-2xl font-bold">Simple onboarding</p>
-              </div>
-              <div class="p-4 rounded-xl bg-white/10 border border-white/10">
-                <p class="text-on-dark-muted">Future-ready</p>
-                <p class="text-2xl font-bold">Middle + HS coming soon</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 text-sm text-on-dark-muted">
-              <span class="h-10 w-10 rounded-full bg-white/15 flex items-center justify-center">🛡️</span>
-              <div>
-                <p class="font-semibold text-white">Secure, accessible, and WCAG AA conscious</p>
-                <p>Built for the trust of school leaders and families.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+  <nav class="landing-nav" aria-label="Primary navigation">
+    <a routerLink="/" class="brand" aria-label="EchoEd home">
+      <span>EE</span>
+      <strong>EchoEd</strong>
+    </a>
 
-    <section class="mb-12 grid lg:grid-cols-3 gap-6">
-      <div *ngFor="let feature of featureHighlights" class="surface-card p-6 text-ink">
-        <div class="text-3xl mb-3">{{ feature.icon }}</div>
-        <h3 class="text-xl font-semibold mb-2">{{ feature.title }}</h3>
-        <p class="text-slate-600">{{ feature.description }}</p>
-      </div>
-    </section>
+    <div class="nav-links">
+      <a href="#demo">Today&apos;s Demo</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#walkthrough">Walkthrough</a>
+    </div>
 
-    <section class="mb-12 surface-card p-6 text-ink bg-white/90">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <p class="section-heading text-sm text-primary">Demo Mode: K–5 African & African-American History</p>
-          <h2 class="text-2xl font-bold mt-2">Today’s Demo vs. What’s Next</h2>
-          <p class="muted-text">Investors and school leaders can see the live K–5 experience, plus a clear roadmap to upper grades.</p>
-        </div>
-        <div class="flex flex-wrap gap-3 text-sm">
-          <span class="pill bg-accent/20 text-primary">K–5 content live today</span>
-          <span class="pill bg-primary/10 text-primary">Middle & High School in motion</span>
-        </div>
-      </div>
-      <div class="grid lg:grid-cols-2 gap-6 mt-6">
-        <div class="p-5 rounded-xl bg-primary text-white shadow-soft-card">
-          <p class="text-sm uppercase tracking-[0.2em] text-on-dark-muted">Today’s Demo</p>
-          <h3 class="text-2xl font-bold mb-2">K–5 Experience</h3>
-          <ul class="space-y-2 text-on-dark">
-            <li>• Story-led lessons with activities</li>
-            <li>• Dashboards for students, teachers, admins</li>
-            <li>• Badges, streaks, and progress insights</li>
-          </ul>
-        </div>
-        <div class="p-5 rounded-xl bg-gradient-to-r from-[#f4efe4] to-[#f0e7ff] border border-primary/10">
-          <p class="text-sm uppercase tracking-[0.2em] text-primary">Coming Soon</p>
-          <h3 class="text-2xl font-bold mb-2 text-ink">Future Grades</h3>
-          <div class="space-y-3">
-            <div *ngFor="let item of comingSoon" class="p-3 rounded-lg bg-white shadow-sm border border-primary/5">
-              <p class="font-semibold text-primary">{{ item.title }}</p>
-              <p class="text-slate-600">{{ item.detail }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div class="auth-links">
+      <a routerLink="/login" class="ghost-link">Sign in</a>
+      <a routerLink="/registration" class="nav-cta">Create account</a>
+    </div>
+  </nav>
 
-    <section class="mb-12 grid lg:grid-cols-[2fr,1fr] gap-6">
-      <div class="surface-card p-6 text-ink">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-2xl font-bold">How to run the investor tour</h2>
-          <span class="badge-soft">5 steps</span>
-        </div>
-        <ol class="space-y-3">
-          <li *ngFor="let step of tourSteps; let i = index" class="flex items-start gap-3">
-            <span class="h-10 w-10 flex items-center justify-center rounded-full bg-primary text-white font-semibold">{{ i + 1 }}</span>
-            <div>
-              <p class="font-semibold">{{ step }}</p>
-              <p class="text-sm text-slate-600">Guide investors through the polished UI and data-rich stories.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
-      <div class="surface-card p-6 text-ink bg-gradient-to-b from-primary/5 to-white">
-        <p class="section-heading text-primary text-sm">Who EchoEd serves</p>
-        <h3 class="text-xl font-bold mt-2">Private & independent schools</h3>
-        <p class="muted-text mb-4">Built to impress school boards, superintendents, and families alike.</p>
-        <div class="space-y-3 text-sm">
-          <div class="p-3 rounded-lg bg-white shadow-sm border border-primary/5">District pilots and microschools</div>
-          <div class="p-3 rounded-lg bg-white shadow-sm border border-primary/5">Homeschool families & co-ops</div>
-          <div class="p-3 rounded-lg bg-white shadow-sm border border-primary/5">Community-based learning hubs</div>
-        </div>
-      </div>
-    </section>
+  <section class="hero" aria-labelledby="landing-title">
+    <div class="hero-copy">
+      <p class="eyebrow">AI-native learning product platform</p>
+      <h1 id="landing-title">Transform expert knowledge into trusted learning products.</h1>
+      <p class="hero-lede">
+        EchoEd gives schools, enterprises, teachers, parents, and investors a premium command center for
+        knowledge intake, governed review, learner delivery, and product health.
+      </p>
 
-    <section class="mb-12">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold">Voices from educators & families</h2>
-        <span class="text-sm text-on-dark-muted">Authentic feedback, ready for investor decks</span>
+      <div class="hero-actions" aria-label="Primary calls to action">
+        <a routerLink="/registration" class="button button--primary">Schedule Demo</a>
+        <a routerLink="/login" class="button button--secondary">Launch Demo</a>
       </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <article *ngFor="let testimonial of testimonials" class="surface-card p-6 text-ink">
-          <p class="text-lg font-semibold mb-3">“{{ testimonial.quote }}”</p>
-          <p class="text-sm font-bold text-primary">{{ testimonial.name }}</p>
-          <p class="text-xs text-slate-600">{{ testimonial.role }}</p>
+
+      <div class="audience-row" aria-label="Audience fit">
+        <span *ngFor="let audience of audienceCards">{{ audience }}</span>
+      </div>
+    </div>
+
+    <aside class="feature-panel" aria-label="EchoEd platform preview">
+      <div class="panel-header">
+        <span>Live platform model</span>
+        <strong>V2 Demo Ready</strong>
+      </div>
+
+      <div class="signal-grid">
+        <article>
+          <span>Products</span>
+          <strong>Ready</strong>
+        </article>
+        <article>
+          <span>Review</span>
+          <strong>Governed</strong>
+        </article>
+        <article>
+          <span>Access</span>
+          <strong>Granted</strong>
+        </article>
+        <article>
+          <span>Analytics</span>
+          <strong>Live</strong>
         </article>
       </div>
-    </section>
 
-    <section class="glass-panel p-8 text-ink bg-white/70">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <p class="section-heading text-primary text-sm">Ready for a closer look?</p>
-          <h2 class="text-3xl font-bold">Schedule your EchoEd walkthrough</h2>
-          <p class="text-slate-700 max-w-2xl">We’ll guide you through the landing experience, login/registration, student and teacher dashboards, immersive lessons, and admin command center.</p>
-        </div>
-        <div class="flex gap-3">
-          <a routerLink="/registration" class="px-6 py-3 bg-primary text-white rounded-full shadow-elevated">Book a Demo</a>
-          <a routerLink="/login" class="px-6 py-3 border border-primary rounded-full text-primary font-semibold">Launch Demo Mode</a>
+      <div class="animated-stack">
+        <article *ngFor="let card of animatedCards; let i = index" [style.--i]="i">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+          <p>{{ card.detail }}</p>
+        </article>
+      </div>
+    </aside>
+  </section>
+
+  <section class="feature-grid" aria-labelledby="feature-title">
+    <div class="section-heading">
+      <p class="eyebrow">Premium workspace</p>
+      <h2 id="feature-title">Built for the people deciding what learning becomes.</h2>
+    </div>
+
+    <article *ngFor="let feature of featureHighlights">
+      <span>{{ feature.kicker }}</span>
+      <h3>{{ feature.title }}</h3>
+      <p>{{ feature.description }}</p>
+    </article>
+  </section>
+
+  <section class="split-section" id="demo" aria-labelledby="demo-title">
+    <article class="demo-card demo-card--primary">
+      <p class="eyebrow">Today&apos;s Demo</p>
+      <h2 id="demo-title">A coherent end-to-end V2 walkthrough.</h2>
+      <p>
+        Show a workspace, project, knowledge sources, artifacts, product wrapper, review status,
+        access grant, learner visibility, and analytics without empty screens.
+      </p>
+      <a routerLink="/login" class="button button--light">Launch Demo</a>
+    </article>
+
+    <article class="demo-card" id="roadmap">
+      <p class="eyebrow">Roadmap</p>
+      <h2>What comes next.</h2>
+      <div class="roadmap-list">
+        <div *ngFor="let item of roadmap">
+          <strong>{{ item.title }}</strong>
+          <span>{{ item.detail }}</span>
         </div>
       </div>
-    </section>
-  </div>
-</div>
+    </article>
+  </section>
+
+  <section class="testimonials" aria-labelledby="testimonial-title">
+    <div class="section-heading">
+      <p class="eyebrow">Testimonials</p>
+      <h2 id="testimonial-title">A product story that resonates across buyers.</h2>
+    </div>
+
+    <article *ngFor="let testimonial of testimonials">
+      <p>&quot;{{ testimonial.quote }}&quot;</p>
+      <div>
+        <strong>{{ testimonial.name }}</strong>
+        <span>{{ testimonial.role }}</span>
+      </div>
+    </article>
+  </section>
+
+  <section class="walkthrough" id="walkthrough" aria-labelledby="walkthrough-title">
+    <div>
+      <p class="eyebrow">Walkthrough</p>
+      <h2 id="walkthrough-title">Five minutes from knowledge command center to learner delivery.</h2>
+      <p>
+        The demo is designed to explain EchoEd itself: knowledge in, AI understanding prepared,
+        review and governance, product publishing, learner delivery, and analytics.
+      </p>
+    </div>
+
+    <ol>
+      <li *ngFor="let step of walkthroughSteps; let i = index">
+        <span>{{ i + 1 }}</span>
+        <p>{{ step }}</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="final-cta" aria-labelledby="cta-title">
+    <p class="eyebrow">Ready for a closer look?</p>
+    <h2 id="cta-title">See EchoEd as a premium knowledge product platform.</h2>
+    <p>
+      Walk through the V2 dashboard, Product Studio, Review Center, Learner Portal, and Analytics with a
+      demo story built for investors, schools, enterprises, parents, and teachers.
+    </p>
+    <div class="hero-actions">
+      <a routerLink="/registration" class="button button--primary">Schedule Demo</a>
+      <a routerLink="/login" class="button button--secondary">Launch Demo</a>
+    </div>
+  </section>
+</main>

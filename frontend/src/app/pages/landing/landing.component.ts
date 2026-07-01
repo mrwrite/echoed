@@ -12,51 +12,64 @@ import { RouterModule } from '@angular/router';
 export class LandingComponent {
   featureHighlights = [
     {
-      title: 'Culturally grounded curriculum',
-      description: 'Stories, primary sources, and activities that celebrate African and African-American history with respect and rigor.',
-      icon: '📚'
+      title: 'AI-native knowledge studio',
+      description: 'Turn institutional expertise, source material, and instructional goals into governed products without losing human review.',
+      kicker: 'Knowledge in'
     },
     {
-      title: 'Student progress intelligence',
-      description: 'Live visibility into mastery, pacing, and engagement for every learner.',
-      icon: '✨'
+      title: 'Governed learner delivery',
+      description: 'Package learning experiences for schools, enterprises, parents, and teachers while existing lesson readiness stays authoritative.',
+      kicker: 'Trust built in'
     },
     {
-      title: 'Built for any learning model',
-      description: 'Perfect for private schools, microschools, homeschool families, and community learning pods.',
-      icon: '🏫'
+      title: 'Product health analytics',
+      description: 'See product readiness, learner engagement, access, review, and knowledge pipeline signal from one premium workspace.',
+      kicker: 'Operator clarity'
     },
   ];
 
-  tourSteps = [
-    'Immersive landing page',
-    'Login & family onboarding',
-    'Student dashboard',
-    'Lesson experience',
-    'Teacher & admin controls'
+  animatedCards = [
+    { label: 'Workspace', value: 'Command center', detail: 'Projects, products, review, learners, analytics' },
+    { label: 'Review', value: 'Human governed', detail: 'Artifact and product decisions stay separate from runtime publishing' },
+    { label: 'Learner Portal', value: 'Product first', detail: 'Existing lessons continue through governed runtime paths' },
+  ];
+
+  walkthroughSteps = [
+    'Open the workspace dashboard and frame the knowledge-to-product model.',
+    'Show Product Studio as the flagship creation workflow.',
+    'Open Review Center to explain trust, readiness, and governance.',
+    'Switch to Learner Portal to show product delivery without changing runtime rules.',
+    'Close with Analytics for product, access, review, and pipeline health.'
   ];
 
   testimonials = [
     {
-      quote: 'EchoEd brings cultural relevance into every lesson. Our students feel seen and inspired.',
-      name: 'Principal Amina O.',
-      role: 'Independent School Leader'
+      quote: 'EchoEd gives our leadership team a way to turn internal expertise into governed learning products without adding operational chaos.',
+      name: 'Maya R.',
+      role: 'Enterprise Enablement Leader'
     },
     {
-      quote: 'As a homeschooling parent, I needed a trusted partner. EchoEd delivers depth and joy.',
-      name: 'Danielle W.',
-      role: 'Homeschool Collective Organizer'
+      quote: 'The review model matters. We can see what is ready, what is blocked, and what learners can safely access.',
+      name: 'Dr. Jonah P.',
+      role: 'Independent School Director'
     },
     {
-      quote: 'It is the rare platform that respects history and gives me the data I need as an educator.',
-      name: 'Mr. Carter',
-      role: 'Middle School Humanities Teacher'
+      quote: 'It feels less like an LMS and more like a product studio for trusted education experiences.',
+      name: 'Elena W.',
+      role: 'Parent and Learning Pod Organizer'
     }
   ];
 
-  comingSoon = [
-    { title: 'Middle School Suites', detail: 'Expanding into grades 6–8 with civics-rich projects and debates.' },
-    { title: 'High School Pathways', detail: 'College-ready modules with primary-source analysis and AP-aligned rigor.' },
-    { title: 'Community Archives', detail: 'District and family uploads curated into living history collections.' },
+  roadmap = [
+    { title: 'Commercial packaging', detail: 'Public product pages, pricing placeholders, and branded product presentation.' },
+    { title: 'Access expansion', detail: 'Manual grants today, with future memberships, teams, invitations, and enterprise seats.' },
+    { title: 'AI generation execution', detail: 'Future controlled generation runs after review and governance foundations are stable.' },
+  ];
+
+  audienceCards = [
+    'Investors evaluating a premium SaaS platform',
+    'Schools modernizing curriculum operations',
+    'Enterprises packaging internal knowledge',
+    'Parents and teachers seeking trusted learner delivery',
   ];
 }

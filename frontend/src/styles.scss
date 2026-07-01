@@ -424,3 +424,635 @@ textarea::placeholder {
     padding: 1rem;
   }
 }
+
+:root {
+  --ee-midnight: #060715;
+  --ee-indigo: #0b1026;
+  --ee-indigo-2: #11183a;
+  --ee-surface: rgba(16, 20, 43, 0.72);
+  --ee-surface-strong: rgba(22, 27, 55, 0.88);
+  --ee-border: rgba(184, 197, 255, 0.16);
+  --ee-border-strong: rgba(239, 226, 177, 0.24);
+  --ee-text: #f7f3ff;
+  --ee-text-soft: #c8c6df;
+  --ee-text-muted: #9694b4;
+  --ee-purple: #a78bfa;
+  --ee-purple-strong: #7c3aed;
+  --ee-gold: #f4c95d;
+  --ee-azure: #5cc8ff;
+  --ee-emerald: #65e6b3;
+  --ee-danger: #ff7a9a;
+  --ee-warning: #ffd37a;
+  --ee-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+  --ee-shadow-soft: 0 18px 50px rgba(4, 6, 22, 0.34);
+  --ee-radius: 22px;
+  --ee-radius-sm: 18px;
+  --ee-duration-fast: 120ms;
+  --ee-duration-base: 180ms;
+  --ee-duration-slow: 260ms;
+  --ee-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ee-easing-emphasized: cubic-bezier(0.2, 0, 0, 1.08);
+  --ee-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ee-hover-lift: translateY(-3px);
+  --ee-press-scale: scale(0.98);
+  --ee-focus-ring: 0 0 0 5px rgba(92, 200, 255, 0.16);
+  --echo-v2-bg: var(--ee-midnight);
+  --echo-v2-panel: var(--ee-surface);
+  --echo-v2-line: var(--ee-border);
+  --echo-v2-muted: var(--ee-text-soft);
+  --echo-v2-teal: var(--ee-azure);
+  --echo-v2-blue: var(--ee-purple);
+  --echo-v2-warning: var(--ee-warning);
+  --echo-v2-danger: var(--ee-danger);
+  --echo-ink: var(--ee-text);
+  --echo-surface: var(--ee-surface);
+  --echo-shadow: var(--ee-shadow-soft);
+  --echo-radius: var(--ee-radius);
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(124, 58, 237, 0.34), transparent 30rem),
+    radial-gradient(circle at 86% 14%, rgba(92, 200, 255, 0.2), transparent 28rem),
+    radial-gradient(circle at 70% 86%, rgba(244, 201, 93, 0.14), transparent 30rem),
+    linear-gradient(135deg, var(--ee-midnight), var(--ee-indigo) 48%, #070817);
+  color: var(--ee-text);
+}
+
+body::before {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 56px 56px;
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--ee-text);
+}
+
+:where(a, button, [role='button'], input, select, textarea, summary):focus,
+:where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
+  outline: 2px solid rgba(92, 200, 255, 0.88);
+  box-shadow: var(--ee-focus-ring);
+}
+
+.ee-page,
+.studio,
+.review-center,
+.analytics,
+.learner-portal {
+  color: var(--ee-text);
+  min-height: 100vh;
+}
+
+.ee-page-header,
+.ee-hero,
+.ee-card,
+.ee-section,
+.ee-panel,
+.ee-metric,
+.ee-state,
+.ee-empty-state,
+.ee-stat-card,
+.ee-navigation-card,
+.glass-panel,
+.surface-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+    var(--ee-surface);
+  border: 1px solid var(--ee-border);
+  border-radius: var(--ee-radius);
+  box-shadow: var(--ee-shadow-soft);
+  backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.ee-page-header,
+.ee-hero {
+  overflow: hidden;
+  padding: clamp(1.75rem, 5vw, 4rem);
+  position: relative;
+}
+
+.ee-page-header::before,
+.ee-hero::before {
+  background:
+    radial-gradient(circle at 16% 20%, rgba(167, 139, 250, 0.34), transparent 17rem),
+    radial-gradient(circle at 92% 12%, rgba(244, 201, 93, 0.22), transparent 18rem),
+    radial-gradient(circle at 74% 80%, rgba(92, 200, 255, 0.18), transparent 20rem);
+  content: '';
+  inset: 0;
+  opacity: 0.95;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ee-page-header::after,
+.ee-hero::after {
+  background: linear-gradient(90deg, var(--ee-purple), var(--ee-gold), var(--ee-azure));
+  content: '';
+  height: 1px;
+  inset: auto 1.5rem 0;
+  position: absolute;
+}
+
+.ee-page-header > *,
+.ee-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ee-eyebrow {
+  color: var(--ee-gold);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+}
+
+.ee-page-title {
+  color: var(--ee-text);
+  font-size: clamp(2.65rem, 7vw, 5.8rem);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.92;
+  max-width: 12ch;
+}
+
+.ee-page-copy,
+.ee-muted,
+.muted-text,
+.text-muted {
+  color: var(--ee-text-soft);
+}
+
+.ee-card,
+.ee-section,
+.ee-panel,
+.ee-stat-card,
+.ee-navigation-card {
+  align-content: start;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.ee-card--interactive,
+.ee-navigation-card,
+.ee-button,
+.ee-link-button,
+.ee-panel,
+.ee-metric,
+.ee-state,
+.ee-list-row,
+.ee-empty-state,
+.ee-stat-card,
+.surface-card,
+.glass-panel {
+  transition:
+    transform var(--ee-duration-base) var(--ee-easing-standard),
+    border-color var(--ee-duration-base) var(--ee-easing-standard),
+    box-shadow var(--ee-duration-base) var(--ee-easing-standard),
+    background var(--ee-duration-base) var(--ee-easing-standard),
+    opacity var(--ee-duration-base) var(--ee-easing-standard);
+}
+
+.ee-card--interactive:hover,
+.ee-navigation-card:hover,
+.ee-button:hover,
+.ee-link-button:hover {
+  transform: var(--ee-hover-lift);
+}
+
+.ee-button:active,
+.ee-link-button:active,
+button:active,
+a.ee-link-button:active {
+  transform: var(--ee-press-scale);
+}
+
+.ee-panel h2,
+.ee-panel h3,
+.ee-section h2,
+.ee-section h3 {
+  color: var(--ee-text);
+}
+
+.ee-metrics {
+  gap: 1rem;
+}
+
+.ee-metric,
+.ee-stat-card {
+  min-height: 7.5rem;
+  padding: 1.15rem;
+}
+
+.ee-metric span,
+.ee-stat-card span {
+  color: var(--ee-text-muted);
+  letter-spacing: 0.12em;
+}
+
+.ee-metric strong,
+.ee-stat-card strong {
+  background: linear-gradient(135deg, var(--ee-text), var(--ee-azure));
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.ee-stat-card p {
+  color: var(--ee-text-soft);
+  margin: 0;
+}
+
+.ee-badge,
+.ee-tag {
+  background: rgba(167, 139, 250, 0.14);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  border-radius: 999px;
+  color: #ddd4ff;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 0.35rem;
+  padding: 0.32rem 0.74rem;
+  width: fit-content;
+}
+
+.ee-badge--draft,
+.ee-badge--pending,
+.ee-badge--needs-changes {
+  background: rgba(244, 201, 93, 0.13);
+  border-color: rgba(244, 201, 93, 0.34);
+  color: #ffe5a2;
+}
+
+.ee-badge--blocked,
+.ee-badge--rejected,
+.ee-badge--revoked {
+  background: rgba(255, 122, 154, 0.14);
+  border-color: rgba(255, 122, 154, 0.34);
+  color: #ffc4d2;
+}
+
+.ee-badge--approved,
+.ee-badge--published,
+.ee-badge--active {
+  background: rgba(101, 230, 179, 0.13);
+  border-color: rgba(101, 230, 179, 0.34);
+  color: #baf8df;
+}
+
+.ee-button,
+.ee-link-button,
+.ee-link-button--primary {
+  border-radius: 999px;
+  min-height: 2.85rem;
+  padding: 0.78rem 1.12rem;
+}
+
+.ee-button,
+.ee-link-button--primary {
+  background: linear-gradient(135deg, var(--ee-purple-strong), var(--ee-purple) 52%, var(--ee-azure));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 34px rgba(92, 200, 255, 0.16);
+  color: #fff;
+}
+
+.ee-button--secondary,
+.ee-link-button {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--ee-border);
+  color: var(--ee-text);
+}
+
+.ee-button--warn {
+  background: linear-gradient(135deg, #be123c, #ff7a9a);
+  border-color: rgba(255, 122, 154, 0.38);
+}
+
+.ee-state,
+.ee-empty-state {
+  color: var(--ee-text-soft);
+  padding: 1.1rem;
+}
+
+.ee-state strong,
+.ee-empty-state strong {
+  color: var(--ee-text);
+}
+
+.ee-state--error {
+  border-color: rgba(255, 122, 154, 0.38);
+  color: #ffc4d2;
+}
+
+.ee-list-row {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--ee-border);
+  border-radius: var(--ee-radius-sm);
+}
+
+.ee-timeline li {
+  border-left-color: rgba(92, 200, 255, 0.34);
+  color: var(--ee-text-soft);
+}
+
+.ee-timeline strong {
+  color: var(--ee-text);
+}
+
+.ee-form-section,
+.ee-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.ee-form label,
+.ee-input {
+  color: var(--ee-text-soft);
+}
+
+.ee-form input,
+.ee-form select,
+.ee-form textarea,
+.ee-input input,
+input,
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--ee-border);
+  border-radius: 16px;
+  color: var(--ee-text);
+}
+
+.ee-form input::placeholder,
+.ee-form textarea::placeholder,
+.ee-input input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: rgba(200, 198, 223, 0.72);
+}
+
+select option {
+  background: var(--ee-indigo);
+  color: var(--ee-text);
+}
+
+.ee-stepper {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ee-stepper li {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--ee-border);
+  border-radius: var(--ee-radius-sm);
+  color: var(--ee-text-soft);
+  display: grid;
+  gap: 0.35rem;
+  min-height: 6.25rem;
+  padding: 1rem;
+}
+
+.ee-stepper li strong {
+  color: var(--ee-text);
+}
+
+@keyframes ee-motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ee-motion-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ee-motion-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ee-motion-shimmer {
+  from { background-position: -180% 0; }
+  to { background-position: 180% 0; }
+}
+
+@keyframes ee-motion-skeleton-pulse {
+  0%, 100% { opacity: 0.58; }
+  50% { opacity: 0.88; }
+}
+
+.ee-motion-fade-in {
+  animation: ee-motion-fade-in var(--ee-duration-slow) var(--ee-easing-standard) both;
+}
+
+.ee-motion-slide-up,
+.ee-motion-page-enter {
+  animation: ee-motion-slide-up var(--ee-duration-slow) var(--ee-easing-standard) both;
+}
+
+.ee-motion-card-enter {
+  animation: ee-motion-card-enter var(--ee-duration-slow) var(--ee-easing-emphasized) both;
+}
+
+.ee-motion-stagger > * {
+  animation: ee-motion-card-enter var(--ee-duration-slow) var(--ee-easing-standard) both;
+  animation-delay: calc(var(--ee-stagger-index, 0) * 45ms);
+}
+
+.ee-motion-stagger > :nth-child(1) { --ee-stagger-index: 0; }
+.ee-motion-stagger > :nth-child(2) { --ee-stagger-index: 1; }
+.ee-motion-stagger > :nth-child(3) { --ee-stagger-index: 2; }
+.ee-motion-stagger > :nth-child(4) { --ee-stagger-index: 3; }
+.ee-motion-stagger > :nth-child(5) { --ee-stagger-index: 4; }
+.ee-motion-stagger > :nth-child(6) { --ee-stagger-index: 5; }
+.ee-motion-stagger > :nth-child(7) { --ee-stagger-index: 6; }
+.ee-motion-stagger > :nth-child(8) { --ee-stagger-index: 7; }
+
+.ee-motion-hover-lift {
+  transition:
+    transform var(--ee-duration-base) var(--ee-easing-standard),
+    border-color var(--ee-duration-base) var(--ee-easing-standard),
+    background var(--ee-duration-base) var(--ee-easing-standard),
+    opacity var(--ee-duration-base) var(--ee-easing-standard);
+}
+
+.ee-motion-hover-lift:hover {
+  transform: var(--ee-hover-lift);
+}
+
+.ee-motion-press:active {
+  transform: var(--ee-press-scale);
+}
+
+.ee-motion-focus-ring:focus-visible {
+  outline: 2px solid rgba(92, 200, 255, 0.92);
+  outline-offset: 3px;
+  box-shadow: var(--ee-focus-ring);
+}
+
+.ee-motion-skeleton {
+  animation: ee-motion-skeleton-pulse 1.35s var(--ee-easing-standard) infinite;
+  background: rgba(255, 255, 255, 0.075);
+  border-radius: 14px;
+}
+
+.ee-motion-shimmer {
+  background:
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.11) 35%, transparent 70%),
+    rgba(255, 255, 255, 0.055);
+  background-size: 220% 100%;
+  animation: ee-motion-shimmer 1.4s var(--ee-easing-standard) infinite;
+}
+
+.ee-page > *,
+.studio > *,
+.review-center > *,
+.analytics > *,
+.learner-portal > * {
+  animation: ee-motion-slide-up var(--ee-duration-slow) var(--ee-easing-standard) both;
+}
+
+.ee-metrics > *,
+.ee-grid > *,
+.ee-list > *,
+.ee-timeline > *,
+.pitch-strip > *,
+.cards > *,
+.grid > *,
+.registry > *,
+.queues > * {
+  animation: ee-motion-card-enter var(--ee-duration-slow) var(--ee-easing-standard) both;
+}
+
+.ee-metrics > :nth-child(1),
+.ee-grid > :nth-child(1),
+.ee-list > :nth-child(1),
+.ee-timeline > :nth-child(1),
+.pitch-strip > :nth-child(1),
+.cards > :nth-child(1),
+.grid > :nth-child(1),
+.registry > :nth-child(1),
+.queues > :nth-child(1) { animation-delay: 0ms; }
+
+.ee-metrics > :nth-child(2),
+.ee-grid > :nth-child(2),
+.ee-list > :nth-child(2),
+.ee-timeline > :nth-child(2),
+.pitch-strip > :nth-child(2),
+.cards > :nth-child(2),
+.grid > :nth-child(2),
+.registry > :nth-child(2),
+.queues > :nth-child(2) { animation-delay: 45ms; }
+
+.ee-metrics > :nth-child(3),
+.ee-grid > :nth-child(3),
+.ee-list > :nth-child(3),
+.ee-timeline > :nth-child(3),
+.pitch-strip > :nth-child(3),
+.cards > :nth-child(3),
+.grid > :nth-child(3),
+.registry > :nth-child(3),
+.queues > :nth-child(3) { animation-delay: 90ms; }
+
+.ee-metrics > :nth-child(4),
+.ee-grid > :nth-child(4),
+.ee-list > :nth-child(4),
+.ee-timeline > :nth-child(4),
+.pitch-strip > :nth-child(4),
+.cards > :nth-child(4),
+.grid > :nth-child(4),
+.registry > :nth-child(4),
+.queues > :nth-child(4) { animation-delay: 135ms; }
+
+.ee-panel:hover,
+.ee-metric:hover,
+.ee-state:hover,
+.ee-list-row:hover,
+.ee-empty-state:hover,
+.ee-stat-card:hover,
+.surface-card:hover,
+.glass-panel:hover {
+  transform: var(--ee-hover-lift);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ee-page > *,
+  .studio > *,
+  .review-center > *,
+  .analytics > *,
+  .learner-portal > *,
+  .ee-card--interactive,
+  .ee-navigation-card,
+  .ee-button,
+  .ee-link-button,
+  .ee-motion-fade-in,
+  .ee-motion-slide-up,
+  .ee-motion-page-enter,
+  .ee-motion-card-enter,
+  .ee-motion-stagger > *,
+  .ee-motion-hover-lift,
+  .ee-motion-skeleton,
+  .ee-motion-shimmer,
+  .ee-metrics > *,
+  .ee-grid > *,
+  .ee-list > *,
+  .ee-timeline > *,
+  .pitch-strip > *,
+  .cards > *,
+  .grid > *,
+  .registry > *,
+  .queues > * {
+    animation: none;
+    transition: none;
+  }
+
+  .ee-card--interactive:hover,
+  .ee-navigation-card:hover,
+  .ee-button:hover,
+  .ee-link-button:hover,
+  .ee-button:active,
+  .ee-link-button:active,
+  button:active,
+  a.ee-link-button:active,
+  .ee-motion-hover-lift:hover,
+  .ee-motion-press:active,
+  .ee-panel:hover,
+  .ee-metric:hover,
+  .ee-state:hover,
+  .ee-list-row:hover,
+  .ee-empty-state:hover,
+  .ee-stat-card:hover,
+  .surface-card:hover,
+  .glass-panel:hover {
+    transform: none;
+  }
+}

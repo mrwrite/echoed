@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { EEMetricComponent } from '../../components/ee-design-system/ee-design-system.components';
 import { ReviewCenter } from '../../models/v2-platform.model';
 import { AnalyticsService, V2WorkspaceAnalytics } from '../../services/analytics.service';
 import { V2PlatformService } from '../../services/v2-platform.service';
@@ -9,7 +10,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
 @Component({
   selector: 'app-workspace-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EEMetricComponent],
   template: `
     <section class="ee-page" aria-labelledby="workspace-dashboard-title">
       <header class="ee-page-header">
@@ -33,10 +34,10 @@ import { V2PlatformService } from '../../services/v2-platform.service';
 
       <ng-container *ngIf="analytics">
         <section class="ee-metrics" aria-label="Workspace overview">
-          <article class="ee-metric"><span>Products</span><strong>{{ analytics.totals.total_products }}</strong></article>
-          <article class="ee-metric"><span>Projects</span><strong>{{ analytics.totals.total_projects }}</strong></article>
-          <article class="ee-metric"><span>Sources</span><strong>{{ analytics.totals.total_knowledge_sources }}</strong></article>
-          <article class="ee-metric"><span>Learners</span><strong>{{ analytics.totals.learner_count }}</strong></article>
+          <app-ee-metric label="Products" [value]="analytics.totals.total_products"></app-ee-metric>
+          <app-ee-metric label="Projects" [value]="analytics.totals.total_projects"></app-ee-metric>
+          <app-ee-metric label="Sources" [value]="analytics.totals.total_knowledge_sources"></app-ee-metric>
+          <app-ee-metric label="Learners" [value]="analytics.totals.learner_count"></app-ee-metric>
         </section>
 
         <section class="pitch-strip" aria-label="EchoEd V2 lifecycle">
@@ -168,16 +169,16 @@ import { V2PlatformService } from '../../services/v2-platform.service';
   `,
   styles: [`
     .flow { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); list-style: none; margin: 0; padding: 0; }
-    .flow li { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; color: #102033; font-weight: 900; padding: .85rem; text-align: center; }
+    .flow li { background: rgba(255,255,255,.055); border: 1px solid var(--ee-border); border-radius: 18px; color: var(--ee-text); font-weight: 900; padding: .95rem; text-align: center; }
     .pitch-strip { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
-    .pitch-strip article { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); display: grid; gap: .3rem; padding: 1rem; }
-    .pitch-strip span { color: #0f766e; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
-    .pitch-strip strong { color: #102033; }
-    .pitch-strip p { color: #526273; margin: 0; }
+    .pitch-strip article { background: linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.035)); border: 1px solid var(--ee-border); border-radius: 20px; box-shadow: var(--ee-shadow-soft); display: grid; gap: .3rem; padding: 1rem; }
+    .pitch-strip span { color: var(--ee-gold); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    .pitch-strip strong { color: var(--ee-text); }
+    .pitch-strip p { color: var(--ee-text-soft); margin: 0; }
     .compact { display: grid; gap: .65rem; margin: 0; }
-    .compact div { border-top: 1px solid #edf2f7; display: grid; gap: .2rem; padding-top: .65rem; }
-    dt { color: #334155; font-size: .74rem; font-weight: 900; text-transform: uppercase; }
-    dd { color: #526273; margin: 0; overflow-wrap: anywhere; }
+    .compact div { border-top: 1px solid var(--ee-border); display: grid; gap: .2rem; padding-top: .65rem; }
+    dt { color: var(--ee-text-muted); font-size: .74rem; font-weight: 900; text-transform: uppercase; }
+    dd { color: var(--ee-text-soft); margin: 0; overflow-wrap: anywhere; }
   `]
 })
 export class WorkspaceDashboardComponent implements OnInit {

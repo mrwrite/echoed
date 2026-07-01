@@ -1,73 +1,115 @@
-<div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531]">
-  <div class="max-w-4xl w-full grid lg:grid-cols-2 gap-6 glass-panel p-6">
-    <div class="hidden lg:flex flex-col justify-between bg-white/5 rounded-2xl p-6 border border-white/15">
-      <div>
-        <p class="text-sm uppercase tracking-[0.25em] text-on-dark-muted">Welcome back</p>
-        <h1 class="text-3xl font-bold mt-2">EchoEd — Login</h1>
-        <p class="text-on-dark">Access student, teacher, and admin views in demo mode to showcase the full EchoEd experience.</p>
-      </div>
-      <div class="space-y-3 text-sm text-on-dark">
-        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">🛡️</span>WCAG AA mindful inputs & focus states</div>
-        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">📊</span>Private, microschool, and homeschool-ready</div>
-        <div class="flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">🚀</span>Investor tour: landing → login → dashboards</div>
-      </div>
-    </div>
+<main class="login-shell">
+  <section class="login-stage" aria-labelledby="login-title">
+    <aside class="login-story" aria-label="EchoEd welcome and security information">
+      <a routerLink="/" class="brand-link" aria-label="Back to EchoEd home">
+        <span>EE</span>
+        <strong>EchoEd</strong>
+      </a>
 
-    <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8 text-ink">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <p class="text-sm text-primary font-semibold">Secure Sign In</p>
-          <h2 class="text-2xl font-bold">Welcome to EchoEd</h2>
-        </div>
-        <span class="badge-soft">Demo Mode</span>
+      <div class="story-copy">
+        <p class="eyebrow">Premium workspace access</p>
+        <h1 id="login-title">Welcome back to the knowledge product command center.</h1>
+        <p>
+          Sign in to continue through the EchoEd V2 demo: workspace, Product Studio, Review Center,
+          Learner Portal, Analytics, and governed lesson delivery.
+        </p>
       </div>
-      <form #loginForm="ngForm" (submit)="login($event)" class="space-y-4" novalidate>
-        <div class="space-y-2">
-          <label for="username" class="text-sm font-semibold text-primary">Email or Username</label>
+
+      <div class="benefit-grid" aria-label="EchoEd benefits">
+        <article>
+          <span>01</span>
+          <strong>Built for trusted learning</strong>
+          <p>Human review, product readiness, and existing lesson governance stay visible.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <strong>Demo-ready workspace</strong>
+          <p>Use seeded V2 data to explain EchoEd to schools, enterprises, parents, and investors.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <strong>Security-minded access</strong>
+          <p>Your session is established through the existing EchoEd authentication flow.</p>
+        </article>
+      </div>
+
+      <div class="security-note" role="note">
+        <span aria-hidden="true">Lock</span>
+        <div>
+          <strong>Secure session bootstrap</strong>
+          <p>Authentication, organization context, and role routing are unchanged by this redesign.</p>
+        </div>
+      </div>
+    </aside>
+
+    <section class="login-card" aria-labelledby="login-card-title">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow">Secure sign in</p>
+          <h2 id="login-card-title">Access EchoEd</h2>
+        </div>
+        <span class="demo-badge">Demo Mode</span>
+      </div>
+
+      <form #loginForm="ngForm" (submit)="login($event)" class="login-form" novalidate>
+        <label class="field" for="username">
+          <span>Email or username</span>
           <input
+            #usernameModel="ngModel"
             type="text"
             id="username"
             name="username"
             [(ngModel)]="username"
             required
+            autocomplete="username"
             placeholder="you@example.com"
-            class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50"
             aria-required="true"
+            [attr.aria-invalid]="usernameModel.invalid && usernameModel.touched"
+            aria-describedby="username-help username-error"
           />
-        </div>
+          <small id="username-help">Use the username or email assigned to your EchoEd account.</small>
+          <small id="username-error" class="field-error" *ngIf="usernameModel.invalid && usernameModel.touched">
+            Username is required.
+          </small>
+        </label>
 
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <label for="password" class="text-sm font-semibold text-primary">Password</label>
-            <button type="button" class="text-sm text-primary underline" (click)="showPassword = !showPassword">
-              {{ showPassword ? 'Hide' : 'Show' }} password
-            </button>
-          </div>
-          <div class="relative">
+        <label class="field" for="password">
+          <span>Password</span>
+          <div class="password-row">
             <input
+              #passwordModel="ngModel"
               [type]="showPassword ? 'text' : 'password'"
               id="password"
               name="password"
               [(ngModel)]="password"
               required
-              placeholder="••••••••"
-              class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:ring-2 focus:ring-accent/50 pr-20"
+              autocomplete="current-password"
+              placeholder="Enter your password"
               aria-required="true"
+              [attr.aria-invalid]="passwordModel.invalid && passwordModel.touched"
+              aria-describedby="password-help password-error"
             />
-            <span class="absolute right-4 top-3 text-xs text-slate-500">Strong & private</span>
+            <button type="button" class="show-password" (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
           </div>
-        </div>
+          <small id="password-help">Your password stays private and is submitted through the existing auth endpoint.</small>
+          <small id="password-error" class="field-error" *ngIf="passwordModel.invalid && passwordModel.touched">
+            Password is required.
+          </small>
+        </label>
 
-        <p class="text-sm text-red-600" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-        <button type="submit" class="w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition">
+        <button type="submit" class="primary-cta" [disabled]="loginForm.invalid">
           Login
         </button>
       </form>
-      <p class="text-sm text-center mt-4">
-        New to EchoEd? <a routerLink="/registration" class="text-primary font-semibold underline">Create an account</a>
-      </p>
-      <p class="text-xs text-center text-slate-500 mt-2">For demo access, use any valid credentials provided to you.</p>
-    </div>
-  </div>
-</div>
+
+      <div class="login-footer">
+        <p>New to EchoEd? <a routerLink="/registration">Create an account</a></p>
+        <p>For demo access, use the credentials provided with your walkthrough.</p>
+      </div>
+    </section>
+  </section>
+</main>

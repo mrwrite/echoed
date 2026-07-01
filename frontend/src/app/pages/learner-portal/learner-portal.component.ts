@@ -97,27 +97,33 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     </section>
   `,
   styles: [`
-    .learner-portal { color: #102033; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
-    header, .panel, .summary article { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); padding: clamp(1rem, 3vw, 1.5rem); }
-    header p, .panel__heading p { color: #0f766e; font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .35rem; text-transform: uppercase; }
-    h1, h2, h3 { letter-spacing: 0; margin: 0; }
-    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; }
-    header span, .panel > p, .product p, .empty { color: #526273; }
+    .learner-portal { color: var(--ee-text); display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
+    header, .panel, .summary article { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.035)), var(--ee-surface); border: 1px solid var(--ee-border); border-radius: var(--ee-radius); box-shadow: var(--ee-shadow-soft); backdrop-filter: blur(22px) saturate(1.2); padding: clamp(1rem, 3vw, 1.5rem); transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .panel:hover, .summary article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    header { padding: clamp(1.75rem, 5vw, 4rem); }
+    header p, .panel__heading p { color: var(--ee-gold); font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .35rem; text-transform: uppercase; }
+    h1, h2, h3 { color: var(--ee-text); letter-spacing: 0; margin: 0; }
+    h1 { font-size: clamp(2.65rem, 7vw, 5.4rem); line-height: .92; max-width: 12ch; }
+    header span, .panel > p, .product p, .empty { color: var(--ee-text-soft); }
     nav, .panel__heading, .summary, .cards { display: grid; gap: .75rem; }
     nav { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
     nav a, .panel__heading a, .product button { border-radius: 6px; font-weight: 900; padding: .65rem .85rem; text-decoration: none; }
-    nav a { background: #e7f7f4; color: #0f766e; text-align: center; }
+    nav a { background: rgba(255,255,255,.055); border: 1px solid var(--ee-border); border-radius: 999px; color: var(--ee-text); text-align: center; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    nav a:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
     .summary { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
     .summary article { display: grid; gap: .2rem; }
-    .summary strong { color: #0f766e; font-size: 2rem; }
-    .summary span, .product span { color: #526273; font-weight: 800; }
-    .product small { color: #0f766e; font-weight: 800; }
+    .summary strong { background: linear-gradient(135deg, var(--ee-text), var(--ee-azure)); background-clip: text; color: transparent; font-size: 2rem; }
+    .summary span, .product span { color: var(--ee-text-soft); font-weight: 800; }
+    .product small { color: var(--ee-azure); font-weight: 800; }
     .panel__heading { align-items: center; display: flex; justify-content: space-between; }
-    .panel__heading > span, .panel__heading a { background: #102033; color: #fff; }
+    .panel__heading > span, .panel__heading a { background: linear-gradient(135deg, var(--ee-purple-strong), var(--ee-purple), var(--ee-azure)); border-radius: 999px; color: #fff; }
     .cards { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
-    .product { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .65rem; padding: 1rem; }
-    .product button { background: #102033; border: 1px solid #102033; color: #fff; cursor: pointer; width: fit-content; }
-    a:focus-visible, button:focus-visible { outline: 3px solid rgba(15,118,110,.25); outline-offset: 3px; }
+    .product { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: rgba(255,255,255,.045); border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .65rem; padding: 1rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .product:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    .product button { background: linear-gradient(135deg, var(--ee-purple-strong), var(--ee-purple), var(--ee-azure)); border: 1px solid rgba(255,255,255,.18); color: #fff; cursor: pointer; transition: transform var(--ee-duration-fast, 120ms) var(--ee-easing-standard, ease); width: fit-content; }
+    .product button:active { transform: var(--ee-press-scale, scale(.98)); }
+    a:focus-visible, button:focus-visible { outline: 3px solid rgba(92,200,255,.25); outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { header, .panel, .summary article, .product { animation: none; } .panel:hover, .summary article:hover, nav a:hover, .product:hover, .product button:active { transform: none; } }
   `]
 })
 export class LearnerPortalComponent implements OnInit {

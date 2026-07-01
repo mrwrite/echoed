@@ -114,27 +114,33 @@ import {
     </section>
   `,
   styles: [`
-    .analytics { color: #102033; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
-    header, .panel, .summary article, .state { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); padding: clamp(1rem, 3vw, 1.5rem); }
-    header p { color: #0f766e; font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .35rem; text-transform: uppercase; }
-    h1, h2 { letter-spacing: 0; margin: 0; }
-    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; }
+    .analytics { color: var(--ee-text); display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
+    header, .panel, .summary article, .state { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.035)), var(--ee-surface); border: 1px solid var(--ee-border); border-radius: var(--ee-radius); box-shadow: var(--ee-shadow-soft); backdrop-filter: blur(22px) saturate(1.2); padding: clamp(1rem, 3vw, 1.5rem); transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .panel:hover, .summary article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    header { padding: clamp(1.75rem, 5vw, 4rem); }
+    header p { color: var(--ee-gold); font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .35rem; text-transform: uppercase; }
+    h1, h2 { color: var(--ee-text); letter-spacing: 0; margin: 0; }
+    h1 { font-size: clamp(2.65rem, 7vw, 5.4rem); line-height: .92; max-width: 12ch; }
     h2 { font-size: 1.1rem; }
-    header span, .state, dt, li span, li em, p { color: #526273; }
-    .state--error { border-color: #fecaca; color: #b91c1c; }
+    header span, .state, dt, li span, li em, p { color: var(--ee-text-soft); }
+    .state--error { border-color: rgba(255,122,154,.38); color: #ffc4d2; }
     .summary { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
     .summary article { display: grid; gap: .35rem; }
-    .summary span { color: #526273; font-size: .75rem; font-weight: 900; text-transform: uppercase; }
-    .summary strong { font-size: 2rem; line-height: 1; }
+    .summary article:nth-child(2), .grid > :nth-child(2) { animation-delay: 45ms; }
+    .summary article:nth-child(3), .grid > :nth-child(3) { animation-delay: 90ms; }
+    .summary article:nth-child(4), .grid > :nth-child(4) { animation-delay: 135ms; }
+    .summary span { color: var(--ee-text-muted); font-size: .75rem; font-weight: 900; text-transform: uppercase; }
+    .summary strong { background: linear-gradient(135deg, var(--ee-text), var(--ee-azure)); background-clip: text; color: transparent; font-size: 2rem; line-height: 1; }
     .grid { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
     .panel { display: grid; gap: .85rem; align-content: start; }
     dl { display: grid; gap: .55rem; margin: 0; }
-    dl div { border-top: 1px solid #edf2f7; display: grid; gap: .2rem; padding-top: .55rem; }
+    dl div { border-top: 1px solid var(--ee-border); display: grid; gap: .2rem; padding-top: .55rem; }
     dt { font-size: .72rem; font-weight: 900; text-transform: uppercase; }
     dd { margin: 0; overflow-wrap: anywhere; }
     ul { display: grid; gap: .65rem; list-style: none; margin: 0; padding: 0; }
-    li { border-top: 1px solid #edf2f7; display: grid; gap: .15rem; padding-top: .65rem; }
+    li { animation: ee-motion-slide-up var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease) both; border-top: 1px solid var(--ee-border); display: grid; gap: .15rem; padding-top: .65rem; }
     li span, li em { font-size: .72rem; font-style: normal; font-weight: 900; text-transform: uppercase; }
+    @media (prefers-reduced-motion: reduce) { header, .panel, .summary article, .state, li { animation: none; } .panel:hover, .summary article:hover { transform: none; } }
   `]
 })
 export class WorkspaceAnalyticsComponent implements OnInit {

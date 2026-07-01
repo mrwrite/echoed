@@ -47,14 +47,18 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     </section>
   `,
   styles: [`
-    .artifact-detail { color: #0f172a; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
+    .artifact-detail { animation: ee-motion-slide-up var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; color: #0f172a; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
     .back-link { color: #0e7490; font-weight: 900; text-decoration: none; width: fit-content; }
-    .panel { background: #fff; border: 1px solid rgba(15,23,42,.1); border-radius: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.08); padding: clamp(1rem, 3vw, 1.5rem); }
+    .panel { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; background: #fff; border: 1px solid rgba(15,23,42,.1); border-radius: 1.4rem; box-shadow: 0 18px 40px rgba(15,23,42,.08); padding: clamp(1rem, 3vw, 1.5rem); transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .grid > .panel:nth-child(2) { animation-delay: 70ms; }
+    .panel:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
     article > p:first-child { color: #0e7490; font-size: .76rem; font-weight: 900; letter-spacing: .22em; margin: 0 0 .5rem; text-transform: uppercase; }
     h1, h2 { letter-spacing: -.03em; margin: 0; }
     h1 { font-size: clamp(2rem, 5vw, 3rem); }
     span { color: #0e7490; font-weight: 800; }
     .badges { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .badges .ee-badge { transition: transform var(--ee-duration-fast, 120ms) var(--ee-easing-standard, ease), border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), background var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .badges .ee-badge:hover { transform: translateY(-1px); }
     .notice, .body, dd { color: #475569; }
     .grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); }
     dl { display: grid; gap: .4rem; margin: 0; }
@@ -63,6 +67,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     a { color: #0e7490; font-weight: 800; }
     a:focus-visible { outline: 3px solid rgba(14,116,144,.25); outline-offset: 3px; }
     @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .artifact-detail, .panel { animation: none; } .panel:hover, .badges .ee-badge:hover { transform: none; } }
   `]
 })
 export class ArtifactDetailComponent implements OnInit {

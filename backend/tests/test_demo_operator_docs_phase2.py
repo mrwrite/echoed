@@ -46,18 +46,23 @@ def test_readme_links_to_demo_operator_runbook():
 
 def test_reseed_script_runs_seed_entrypoint_and_prints_summary(monkeypatch, capsys):
     module = _load_reseed_demo_module()
-    called = {"run": 0}
+    called = {"runtime_run": 0, "v2_run": 0}
 
     def fake_run():
-        called["run"] += 1
+        called["runtime_run"] += 1
+
+    def fake_v2_run():
+        called["v2_run"] += 1
 
     monkeypatch.setattr(module.seed_demo, "run", fake_run)
+    monkeypatch.setattr(module.seed_v2_demo, "run", fake_v2_run)
 
     exit_code = module.main()
 
     output = capsys.readouterr().out
     assert exit_code == 0
-    assert called["run"] == 1
+    assert called["runtime_run"] == 1
+    assert called["v2_run"] == 1
     assert "Running EchoEd demo reseed..." in output
     assert "EchoEd demo reseed completed successfully." in output
     assert seed_demo.DEMO_ORG_NAME in output
@@ -65,3 +70,4 @@ def test_reseed_script_runs_seed_entrypoint_and_prints_summary(monkeypatch, caps
     assert seed_demo.DEMO_USERS["teacher"]["username"] in output
     assert seed_demo.DEMO_USERS["mastered_student"]["username"] in output
     assert "expected runtime recommendation=enrichment" in output
+    assert "/workspace/demo-readiness" in output

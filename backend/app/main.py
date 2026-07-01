@@ -59,6 +59,7 @@ app.add_middleware(
 )
 
 app.include_router(progress.router, prefix="/api", tags=["Progress"])
+app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
 app.include_router(start_course.router, prefix="/api", tags=["Start Course"])
 app.include_router(badges.router, prefix="/api", tags=["Badges"])

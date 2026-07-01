@@ -11,7 +11,7 @@ from sqlalchemy import (
     JSON,
     UniqueConstraint,
 )
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base, validates
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.types import Enum as SqlEnum
 from app.enum import (
@@ -29,6 +29,20 @@ from datetime import datetime
 import uuid
 
 Base = declarative_base()
+
+
+def _coerce_progress_status(value):
+    if value is None or isinstance(value, ProgressStatus):
+        return value
+    if isinstance(value, str):
+        try:
+            return ProgressStatus(value)
+        except ValueError:
+            try:
+                return ProgressStatus[value]
+            except KeyError as exc:
+                raise ValueError(f"Invalid progress status: {value}") from exc
+    raise ValueError(f"Invalid progress status: {value}")
 
 user_units = Table(
 "user_units",
@@ -411,7 +425,15 @@ class StudentUnitProgress(Base):
         ForeignKey('units.id', ondelete='CASCADE'),
         nullable=False,
     )
-    status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
+    status = Column(
+        SqlEnum(
+            ProgressStatus,
+            name="progress_status_enum",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            create_constraint=True,
+        ),
+        default=ProgressStatus.NOT_STARTED,
+    )
     last_updated = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
@@ -421,6 +443,10 @@ class StudentUnitProgress(Base):
     section = relationship("Section")
 
     segments = relationship("SegmentProgress", back_populates="student_unit", cascade="all, delete-orphan")
+
+    @validates("status")
+    def validate_status(self, key, value):
+        return _coerce_progress_status(value)
 
 class SegmentProgress(Base):
     __tablename__ = 'segment_progress'
@@ -449,6 +475,10 @@ class SegmentProgress(Base):
     student_unit = relationship("StudentUnitProgress", back_populates="segments")
     lesson = relationship("Lesson")
     section = relationship("Section")
+
+    @validates("status")
+    def validate_status(self, key, value):
+        return _coerce_progress_status(value)
 
 
 
@@ -573,10 +603,28 @@ class Product(Base):
     program_id = Column(UUID(as_uuid=True), ForeignKey("programs.id"), nullable=True)
     product_type = Column(String, nullable=False, default="course")
     title = Column(String, nullable=False)
+    subtitle = Column(String, nullable=True)
+    slug = Column(String, nullable=True, unique=True, index=True)
     description = Column(Text, nullable=True)
+    hero_image_url = Column(String, nullable=True)
+    thumbnail_url = Column(String, nullable=True)
     status = Column(String, nullable=False, default="draft")
     review_state = Column(String, nullable=False, default="not_reviewed")
     access_state = Column(String, nullable=False, default="private")
+    visibility = Column(String, nullable=False, default="draft")
+    pricing_model = Column(String, nullable=False, default="internal")
+    price_placeholder = Column(String, nullable=True)
+    currency = Column(String, nullable=True)
+    audience = Column(String, nullable=True)
+    difficulty = Column(String, nullable=True)
+    estimated_duration = Column(String, nullable=True)
+    tags = Column(JSON, nullable=True, default=list)
+    category = Column(String, nullable=True)
+    version = Column(String, nullable=True)
+    language = Column(String, nullable=True)
+    last_updated = Column(DateTime, nullable=True)
+    certificate_available = Column(Boolean, nullable=False, default=False)
+    featured = Column(Boolean, nullable=False, default=False)
     product_metadata = Column("metadata", JSON, nullable=True, default=dict)
     published_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

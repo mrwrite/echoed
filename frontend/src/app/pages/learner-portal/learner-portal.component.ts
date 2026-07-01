@@ -63,11 +63,14 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           (click)="continueProduct(nextProduct!)"
         ></app-echo-button>
         <app-echo-button
-          *ngIf="nextProduct && !nextProduct.is_enrolled"
+          *ngIf="nextProduct && !nextProduct.is_enrolled && nextProduct.course_id"
           color="accent"
           label="Enroll"
           (click)="enroll(nextProduct)"
         ></app-echo-button>
+        <p class="empty" *ngIf="nextProduct && !nextProduct.is_enrolled && !nextProduct.course_id">
+          Access is active for this product. Runtime delivery is not connected yet.
+        </p>
       </section>
 
       <section class="panel" aria-labelledby="enrolled-products-heading">
@@ -82,6 +85,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <article class="product" *ngFor="let product of enrolledProducts | slice:0:3">
             <h3>{{ product.title }}</h3>
             <p>{{ product.description || product.learner_visibility }}</p>
+            <small *ngIf="product.access_grant_id">Access grant active · governed lessons still use runtime rules</small>
             <span>{{ label(product.source) }} · {{ label(product.enrollment_status || 'enrolled') }}</span>
             <button type="button" (click)="continueProduct(product)">Continue</button>
           </article>
@@ -107,6 +111,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     .summary article { display: grid; gap: .2rem; }
     .summary strong { color: #0f766e; font-size: 2rem; }
     .summary span, .product span { color: #526273; font-weight: 800; }
+    .product small { color: #0f766e; font-weight: 800; }
     .panel__heading { align-items: center; display: flex; justify-content: space-between; }
     .panel__heading > span, .panel__heading a { background: #102033; color: #fff; }
     .cards { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }

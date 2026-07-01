@@ -10,6 +10,7 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from app import seed_demo  # noqa: E402
+from app import seed_v2_demo  # noqa: E402
 
 
 ARCHETYPE_SUMMARY = (
@@ -58,6 +59,7 @@ def main() -> int:
     print("Running EchoEd demo reseed...")
     try:
         seed_demo.run()
+        seed_v2_demo.run()
     except Exception as exc:
         print("EchoEd demo reseed failed.", file=sys.stderr)
         print(f"Error: {exc}", file=sys.stderr)
@@ -65,7 +67,11 @@ def main() -> int:
 
     print("EchoEd demo reseed completed successfully.")
     _print_account_summary()
-    print("Recommended next step: sign in as the demo teacher and open the flagship course dashboard.")
+    print("V2 dogfooding workspace:")
+    print(f"  - Workspace route: /workspace")
+    print(f"  - Demo guide route: /workspace/demo-readiness")
+    print(f"  - Learner route: /learn as normalstudent / {seed_demo.DEMO_PASSWORD}")
+    print("Recommended next step: sign in as contentadmin and open /workspace/demo-readiness.")
     return 0
 
 

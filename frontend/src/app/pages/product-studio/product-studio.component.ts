@@ -29,9 +29,9 @@ const PRODUCT_TYPES = [
         <p class="eyebrow">Product Studio</p>
         <h1 id="product-studio-title">Create trusted learning products</h1>
         <p>
-          Start with a product shell, connect it to a project, and optionally wrap an existing
-          course-backed runtime product. AI generation, analysis, approval, and publishing remain
-          future steps.
+          Product Studio is the flagship workflow: bring knowledge in, prepare AI understanding,
+          generate reviewable artifacts later, govern every decision, then package approved work as
+          products that reuse the existing learner runtime.
         </p>
         <div class="hero-actions">
           <a routerLink="/workspace/product-studio/courses/new">Open existing course wizard</a>
@@ -45,6 +45,32 @@ const PRODUCT_TYPES = [
         <article><strong>{{ products.length }}</strong><span>Products</span></article>
         <article><strong>{{ courseBackedProductCount }}</strong><span>Course-backed</span></article>
       </div>
+
+      <section class="workflow panel" aria-labelledby="studio-workflow-title">
+        <div class="list-head">
+          <div>
+            <p class="eyebrow">Flagship workflow</p>
+            <h2 id="studio-workflow-title">Create Product to Governed Publish</h2>
+          </div>
+          <span class="future-pill">AI execution not implemented</span>
+        </div>
+        <ol>
+          <li><strong>Create Product</strong><span>Define the wrapper and intended product type.</span></li>
+          <li><strong>Choose Product Type</strong><span>Course, path, resource pack, or documentation package.</span></li>
+          <li><strong>Connect Project</strong><span>Attach sources, artifacts, and product work to a project.</span></li>
+          <li><strong>Add Knowledge Sources</strong><span>Record traceable source shells for future analysis.</span></li>
+          <li class="disabled"><strong>Generate Artifacts</strong><span>Coming soon. No AI generation runs from this phase.</span></li>
+          <li><strong>Review</strong><span>Use Review Center for wrapper status and lesson readiness context.</span></li>
+          <li class="disabled"><strong>Publish</strong><span>Wrapper approval does not override runtime governance.</span></li>
+        </ol>
+      </section>
+
+      <section class="panel pitch-cards" aria-label="Product Studio pitch callouts">
+        <article><span>Knowledge In</span><strong>Connect project sources</strong><p>Product work starts from traceable workspace knowledge.</p></article>
+        <article><span>AI Understanding</span><strong>Prepare analysis safely</strong><p>Generation remains marked as future work in this phase.</p></article>
+        <article><span>Review</span><strong>Govern artifacts and products</strong><p>Review status is additive and does not publish lessons.</p></article>
+        <article><span>Publish</span><strong>Wrap existing runtime</strong><p>Course-backed products reuse current Course, Unit, Lesson, and readiness rules.</p></article>
+      </section>
 
       <div class="grid">
         <form class="panel" (ngSubmit)="createProject()" aria-labelledby="new-project-title">
@@ -113,6 +139,32 @@ const PRODUCT_TYPES = [
           </label>
 
           <label>
+            Subtitle
+            <input name="productSubtitle" [(ngModel)]="productSubtitle" placeholder="Turn internal expertise into governed onboarding" />
+          </label>
+
+          <label>
+            Pricing model
+            <select name="pricingModel" [(ngModel)]="pricingModel">
+              <option value="internal">Internal</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid placeholder</option>
+              <option value="enterprise">Enterprise placeholder</option>
+            </select>
+          </label>
+
+          <label>
+            Visibility
+            <select name="visibility" [(ngModel)]="visibility">
+              <option value="draft">Draft</option>
+              <option value="private">Private</option>
+              <option value="workspace">Workspace</option>
+              <option value="invite_only">Invite only</option>
+              <option value="public">Public placeholder</option>
+            </select>
+          </label>
+
+          <label>
             Description
             <textarea name="productDescription" [(ngModel)]="productDescription" rows="3" placeholder="What should learners or members get from this product?"></textarea>
           </label>
@@ -173,6 +225,16 @@ const PRODUCT_TYPES = [
     .metrics article { padding: 1rem; display: grid; gap: .25rem; }
     .metrics strong { font-size: 2rem; }
     .metrics span, .muted, .product-list p, .empty { color: #475569; }
+    .workflow ol { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); list-style: none; margin: 0; padding: 0; }
+    .workflow li { background: #f8fafc; border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .25rem; min-height: 6rem; padding: .9rem; }
+    .workflow li strong { color: #102033; }
+    .workflow li span { color: #526273; }
+    .workflow li.disabled { background: #f1f5f9; border-style: dashed; opacity: .82; }
+    .future-pill { background: #fffbeb; border: 1px solid #fde68a; border-radius: 999px; color: #a16207; font-weight: 900; padding: .35rem .65rem; }
+    .pitch-cards { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+    .pitch-cards article { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .3rem; padding: .9rem; }
+    .pitch-cards span { color: #0e7490; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    .pitch-cards p { color: #475569; margin: 0; }
     .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr)); }
     .panel { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 1.5rem); }
     label { color: #334155; display: grid; font-weight: 800; gap: .4rem; }
@@ -200,7 +262,10 @@ export class ProductStudioComponent implements OnInit {
   productProjectId = '';
   selectedCourseId = '';
   productTitle = '';
+  productSubtitle = '';
   productDescription = '';
+  pricingModel = 'internal';
+  visibility = 'draft';
   savingProject = false;
   savingProduct = false;
   statusMessage = '';
@@ -272,15 +337,21 @@ export class ProductStudioComponent implements OnInit {
       course_id: this.selectedCourseId || null,
       product_type: this.productType,
       title: this.productTitle,
+      subtitle: this.productSubtitle || null,
       description: this.productDescription || null,
       status: 'draft',
       review_state: this.selectedCourseId ? 'runtime_authoritative' : 'not_reviewed',
       access_state: this.selectedCourseId ? 'existing_runtime' : 'private',
-      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented' },
+      visibility: this.visibility,
+      pricing_model: this.pricingModel,
+      price_placeholder: this.pricingModel === 'paid' ? 'Price placeholder - checkout not connected' : null,
+      currency: this.pricingModel === 'paid' ? 'USD' : null,
+      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented', checkout: 'not_implemented' },
     }).subscribe({
       next: product => {
         this.statusMessage = `Product shell ready: ${product.title}`;
         this.productTitle = '';
+        this.productSubtitle = '';
         this.productDescription = '';
         this.selectedCourseId = '';
         this.savingProduct = false;

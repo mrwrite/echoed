@@ -36,6 +36,11 @@ import { LearnerProductsComponent } from './pages/learner-portal/learner-product
 import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
 import { AccessGrantsComponent } from './pages/access-grants/access-grants.component';
 import { WorkspaceAnalyticsComponent } from './pages/workspace-analytics/workspace-analytics.component';
+import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
+import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
+import { PublicProductsComponent } from './pages/public-products/public-products.component';
+import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
+import { CommercialDashboardComponent } from './pages/commercial-dashboard/commercial-dashboard.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -43,6 +48,8 @@ const sectionRoles = ['teacher', 'org_admin', 'instructor'];
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
+  { path: 'products', component: PublicProductsComponent },
+  { path: 'products/:slug', component: PublicProductDetailComponent },
   { path: 'login', component: LoginComponent },
   { path: 'registration', component: RegistrationComponent },
   { path: 'onboarding/organization', component: OnboardingOrganizationComponent },
@@ -128,18 +135,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: V2PlatformPageComponent,
-        data: {
-          eyebrow: 'Workspace',
-          title: 'EchoEd workspace',
-          description: 'A platform view of your organization knowledge, learning products, review workflow, learners, and operational readiness.',
-          status: 'Phase 1 maps the existing education runtime into the V2 platform shell without replacing courses, lessons, progress, or governance.',
-          links: [
-            { label: 'View products', route: '/workspace/products' },
-            { label: 'Open learner portal', route: '/workspace/learners' },
-            { label: 'Review center', route: '/workspace/review-center' }
-          ]
-        }
+        component: WorkspaceDashboardComponent,
       },
       {
         path: 'projects',
@@ -305,6 +301,18 @@ export const routes: Routes = [
       {
         path: 'analytics',
         component: WorkspaceAnalyticsComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'commercial',
+        component: CommercialDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
+      {
+        path: 'demo-readiness',
+        component: DemoReadinessComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },

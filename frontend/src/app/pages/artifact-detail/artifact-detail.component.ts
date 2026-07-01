@@ -15,6 +15,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <article *ngIf="artifact" class="panel">
         <p>Artifact Registry</p>
         <h1 id="artifact-title">{{ artifact.title }}</h1>
+        <div class="badges">
+          <span class="ee-badge">{{ label(artifact.artifact_type) }}</span>
+          <span class="ee-badge" [ngClass]="badgeClass(artifact.status)">{{ label(artifact.status) }}</span>
+          <span class="ee-badge" [ngClass]="badgeClass(artifact.review_state)">{{ label(artifact.review_state) }}</span>
+        </div>
         <span>{{ label(artifact.artifact_type) }} · {{ artifact.status }} · {{ artifact.review_state }}</span>
         <p class="notice">This artifact is a reviewable V2 output. It is not learner-deliverable until a future review or publishing flow explicitly attaches it.</p>
       </article>
@@ -49,6 +54,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     h1, h2 { letter-spacing: -.03em; margin: 0; }
     h1 { font-size: clamp(2rem, 5vw, 3rem); }
     span { color: #0e7490; font-weight: 800; }
+    .badges { display: flex; flex-wrap: wrap; gap: .5rem; }
     .notice, .body, dd { color: #475569; }
     .grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); }
     dl { display: grid; gap: .4rem; margin: 0; }
@@ -77,5 +83,18 @@ export class ArtifactDetailComponent implements OnInit {
 
   label(value: string): string {
     return value.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  badgeClass(value: string): string {
+    if (['approved', 'published', 'active'].includes(value)) {
+      return 'ee-badge--approved';
+    }
+    if (['rejected', 'blocked', 'revoked'].includes(value)) {
+      return 'ee-badge--blocked';
+    }
+    if (['draft', 'in_review', 'needs_changes'].includes(value)) {
+      return 'ee-badge--draft';
+    }
+    return '';
   }
 }

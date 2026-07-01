@@ -29,10 +29,28 @@ export interface Product {
   program_id?: string | null;
   product_type: string;
   title: string;
+  subtitle?: string | null;
+  slug?: string | null;
   description?: string | null;
+  hero_image_url?: string | null;
+  thumbnail_url?: string | null;
   status: string;
   review_state: string;
   access_state: string;
+  visibility: string;
+  pricing_model: string;
+  price_placeholder?: string | null;
+  currency?: string | null;
+  audience?: string | null;
+  difficulty?: string | null;
+  estimated_duration?: string | null;
+  tags?: string[] | null;
+  category?: string | null;
+  version?: string | null;
+  language?: string | null;
+  last_updated?: string | null;
+  certificate_available: boolean;
+  featured: boolean;
   metadata: Record<string, unknown>;
   published_at?: string | null;
   created_at: string;
@@ -173,11 +191,57 @@ export interface ProductCreateRequest {
   program_id?: string | null;
   product_type: string;
   title: string;
+  subtitle?: string | null;
+  slug?: string | null;
   description?: string | null;
   status?: string;
   review_state?: string;
   access_state?: string;
+  hero_image_url?: string | null;
+  thumbnail_url?: string | null;
+  visibility?: string;
+  pricing_model?: string;
+  price_placeholder?: string | null;
+  currency?: string | null;
+  audience?: string | null;
+  difficulty?: string | null;
+  estimated_duration?: string | null;
+  tags?: string[];
+  category?: string | null;
+  version?: string | null;
+  language?: string | null;
+  last_updated?: string | null;
+  certificate_available?: boolean;
+  featured?: boolean;
   metadata?: Record<string, unknown>;
+}
+
+export interface ProductCommercialMetadataRequest {
+  title?: string;
+  subtitle?: string | null;
+  slug?: string | null;
+  description?: string | null;
+  hero_image_url?: string | null;
+  thumbnail_url?: string | null;
+  visibility?: string;
+  pricing_model?: string;
+  price_placeholder?: string | null;
+  currency?: string | null;
+  audience?: string | null;
+  difficulty?: string | null;
+  estimated_duration?: string | null;
+  tags?: string[];
+  category?: string | null;
+  version?: string | null;
+  language?: string | null;
+  last_updated?: string | null;
+  certificate_available?: boolean;
+  featured?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ProductPublishRequest {
+  visibility: string;
 }
 
 export interface AccessGrantCreateRequest {

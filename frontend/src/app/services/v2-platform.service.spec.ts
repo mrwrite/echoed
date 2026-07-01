@@ -106,6 +106,100 @@ describe('V2PlatformService', () => {
     });
   });
 
+  it('loads public product pages without workspace filters', () => {
+    service.getPublicProducts().subscribe(products => {
+      expect(products[0].slug).toBe('course-product');
+    });
+    service.getPublicProduct('course-product').subscribe(product => {
+      expect(product.title).toBe('Course Product');
+    });
+
+    const listRequest = httpMock.expectOne(`${environment.apiUrl}/api/public/products`);
+    expect(listRequest.request.method).toBe('GET');
+    listRequest.flush([
+      {
+        id: 'product-1',
+        workspace_id: 'workspace-1',
+        project_id: null,
+        course_id: null,
+        program_id: null,
+        product_type: 'course',
+        title: 'Course Product',
+        slug: 'course-product',
+        description: null,
+        status: 'published',
+        review_state: 'approved',
+        access_state: 'private',
+        visibility: 'public',
+        pricing_model: 'free',
+        certificate_available: false,
+        featured: false,
+        metadata: {},
+        published_at: '2026-01-01T00:00:00',
+        created_at: '2026-01-01T00:00:00',
+        updated_at: '2026-01-01T00:00:00',
+      },
+    ]);
+
+    const detailRequest = httpMock.expectOne(`${environment.apiUrl}/api/public/products/course-product`);
+    expect(detailRequest.request.method).toBe('GET');
+    detailRequest.flush({
+      id: 'product-1',
+      workspace_id: 'workspace-1',
+      project_id: null,
+      course_id: null,
+      program_id: null,
+      product_type: 'course',
+      title: 'Course Product',
+      slug: 'course-product',
+      description: null,
+      status: 'published',
+      review_state: 'approved',
+      access_state: 'private',
+      visibility: 'public',
+      pricing_model: 'free',
+      certificate_available: false,
+      featured: false,
+      metadata: {},
+      published_at: '2026-01-01T00:00:00',
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-01T00:00:00',
+    });
+  });
+
+  it('publishes product wrappers without checkout execution', () => {
+    service.publishProduct('product-1', { visibility: 'public' }).subscribe(product => {
+      expect(product.status).toBe('published');
+      expect(product.visibility).toBe('public');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/products/product-1/publish`);
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body.visibility).toBe('public');
+    request.flush({
+      id: 'product-1',
+      workspace_id: 'workspace-1',
+      project_id: null,
+      course_id: null,
+      program_id: null,
+      product_type: 'course',
+      title: 'Course Product',
+      slug: 'course-product',
+      description: null,
+      status: 'published',
+      review_state: 'approved',
+      access_state: 'private',
+      visibility: 'public',
+      pricing_model: 'free',
+      certificate_available: false,
+      featured: false,
+      metadata: {},
+      published_at: '2026-01-01T00:00:00',
+      created_at: '2026-01-01T00:00:00',
+      updated_at: '2026-01-01T00:00:00',
+    });
+  });
+
   it('creates knowledge source shells through the V2 source API', () => {
     service.createKnowledgeSource({
       workspace_id: 'workspace-1',

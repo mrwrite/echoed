@@ -22,6 +22,9 @@ Use this flow before a live demo when you need to:
 - Demo organization: `EchoEd Demo School`
 - Flagship course: `Introduction to Africa`
 - Demo section: `Grade 3 - Cohort A`
+- V2 workspace: `EchoEd Demo Workspace`
+- V2 project: `EchoEd V2 Platform Evolution Dogfood`
+- V2 guide route: `/workspace/demo-readiness`
 - Shared seeded password: `password`
 
 ## Canonical Demo Accounts
@@ -69,6 +72,8 @@ What this guarantees:
 - canonical demo users are reset to their known usernames, emails, roles, and passwords
 - duplicate demo identities are cleaned up before final upsert
 - flagship learner progress, attempts, and intervention states return to deterministic demo defaults
+- V2 dogfooding wrapper records are present for workspace, project, knowledge sources, artifacts, products, access grants, review queues, learner visibility, and analytics
+- no Course, Unit, Lesson, progress, enrollment, or governance behavior is changed by the V2 wrapper layer
 
 ### 3. Start the backend
 
@@ -119,11 +124,82 @@ What remains intentionally manual in Phase 1:
 
 1. Run migrations.
 2. Run `backend\venv\Scripts\python.exe backend\scripts\reseed_demo.py`.
-3. Sign in as `normalstudent` and confirm the active flagship course appears.
-4. Continue into the governed lesson and confirm the lesson view loads.
-5. Return safely to the dashboard.
-6. Sign in as `teacher` and confirm the dashboard loads with stable flagship visibility.
-7. Sign in as `orgadmin` only if you need the staff governance route checks.
+3. Sign in as `contentadmin` and open `/workspace/demo-readiness`.
+4. Walk `/workspace` -> `/workspace/product-studio` -> `/workspace/projects` -> `/workspace/artifacts` -> `/workspace/review-center` -> `/workspace/analytics`.
+5. Sign in as `normalstudent` and open `/learn` to confirm the published V2 product appears through an active access grant.
+6. Continue into the existing flagship governed course only through the existing learner course runtime.
+7. Sign in as `teacher` and confirm the existing dashboard loads with stable flagship visibility.
+8. Sign in as `orgadmin` only if you need the staff governance route checks.
+
+## Five-Minute Walkthrough Script
+
+Use this script when a new viewer needs the V2 value proposition quickly.
+
+### 0:00 - Open with Workspace
+
+Say: "EchoEd is not another LMS. It is a governed product studio for turning organizational knowledge into trusted learning products."
+
+Show `/workspace`. Point to the lifecycle: Knowledge Sources, Artifacts, Products, Review Center, Learners, Access, and Analytics.
+
+### 0:45 - Show Product Studio
+
+Say: "Creators start by defining the product wrapper, then connect source knowledge and existing runtime delivery when it is ready."
+
+Show `/workspace/product-studio`. Call out that AI generation is intentionally disabled/coming soon in this phase.
+
+### 1:30 - Show Knowledge In
+
+Say: "Projects are where source knowledge becomes structured product work."
+
+Open `/workspace/projects`, then the seeded EchoEd project if available. Explain that sources are durable, reusable records.
+
+### 2:10 - Show AI Understanding and Artifacts
+
+Say: "Generated outputs become reviewable artifacts first, not learner-visible lessons."
+
+Open `/workspace/artifacts`. Show approved, in-review, and needs-changes states.
+
+### 2:50 - Show Review and Governance
+
+Say: "Trust is the workflow. Artifact approval does not publish a lesson, and product approval does not override runtime governance."
+
+Open `/workspace/review-center`. Point to pending artifacts, draft/in-review products, and lesson governance messaging.
+
+### 3:35 - Show Learner Delivery
+
+Say: "Products organize access. The existing course and lesson runtime still controls governed delivery."
+
+Sign in as `normalstudent` and open `/learn`. Show the active product grant, then only continue into lessons through the existing governed course path.
+
+### 4:25 - Close with Analytics
+
+Say: "Operators can see product health, knowledge pipeline health, learner engagement, access, and review signal without adding complex tracking yet."
+
+Open `/workspace/analytics` and close on read-only dashboard metrics.
+
+## Known V2 Demo Limitations
+
+- AI generation execution is not implemented; generation runs are seeded metadata only.
+- Payments, checkout, subscriptions, memberships, and marketplace are intentionally absent.
+- Public product pages are placeholder-only and do not execute checkout, payment, subscription, or enrollment behavior.
+- Product wrapper status does not publish runtime Course, Unit, Lesson, or Activity records.
+- AccessGrant visibility does not create StudentCourse enrollment.
+- Review request and review decision audit records are still a later task.
+- Analytics V2 uses current wrapper and runtime data; complex event tracking is not implemented.
+
+## V2 Dogfooding Demo Data
+
+Phase 8.6 adds wrapper-only demo records after the canonical course seed:
+
+- Workspace: `EchoEd Demo Workspace`
+- Project: `EchoEd V2 Platform Evolution Dogfood`
+- Knowledge sources: OpenSpec phase plan, governed runtime preservation notes, Learner Portal access walkthrough
+- Products: published `EchoEd V2 Operator Walkthrough`, in-review `EchoEd Governance Review Pack`, and course-backed `Introduction to Africa Governed Course Product`
+- Artifacts: approved workspace storyboard, in-review review checklist, needs-changes learner access explainer
+- Access grant: active manual product grant for `normalstudent`
+- Generation run: metadata-only demo placeholder marked with `execution: not_run`
+
+These records are intended to populate Product Studio, Projects, Artifact Registry, Review Center, Learner Portal, and Analytics without creating runtime lessons or changing publication behavior.
 
 ## Expected Teacher/Admin Outcomes
 

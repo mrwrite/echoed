@@ -21,17 +21,26 @@ depends_on = None
 
 # Re-declare enums (must match your `enum.py`)
 class ProgressStatus(enum.Enum):
-    NOT_STARTED = "NOT_STARTED"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    SKIPPED = "SKIPPED"
-    DELIVERED = "DELIVERED"
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
+    DELIVERED = "delivered"
 
 
 def upgrade():
     # Create ENUM types
-    progress_enum = sa.Enum(ProgressStatus, name="progress_status_enum")
-    segment_enum = sa.Enum(ProgressStatus, name="segment_status_enum")
+    enum_values = lambda enum_cls: [item.value for item in enum_cls]
+    progress_enum = sa.Enum(
+        ProgressStatus,
+        name="progress_status_enum",
+        values_callable=enum_values,
+    )
+    segment_enum = sa.Enum(
+        ProgressStatus,
+        name="segment_status_enum",
+        values_callable=enum_values,
+    )
     progress_enum.create(op.get_bind(), checkfirst=True)
     segment_enum.create(op.get_bind(), checkfirst=True)
 
@@ -40,14 +49,14 @@ def upgrade():
     conn.execute(
         sa.text("""
             UPDATE student_unit_progress
-            SET status = UPPER(status)
+            SET status = LOWER(status)
             WHERE status IS NOT NULL
         """)
     )
     conn.execute(
         sa.text("""
             UPDATE segment_progress
-            SET status = UPPER(status)
+            SET status = LOWER(status)
             WHERE status IS NOT NULL
         """)
     )

@@ -411,7 +411,15 @@ class StudentUnitProgress(Base):
         ForeignKey('units.id', ondelete='CASCADE'),
         nullable=False,
     )
-    status = Column(SqlEnum(ProgressStatus, name="progress_status_enum", create_constraint=True), default=ProgressStatus.NOT_STARTED)
+    status = Column(
+        SqlEnum(
+            ProgressStatus,
+            name="progress_status_enum",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            create_constraint=True,
+        ),
+        default=ProgressStatus.NOT_STARTED,
+    )
     last_updated = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)

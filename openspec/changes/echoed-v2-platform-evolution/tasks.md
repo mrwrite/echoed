@@ -93,8 +93,20 @@
 
 ## Phase 9: Commercialization Readiness
 
-- [ ] Design pricing, checkout, order, subscription, and entitlement concepts around access grants
-- [ ] Add product page readiness states before payment integration
-- [ ] Keep payment provider implementation out of earlier phases
-- [ ] Prepare checkout and membership specifications without changing auth or learner runtime behavior
-- [ ] Add acceptance tests once payment/access behavior is implemented
+- [x] Add commercial Product metadata and additive migration without changing education runtime tables
+- [x] Add public product list/detail pages and read-only public Product APIs with checkout/enrollment placeholders only
+- [x] Add workspace Commercial dashboard with product, visibility, pricing model, product type, and placeholder revenue/conversion/ARR sections
+- [x] Add workspace commercial settings placeholders for Branding, Billing, Domains, Plans, and AI Usage
+- [x] Allow wrapper-level Product publishing without changing Course, Unit, Lesson, progress, enrollment, or governance behavior
+- [x] Verify commercial readiness with OpenSpec, backend, and frontend tests while keeping payment providers out of scope
+
+## Phase 10: EchoEd V2 Stabilization & Release Candidate
+
+- [x] Document fresh PostgreSQL migration path and local database-service blocker
+- [x] Confirm deterministic demo reseed path through targeted tests and document live reseed dependency
+- [x] Fix or document the full backend test blocker
+- [x] Run full frontend build and test suite
+- [x] Run OpenSpec validation
+- [x] Verify V2 demo flow routes and release-candidate surfaces through route/API coverage
+- [x] Produce EchoEd V2 release-candidate notes
+- [x] Preserve existing education runtime behavior while stabilizing V2

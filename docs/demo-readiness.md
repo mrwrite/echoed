@@ -180,7 +180,8 @@ Open `/workspace/analytics` and close on read-only dashboard metrics.
 ## Known V2 Demo Limitations
 
 - AI generation execution is not implemented; generation runs are seeded metadata only.
-- Payments, checkout, subscriptions, memberships, marketplace, and public product pages are intentionally absent.
+- Payments, checkout, subscriptions, memberships, and marketplace are intentionally absent.
+- Public product pages are placeholder-only and do not execute checkout, payment, subscription, or enrollment behavior.
 - Product wrapper status does not publish runtime Course, Unit, Lesson, or Activity records.
 - AccessGrant visibility does not create StudentCourse enrollment.
 - Review request and review decision audit records are still a later task.

@@ -149,6 +149,13 @@ def _ensure_product(
     review_state: str,
     access_state: str,
     description: str,
+    visibility: str = "private",
+    pricing_model: str = "internal",
+    price_placeholder: str | None = None,
+    category: str | None = None,
+    audience: str | None = None,
+    estimated_duration: str | None = None,
+    featured: bool = False,
     course: Course | None = None,
 ) -> Product:
     if course is not None:
@@ -173,10 +180,26 @@ def _ensure_product(
     product.course_id = course.id if course is not None else None
     product.product_type = product_type
     product.title = title
+    product.subtitle = product.subtitle or "EchoEd V2 commercial-readiness preview"
+    product.slug = product.slug or title.lower().replace(" ", "-")
     product.description = description
     product.status = status
     product.review_state = review_state
     product.access_state = access_state
+    product.visibility = visibility
+    product.pricing_model = pricing_model
+    product.price_placeholder = price_placeholder
+    product.currency = "USD" if pricing_model == "paid" else product.currency
+    product.audience = audience
+    product.difficulty = product.difficulty or "Operator"
+    product.estimated_duration = estimated_duration
+    product.tags = product.tags or ["demo", "echoed-v2", "commercial-readiness"]
+    product.category = category
+    product.version = product.version or "v2-demo"
+    product.language = product.language or "en"
+    product.last_updated = _utcnow()
+    product.certificate_available = product.certificate_available or False
+    product.featured = featured
     product.product_metadata = _merge_metadata(
         product.product_metadata,
         {
@@ -362,6 +385,11 @@ def seed_echoed_v2_demo(db) -> dict[str, str]:
             review_state="approved",
             access_state="enrollment_backed",
             description="A course-backed product proving V2 wraps the existing governed lesson runtime without replacing it.",
+            visibility="workspace",
+            pricing_model="internal",
+            category="Governed course",
+            audience="Demo learners",
+            estimated_duration="45 minutes",
             course=existing_course,
         )
 
@@ -375,6 +403,13 @@ def seed_echoed_v2_demo(db) -> dict[str, str]:
         review_state="approved",
         access_state="grant_required",
         description="A dogfooding product that explains EchoEd V2 using EchoEd's own workspace, source, artifact, review, access, learner, and analytics layers.",
+        visibility="public",
+        pricing_model="free",
+        price_placeholder="Free preview - checkout not connected",
+        category="Platform operations",
+        audience="Knowledge product operators",
+        estimated_duration="5 minutes",
+        featured=True,
     )
     review_product = _ensure_product(
         db,
@@ -386,6 +421,11 @@ def seed_echoed_v2_demo(db) -> dict[str, str]:
         review_state="in_review",
         access_state="private",
         description="A reviewable product shell used to demonstrate trust, governance, and non-runtime artifact approval.",
+        visibility="workspace",
+        pricing_model="internal",
+        category="Governance",
+        audience="Reviewers",
+        estimated_duration="10 minutes",
     )
     generation_run = _ensure_generation_run(db, workspace, project, operator_product)
 

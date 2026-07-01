@@ -1,28 +1,24 @@
-import os
 import uuid
 import pytest
-
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from app.api.routes import threads as threads_router, posts as posts_router
-from app.database import SessionLocal, engine
-from app.models import Base, User, Thread
+from app.database import get_db
+from app.models import User, Thread
 
 app = FastAPI()
 app.include_router(threads_router.router, prefix="/api/forum")
 app.include_router(posts_router.router, prefix="/api/forum")
 
-Base.metadata.create_all(bind=engine)
-
 @pytest.fixture
-def test_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def test_db(db_session):
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    yield db_session
+    app.dependency_overrides = {}
 
 @pytest.fixture
 def user(test_db):

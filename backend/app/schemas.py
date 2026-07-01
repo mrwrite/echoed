@@ -132,10 +132,28 @@ class ProductResponse(BaseModel):
     program_id: Optional[UUID] = None
     product_type: str
     title: str
+    subtitle: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
+    hero_image_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
     status: str
     review_state: str
     access_state: str
+    visibility: str = "draft"
+    pricing_model: str = "internal"
+    price_placeholder: Optional[str] = None
+    currency: Optional[str] = None
+    audience: Optional[str] = None
+    difficulty: Optional[str] = None
+    estimated_duration: Optional[str] = None
+    tags: Optional[list[str]] = Field(default_factory=list)
+    category: Optional[str] = None
+    version: Optional[str] = None
+    language: Optional[str] = None
+    last_updated: Optional[datetime] = None
+    certificate_available: bool = False
+    featured: bool = False
     metadata: dict[str, Any] = Field(default_factory=dict, validation_alias="product_metadata")
     published_at: Optional[datetime] = None
     created_at: datetime
@@ -152,11 +170,57 @@ class ProductCreateRequest(BaseModel):
     program_id: Optional[UUID] = None
     product_type: str
     title: str
+    subtitle: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
     status: str = "draft"
     review_state: str = "not_reviewed"
     access_state: str = "private"
+    hero_image_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    visibility: str = "draft"
+    pricing_model: str = "internal"
+    price_placeholder: Optional[str] = None
+    currency: Optional[str] = None
+    audience: Optional[str] = None
+    difficulty: Optional[str] = None
+    estimated_duration: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    category: Optional[str] = None
+    version: Optional[str] = None
+    language: Optional[str] = None
+    last_updated: Optional[datetime] = None
+    certificate_available: bool = False
+    featured: bool = False
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProductCommercialMetadataRequest(BaseModel):
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    hero_image_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    visibility: Optional[str] = None
+    pricing_model: Optional[str] = None
+    price_placeholder: Optional[str] = None
+    currency: Optional[str] = None
+    audience: Optional[str] = None
+    difficulty: Optional[str] = None
+    estimated_duration: Optional[str] = None
+    tags: Optional[list[str]] = None
+    category: Optional[str] = None
+    version: Optional[str] = None
+    language: Optional[str] = None
+    last_updated: Optional[datetime] = None
+    certificate_available: Optional[bool] = None
+    featured: Optional[bool] = None
+    metadata: Optional[dict[str, Any]] = None
+
+
+class ProductPublishRequest(BaseModel):
+    visibility: str = "public"
 
 
 class AccessGrantResponse(BaseModel):

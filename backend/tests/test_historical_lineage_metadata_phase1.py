@@ -161,7 +161,7 @@ def test_lineage_metadata_serialization_does_not_mutate_progress_or_evidence_rec
 
 
 def test_lineage_metadata_migration_is_additive():
-    migration_path = Path("alembic/versions/9f1c2d3e4a5b_add_curriculum_lineage_metadata.py")
+    migration_path = Path(__file__).resolve().parents[1] / "alembic/versions/9f1c2d3e4a5b_add_curriculum_lineage_metadata.py"
     contents = migration_path.read_text(encoding="utf-8")
 
     assert 'for table_name in ("courses", "units", "lessons", "assessments")' in contents

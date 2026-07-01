@@ -34,6 +34,8 @@ from app.schemas import (
     KnowledgeSourceCreateRequest,
     KnowledgeSourceResponse,
     ProductCreateRequest,
+    ProductCommercialMetadataRequest,
+    ProductPublishRequest,
     ProductResponse,
     ProjectCreateRequest,
     ProjectResponse,
@@ -80,9 +82,40 @@ SUPPORTED_ARTIFACT_TYPES = {
 }
 SUPPORTED_ARTIFACT_REVIEW_STATUSES = {"draft", "in_review", "approved", "rejected", "needs_changes"}
 SUPPORTED_PRODUCT_REVIEW_STATUSES = {"draft", "in_review", "approved", "published", "archived"}
+SUPPORTED_PRODUCT_VISIBILITIES = {"draft", "private", "workspace", "invite_only", "public", "archived"}
+SUPPORTED_PRODUCT_PRICING_MODELS = {"free", "paid", "enterprise", "internal"}
 LEARNER_VISIBLE_PRODUCT_STATUSES = {"approved", "published"}
 SUPPORTED_ACCESS_GRANT_TYPES = {"manual", "enrollment", "membership", "purchase", "organization", "invitation"}
 SUPPORTED_ACCESS_GRANT_STATUSES = {"active", "pending", "expired", "revoked"}
+
+
+def _slugify(value: str) -> str:
+    normalized = "".join(char.lower() if char.isalnum() else "-" for char in value.strip())
+    parts = [part for part in normalized.split("-") if part]
+    return "-".join(parts) or "product"
+
+
+def _ensure_unique_product_slug(db: Session, *, title: str, requested_slug: str | None = None, product_id: UUID | None = None) -> str:
+    base_slug = _slugify(requested_slug or title)
+    candidate = base_slug
+    suffix = 2
+    while True:
+        query = db.query(Product).filter(Product.slug == candidate)
+        if product_id is not None:
+            query = query.filter(Product.id != product_id)
+        if not query.first():
+            return candidate
+        candidate = f"{base_slug}-{suffix}"
+        suffix += 1
+
+
+def _apply_commercial_metadata(product: Product, payload: ProductCommercialMetadataRequest) -> None:
+    update_data = payload.model_dump(exclude_unset=True)
+    metadata = update_data.pop("metadata", None)
+    for field_name, value in update_data.items():
+        setattr(product, field_name, value)
+    if metadata is not None:
+        product.product_metadata = metadata
 
 
 def _visible_workspace_ids(db: Session, current_user: User) -> list[UUID] | None:
@@ -513,6 +546,28 @@ def update_product_review_status(
     return product
 
 
+@router.get("/public/products", response_model=list[ProductResponse])
+def list_public_products(db: Session = Depends(get_db)):
+    return (
+        db.query(Product)
+        .filter(Product.status == "published", Product.visibility == "public")
+        .order_by(Product.featured.desc(), Product.published_at.desc(), Product.title.asc())
+        .all()
+    )
+
+
+@router.get("/public/products/{slug}", response_model=ProductResponse)
+def get_public_product(slug: str, db: Session = Depends(get_db)):
+    product = (
+        db.query(Product)
+        .filter(Product.slug == slug, Product.status == "published", Product.visibility == "public")
+        .first()
+    )
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
 @router.get("/learner-portal/products", response_model=list[LearnerProductResponse])
 def list_learner_products(
     db: Session = Depends(get_db),
@@ -792,6 +847,10 @@ def create_product(
 ):
     if payload.product_type not in SUPPORTED_PRODUCT_TYPES:
         raise HTTPException(status_code=400, detail="Unsupported product type.")
+    if payload.visibility not in SUPPORTED_PRODUCT_VISIBILITIES:
+        raise HTTPException(status_code=400, detail="Unsupported product visibility.")
+    if payload.pricing_model not in SUPPORTED_PRODUCT_PRICING_MODELS:
+        raise HTTPException(status_code=400, detail="Unsupported pricing model.")
 
     _require_manage_workspace(db, current_user, payload.workspace_id)
 
@@ -821,13 +880,81 @@ def create_product(
         program_id=payload.program_id,
         product_type=payload.product_type,
         title=payload.title,
+        subtitle=payload.subtitle,
+        slug=_ensure_unique_product_slug(db, title=payload.title, requested_slug=payload.slug),
         description=payload.description,
+        hero_image_url=payload.hero_image_url,
+        thumbnail_url=payload.thumbnail_url,
         status=payload.status,
         review_state=payload.review_state,
         access_state=payload.access_state,
+        visibility=payload.visibility,
+        pricing_model=payload.pricing_model,
+        price_placeholder=payload.price_placeholder,
+        currency=payload.currency,
+        audience=payload.audience,
+        difficulty=payload.difficulty,
+        estimated_duration=payload.estimated_duration,
+        tags=payload.tags,
+        category=payload.category,
+        version=payload.version,
+        language=payload.language,
+        last_updated=payload.last_updated,
+        certificate_available=payload.certificate_available,
+        featured=payload.featured,
         product_metadata=payload.metadata,
     )
     db.add(product)
+    db.commit()
+    db.refresh(product)
+    return product
+
+
+@router.patch("/products/{product_id}/commercial-metadata", response_model=ProductResponse)
+def update_product_commercial_metadata(
+    product_id: UUID,
+    payload: ProductCommercialMetadataRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    product = _get_visible_product(db, current_user, product_id)
+    _require_manage_platform_record(db, current_user, product.workspace_id)
+    if payload.visibility is not None and payload.visibility not in SUPPORTED_PRODUCT_VISIBILITIES:
+        raise HTTPException(status_code=400, detail="Unsupported product visibility.")
+    if payload.pricing_model is not None and payload.pricing_model not in SUPPORTED_PRODUCT_PRICING_MODELS:
+        raise HTTPException(status_code=400, detail="Unsupported pricing model.")
+    if payload.slug is not None:
+        payload.slug = _ensure_unique_product_slug(db, title=payload.title or product.title, requested_slug=payload.slug, product_id=product.id)
+    elif product.slug is None and payload.title:
+        payload.slug = _ensure_unique_product_slug(db, title=payload.title, product_id=product.id)
+
+    _apply_commercial_metadata(product, payload)
+    product.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(product)
+    return product
+
+
+@router.patch("/products/{product_id}/publish", response_model=ProductResponse)
+def publish_product_wrapper(
+    product_id: UUID,
+    payload: ProductPublishRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.visibility not in SUPPORTED_PRODUCT_VISIBILITIES - {"draft", "archived"}:
+        raise HTTPException(status_code=400, detail="Unsupported publish visibility.")
+
+    product = _get_visible_product(db, current_user, product_id)
+    _require_manage_platform_record(db, current_user, product.workspace_id)
+    product.status = "published"
+    product.review_state = "approved" if product.review_state in {"not_reviewed", "draft", "in_review"} else product.review_state
+    product.visibility = payload.visibility
+    product.slug = product.slug or _ensure_unique_product_slug(db, title=product.title, product_id=product.id)
+    now = datetime.utcnow()
+    product.published_at = product.published_at or now
+    product.last_updated = now
+    product.updated_at = now
     db.commit()
     db.refresh(product)
     return product

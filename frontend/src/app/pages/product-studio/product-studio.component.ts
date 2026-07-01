@@ -139,6 +139,32 @@ const PRODUCT_TYPES = [
           </label>
 
           <label>
+            Subtitle
+            <input name="productSubtitle" [(ngModel)]="productSubtitle" placeholder="Turn internal expertise into governed onboarding" />
+          </label>
+
+          <label>
+            Pricing model
+            <select name="pricingModel" [(ngModel)]="pricingModel">
+              <option value="internal">Internal</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid placeholder</option>
+              <option value="enterprise">Enterprise placeholder</option>
+            </select>
+          </label>
+
+          <label>
+            Visibility
+            <select name="visibility" [(ngModel)]="visibility">
+              <option value="draft">Draft</option>
+              <option value="private">Private</option>
+              <option value="workspace">Workspace</option>
+              <option value="invite_only">Invite only</option>
+              <option value="public">Public placeholder</option>
+            </select>
+          </label>
+
+          <label>
             Description
             <textarea name="productDescription" [(ngModel)]="productDescription" rows="3" placeholder="What should learners or members get from this product?"></textarea>
           </label>
@@ -236,7 +262,10 @@ export class ProductStudioComponent implements OnInit {
   productProjectId = '';
   selectedCourseId = '';
   productTitle = '';
+  productSubtitle = '';
   productDescription = '';
+  pricingModel = 'internal';
+  visibility = 'draft';
   savingProject = false;
   savingProduct = false;
   statusMessage = '';
@@ -308,15 +337,21 @@ export class ProductStudioComponent implements OnInit {
       course_id: this.selectedCourseId || null,
       product_type: this.productType,
       title: this.productTitle,
+      subtitle: this.productSubtitle || null,
       description: this.productDescription || null,
       status: 'draft',
       review_state: this.selectedCourseId ? 'runtime_authoritative' : 'not_reviewed',
       access_state: this.selectedCourseId ? 'existing_runtime' : 'private',
-      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented' },
+      visibility: this.visibility,
+      pricing_model: this.pricingModel,
+      price_placeholder: this.pricingModel === 'paid' ? 'Price placeholder - checkout not connected' : null,
+      currency: this.pricingModel === 'paid' ? 'USD' : null,
+      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented', checkout: 'not_implemented' },
     }).subscribe({
       next: product => {
         this.statusMessage = `Product shell ready: ${product.title}`;
         this.productTitle = '';
+        this.productSubtitle = '';
         this.productDescription = '';
         this.selectedCourseId = '';
         this.savingProduct = false;

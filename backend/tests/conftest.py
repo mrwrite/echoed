@@ -1,12 +1,30 @@
 import os
+from pathlib import Path
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from app.models import Base  # your Base = declarative_base()
 
 # Ensure JWT signing key is available before importing auth
 os.environ.setdefault("JWT_SECRET", "testsecret")
+# Ensure legacy tests that import app.database.SessionLocal never fall back to
+# the developer PostgreSQL URL during collection.
+LEGACY_TEST_DB_PATH = Path(".pytest_legacy.db")
+LEGACY_TEST_DB_PATH.unlink(missing_ok=True)
+os.environ.setdefault("DATABASE_URL", f"sqlite:///./{LEGACY_TEST_DB_PATH}")
+WORKSPACE_TMP_PATH = Path(".pytest_tmp")
+WORKSPACE_TMP_PATH.mkdir(exist_ok=True)
+os.environ.setdefault("TMP", str(WORKSPACE_TMP_PATH.resolve()))
+os.environ.setdefault("TEMP", str(WORKSPACE_TMP_PATH.resolve()))
+
+from app.models import Base  # your Base = declarative_base()
+from app.database import engine as legacy_engine
+
+Base.metadata.create_all(bind=legacy_engine)
+
+
+def pytest_configure(config):
+    config.option.basetemp = str((WORKSPACE_TMP_PATH / "basetemp").resolve())
 
 # Use an in-memory test DB to avoid creating real tables on disk
 TEST_DATABASE_URL = "sqlite://"
@@ -33,6 +51,8 @@ def db_engine():
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):
+    Base.metadata.drop_all(bind=db_engine)
+    Base.metadata.create_all(bind=db_engine)
     connection = db_engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)

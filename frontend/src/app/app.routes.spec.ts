@@ -6,6 +6,8 @@ import { LearnerResourcesComponent } from './pages/learner-portal/learner-resour
 import { LessonViewComponent } from './pages/lesson-view.component';
 import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
 import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
+import { PublicProductsComponent } from './pages/public-products/public-products.component';
+import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -37,6 +39,8 @@ describe('app routes', () => {
   it('preserves the legacy authenticated home route', () => {
     expect(findRoute(routes, 'home')).toBeTruthy();
     expect(findRoute(routes, 'home/')).toBeTruthy();
+    expect(findRoute(routes, 'products')?.component).toBe(PublicProductsComponent);
+    expect(findRoute(routes, 'products/:slug')?.component).toBe(PublicProductDetailComponent);
   });
 
   it('adds V2 workspace aliases for platform navigation', () => {
@@ -59,6 +63,7 @@ describe('app routes', () => {
       'workspace/access',
       'workspace/learners',
       'workspace/analytics',
+      'workspace/commercial',
       'workspace/demo-readiness',
       'workspace/settings',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());

@@ -257,6 +257,7 @@ export class PermissionsService {
       permissions.add('nav:review-center');
       permissions.add('nav:access');
       permissions.add('nav:analytics');
+      permissions.add('nav:commercial');
     }
 
     if (this.hasRole(roleSet, ['admin'])) {

@@ -363,6 +363,87 @@ def test_v2_create_product_reuses_existing_course_backed_wrapper(db_session):
     assert db_session.query(Product).count() == 1
 
 
+def test_commercial_product_metadata_and_public_pages_are_wrapper_only(db_session):
+    admin = _admin_user()
+    organization = Organization(id=uuid.uuid4(), name="Commercial Org", type=OrganizationType.SCHOOL)
+    workspace = Workspace(id=uuid.uuid4(), organization=organization, name="Commercial Workspace")
+    project = Project(id=uuid.uuid4(), workspace=workspace, name="Commercial Project")
+    course = Course(
+        id=uuid.uuid4(),
+        organization=organization,
+        title="Commercial Runtime Course",
+        description="Existing runtime course",
+    )
+    unit = Unit(id=uuid.uuid4(), course=course, title="Runtime Unit", content="Runtime", order=1)
+    product = Product(
+        id=uuid.uuid4(),
+        workspace=workspace,
+        project=project,
+        course=course,
+        product_type="course",
+        title="Commercial Product",
+        status="draft",
+        review_state="not_reviewed",
+        visibility="draft",
+        pricing_model="internal",
+    )
+    db_session.add_all([admin, organization, workspace, project, course, unit, product])
+    db_session.commit()
+
+    test_app = FastAPI()
+    test_app.include_router(v2_platform.router, prefix="/api")
+
+    def override_get_db():
+        yield db_session
+
+    test_app.dependency_overrides[get_db] = override_get_db
+    test_app.dependency_overrides[get_current_user] = lambda: admin
+    client = TestClient(test_app)
+
+    metadata_response = client.patch(
+        f"/api/products/{product.id}/commercial-metadata",
+        json={
+            "subtitle": "Commercial preview",
+            "slug": "commercial-product",
+            "visibility": "workspace",
+            "pricing_model": "paid",
+            "price_placeholder": "$99 placeholder - checkout not connected",
+            "currency": "USD",
+            "audience": "Teams",
+            "difficulty": "Intermediate",
+            "estimated_duration": "2 hours",
+            "tags": ["commercial", "preview"],
+            "category": "Operations",
+            "version": "1.0",
+            "language": "en",
+            "certificate_available": True,
+            "featured": True,
+        },
+    )
+    assert metadata_response.status_code == 200
+    metadata_payload = metadata_response.json()
+    assert metadata_payload["slug"] == "commercial-product"
+    assert metadata_payload["pricing_model"] == "paid"
+
+    publish_response = client.patch(f"/api/products/{product.id}/publish", json={"visibility": "public"})
+    assert publish_response.status_code == 200
+    publish_payload = publish_response.json()
+    assert publish_payload["status"] == "published"
+    assert publish_payload["visibility"] == "public"
+
+    public_list_response = client.get("/api/public/products")
+    assert public_list_response.status_code == 200
+    assert public_list_response.json()[0]["slug"] == "commercial-product"
+
+    public_detail_response = client.get("/api/public/products/commercial-product")
+    assert public_detail_response.status_code == 200
+    assert public_detail_response.json()["title"] == "Commercial Product"
+
+    db_session.refresh(course)
+    assert course.title == "Commercial Runtime Course"
+    assert db_session.query(Unit).filter(Unit.course_id == course.id).count() == 1
+
+
 def test_v2_creates_knowledge_source_and_artifact_links_without_changing_runtime(db_session):
     admin = _admin_user()
     organization = Organization(

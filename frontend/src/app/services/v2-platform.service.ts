@@ -12,7 +12,9 @@ import {
   KnowledgeSourceCreateRequest,
   LearnerProduct,
   Product,
+  ProductCommercialMetadataRequest,
   ProductCreateRequest,
+  ProductPublishRequest,
   Project,
   ProjectCreateRequest,
   ReviewCenter,
@@ -60,8 +62,24 @@ export class V2PlatformService {
     return this.http.get<Product>(`${this.apiUrl}/products/${productId}`);
   }
 
+  getPublicProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/public/products`);
+  }
+
+  getPublicProduct(slug: string): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/public/products/${slug}`);
+  }
+
   createProduct(payload: ProductCreateRequest): Observable<Product> {
     return this.http.post<Product>(`${this.apiUrl}/products`, payload);
+  }
+
+  updateProductCommercialMetadata(productId: string, payload: ProductCommercialMetadataRequest): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/products/${productId}/commercial-metadata`, payload);
+  }
+
+  publishProduct(productId: string, payload: ProductPublishRequest): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/products/${productId}/publish`, payload);
   }
 
   getKnowledgeSources(projectId?: string): Observable<KnowledgeSource[]> {

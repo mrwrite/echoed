@@ -78,7 +78,7 @@ describe('SidebarComponent', () => {
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
     expect(firstLink.getAttribute('aria-label')).toBe('Workspace');
     expect(firstLink.getAttribute('title')).toBe('Workspace');
-    expect(firstLink.textContent?.trim()).toBe('');
+    expect(firstLink.textContent?.trim()).toBe('WS');
   });
 
   it('keeps important sidebar controls labeled for accessibility', () => {

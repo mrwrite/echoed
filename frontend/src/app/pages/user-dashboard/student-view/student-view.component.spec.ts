@@ -161,6 +161,7 @@ describe('StudentViewComponent', () => {
   });
 
   it('renders error and retry state when course data fails to load', () => {
+    spyOn(console, 'error');
     coursesService.studentCoursesResponse = throwError(() => new Error('load failed'));
 
     fixture.detectChanges();
@@ -172,6 +173,7 @@ describe('StudentViewComponent', () => {
   });
 
   it('retries course loading from the error state action', () => {
+    spyOn(console, 'error');
     coursesService.studentCoursesResponse = throwError(() => new Error('load failed'));
 
     fixture.detectChanges();

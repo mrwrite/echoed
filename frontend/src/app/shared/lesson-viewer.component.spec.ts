@@ -28,6 +28,8 @@ describe('LessonViewerComponent', () => {
   it('hides educator-only notes in learner mode while preserving learner prompts', () => {
     component.isTeacherLed = false;
     fixture.detectChanges();
+    component.goToStep(component.lessonSteps.length - 1);
+    fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
     expect(text).not.toContain('Teacher Notes');
@@ -37,26 +39,35 @@ describe('LessonViewerComponent', () => {
   it('shows educator-only fields in teacher-led mode', () => {
     component.isTeacherLed = true;
     fixture.detectChanges();
+    component.goToStep(component.lessonSteps.length - 1);
+    fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Teacher Notes');
     expect(text).toContain('Which source is more credible?');
   });
 
-  it('keeps instructional section hierarchy visible for learner content', () => {
+  it('keeps instructional sections in a clear learner step sequence', () => {
     component.isTeacherLed = false;
     fixture.detectChanges();
 
-    const sections = fixture.nativeElement.querySelectorAll('[aria-label="Instructional sections"] section');
-    expect(sections.length).toBeGreaterThan(0);
+    const stepLabels = component.lessonSteps.map(step => step.label);
+    expect(stepLabels).toContain('Hook');
+    expect(stepLabels).toContain('Content');
+    expect(stepLabels).toContain('Guided Practice');
     expect(fixture.nativeElement.textContent).toContain('Hook');
-    expect(fixture.nativeElement.textContent).toContain('Content');
-    expect(fixture.nativeElement.textContent).toContain('Guided Practice');
+    expect(fixture.nativeElement.textContent).toContain('Open with a claim.');
+
+    component.goToStep(1);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Read the source text carefully.');
   });
 
   it('emits lesson completion from the final learner action without changing behavior', () => {
     spyOn(component.segmentCompleted, 'emit');
     component.isTeacherLed = false;
+    fixture.detectChanges();
+    component.goToStep(component.lessonSteps.length - 1);
     fixture.detectChanges();
 
     const completeButton = Array.from(
@@ -83,6 +94,8 @@ describe('LessonViewerComponent', () => {
     };
 
     fixture.detectChanges();
+    component.goToStep(component.lessonSteps.findIndex(step => step.kind === 'activity'));
+    fixture.detectChanges();
 
     const radiogroup = fixture.nativeElement.querySelector('[role="radiogroup"]') as HTMLElement;
     expect(radiogroup).not.toBeNull();
@@ -100,17 +113,19 @@ describe('LessonViewerComponent', () => {
     };
 
     fixture.detectChanges();
+    component.goToStep(component.lessonSteps.findIndex(step => step.kind === 'activity'));
+    fixture.detectChanges();
 
     let text = fixture.nativeElement.textContent;
     expect(text).toContain('Story Prompt');
-    expect(text).toContain('Activity 1 of 3');
+    expect(text).toContain('Activity 1');
 
     component.goToNextActivity();
     fixture.detectChanges();
 
     text = fixture.nativeElement.textContent;
     expect(text).toContain('Reflection Prompt');
-    expect(text).toContain('Activity 2 of 3');
+    expect(text).toContain('Activity 2');
   });
 
   it('renders a lesson activity progress bar for learner continuity', () => {
@@ -124,9 +139,9 @@ describe('LessonViewerComponent', () => {
 
     fixture.detectChanges();
 
-    const progressbar = fixture.nativeElement.querySelector('[aria-label="Lesson activity progress"]') as HTMLElement;
+    const progressbar = fixture.nativeElement.querySelector('[aria-label="Lesson progress"]') as HTMLElement;
     expect(progressbar).not.toBeNull();
-    expect(progressbar.getAttribute('aria-valuenow')).toBe('50');
-    expect(fixture.nativeElement.textContent).toContain('50% complete');
+    expect(progressbar.getAttribute('aria-valuenow')).toBe('17');
+    expect(fixture.nativeElement.textContent).toContain('17% complete');
   });
 });

@@ -221,4 +221,26 @@ describe('PermissionsService', () => {
     expect(service.hasAnyRole('org_admin')).toBeTrue();
     expect(service.hasAnyRole('teacher')).toBeFalse();
   });
+
+  it('does not advertise workspace navigation for plain student sessions', async () => {
+    organizationService.activeOrgId = 'org-1';
+    organizationService.setOrganizations([
+      { id: 'org-1', type: 'school', role: 'student' },
+    ]);
+    authService.payload = {
+      sub: 'student',
+      user_id: 'user-1',
+      fullname: 'Student User',
+      role: 'student',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    };
+
+    await service.bootstrapSession();
+
+    expect(service.hasPermission('nav:dashboard')).toBeTrue();
+    expect(service.hasPermission('nav:courses')).toBeTrue();
+    expect(service.hasPermission('nav:workspace')).toBeFalse();
+    expect(service.hasPermission('nav:products')).toBeFalse();
+    expect(service.hasPermission('nav:analytics')).toBeFalse();
+  });
 });

@@ -92,6 +92,41 @@ def test_demo_seed_creates_canonical_org_users_and_flagship_relationships(db_eng
         seeded_assessment_titles = {seed["title"] for seed in seed_demo.DEMO_FLAGSHIP_ASSESSMENTS}
         actual_assessment_titles = {row[0] for row in session.query(Assessment.title).all()}
         assert seeded_assessment_titles.issubset(actual_assessment_titles)
+
+        intro_course = session.query(Course).filter(Course.title == seed_demo.DEMO_COURSE_TITLE).one()
+        regions_lesson = next(
+            lesson
+            for unit in intro_course.units
+            for lesson in unit.lessons
+            if lesson.title == "Regions, Rivers, and Routes"
+        )
+        regions_lesson_activities = sorted(regions_lesson.activities, key=lambda activity: activity.order or 0)
+        assert [activity.type for activity in regions_lesson_activities[:2]] == ["storybook", "coloring"]
+
+        intro_lesson = next(
+            lesson
+            for unit in intro_course.units
+            for lesson in unit.lessons
+            if lesson.title == "Introduction to Africa"
+        )
+        intro_lesson_activities = sorted(intro_lesson.activities, key=lambda activity: activity.order or 0)
+        assert [activity.type for activity in intro_lesson_activities[:4]] == [
+            "image",
+            "interactive_map",
+            "storybook",
+            "coloring",
+        ]
+        storybook_activity = next(activity for activity in intro_lesson_activities if activity.type == "storybook")
+        assert [page.order for page in sorted(storybook_activity.storybook_pages, key=lambda page: page.order or 0)] == [1, 2, 3, 4]
+        assert [
+            page.image_url.rsplit("/", 1)[-1]
+            for page in sorted(storybook_activity.storybook_pages, key=lambda page: page.order or 0)
+        ] == [
+            "08ef622b-2b8a-41f0-8e43-74f4ee11d216.png",
+            "1ca7b568-f7eb-4877-bd9e-22919ec90a36.png",
+            "268b14ab-3b76-4153-84ac-5238658d1f72.png",
+            "1d7d06af-ad31-4ac4-ba83-82a720079317.png",
+        ]
     finally:
         session.close()
 

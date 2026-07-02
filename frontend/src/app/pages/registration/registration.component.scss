@@ -4,17 +4,18 @@
 
 .registration-shell {
   background:
-    radial-gradient(circle at 82% 88%, rgba(126, 58, 194, 0.44), transparent 22rem),
-    radial-gradient(circle at 18% 16%, rgba(58, 49, 141, 0.3), transparent 24rem),
-    linear-gradient(135deg, #05091d, #080a24 52%, #170a2d);
-  color: #f8f4ff;
+    radial-gradient(circle at 82% 88%, rgba(15, 118, 110, 0.12), transparent 22rem),
+    radial-gradient(circle at 18% 16%, rgba(2, 132, 199, 0.1), transparent 24rem),
+    linear-gradient(135deg, #ffffff, #f8fafc 52%, #eef6ff);
+  color: var(--ee-text, #102033);
   min-height: 100vh;
   padding: clamp(1rem, 3vw, 2rem);
 }
 
 .registration-stage {
   align-items: stretch;
-  border: 1px solid rgba(128, 151, 224, 0.44);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 18px;
   display: grid;
   gap: clamp(1.4rem, 4vw, 3.5rem);
@@ -29,8 +30,8 @@
 
 .registration-stage::before {
   background:
-    radial-gradient(circle at 76% 54%, rgba(124, 58, 237, 0.32), transparent 24rem),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.035));
+    radial-gradient(circle at 76% 54%, rgba(15, 118, 110, 0.08), transparent 24rem),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45));
   content: '';
   inset: 0;
   pointer-events: none;
@@ -49,14 +50,14 @@
 }
 
 .card-heading {
-  border-bottom: 1px solid rgba(184, 197, 255, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   display: grid;
   gap: 0.45rem;
   padding-bottom: 1rem;
 }
 
 .eyebrow {
-  color: #d7c4ff;
+  color: var(--echo-primary, #0f766e);
   font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -70,7 +71,7 @@ p {
 }
 
 h1 {
-  color: #fff;
+  color: var(--ee-text, #102033);
   font-size: clamp(1.8rem, 3.3vw, 2.5rem);
   line-height: 1.02;
 }
@@ -80,7 +81,7 @@ h1 {
 .check-row span,
 .registration-story p,
 .login-link {
-  color: #d8d1ed;
+  color: var(--ee-text-soft, #334155);
   line-height: 1.45;
 }
 
@@ -96,7 +97,7 @@ h1 {
 }
 
 .field {
-  color: #f8f4ff;
+  color: var(--ee-text, #102033);
   display: grid;
   font-size: 0.82rem;
   font-weight: 850;
@@ -111,10 +112,10 @@ h1 {
 
 input,
 select {
-  background: rgba(2, 6, 23, 0.62);
-  border: 1px solid rgba(184, 197, 255, 0.14);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
   border-radius: 8px;
-  color: #f8f4ff;
+  color: var(--ee-text, #102033);
   font: inherit;
   min-height: 2.75rem;
   padding: 0.72rem 0.85rem;
@@ -122,17 +123,17 @@ select {
 }
 
 input::placeholder {
-  color: rgba(216, 209, 237, 0.55);
+  color: #64748b;
 }
 
 select option {
-  background: #080a24;
-  color: #f8f4ff;
+  background: #ffffff;
+  color: var(--ee-text, #102033);
 }
 
 .org-inline {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(184, 197, 255, 0.12);
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 10px;
   display: grid;
   gap: 0.75rem;
@@ -147,21 +148,21 @@ select option {
 }
 
 .check-row input {
-  accent-color: #8b4df4;
+  accent-color: var(--echo-primary, #0f766e);
   min-height: auto;
   margin-top: 0.1rem;
   width: auto;
 }
 
 .check-row strong {
-  color: #fff;
+  color: var(--ee-text, #102033);
   display: block;
 }
 
 .text-toggle {
   background: none;
   border: 0;
-  color: #d6b26b;
+  color: var(--echo-primary, #0f766e);
   cursor: pointer;
   font: inherit;
   font-size: 0.72rem;
@@ -172,12 +173,12 @@ select option {
 .field-error,
 .auth-error,
 .warning {
-  color: #ffc4d2;
+  color: #be123c;
 }
 
 .auth-error {
-  background: rgba(255, 122, 154, 0.12);
-  border: 1px solid rgba(255, 122, 154, 0.3);
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
   border-radius: 10px;
   font-weight: 800;
   padding: 0.75rem 0.85rem;
@@ -185,10 +186,10 @@ select option {
 
 .registration-submit {
   align-items: center;
-  background: linear-gradient(135deg, #8b4df4, #5b2dff);
-  border: 1px solid rgba(210, 190, 255, 0.24);
+  background: var(--echo-primary, #0f766e);
+  border: 1px solid rgba(15, 118, 110, 0.24);
   border-radius: 8px;
-  box-shadow: 0 16px 34px rgba(97, 51, 240, 0.22);
+  box-shadow: 0 16px 34px rgba(15, 118, 110, 0.18);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
@@ -211,29 +212,29 @@ select option {
 }
 
 .login-link a {
-  color: #fff;
+  color: var(--echo-primary, #0f766e);
   font-weight: 900;
   text-decoration: underline;
 }
 
 .registration-story {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(184, 197, 255, 0.14);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 10px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
   display: grid;
   gap: 1.2rem;
   padding: clamp(1.2rem, 3vw, 2rem);
 }
 
 .story-title {
-  color: #fff;
+  color: var(--ee-text, #102033);
   font-weight: 900;
 }
 
 .registration-story article {
   align-items: center;
-  border-bottom: 1px solid rgba(184, 197, 255, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   display: grid;
   gap: 1rem;
   grid-template-columns: auto 1fr;
@@ -246,10 +247,10 @@ select option {
 }
 
 .registration-story span {
-  background: linear-gradient(135deg, #7047d9, #2b225c);
-  border: 1px solid rgba(195, 172, 255, 0.25);
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  border: 1px solid rgba(15, 118, 110, 0.25);
   border-radius: 10px;
-  color: #f7d27e;
+  color: #ffffff;
   display: grid;
   font-size: 0.78rem;
   font-weight: 900;
@@ -259,11 +260,11 @@ select option {
 }
 
 .registration-story strong {
-  color: #eee8ff;
+  color: var(--ee-text, #102033);
 }
 
 :where(a, button, input, select):focus-visible {
-  outline: 2px solid rgba(132, 92, 255, 0.94);
+  outline: 2px solid rgba(15, 118, 110, 0.88);
   outline-offset: 3px;
 }
 

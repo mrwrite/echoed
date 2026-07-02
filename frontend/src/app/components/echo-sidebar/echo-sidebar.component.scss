@@ -13,11 +13,11 @@
 
 .ee-sidebar {
   background:
-    radial-gradient(circle at 28% 8%, rgba(167, 139, 250, 0.2), transparent 14rem),
-    linear-gradient(180deg, rgba(13, 17, 39, 0.96), rgba(6, 7, 21, 0.98));
-  border-right: 1px solid rgba(184, 197, 255, 0.18);
-  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.24);
-  color: var(--ee-text, #f7f3ff);
+    radial-gradient(circle at 28% 8%, rgba(15, 118, 110, 0.08), transparent 14rem),
+    #ffffff;
+  border-right: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 18px 0 42px rgba(15, 23, 42, 0.08);
+  color: var(--ee-text, #102033);
 }
 
 .sidebar-shell--collapsed {
@@ -25,16 +25,16 @@
 }
 
 .sidebar-brand {
-  border-bottom: 1px solid rgba(184, 197, 255, 0.1);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
 }
 
 .sidebar-logo,
 .sidebar-profile__avatar {
   align-items: center;
-  background: linear-gradient(135deg, var(--ee-purple-strong, #7c3aed), #2b225c);
-  border: 1px solid rgba(195, 172, 255, 0.25);
+  background: var(--echo-primary, #0f766e);
+  border: 1px solid rgba(15, 118, 110, 0.25);
   border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(90, 62, 200, 0.28);
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.18);
   color: #fff;
   display: inline-flex;
   font-weight: 900;
@@ -46,7 +46,7 @@
 .sidebar-kicker,
 .sidebar-section-title,
 .sidebar-profile__eyebrow {
-  color: var(--ee-gold, #f4c95d);
+  color: var(--echo-primary, #0f766e);
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -56,7 +56,7 @@
 
 .sidebar-title,
 .sidebar-profile__name {
-  color: var(--ee-text, #f7f3ff);
+  color: var(--ee-text, #102033);
   font-weight: 900;
   margin: 0;
   overflow: hidden;
@@ -65,15 +65,15 @@
 }
 
 .sidebar-section-title {
-  color: var(--ee-text-muted, #9694b4);
+  color: var(--ee-text-muted, #64748b);
   margin: 0 0 0.55rem;
   padding-inline: 0.45rem;
 }
 
 .sidebar-toggle {
-  color: var(--ee-text, #f7f3ff);
-  background: rgba(255, 255, 255, 0.065);
-  border: 1px solid rgba(184, 197, 255, 0.16);
+  color: var(--ee-text, #102033);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   transition:
     background var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease),
     border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease),
@@ -81,8 +81,8 @@
 }
 
 .sidebar-toggle:hover {
-  background: rgba(167, 139, 250, 0.16);
-  border-color: rgba(167, 139, 250, 0.34);
+  background: rgba(15, 118, 110, 0.08);
+  border-color: rgba(15, 118, 110, 0.24);
 }
 
 .sidebar-toggle:active {
@@ -99,7 +99,7 @@
   gap: 0.75rem;
   min-height: 3rem;
   padding: 0.72rem;
-  color: var(--ee-text-soft, #c8c6df);
+  color: var(--ee-text-soft, #334155);
   border: 1px solid transparent;
   background: transparent;
   overflow: hidden;
@@ -113,19 +113,18 @@
 
 .sidebar-link:hover,
 .sidebar-link:focus-visible {
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--ee-text, #f7f3ff);
-  border-color: rgba(184, 197, 255, 0.2);
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--ee-text, #102033);
+  border-color: rgba(15, 118, 110, 0.18);
   outline: none;
   transform: translateX(2px);
 }
 
 .sidebar-link--active {
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.28), rgba(92, 200, 255, 0.12));
-  color: #fff;
-  border-color: rgba(167, 139, 250, 0.38);
-  box-shadow: inset 3px 0 0 var(--ee-gold, #f4c95d), 0 14px 30px rgba(3, 6, 22, 0.2);
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  border-color: rgba(15, 118, 110, 0.28);
+  box-shadow: inset 3px 0 0 var(--echo-primary, #0f766e), 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
 .sidebar-link--collapsed {
@@ -135,8 +134,8 @@
 
 .sidebar-link__icon {
   align-items: center;
-  background: rgba(255, 255, 255, 0.075);
-  border: 1px solid rgba(184, 197, 255, 0.12);
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   display: inline-flex;
   height: 2rem;
@@ -155,7 +154,7 @@
 
 .sidebar-profile {
   align-items: center;
-  border-top: 1px solid rgba(184, 197, 255, 0.12);
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
   display: grid;
   gap: 0.85rem;
   grid-template-columns: auto minmax(0, 1fr);
@@ -168,7 +167,7 @@
 }
 
 .sidebar-profile__role {
-  color: var(--ee-text-soft, #c8c6df);
+  color: var(--ee-text-soft, #334155);
   font-size: 0.8rem;
   margin: 0.1rem 0 0;
 }

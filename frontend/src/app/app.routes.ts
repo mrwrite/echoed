@@ -136,6 +136,8 @@ export const routes: Routes = [
       {
         path: '',
         component: WorkspaceDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
       },
       {
         path: 'projects',
@@ -208,7 +210,9 @@ export const routes: Routes = [
       {
         path: 'products',
         component: V2CollectionPageComponent,
+        canActivate: [RoleGuard],
         data: {
+          roles: creatorRoles,
           eyebrow: 'Products',
           title: 'Product catalog',
           status: 'Real V2 product wrappers. Course-backed products link to the existing education runtime.',
@@ -219,6 +223,8 @@ export const routes: Routes = [
       {
         path: 'products/:productId',
         component: ProductDetailComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
       },
       {
         path: 'products/manage',
@@ -273,6 +279,8 @@ export const routes: Routes = [
       {
         path: 'learners',
         component: UserDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles },
         children: [
           { path: '', component: EchoedRoleSelectorComponent },
           { path: 'products', component: AvailableCoursesComponent },
@@ -316,7 +324,12 @@ export const routes: Routes = [
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
-      { path: 'settings', component: PreferencesComponent },
+      {
+        path: 'settings',
+        component: PreferencesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: creatorRoles }
+      },
       {
         path: 'settings/invites',
         component: OrgInvitesComponent,

@@ -7,6 +7,51 @@
   min-width: 0;
 }
 
+.lesson-viewer__step-list {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.lesson-viewer__step-pill {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d8e1ea;
+  border-radius: 999px;
+  color: #475569;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 800;
+  gap: 0.4rem;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.lesson-viewer__step-pill span {
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 999px;
+  color: #334155;
+  display: inline-flex;
+  height: 1.35rem;
+  justify-content: center;
+  width: 1.35rem;
+}
+
+.lesson-viewer__step-pill--active {
+  background: rgba(14, 116, 144, 0.08);
+  border-color: rgba(14, 116, 144, 0.35);
+  color: #0f766e;
+}
+
+.lesson-viewer__step-pill--complete {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
 .lesson-viewer button,
 .lesson-viewer a,
 .lesson-viewer textarea,

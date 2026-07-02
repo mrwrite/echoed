@@ -4,17 +4,18 @@
 
 .login-shell {
   background:
-    radial-gradient(circle at 82% 88%, rgba(116, 53, 188, 0.35), transparent 22rem),
-    radial-gradient(circle at 15% 16%, rgba(58, 49, 141, 0.34), transparent 22rem),
-    linear-gradient(135deg, #05091d, #070a24 52%, #100724);
-  color: #f8f4ff;
+    radial-gradient(circle at 82% 88%, rgba(15, 118, 110, 0.12), transparent 22rem),
+    radial-gradient(circle at 15% 16%, rgba(2, 132, 199, 0.1), transparent 22rem),
+    linear-gradient(135deg, #ffffff, #f8fafc 52%, #eef6ff);
+  color: var(--ee-text, #102033);
   min-height: 100vh;
   padding: clamp(1rem, 3vw, 2rem);
 }
 
 .login-stage {
   align-items: center;
-  border: 1px solid rgba(128, 151, 224, 0.44);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 18px;
   display: grid;
   gap: clamp(1.5rem, 4vw, 4rem);
@@ -29,8 +30,8 @@
 
 .login-stage::before {
   background:
-    radial-gradient(circle at 70% 34%, rgba(124, 58, 237, 0.28), transparent 22rem),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.035));
+    radial-gradient(circle at 70% 34%, rgba(15, 118, 110, 0.08), transparent 22rem),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45));
   content: '';
   inset: 0;
   pointer-events: none;
@@ -51,7 +52,7 @@
 
 .brand-link {
   align-items: center;
-  color: #fff;
+  color: var(--ee-text, #102033);
   display: inline-flex;
   gap: 0.9rem;
   text-decoration: none;
@@ -59,8 +60,8 @@
 }
 
 .brand-link span {
-  background: linear-gradient(135deg, #6d4be8, #261b5e);
-  border: 1px solid rgba(185, 166, 255, 0.24);
+  background: var(--echo-primary, #0f766e);
+  border: 1px solid rgba(15, 118, 110, 0.24);
   border-radius: 12px;
   display: grid;
   font-size: 1.15rem;
@@ -86,7 +87,7 @@ p {
 }
 
 h1 {
-  color: #eee8ff;
+  color: var(--ee-text, #102033);
   font-size: clamp(1.8rem, 3.3vw, 2.45rem);
   line-height: 1.05;
   max-width: 13ch;
@@ -95,12 +96,12 @@ h1 {
 .story-copy p,
 .story-list p,
 .login-footer p {
-  color: #d8d1ed;
+  color: var(--ee-text-soft, #334155);
   line-height: 1.55;
 }
 
 .story-list {
-  border-top: 1px solid rgba(184, 197, 255, 0.08);
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
   display: grid;
   gap: 1.2rem;
   padding-top: 1.7rem;
@@ -114,10 +115,10 @@ h1 {
 }
 
 .story-list span {
-  background: rgba(151, 117, 255, 0.16);
-  border: 1px solid rgba(184, 197, 255, 0.16);
+  background: rgba(15, 118, 110, 0.1);
+  border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 999px;
-  color: #d8c6ff;
+  color: var(--echo-primary, #0f766e);
   display: grid;
   font-size: 0.72rem;
   font-weight: 900;
@@ -127,10 +128,10 @@ h1 {
 }
 
 .login-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
-  border: 1px solid rgba(184, 197, 255, 0.16);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 20px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
   display: grid;
   gap: 1.45rem;
   padding: clamp(1.4rem, 3vw, 2.4rem);
@@ -143,15 +144,15 @@ h1 {
 }
 
 h2 {
-  color: #f6f0ff;
+  color: var(--ee-text, #102033);
   font-size: 1.35rem;
 }
 
 .demo-badge {
-  background: rgba(124, 58, 237, 0.18);
-  border: 1px solid rgba(180, 146, 255, 0.3);
+  background: rgba(15, 118, 110, 0.1);
+  border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 999px;
-  color: #c7a8ff;
+  color: var(--echo-primary, #0f766e);
   font-size: 0.78rem;
   font-weight: 850;
   padding: 0.42rem 0.72rem;
@@ -167,7 +168,7 @@ h2 {
 }
 
 .field {
-  color: #f8f4ff;
+  color: var(--ee-text, #102033);
   font-size: 0.88rem;
   font-weight: 850;
   gap: 0.5rem;
@@ -180,10 +181,10 @@ h2 {
 }
 
 input {
-  background: rgba(2, 6, 23, 0.62);
-  border: 1px solid rgba(184, 197, 255, 0.12);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
   border-radius: 8px;
-  color: #f8f4ff;
+  color: var(--ee-text, #102033);
   font: inherit;
   min-height: 3.45rem;
   padding: 0.9rem 1rem;
@@ -191,14 +192,14 @@ input {
 }
 
 input::placeholder {
-  color: rgba(216, 209, 237, 0.55);
+  color: #64748b;
 }
 
 .text-toggle,
 .forgot-link {
   background: none;
   border: 0;
-  color: #e2b96f;
+  color: var(--echo-primary, #0f766e);
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
@@ -212,12 +213,12 @@ input::placeholder {
 
 .field-error,
 .auth-error {
-  color: #ffc4d2;
+  color: #be123c;
 }
 
 .auth-error {
-  background: rgba(255, 122, 154, 0.12);
-  border: 1px solid rgba(255, 122, 154, 0.3);
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
   border-radius: 10px;
   font-weight: 800;
   padding: 0.8rem 0.9rem;
@@ -225,10 +226,10 @@ input::placeholder {
 
 .primary-cta {
   align-items: center;
-  background: linear-gradient(135deg, #8b4df4, #5b2dff);
-  border: 1px solid rgba(210, 190, 255, 0.24);
+  background: var(--echo-primary, #0f766e);
+  border: 1px solid rgba(15, 118, 110, 0.24);
   border-radius: 8px;
-  box-shadow: 0 16px 34px rgba(97, 51, 240, 0.22);
+  box-shadow: 0 16px 34px rgba(15, 118, 110, 0.18);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
@@ -253,17 +254,17 @@ input::placeholder {
 }
 
 .login-footer p:first-child {
-  color: #fff;
+  color: var(--ee-text, #102033);
 }
 
 .login-footer a {
-  color: #fff;
+  color: var(--echo-primary, #0f766e);
   font-weight: 900;
   text-decoration: underline;
 }
 
 :where(a, button, input):focus-visible {
-  outline: 2px solid rgba(132, 92, 255, 0.94);
+  outline: 2px solid rgba(15, 118, 110, 0.88);
   outline-offset: 3px;
 }
 

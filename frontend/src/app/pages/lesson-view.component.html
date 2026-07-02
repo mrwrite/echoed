@@ -14,8 +14,8 @@
           <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
             {{ lessonActivityCount }} activit<span *ngIf="lessonActivityCount !== 1">ies</span><span *ngIf="lessonActivityCount === 1">y</span>
           </span>
-          <span *ngIf="lesson?.duration_minutes" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
-            {{ lesson?.duration_minutes }} min
+          <span *ngIf="lesson.duration_minutes" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+            {{ lesson.duration_minutes }} min
           </span>
         </div>
         <button aria-label="Exit lesson and return to dashboard" class="lesson-runtime__exit-button rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5" (click)="returnToDashboard()">Exit lesson</button>

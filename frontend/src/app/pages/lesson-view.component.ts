@@ -8,6 +8,7 @@ import { LessonViewerComponent } from "../shared/lesson-viewer.component";
 import { EchoModalComponent } from "../components/echo-modal/echo-modal.component";
 import { EchoStatePanelComponent } from '../components/echo-state-panel/echo-state-panel.component';
 import { EchoLoadingStateComponent } from '../components/echo-loading-state/echo-loading-state.component';
+import { StudentCourseWithDetails } from '../models/student-course-with-details.model';
 
 @Component({
   selector: 'echoed-lesson-view',
@@ -89,7 +90,30 @@ export class LessonViewComponent implements OnInit {
         this.fetchLesson(segment.lesson_id);
       },
       error: (err) => {
-          console.warn('Failed to restore the current governed lesson segment.', err);
+        if (err?.status === 404) {
+          this.recoverFromStaleSegment();
+          return;
+        }
+
+        console.warn('Failed to restore the current governed lesson segment.', err);
+        this.segment = undefined;
+        this.lesson = undefined;
+        this.courseCompleted = false;
+        this.governedDeliveryState = null;
+        this.governedDeliveryDetail = '';
+        this.loadErrorMessage = 'We could not restore your lesson path right now. Retry to continue from your dashboard-safe progress point.';
+        this.loading = false;
+      }
+    });
+  }
+
+  private recoverFromStaleSegment(): void {
+    this.coursesService.getStudentCourses().subscribe({
+      next: (studentCourses: StudentCourseWithDetails[]) => {
+        const activeCourse = studentCourses.find((course) => course.unit_progress_id);
+        const recoveredUnitProgressId = activeCourse?.unit_progress_id;
+
+        if (!recoveredUnitProgressId || recoveredUnitProgressId === this.unitProgressId) {
           this.segment = undefined;
           this.lesson = undefined;
           this.courseCompleted = false;
@@ -97,6 +121,22 @@ export class LessonViewComponent implements OnInit {
           this.governedDeliveryDetail = '';
           this.loadErrorMessage = 'We could not restore your lesson path right now. Retry to continue from your dashboard-safe progress point.';
           this.loading = false;
+          return;
+        }
+
+        this.unitProgressId = recoveredUnitProgressId;
+        this.router.navigate(['../', recoveredUnitProgressId], { relativeTo: this.route });
+        this.loadSegmentAndLesson();
+      },
+      error: (err) => {
+        console.warn('Failed to recover the governed lesson segment from student courses.', err);
+        this.segment = undefined;
+        this.lesson = undefined;
+        this.courseCompleted = false;
+        this.governedDeliveryState = null;
+        this.governedDeliveryDetail = '';
+        this.loadErrorMessage = 'We could not restore your lesson path right now. Retry to continue from your dashboard-safe progress point.';
+        this.loading = false;
       }
     });
   }
@@ -166,12 +206,17 @@ export class LessonViewComponent implements OnInit {
   loadDemoLesson(): void {
     this.coursesService.getCourses().subscribe({
       next: (courses) => {
-        const firstCourse = courses[0];
-        if (!firstCourse) {
+        const introCourse =
+          courses.find((course) => {
+            const pathwayKey = course.standards_metadata?.['pathway_key'];
+            return pathwayKey === 'introduction-to-africa' || course.title === 'Introduction to Africa';
+          }) || courses[0];
+
+        if (!introCourse) {
           this.courseCompleted = true;
           return;
         }
-        this.coursesService.getCourseById(firstCourse.id).subscribe({
+        this.coursesService.getCourseById(introCourse.id).subscribe({
           next: (course) => {
             const firstUnit = course.units?.[0];
             const firstLesson = firstUnit?.lessons?.[0];

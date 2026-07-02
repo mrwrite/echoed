@@ -1,59 +1,41 @@
 <main class="login-shell">
   <section class="login-stage" aria-labelledby="login-title">
-    <aside class="login-story" aria-label="EchoEd welcome and security information">
+    <aside class="login-story" aria-label="EchoEd welcome information">
       <a routerLink="/" class="brand-link" aria-label="Back to EchoEd home">
         <span>EE</span>
         <strong>EchoEd</strong>
       </a>
 
       <div class="story-copy">
-        <p class="eyebrow">Premium workspace access</p>
-        <h1 id="login-title">Welcome back to the knowledge product command center.</h1>
-        <p>
-          Sign in to continue through the EchoEd V2 demo: workspace, Product Studio, Review Center,
-          Learner Portal, Analytics, and governed lesson delivery.
-        </p>
+        <h1 id="login-title">Welcome back to EchoEd</h1>
+        <p>Access student, teacher, and admin views in demo mode to showcase the full EchoEd experience.</p>
       </div>
 
-      <div class="benefit-grid" aria-label="EchoEd benefits">
+      <div class="story-list" aria-label="EchoEd sign in notes">
         <article>
-          <span>01</span>
-          <strong>Built for trusted learning</strong>
-          <p>Human review, product readiness, and existing lesson governance stay visible.</p>
+          <span aria-hidden="true">01</span>
+          <p>WCAG AA mindful inputs & focus states</p>
         </article>
         <article>
-          <span>02</span>
-          <strong>Demo-ready workspace</strong>
-          <p>Use seeded V2 data to explain EchoEd to schools, enterprises, parents, and investors.</p>
+          <span aria-hidden="true">02</span>
+          <p>Private, microschool, and homeschool-ready</p>
         </article>
         <article>
-          <span>03</span>
-          <strong>Security-minded access</strong>
-          <p>Your session is established through the existing EchoEd authentication flow.</p>
+          <span aria-hidden="true">03</span>
+          <p>Investor tour: landing -> login -> dashboards</p>
         </article>
-      </div>
-
-      <div class="security-note" role="note">
-        <span aria-hidden="true">Lock</span>
-        <div>
-          <strong>Secure session bootstrap</strong>
-          <p>Authentication, organization context, and role routing are unchanged by this redesign.</p>
-        </div>
       </div>
     </aside>
 
     <section class="login-card" aria-labelledby="login-card-title">
       <div class="card-heading">
-        <div>
-          <p class="eyebrow">Secure sign in</p>
-          <h2 id="login-card-title">Access EchoEd</h2>
-        </div>
+        <h2 id="login-card-title">Secure sign in</h2>
         <span class="demo-badge">Demo Mode</span>
       </div>
 
       <form #loginForm="ngForm" (submit)="login($event)" class="login-form" novalidate>
         <label class="field" for="username">
-          <span>Email or username</span>
+          <span>Email or Username</span>
           <input
             #usernameModel="ngModel"
             type="text"
@@ -65,35 +47,29 @@
             placeholder="you@example.com"
             aria-required="true"
             [attr.aria-invalid]="usernameModel.invalid && usernameModel.touched"
-            aria-describedby="username-help username-error"
+            aria-describedby="username-error"
           />
-          <small id="username-help">Use the username or email assigned to your EchoEd account.</small>
           <small id="username-error" class="field-error" *ngIf="usernameModel.invalid && usernameModel.touched">
             Username is required.
           </small>
         </label>
 
         <label class="field" for="password">
-          <span>Password</span>
-          <div class="password-row">
-            <input
-              #passwordModel="ngModel"
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              name="password"
-              [(ngModel)]="password"
-              required
-              autocomplete="current-password"
-              placeholder="Enter your password"
-              aria-required="true"
-              [attr.aria-invalid]="passwordModel.invalid && passwordModel.touched"
-              aria-describedby="password-help password-error"
-            />
-            <button type="button" class="show-password" (click)="showPassword = !showPassword">
-              {{ showPassword ? 'Hide' : 'Show' }}
-            </button>
-          </div>
-          <small id="password-help">Your password stays private and is submitted through the existing auth endpoint.</small>
+          <span>Password <button type="button" class="text-toggle" (click)="showPassword = !showPassword">{{ showPassword ? 'Hide password' : 'Show password' }}</button></span>
+          <input
+            #passwordModel="ngModel"
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            autocomplete="current-password"
+            placeholder="password"
+            aria-required="true"
+            [attr.aria-invalid]="passwordModel.invalid && passwordModel.touched"
+            aria-describedby="password-error"
+          />
+          <a routerLink="/login" class="forgot-link">Forgot password?</a>
           <small id="password-error" class="field-error" *ngIf="passwordModel.invalid && passwordModel.touched">
             Password is required.
           </small>
@@ -102,13 +78,13 @@
         <p class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
         <button type="submit" class="primary-cta" [disabled]="loginForm.invalid">
-          Login
+          Sign in <span aria-hidden="true">-&gt;</span>
         </button>
       </form>
 
       <div class="login-footer">
         <p>New to EchoEd? <a routerLink="/registration">Create an account</a></p>
-        <p>For demo access, use the credentials provided with your walkthrough.</p>
+        <p>For demo access, use any valid credentials provided to you.</p>
       </div>
     </section>
   </section>

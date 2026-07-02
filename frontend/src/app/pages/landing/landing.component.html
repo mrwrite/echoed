@@ -1,7 +1,4 @@
 <main class="landing-shell">
-  <div class="landing-orb landing-orb--purple"></div>
-  <div class="landing-orb landing-orb--azure"></div>
-
   <nav class="landing-nav" aria-label="Primary navigation">
     <a routerLink="/" class="brand" aria-label="EchoEd home">
       <span>EE</span>
@@ -9,150 +6,104 @@
     </a>
 
     <div class="nav-links">
-      <a href="#demo">Today&apos;s Demo</a>
-      <a href="#roadmap">Roadmap</a>
-      <a href="#walkthrough">Walkthrough</a>
+      <a href="#product">Product</a>
+      <a href="#solutions">Solutions</a>
+      <a href="#demo">Demo</a>
+      <a href="#resources">Resources</a>
+      <a href="#about">About</a>
     </div>
 
     <div class="auth-links">
       <a routerLink="/login" class="ghost-link">Sign in</a>
-      <a routerLink="/registration" class="nav-cta">Create account</a>
+      <a routerLink="/registration" class="nav-cta">Book a Demo</a>
     </div>
   </nav>
 
   <section class="hero" aria-labelledby="landing-title">
     <div class="hero-copy">
-      <p class="eyebrow">AI-native learning product platform</p>
-      <h1 id="landing-title">Transform expert knowledge into trusted learning products.</h1>
+      <p class="eyebrow"><span></span>K-5 Demo Experience</p>
+      <h1 id="landing-title">EchoEd - Beautiful learning journeys rooted in <em>African & African-American history.</em></h1>
       <p class="hero-lede">
-        EchoEd gives schools, enterprises, teachers, parents, and investors a premium command center for
-        knowledge intake, governed review, learner delivery, and product health.
+        Culturally grounded curriculum, intuitive dashboards, and immersive lessons that scale across classrooms, homes, and communities.
       </p>
 
       <div class="hero-actions" aria-label="Primary calls to action">
-        <a routerLink="/registration" class="button button--primary">Schedule Demo</a>
-        <a routerLink="/login" class="button button--secondary">Launch Demo</a>
+        <a routerLink="/registration" class="button button--primary">Book a Demo <span aria-hidden="true">-&gt;</span></a>
+        <a routerLink="/login" class="button button--secondary">Explore EchoEd</a>
       </div>
 
-      <div class="audience-row" aria-label="Audience fit">
-        <span *ngFor="let audience of audienceCards">{{ audience }}</span>
-      </div>
+      <a routerLink="/login" class="tour-link">Start Demo Tour <span aria-hidden="true">-&gt;</span></a>
     </div>
 
-    <aside class="feature-panel" aria-label="EchoEd platform preview">
+    <aside class="feature-panel" aria-label="EchoEd demo preview">
       <div class="panel-header">
-        <span>Live platform model</span>
-        <strong>V2 Demo Ready</strong>
+        <span>Demo Mode</span>
+        <strong>K-5 Preview</strong>
       </div>
 
       <div class="signal-grid">
-        <article>
-          <span>Products</span>
-          <strong>Ready</strong>
-        </article>
-        <article>
-          <span>Review</span>
-          <strong>Governed</strong>
-        </article>
-        <article>
-          <span>Access</span>
-          <strong>Granted</strong>
-        </article>
-        <article>
-          <span>Analytics</span>
-          <strong>Live</strong>
+        <article *ngFor="let card of animatedCards; let i = index" [style.--i]="i">
+          <span class="mini-icon" aria-hidden="true"></span>
+          <strong>{{ card.label }}</strong>
+          <p>{{ card.value }}</p>
         </article>
       </div>
 
-      <div class="animated-stack">
-        <article *ngFor="let card of animatedCards; let i = index" [style.--i]="i">
-          <span>{{ card.label }}</span>
-          <strong>{{ card.value }}</strong>
-          <p>{{ card.detail }}</p>
-        </article>
+      <div class="trust-strip">
+        <span aria-hidden="true">EE</span>
+        <div>
+          <strong>Secure, accessible, and WCAG AA conscious</strong>
+          <p>Built for the trust of school leaders and families.</p>
+        </div>
       </div>
     </aside>
   </section>
 
-  <section class="feature-grid" aria-labelledby="feature-title">
-    <div class="section-heading">
-      <p class="eyebrow">Premium workspace</p>
-      <h2 id="feature-title">Built for the people deciding what learning becomes.</h2>
-    </div>
-
-    <article *ngFor="let feature of featureHighlights">
-      <span>{{ feature.kicker }}</span>
-      <h3>{{ feature.title }}</h3>
-      <p>{{ feature.description }}</p>
-    </article>
-  </section>
-
-  <section class="split-section" id="demo" aria-labelledby="demo-title">
-    <article class="demo-card demo-card--primary">
-      <p class="eyebrow">Today&apos;s Demo</p>
-      <h2 id="demo-title">A coherent end-to-end V2 walkthrough.</h2>
-      <p>
-        Show a workspace, project, knowledge sources, artifacts, product wrapper, review status,
-        access grant, learner visibility, and analytics without empty screens.
-      </p>
-      <a routerLink="/login" class="button button--light">Launch Demo</a>
-    </article>
-
-    <article class="demo-card" id="roadmap">
-      <p class="eyebrow">Roadmap</p>
-      <h2>What comes next.</h2>
-      <div class="roadmap-list">
-        <div *ngFor="let item of roadmap">
-          <strong>{{ item.title }}</strong>
-          <span>{{ item.detail }}</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <section class="testimonials" aria-labelledby="testimonial-title">
-    <div class="section-heading">
-      <p class="eyebrow">Testimonials</p>
-      <h2 id="testimonial-title">A product story that resonates across buyers.</h2>
-    </div>
-
-    <article *ngFor="let testimonial of testimonials">
-      <p>&quot;{{ testimonial.quote }}&quot;</p>
+  <section class="feature-grid" id="product" aria-label="EchoEd highlights">
+    <article *ngFor="let feature of featureHighlights; let i = index">
+      <span class="feature-icon" aria-hidden="true">{{ feature.kicker }}</span>
       <div>
-        <strong>{{ testimonial.name }}</strong>
-        <span>{{ testimonial.role }}</span>
+        <h2>{{ feature.title }}</h2>
+        <p>{{ feature.description }}</p>
       </div>
     </article>
   </section>
 
-  <section class="walkthrough" id="walkthrough" aria-labelledby="walkthrough-title">
-    <div>
-      <p class="eyebrow">Walkthrough</p>
-      <h2 id="walkthrough-title">Five minutes from knowledge command center to learner delivery.</h2>
-      <p>
-        The demo is designed to explain EchoEd itself: knowledge in, AI understanding prepared,
-        review and governance, product publishing, learner delivery, and analytics.
-      </p>
+  <section class="demo-section" id="demo" aria-labelledby="demo-title">
+    <div class="demo-heading">
+      <div>
+        <p class="eyebrow"><span></span>Live K-5 Demo Today</p>
+        <h2 id="demo-title">Today's Demo vs. What's Next</h2>
+        <p>Investors and school leaders can see the live K-5 experience, plus a clear roadmap to upper grades.</p>
+      </div>
+      <div class="audience-row" aria-label="Roadmap status">
+        <span *ngFor="let audience of audienceCards">{{ audience }}</span>
+      </div>
     </div>
 
-    <ol>
-      <li *ngFor="let step of walkthroughSteps; let i = index">
-        <span>{{ i + 1 }}</span>
-        <p>{{ step }}</p>
-      </li>
-    </ol>
-  </section>
+    <div class="demo-grid">
+      <article class="demo-card">
+        <p class="card-kicker">Today's Demo</p>
+        <h3>K-5 Experience</h3>
+        <ul>
+          <li>Story-led lessons with activities</li>
+          <li>Dashboards for students, teachers, admins</li>
+          <li>Badges, streaks, and progress insights</li>
+        </ul>
+      </article>
 
-  <section class="final-cta" aria-labelledby="cta-title">
-    <p class="eyebrow">Ready for a closer look?</p>
-    <h2 id="cta-title">See EchoEd as a premium knowledge product platform.</h2>
-    <p>
-      Walk through the V2 dashboard, Product Studio, Review Center, Learner Portal, and Analytics with a
-      demo story built for investors, schools, enterprises, parents, and teachers.
-    </p>
-    <div class="hero-actions">
-      <a routerLink="/registration" class="button button--primary">Schedule Demo</a>
-      <a routerLink="/login" class="button button--secondary">Launch Demo</a>
+      <article class="demo-card roadmap-card">
+        <p class="card-kicker">Coming Soon</p>
+        <div class="roadmap-list">
+          <div *ngFor="let item of roadmap">
+            <span aria-hidden="true"></span>
+            <div>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.detail }}</p>
+            </div>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 </main>

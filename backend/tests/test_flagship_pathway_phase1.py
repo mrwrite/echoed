@@ -50,7 +50,7 @@ def test_flagship_lessons_include_ordered_meaningful_existing_activities(db_engi
     session_factory = _build_session_factory(db_engine)
     _seed_with_factory(monkeypatch, session_factory)
 
-    allowed_types = {"story", "reflection", "checkpoint", "quiz"}
+    allowed_types = {"image", "interactive_map", "storybook", "coloring", "story", "reflection", "checkpoint", "quiz"}
 
     session = session_factory()
     try:

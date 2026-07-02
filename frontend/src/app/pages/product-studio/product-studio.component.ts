@@ -65,6 +65,27 @@ const PRODUCT_TYPES = [
         </ol>
       </section>
 
+      <section class="panel type-picker" aria-labelledby="product-types-title">
+        <div class="list-head">
+          <div>
+            <p class="eyebrow">Product types</p>
+            <h2 id="product-types-title">Choose the wrapper you are building</h2>
+          </div>
+          <span class="future-pill">Runtime links stay governed</span>
+        </div>
+        <div class="type-grid">
+          <button
+            type="button"
+            *ngFor="let type of productTypes"
+            [class.type-card--active]="productType === type"
+            (click)="productType = type"
+          >
+            <span>{{ label(type) }}</span>
+            <strong>{{ type === 'course' ? 'Course-backed or shell-only' : 'Shell-ready wrapper' }}</strong>
+          </button>
+        </div>
+      </section>
+
       <section class="panel pitch-cards" aria-label="Product Studio pitch callouts">
         <article><span>Knowledge In</span><strong>Connect project sources</strong><p>Product work starts from traceable workspace knowledge.</p></article>
         <article><span>AI Understanding</span><strong>Prepare analysis safely</strong><p>Generation remains marked as future work in this phase.</p></article>
@@ -73,7 +94,7 @@ const PRODUCT_TYPES = [
       </section>
 
       <div class="grid">
-        <form class="panel" (ngSubmit)="createProject()" aria-labelledby="new-project-title">
+        <form class="panel ee-form-card ee-form" (ngSubmit)="createProject()" aria-labelledby="new-project-title">
           <div>
             <p class="eyebrow">Step 1</p>
             <h2 id="new-project-title">Create Project Shell</h2>
@@ -103,7 +124,7 @@ const PRODUCT_TYPES = [
           </button>
         </form>
 
-        <form class="panel" (ngSubmit)="createProduct()" aria-labelledby="new-product-title">
+        <form class="panel ee-form-card ee-form" (ngSubmit)="createProduct()" aria-labelledby="new-product-title">
           <div>
             <p class="eyebrow">Step 2</p>
             <h2 id="new-product-title">Create Product Shell</h2>
@@ -239,6 +260,13 @@ const PRODUCT_TYPES = [
     .workflow li.disabled { background: rgba(255,255,255,.035); border-style: dashed; opacity: .82; position: relative; }
     .workflow li.disabled::after { background: rgba(244,201,93,.16); border: 1px solid rgba(244,201,93,.28); border-radius: 999px; color: #ffe5a2; content: 'Locked'; font-size: .68rem; font-weight: 900; padding: .22rem .48rem; position: absolute; right: .65rem; top: .65rem; }
     .future-pill { background: rgba(244,201,93,.13); border: 1px solid rgba(244,201,93,.34); border-radius: 999px; color: #ffe5a2; font-weight: 900; padding: .35rem .65rem; }
+    .type-picker { overflow: hidden; }
+    .type-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+    .type-grid button { background: rgba(255,255,255,.045); border: 1px solid var(--ee-border); border-radius: 18px; color: var(--ee-text-soft); cursor: pointer; display: grid; gap: .25rem; min-height: 5.5rem; padding: .9rem; text-align: left; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease), background var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .type-grid button:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    .type-grid button span { color: var(--ee-gold); font-size: .76rem; font-weight: 900; text-transform: uppercase; }
+    .type-grid button strong { color: var(--ee-text); }
+    .type-grid .type-card--active { background: rgba(124,58,237,.2); border-color: rgba(167,139,250,.42); box-shadow: inset 0 0 0 1px rgba(167,139,250,.18); }
     .pitch-cards { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
     .pitch-cards article { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .3rem; padding: .9rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
     .pitch-cards article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }

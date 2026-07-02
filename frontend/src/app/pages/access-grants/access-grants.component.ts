@@ -9,15 +9,25 @@ import { V2PlatformService } from '../../services/v2-platform.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <section class="access" aria-labelledby="access-title">
-      <header>
-        <p>Access Grants</p>
+    <section class="access ee-page" aria-labelledby="access-title">
+      <header class="ee-page-header">
+        <p class="ee-eyebrow">Access Grants</p>
         <h1 id="access-title">Product access management</h1>
-        <span>Grant product-level access without changing course enrollment, checkout, or lesson governance.</span>
+        <span class="ee-page-copy">Grant product-level access without changing course enrollment, checkout, or lesson governance.</span>
+        <div class="ee-action-row">
+          <span class="ee-badge ee-badge--draft">Manual grants</span>
+          <span class="ee-badge">Runtime governance preserved</span>
+        </div>
       </header>
 
-      <form class="panel" (ngSubmit)="createGrant()" aria-label="Create access grant">
-        <h2>Create manual grant</h2>
+      <form class="panel ee-form-card ee-form" (ngSubmit)="createGrant()" aria-label="Create access grant">
+        <div class="panel__heading">
+          <div>
+            <p class="ee-eyebrow">Create grant</p>
+            <h2>Create manual grant</h2>
+          </div>
+          <span class="ee-badge ee-badge--pending">Product access only</span>
+        </div>
         <label>
           Product
           <select name="productId" [(ngModel)]="form.product_id" required>
@@ -54,20 +64,21 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           Expires at
           <input name="expiresAt" type="datetime-local" [(ngModel)]="form.expires_at" />
         </label>
-        <button type="submit">Create grant</button>
+        <button class="ee-button" type="submit">Create grant</button>
         <p class="message" *ngIf="message">{{ message }}</p>
       </form>
 
-      <article class="panel">
+      <article class="panel ee-panel">
         <div class="panel__heading">
           <h2>Existing grants</h2>
-          <button type="button" (click)="loadGrants()">Refresh</button>
+          <button class="ee-button ee-button--secondary" type="button" (click)="loadGrants()">Refresh</button>
         </div>
-        <div class="empty" *ngIf="!grants.length">No access grants found.</div>
-        <div class="grant" *ngFor="let grant of grants">
+        <div class="ee-empty-state" *ngIf="!grants.length"><strong>No access grants found.</strong><span>Create a manual grant when a learner should receive product access.</span></div>
+        <div class="grant ee-list-card" *ngFor="let grant of grants">
           <div>
             <h3>{{ productTitle(grant.product_id) }}</h3>
             <p>{{ grant.user_id }}</p>
+            <span class="ee-badge" [ngClass]="grant.status === 'revoked' ? 'ee-badge--blocked' : 'ee-badge--active'">{{ label(grant.status) }}</span>
           </div>
           <dl>
             <div>
@@ -83,31 +94,25 @@ import { V2PlatformService } from '../../services/v2-platform.service';
               <dd>{{ grant.source }}</dd>
             </div>
           </dl>
-          <button type="button" [disabled]="grant.status === 'revoked'" (click)="revoke(grant)">Revoke</button>
+          <button class="ee-button ee-button--warn" type="button" [disabled]="grant.status === 'revoked'" (click)="revoke(grant)">Revoke</button>
         </div>
       </article>
     </section>
   `,
   styles: [`
-    .access { color: #102033; display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2rem); }
-    header, .panel { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); padding: clamp(1rem, 3vw, 1.5rem); }
-    header p { color: #0f766e; font-size: .76rem; font-weight: 900; letter-spacing: .12em; margin: 0 0 .35rem; text-transform: uppercase; }
     h1, h2, h3 { letter-spacing: 0; margin: 0; }
     h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1; }
-    header span, .message, .empty, .grant p, dd { color: #526273; }
+    .message, .empty, .grant p, dd { color: var(--ee-text-soft); }
     form.panel { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
-    form h2, form button, .message { grid-column: 1 / -1; }
-    label { color: #334155; display: grid; font-weight: 900; gap: .35rem; }
-    input, select { border: 1px solid #cbd5e1; border-radius: 6px; color: #102033; font: inherit; padding: .65rem .75rem; }
-    button { background: #102033; border: 1px solid #102033; border-radius: 6px; color: #fff; cursor: pointer; font: inherit; font-weight: 900; padding: .65rem .85rem; width: fit-content; }
-    button:disabled { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; cursor: default; }
+    form .panel__heading, form button, .message { grid-column: 1 / -1; }
+    button { cursor: pointer; width: fit-content; }
+    button:disabled { opacity: .58; cursor: default; }
     .panel { display: grid; gap: .9rem; }
     .panel__heading { align-items: center; display: flex; justify-content: space-between; gap: 1rem; }
-    .grant { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .75rem; padding: 1rem; }
+    .grant { display: grid; gap: .75rem; }
     dl { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); margin: 0; }
-    dt { color: #334155; font-size: .75rem; font-weight: 900; text-transform: uppercase; }
+    dt { color: var(--ee-text-muted); font-size: .75rem; font-weight: 900; text-transform: uppercase; }
     dd { margin: .15rem 0 0; }
-    input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid rgba(15,118,110,.25); outline-offset: 3px; }
   `]
 })
 export class AccessGrantsComponent implements OnInit {

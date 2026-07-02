@@ -244,12 +244,12 @@ export class PermissionsService {
     permissions.add('nav:programs');
     permissions.add('nav:certifications');
     permissions.add('nav:preferences');
-    permissions.add('nav:workspace');
-    permissions.add('nav:products');
-    permissions.add('nav:learners');
-    permissions.add('nav:settings');
 
     if (this.hasRole(roleSet, ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'])) {
+      permissions.add('nav:workspace');
+      permissions.add('nav:products');
+      permissions.add('nav:learners');
+      permissions.add('nav:settings');
       permissions.add('nav:projects');
       permissions.add('nav:product-studio');
       permissions.add('nav:knowledge-sources');

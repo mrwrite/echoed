@@ -8,6 +8,7 @@ import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspa
 import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
 import { PublicProductsComponent } from './pages/public-products/public-products.component';
 import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
+import { RoleGuard } from './guards/role.guard';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -69,6 +70,10 @@ describe('app routes', () => {
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
     expect(findRoute(routes, 'workspace/')?.component).toBe(WorkspaceDashboardComponent);
     expect(findRoute(routes, 'workspace/demo-readiness')?.component).toBe(DemoReadinessComponent);
+    expect(findRoute(routes, 'workspace/')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'workspace/products')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'workspace/products/:productId')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'workspace/learners')?.canActivate).toContain(RoleGuard);
   });
 
   it('adds learner portal aliases without removing existing learner pages', () => {

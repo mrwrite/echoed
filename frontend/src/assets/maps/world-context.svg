@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Africa in world context">
+  <defs>
+    <linearGradient id="water" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f8fbff"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="globe" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f3f8fd"/>
+      <stop offset="100%" stop-color="#dbeefe"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#water)"/>
+  <circle cx="480" cy="270" r="212" fill="url(#globe)" stroke="#c6d9ea" stroke-width="2"/>
+  <g opacity="0.6" stroke="#c0d4e5" stroke-width="1.2">
+    <ellipse cx="480" cy="270" rx="170" ry="210" fill="none"/>
+    <ellipse cx="480" cy="270" rx="118" ry="210" fill="none"/>
+    <path d="M268 270H692" />
+    <path d="M292 212H668" />
+    <path d="M292 328H668" />
+    <path d="M320 160H640" />
+    <path d="M320 380H640" />
+  </g>
+
+  <g fill="#ffffff" opacity="0.88">
+    <path d="M170 168c34-18 80-17 104 7 18 18 18 45 0 63-24 24-72 28-102 10-23-14-28-45-2-80Z"/>
+    <path d="M276 124c22-10 55-11 77 2 17 10 24 29 16 45-10 19-37 31-64 30-25-1-46-15-45-36 1-17 4-31 16-41Z"/>
+    <path d="M657 118c26-11 61-8 83 12 18 16 21 39 10 56-15 22-50 31-79 23-28-8-45-30-40-55 4-18 8-28 26-36Z"/>
+    <path d="M762 184c26-8 51 1 65 19 12 16 10 33-6 45-22 16-56 11-72-7-12-13-9-40 13-57Z"/>
+    <path d="M577 345c20-8 43-6 56 7 11 11 14 27 6 40-10 15-31 21-49 16-17-5-28-19-26-37 2-13 4-20 13-26Z"/>
+  </g>
+
+  <path d="M458 126
+           C481 111 507 108 530 114
+           C552 120 569 132 580 147
+           C591 161 596 178 597 195
+           C598 212 600 227 607 241
+           C614 255 626 267 638 279
+           C650 291 658 304 661 320
+           C664 336 661 352 652 366
+           C642 382 628 393 611 400
+           C594 407 574 410 555 409
+           C536 408 520 402 507 393
+           C495 385 485 373 480 360
+           C475 346 473 331 476 316
+           C480 298 483 282 478 267
+           C473 251 462 238 450 225
+           C438 212 432 196 431 179
+           C430 162 436 142 458 126 Z"
+        fill="#16a34a" opacity="0.92" stroke="#0f766e" stroke-width="4" stroke-linejoin="round"/>
+
+  <path d="M448 147
+           C463 139 479 137 494 139
+           C507 141 520 147 529 156
+           C538 165 544 177 545 189
+           C546 202 541 215 533 226
+           C524 238 513 246 501 250
+           C488 254 475 254 463 249
+           C451 244 442 234 438 222
+           C433 210 433 197 436 185
+           C440 172 445 158 448 147 Z"
+        fill="#f8fafc" opacity="0.16"/>
+
+  <path d="M463 244
+           C477 239 493 238 508 242
+           C521 246 532 254 540 265
+           C548 276 551 289 549 302
+           C546 315 539 327 528 337
+           C517 347 504 353 489 354
+           C474 356 459 353 446 346
+           C433 339 424 329 419 316
+           C414 303 414 290 419 278
+           C425 264 436 253 448 248
+           C453 246 458 245 463 244 Z"
+        fill="#fbbf24" opacity="0.18"/>
+
+  <path d="M620 327
+           C628 323 636 322 643 325
+           C650 328 655 334 657 341
+           C659 349 658 358 654 365
+           C649 373 642 377 633 378
+           C625 379 618 377 612 372
+           C606 367 603 360 603 352
+           C603 345 606 338 611 333
+           C614 330 617 328 620 327 Z"
+        fill="#0f766e" opacity="0.12"/>
+
+  <g fill="#0f766e" opacity="0.86">
+    <circle cx="520" cy="156" r="8"/>
+    <circle cx="546" cy="266" r="8"/>
+    <circle cx="636" cy="327" r="8"/>
+  </g>
+
+  <g stroke="#334155" stroke-width="2" stroke-dasharray="6 8" opacity="0.7">
+    <line x1="520" y1="156" x2="580" y2="118" />
+    <line x1="546" y1="266" x2="690" y2="248" />
+    <line x1="636" y1="327" x2="744" y2="356" />
+  </g>
+
+  <text x="480" y="70" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#102033">Africa in the World</text>
+  <text x="480" y="98" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#334155">A continent, not a country</text>
+</svg>

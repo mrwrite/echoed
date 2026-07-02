@@ -8,8 +8,8 @@
 @include typography.echoed-typography;
 
 :root {
-  --echo-primary: #2E294E;
-  --echo-secondary: #44356B;
+  --echo-primary: #0F766E;
+  --echo-secondary: #2563EB;
   --echo-accent: #EFB700;
   --echo-ink: #0F172A;
   --echo-sand: #F7F3ED;
@@ -426,25 +426,25 @@ textarea::placeholder {
 }
 
 :root {
-  --ee-midnight: #060715;
-  --ee-indigo: #0b1026;
-  --ee-indigo-2: #11183a;
-  --ee-surface: rgba(16, 20, 43, 0.72);
-  --ee-surface-strong: rgba(22, 27, 55, 0.88);
-  --ee-border: rgba(184, 197, 255, 0.16);
-  --ee-border-strong: rgba(239, 226, 177, 0.24);
-  --ee-text: #f7f3ff;
-  --ee-text-soft: #c8c6df;
-  --ee-text-muted: #9694b4;
-  --ee-purple: #a78bfa;
-  --ee-purple-strong: #7c3aed;
-  --ee-gold: #f4c95d;
-  --ee-azure: #5cc8ff;
-  --ee-emerald: #65e6b3;
-  --ee-danger: #ff7a9a;
-  --ee-warning: #ffd37a;
-  --ee-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
-  --ee-shadow-soft: 0 18px 50px rgba(4, 6, 22, 0.34);
+  --ee-midnight: #f8fafc;
+  --ee-indigo: #eef6ff;
+  --ee-indigo-2: #e2e8f0;
+  --ee-surface: #ffffff;
+  --ee-surface-strong: #f8fafc;
+  --ee-border: rgba(15, 23, 42, 0.12);
+  --ee-border-strong: rgba(15, 118, 110, 0.24);
+  --ee-text: #102033;
+  --ee-text-soft: #334155;
+  --ee-text-muted: #64748b;
+  --ee-purple: #2563eb;
+  --ee-purple-strong: #0f766e;
+  --ee-gold: #a16207;
+  --ee-azure: #0284c7;
+  --ee-emerald: #047857;
+  --ee-danger: #be123c;
+  --ee-warning: #a16207;
+  --ee-shadow: 0 22px 60px rgba(15, 23, 42, 0.14);
+  --ee-shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.1);
   --ee-radius: 22px;
   --ee-radius-sm: 18px;
   --ee-duration-fast: 120ms;
@@ -455,7 +455,7 @@ textarea::placeholder {
   --ee-easing-exit: cubic-bezier(0.4, 0, 1, 1);
   --ee-hover-lift: translateY(-3px);
   --ee-press-scale: scale(0.98);
-  --ee-focus-ring: 0 0 0 5px rgba(92, 200, 255, 0.16);
+  --ee-focus-ring: 0 0 0 5px rgba(15, 118, 110, 0.16);
   --echo-v2-bg: var(--ee-midnight);
   --echo-v2-panel: var(--ee-surface);
   --echo-v2-line: var(--ee-border);
@@ -473,17 +473,16 @@ textarea::placeholder {
 html,
 body {
   background:
-    radial-gradient(circle at 12% 8%, rgba(124, 58, 237, 0.34), transparent 30rem),
-    radial-gradient(circle at 86% 14%, rgba(92, 200, 255, 0.2), transparent 28rem),
-    radial-gradient(circle at 70% 86%, rgba(244, 201, 93, 0.14), transparent 30rem),
-    linear-gradient(135deg, var(--ee-midnight), var(--ee-indigo) 48%, #070817);
+    radial-gradient(circle at 12% 8%, rgba(15, 118, 110, 0.1), transparent 28rem),
+    radial-gradient(circle at 86% 14%, rgba(2, 132, 199, 0.09), transparent 26rem),
+    linear-gradient(135deg, #ffffff, var(--ee-midnight) 48%, #f1f5f9);
   color: var(--ee-text);
 }
 
 body::before {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
   background-size: 56px 56px;
   content: '';
   inset: 0;
@@ -514,6 +513,8 @@ h6 {
 .learner-portal {
   color: var(--ee-text);
   min-height: 100vh;
+  max-width: 1380px;
+  margin-inline: auto;
 }
 
 .ee-page-header,
@@ -528,13 +529,11 @@ h6 {
 .ee-navigation-card,
 .glass-panel,
 .surface-card {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
-    var(--ee-surface);
+  background: var(--ee-surface);
   border: 1px solid var(--ee-border);
   border-radius: var(--ee-radius);
   box-shadow: var(--ee-shadow-soft);
-  backdrop-filter: blur(22px) saturate(1.2);
+  backdrop-filter: none;
 }
 
 .ee-page-header,
@@ -547,9 +546,9 @@ h6 {
 .ee-page-header::before,
 .ee-hero::before {
   background:
-    radial-gradient(circle at 16% 20%, rgba(167, 139, 250, 0.34), transparent 17rem),
-    radial-gradient(circle at 92% 12%, rgba(244, 201, 93, 0.22), transparent 18rem),
-    radial-gradient(circle at 74% 80%, rgba(92, 200, 255, 0.18), transparent 20rem);
+    radial-gradient(circle at 16% 20%, rgba(15, 118, 110, 0.12), transparent 17rem),
+    radial-gradient(circle at 92% 12%, rgba(161, 98, 7, 0.1), transparent 18rem),
+    radial-gradient(circle at 74% 80%, rgba(2, 132, 199, 0.1), transparent 20rem);
   content: '';
   inset: 0;
   opacity: 0.95;
@@ -573,7 +572,7 @@ h6 {
 }
 
 .ee-eyebrow {
-  color: var(--ee-gold);
+  color: var(--echo-primary);
   font-size: 0.75rem;
   letter-spacing: 0.18em;
 }
@@ -600,6 +599,22 @@ h6 {
 .ee-stat-card,
 .ee-navigation-card {
   align-content: start;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.ee-card {
+  min-height: 100%;
+}
+
+.ee-form-card,
+.ee-list-card {
+  background: var(--ee-surface);
+  border: 1px solid var(--ee-border);
+  border-radius: var(--ee-radius);
+  box-shadow: var(--ee-shadow-soft);
+  backdrop-filter: none;
   display: grid;
   gap: 1rem;
   padding: clamp(1.1rem, 3vw, 1.6rem);
@@ -677,10 +692,10 @@ a.ee-link-button:active {
 
 .ee-badge,
 .ee-tag {
-  background: rgba(167, 139, 250, 0.14);
-  border: 1px solid rgba(167, 139, 250, 0.28);
+  background: rgba(15, 118, 110, 0.1);
+  border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 999px;
-  color: #ddd4ff;
+  color: #0f766e;
   display: inline-flex;
   font-size: 0.78rem;
   font-weight: 900;
@@ -692,25 +707,25 @@ a.ee-link-button:active {
 .ee-badge--draft,
 .ee-badge--pending,
 .ee-badge--needs-changes {
-  background: rgba(244, 201, 93, 0.13);
-  border-color: rgba(244, 201, 93, 0.34);
-  color: #ffe5a2;
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #a16207;
 }
 
 .ee-badge--blocked,
 .ee-badge--rejected,
 .ee-badge--revoked {
-  background: rgba(255, 122, 154, 0.14);
-  border-color: rgba(255, 122, 154, 0.34);
-  color: #ffc4d2;
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
 }
 
 .ee-badge--approved,
 .ee-badge--published,
 .ee-badge--active {
-  background: rgba(101, 230, 179, 0.13);
-  border-color: rgba(101, 230, 179, 0.34);
-  color: #baf8df;
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #047857;
 }
 
 .ee-button,
@@ -723,15 +738,15 @@ a.ee-link-button:active {
 
 .ee-button,
 .ee-link-button--primary {
-  background: linear-gradient(135deg, var(--ee-purple-strong), var(--ee-purple) 52%, var(--ee-azure));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 16px 34px rgba(92, 200, 255, 0.16);
+  background: var(--echo-primary);
+  border: 1px solid var(--echo-primary);
+  box-shadow: 0 12px 26px rgba(15, 118, 110, 0.16);
   color: #fff;
 }
 
 .ee-button--secondary,
 .ee-link-button {
-  background: rgba(255, 255, 255, 0.055);
+  background: #ffffff;
   border: 1px solid var(--ee-border);
   color: var(--ee-text);
 }
@@ -758,9 +773,46 @@ a.ee-link-button:active {
 }
 
 .ee-list-row {
-  background: rgba(255, 255, 255, 0.045);
+  background: #ffffff;
   border-color: var(--ee-border);
   border-radius: var(--ee-radius-sm);
+}
+
+.ee-list-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ee-list-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ee-kpi-strip {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+.ee-kpi {
+  background: #f8fafc;
+  border: 1px solid var(--ee-border);
+  border-radius: 16px;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem;
+}
+
+.ee-kpi span {
+  color: var(--ee-text-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ee-kpi strong {
+  color: var(--ee-text);
 }
 
 .ee-timeline li {
@@ -790,7 +842,7 @@ a.ee-link-button:active {
 input,
 select,
 textarea {
-  background: rgba(255, 255, 255, 0.075);
+  background: #ffffff;
   border: 1px solid var(--ee-border);
   border-radius: 16px;
   color: var(--ee-text);
@@ -801,11 +853,11 @@ textarea {
 .ee-input input::placeholder,
 input::placeholder,
 textarea::placeholder {
-  color: rgba(200, 198, 223, 0.72);
+  color: #64748b;
 }
 
 select option {
-  background: var(--ee-indigo);
+  background: #ffffff;
   color: var(--ee-text);
 }
 
@@ -819,7 +871,7 @@ select option {
 }
 
 .ee-stepper li {
-  background: rgba(255, 255, 255, 0.055);
+  background: #f8fafc;
   border: 1px solid var(--ee-border);
   border-radius: var(--ee-radius-sm);
   color: var(--ee-text-soft);
@@ -921,14 +973,14 @@ select option {
 
 .ee-motion-skeleton {
   animation: ee-motion-skeleton-pulse 1.35s var(--ee-easing-standard) infinite;
-  background: rgba(255, 255, 255, 0.075);
+  background: #e2e8f0;
   border-radius: 14px;
 }
 
 .ee-motion-shimmer {
   background:
-    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.11) 35%, transparent 70%),
-    rgba(255, 255, 255, 0.055);
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.72) 35%, transparent 70%),
+    #e2e8f0;
   background-size: 220% 100%;
   animation: ee-motion-shimmer 1.4s var(--ee-easing-standard) infinite;
 }

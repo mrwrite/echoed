@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta
 
 from sqlalchemy import or_
@@ -40,6 +41,7 @@ from app.models import (
     StudentCourse,
     StudentProgramProgress,
     StudentUnitProgress,
+    StorybookPage,
     Thread,
     Unit,
     User,
@@ -49,6 +51,66 @@ from app.models import (
 DEMO_PASSWORD = "password"
 DEMO_ORG_NAME = "EchoEd Demo School"
 DEMO_COURSE_TITLE = "Introduction to Africa"
+DEMO_STORYBOOK_BASE_URL = "http://127.0.0.1:8000/storybook"
+DEMO_COLORINGS_BASE_URL = "http://127.0.0.1:8000/colorings"
+DEMO_MAP_REFERENCE_URL = "/assets/maps/africa-reference.svg"
+DEMO_WORLD_CONTEXT_URL = "/assets/maps/world-context.svg"
+DEMO_STORYBOOK_PAGES = [
+    "08ef622b-2b8a-41f0-8e43-74f4ee11d216.png",
+    "1ca7b568-f7eb-4877-bd9e-22919ec90a36.png",
+    "268b14ab-3b76-4153-84ac-5238658d1f72.png",
+    "1d7d06af-ad31-4ac4-ba83-82a720079317.png",
+]
+DEMO_COLORING_PAGE = "4b4d875a-0f94-4408-9048-ab69d013d957.png"
+DEMO_AFRICA_MAP_EXPLORER = {
+    "title": "Africa Regions Explorer",
+    "prompt": "Tap each region to see a map-reading clue. Look for coastlines, deserts, rivers, highlands, and routes that connect people across the continent.",
+    "contextImageUrl": DEMO_WORLD_CONTEXT_URL,
+    "referenceImageUrl": DEMO_MAP_REFERENCE_URL,
+    "referenceImageAlt": "Africa reference map with five regions labeled",
+    "regions": [
+        {
+            "id": "north",
+            "label": "North Africa",
+            "fact": "North Africa sits near the Mediterranean coast and the Sahara. It connects African, Arab, and Mediterranean history.",
+            "focus": ["coastline", "desert edge", "trade routes"],
+            "x": 50,
+            "y": 23,
+        },
+        {
+            "id": "west",
+            "label": "West Africa",
+            "fact": "West Africa is a place of rivers, markets, languages, and strong trading traditions across many communities.",
+            "focus": ["river systems", "market routes", "languages"],
+            "x": 33,
+            "y": 53,
+        },
+        {
+            "id": "central",
+            "label": "Central Africa",
+            "fact": "Central Africa includes forested regions and river networks that help people travel, farm, and stay connected.",
+            "focus": ["forest", "river", "community"],
+            "x": 51,
+            "y": 53,
+        },
+        {
+            "id": "east",
+            "label": "East Africa",
+            "fact": "East Africa includes highlands, lakes, and routes that link inland communities with the coast and the wider region.",
+            "focus": ["highlands", "lakes", "routes"],
+            "x": 68,
+            "y": 50,
+        },
+        {
+            "id": "south",
+            "label": "Southern Africa",
+            "fact": "Southern Africa has coastlines, plains, and mountain regions where people have long built rich community life.",
+            "focus": ["coastline", "plains", "mountains"],
+            "x": 55,
+            "y": 83,
+        },
+    ],
+}
 LEGACY_DEMO_COURSE_TITLES = {
     DEMO_COURSE_TITLE,
     "K-5 Introduction to Africa",
@@ -105,21 +167,52 @@ DEMO_UNITS = [
                 ],
                 "activities": [
                     {
+                        "type": "image",
+                        "title": "Africa in the World",
+                        "order": 1,
+                        "content": DEMO_WORLD_CONTEXT_URL,
+                    },
+                    {
+                        "type": "interactive_map",
+                        "title": "Africa Regions Explorer",
+                        "order": 2,
+                        "content": json.dumps(DEMO_AFRICA_MAP_EXPLORER),
+                    },
+                    {
+                        "type": "storybook",
+                        "title": "Meet Children of Africa Storybook",
+                        "order": 3,
+                        "content": "Read the picture story first. Notice the children, places, and details that show Africa as full of many communities and everyday stories.",
+                        "pages": [
+                            {
+                                "image_url": f"{DEMO_STORYBOOK_BASE_URL}/{filename}",
+                                "order": index + 1,
+                            }
+                            for index, filename in enumerate(DEMO_STORYBOOK_PAGES)
+                        ],
+                    },
+                    {
+                        "type": "coloring",
+                        "title": "Living Places Coloring Page",
+                        "order": 4,
+                        "content": f"{DEMO_COLORINGS_BASE_URL}/{DEMO_COLORING_PAGE}",
+                    },
+                    {
                         "type": "story",
                         "title": "Map Window",
-                        "order": 1,
+                        "order": 5,
                         "content": "Imagine opening a giant classroom map and noticing that Africa stretches across many regions, climates, and communities. As you read, look for clues that show Africa is a continent full of many stories rather than a single place.",
                     },
                     {
                         "type": "quiz",
                         "title": "Key Concept Check",
-                        "order": 2,
+                        "order": 6,
                         "content": "{\"question\":\"Which word best describes Africa?\",\"options\":[\"A single country\",\"A diverse continent\",\"Only a desert\"]}",
                     },
                     {
                         "type": "reflection",
                         "title": "Place and Perspective Reflection",
-                        "order": 3,
+                        "order": 7,
                         "content": "Write or say one new idea you learned about Africa and one reason it matters to learn about places with care and accuracy.",
                     },
                 ],
@@ -156,21 +249,40 @@ DEMO_UNITS = [
                 ],
                 "activities": [
                     {
+                        "type": "storybook",
+                        "title": "Regions and Rivers Storybook",
+                        "order": 1,
+                        "content": "Read this storybook before the map work. Notice how children, homes, and places connect across Africa as communities move along rivers and routes.",
+                        "pages": [
+                            {
+                                "image_url": f"{DEMO_STORYBOOK_BASE_URL}/{filename}",
+                                "order": index + 1,
+                            }
+                            for index, filename in enumerate(DEMO_STORYBOOK_PAGES)
+                        ],
+                    },
+                    {
+                        "type": "coloring",
+                        "title": "River Communities Coloring Page",
+                        "order": 2,
+                        "content": f"{DEMO_COLORINGS_BASE_URL}/{DEMO_COLORING_PAGE}",
+                    },
+                    {
                         "type": "story",
                         "title": "River Journey Prompt",
-                        "order": 1,
+                        "order": 3,
                         "content": "Picture a family traveling beside a great river. What might they see, grow, carry, or trade along the way? Use the lesson clues to imagine the journey.",
                     },
                     {
                         "type": "checkpoint",
                         "title": "Geography Exploration Prompt",
-                        "order": 2,
+                        "order": 4,
                         "content": "Point to one river or route on your class map and explain how it could help people move, gather food, or share ideas.",
                     },
                     {
                         "type": "reflection",
                         "title": "Community Connection",
-                        "order": 3,
+                        "order": 5,
                         "content": "How do rivers, roads, or paths help communities in your world stay connected? Share one comparison with the lesson.",
                     },
                 ],
@@ -1660,7 +1772,31 @@ def _sync_lesson_sources(db, lesson: Lesson, sources: list[dict[str, str]]) -> N
         db.delete(stale_source)
 
 
-def _sync_lesson_activities(db, lesson: Lesson, activities: list[dict[str, str | int]]) -> None:
+def _sync_storybook_pages(db, activity: Activity, pages: list[dict[str, object]]) -> None:
+    existing_pages = sorted(
+        list(activity.storybook_pages or []),
+        key=lambda page: (
+            page.order is None,
+            page.order if page.order is not None else 0,
+            str(page.id),
+        ),
+    )
+
+    for index, page_seed in enumerate(pages):
+        if index < len(existing_pages):
+            page = existing_pages[index]
+        else:
+            page = StorybookPage(activity=activity)
+            db.add(page)
+
+        page.image_url = str(page_seed["image_url"])
+        page.order = int(page_seed.get("order") or index + 1)
+
+    for stale_page in existing_pages[len(pages) :]:
+        db.delete(stale_page)
+
+
+def _sync_lesson_activities(db, lesson: Lesson, activities: list[dict[str, object]]) -> None:
     existing_activities = sorted(
         list(lesson.activities or []),
         key=lambda activity: (
@@ -1681,6 +1817,7 @@ def _sync_lesson_activities(db, lesson: Lesson, activities: list[dict[str, str |
         activity.title = str(activity_seed["title"])
         activity.content = str(activity_seed["content"])
         activity.order = int(activity_seed["order"])
+        _sync_storybook_pages(db, activity, list(activity_seed.get("pages") or []))
 
     for stale_activity in existing_activities[len(activities) :]:
         db.delete(stale_activity)

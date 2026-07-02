@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, Subject, throwError } from 'rxjs';
@@ -18,6 +19,7 @@ class MockCoursesService {
   markSegmentCompleted = jasmine.createSpy('markSegmentCompleted');
   getCourses = jasmine.createSpy('getCourses');
   getCourseById = jasmine.createSpy('getCourseById');
+  getStudentCourses = jasmine.createSpy('getStudentCourses');
 }
 
 describe('LessonViewComponent', () => {
@@ -111,5 +113,83 @@ describe('LessonViewComponent', () => {
     expect(compiled.textContent).toContain('We could not prepare this lesson');
     expect(compiled.textContent).toContain('Retry');
     expect(compiled.textContent).not.toContain('Course completed!');
+  });
+
+  it('recovers from a stale segment id by restoring the active student course progress', async () => {
+    const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+
+    coursesService.getCurrentSegment.and.returnValues(
+      throwError(() => ({ status: 404 })),
+      of({
+        delivery_state: 'governed_available',
+        lesson_id: 'lesson-2',
+        unit_progress_id: 'student-unit-2',
+      }),
+    );
+    coursesService.getStudentCourses.and.returnValue(of([
+      {
+        unit_progress_id: 'student-unit-2',
+        course: { title: 'Introduction to Africa' },
+      },
+    ] as any));
+    coursesService.getLessonById.and.returnValue(of({
+      id: 'lesson-2',
+      title: 'Recovered lesson',
+      activities: [],
+    } as any));
+
+    fixture = TestBed.createComponent(LessonViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(coursesService.getCurrentSegment).toHaveBeenCalledWith('student-unit-1');
+    expect(coursesService.getCurrentSegment).toHaveBeenCalledWith('student-unit-2');
+    expect(router.navigate).toHaveBeenCalledWith(['../', 'student-unit-2'], { relativeTo: TestBed.inject(ActivatedRoute) });
+    expect(component.loadErrorMessage).toBe('');
+    expect(component.lesson?.title).toBe('Recovered lesson');
+  });
+
+  it('prefers the Introduction to Africa course for demo lessons', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [CommonModule, RouterTestingModule, LessonViewComponent],
+      providers: [
+        { provide: CoursesService, useClass: MockCoursesService },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => 'demo',
+              },
+            },
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const demoCoursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    demoCoursesService.getCourses.and.returnValue(of([
+      { id: 'course-a', title: 'C', standards_metadata: {} },
+      { id: 'course-b', title: 'Introduction to Africa', standards_metadata: { pathway_key: 'introduction-to-africa' } },
+    ] as any));
+    demoCoursesService.getCourseById.and.returnValue(of({
+      units: [{
+        lessons: [{
+          id: 'lesson-1',
+          title: 'Introduction to Africa',
+          activities: [
+            { title: 'Storybook', type: 'storybook', content: '', pages: [] },
+          ],
+        }],
+      }],
+    } as any));
+
+    const demoFixture = TestBed.createComponent(LessonViewComponent);
+    demoFixture.detectChanges();
+
+    expect(demoCoursesService.getCourseById).toHaveBeenCalledWith('course-b');
   });
 });

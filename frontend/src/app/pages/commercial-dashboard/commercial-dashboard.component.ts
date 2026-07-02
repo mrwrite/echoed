@@ -55,7 +55,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <span class="ee-badge ee-badge--draft">No billing execution</span>
         </div>
         <div class="settings">
-          <article *ngFor="let section of settings"><strong>{{ section }}</strong><span>Placeholder configuration area for future commercialization.</span></article>
+          <article class="ee-card--interactive" *ngFor="let section of settings"><strong>{{ section }}</strong><span>Placeholder configuration area for future commercialization.</span></article>
         </div>
       </section>
 
@@ -68,8 +68,9 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <a class="ee-link-button" routerLink="/workspace/products">Products</a>
         </div>
         <div class="ee-list">
-          <article class="ee-list-row" *ngFor="let product of products">
+          <article class="ee-list-card ee-card--interactive" *ngFor="let product of products">
             <div>
+              <span class="ee-badge" [ngClass]="product.status === 'published' ? 'ee-badge--approved' : 'ee-badge--draft'">{{ label(product.status) }}</span>
               <h3>{{ product.title }}</h3>
               <p>{{ label(product.visibility || 'draft') }} - {{ label(product.pricing_model || 'internal') }} - {{ label(product.product_type) }}</p>
             </div>
@@ -82,12 +83,13 @@ import { V2PlatformService } from '../../services/v2-platform.service';
   styles: [`
     h2, h3 { margin: 0; }
     dl { display: grid; gap: .55rem; margin: 0; }
-    dl div { border-top: 1px solid #edf2f7; display: grid; gap: .2rem; padding-top: .55rem; }
-    dt { color: #334155; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
-    dd { color: #526273; margin: 0; }
+    dl div { border-top: 1px solid var(--ee-border); display: grid; gap: .2rem; padding-top: .55rem; }
+    dt { color: var(--ee-text-muted); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    dd { color: var(--ee-text-soft); margin: 0; }
     .settings { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
-    .settings article { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .3rem; padding: .9rem; }
-    .settings span, p { color: #526273; }
+    .settings article { background: rgba(255,255,255,.045); border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .3rem; padding: .9rem; }
+    .settings strong, h3 { color: var(--ee-text); }
+    .settings span, p { color: var(--ee-text-soft); }
   `]
 })
 export class CommercialDashboardComponent implements OnInit {

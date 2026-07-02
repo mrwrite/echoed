@@ -1,73 +1,100 @@
-<div class="p-6 space-y-6">
-  <div class="flex flex-col gap-2">
-    <h2 class="text-2xl font-bold text-ink">Preferences & Accessibility</h2>
-    <p class="text-sm text-slate-600">Tune EchoEd to your learning style and accessibility needs.</p>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="surface-card p-6 space-y-4">
-      <h3 class="text-lg font-semibold text-ink">Language & Region</h3>
-      <label class="block text-sm text-slate-500">Locale</label>
-      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.locale">
-        <option value="en">English</option>
-        <option value="fr">Français (coming soon)</option>
-        <option value="es">Español (coming soon)</option>
-      </select>
-      <label class="block text-sm text-slate-500">Timezone</label>
-      <input class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.timezone" placeholder="e.g. Africa/Accra" />
+<section class="settings-page ee-page" aria-labelledby="settings-title">
+  <header class="ee-page-header">
+    <p class="ee-eyebrow">Settings</p>
+    <h1 id="settings-title" class="ee-page-title">Preferences & accessibility</h1>
+    <p class="ee-page-copy">Tune EchoEd workspace behavior, learning preferences, organization details, and accessibility controls.</p>
+    <div class="ee-action-row">
+      <button class="ee-button" type="button" (click)="save()">Save preferences</button>
+      <span class="ee-badge">Keyboard and focus ready</span>
     </div>
+  </header>
 
-    <div class="surface-card p-6 space-y-4">
-      <h3 class="text-lg font-semibold text-ink">Learning Mode</h3>
-      <label class="block text-sm text-slate-500">Preferred mode</label>
-      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.preferred_mode">
-        <option value="student">Student</option>
-        <option value="teacher">Teacher</option>
-        <option value="parent">Parent</option>
-      </select>
+  <div class="settings-grid">
+    <section class="ee-form-card ee-form" aria-labelledby="language-title">
+      <div>
+        <p class="ee-eyebrow">Language</p>
+        <h2 id="language-title">Language & region</h2>
+      </div>
+      <label>
+        Locale
+        <select [(ngModel)]="preferences.locale">
+          <option value="en">English</option>
+          <option value="fr">Francais (coming soon)</option>
+          <option value="es">Espanol (coming soon)</option>
+        </select>
+      </label>
+      <label>
+        Timezone
+        <input [(ngModel)]="preferences.timezone" placeholder="e.g. Africa/Accra" />
+      </label>
+    </section>
 
-      <label class="block text-sm text-slate-500">Reading level</label>
-      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.reading_level_mode">
-        <option value="kids">Kids</option>
-        <option value="standard">Standard</option>
-        <option value="large-type">Large type</option>
-      </select>
-    </div>
+    <section class="ee-form-card ee-form" aria-labelledby="mode-title">
+      <div>
+        <p class="ee-eyebrow">Learning</p>
+        <h2 id="mode-title">Learning mode</h2>
+      </div>
+      <label>
+        Preferred mode
+        <select [(ngModel)]="preferences.preferred_mode">
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="parent">Parent</option>
+        </select>
+      </label>
+      <label>
+        Reading level
+        <select [(ngModel)]="preferences.reading_level_mode">
+          <option value="kids">Kids</option>
+          <option value="standard">Standard</option>
+          <option value="large-type">Large type</option>
+        </select>
+      </label>
+    </section>
 
-    <div class="surface-card p-6 space-y-4">
-      <h3 class="text-lg font-semibold text-ink">Accessibility</h3>
-      <label class="flex items-center gap-3 text-sm text-slate-600">
+    <section class="ee-form-card ee-form" aria-labelledby="accessibility-title">
+      <div>
+        <p class="ee-eyebrow">Accessibility</p>
+        <h2 id="accessibility-title">Display and reading support</h2>
+      </div>
+      <label class="check-row">
         <input type="checkbox" [(ngModel)]="preferences.large_text" />
-        Large text mode
+        <span>Large text mode</span>
       </label>
-      <label class="flex items-center gap-3 text-sm text-slate-600">
+      <label class="check-row">
         <input type="checkbox" [(ngModel)]="preferences.dyslexia_font" />
-        Dyslexia-friendly font (placeholder)
+        <span>Dyslexia-friendly font placeholder</span>
       </label>
-    </div>
+    </section>
 
-    <div class="surface-card p-6 space-y-4">
-      <h3 class="text-lg font-semibold text-ink">Theme</h3>
-      <label class="block text-sm text-slate-500">Theme</label>
-      <select class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="preferences.theme">
-        <option value="system">System</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-    </div>
+    <section class="ee-form-card ee-form" aria-labelledby="theme-title">
+      <div>
+        <p class="ee-eyebrow">Workspace</p>
+        <h2 id="theme-title">Theme</h2>
+      </div>
+      <label>
+        Theme
+        <select [(ngModel)]="preferences.theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </section>
 
-    <div class="surface-card p-6 space-y-4" *ngIf="activeOrg && canManageOrg">
-      <h3 class="text-lg font-semibold text-ink">Organization</h3>
-      <p class="text-sm text-muted">Update the organization name shown in the header and invites.</p>
-      <label class="block text-sm text-slate-500">Organization name</label>
-      <input class="w-full border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="orgNameDraft" />
-      <button class="px-4 py-2 bg-primary text-white rounded-full font-semibold w-fit" (click)="saveOrganizationName()">
+    <section class="ee-form-card ee-form settings-grid__wide" *ngIf="activeOrg && canManageOrg" aria-labelledby="organization-title">
+      <div>
+        <p class="ee-eyebrow">Organization</p>
+        <h2 id="organization-title">Organization settings</h2>
+        <p class="ee-muted">Update the organization name shown in the command-center header and invites.</p>
+      </div>
+      <label>
+        Organization name
+        <input [(ngModel)]="orgNameDraft" />
+      </label>
+      <button class="ee-button ee-button--secondary" type="button" (click)="saveOrganizationName()">
         Save organization name
       </button>
-    </div>
+    </section>
   </div>
-
-  <div class="flex justify-end">
-    <button class="px-6 py-2 bg-primary text-white rounded-full font-semibold" (click)="save()">Save preferences</button>
-  </div>
-</div>
+</section>

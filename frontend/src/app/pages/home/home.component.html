@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-[#0f1629] via-[#f7f3ed] to-[#efe9ff]">
+<div class="ee-shell min-h-screen">
   <a class="skip-link" href="#echoed-main-content">Skip to main content</a>
   <ng-container *ngIf="(ready$ | async) && (userInfo$ | async) as userInfo; else shellLoading">
     <div
@@ -24,17 +24,17 @@
           tabindex="-1"
           [attr.aria-label]="lessonMode ? 'Lesson content' : 'Authenticated application content'"
         >
-          <div *ngIf="!lessonMode" class="max-w-7xl mx-auto">
-            <div class="mb-4 surface-card flex flex-wrap items-center justify-between gap-3 p-4 md:p-5">
+          <div *ngIf="!lessonMode" class="ee-shell__workspace mx-auto">
+            <div class="ee-command-strip mb-4 flex flex-wrap items-center justify-between gap-3 p-4 md:p-5">
               <div>
-                <p class="text-xs uppercase tracking-[0.25em] text-primary">Workspace: AI-powered knowledge products</p>
-                <p class="text-sm text-slate-700">Use the V2 shell to move between products, learner delivery, review workflows, and platform settings.</p>
+                <p class="ee-command-strip__eyebrow">Workspace OS</p>
+                <p class="ee-command-strip__copy">Move between product creation, knowledge intake, review governance, learner access, analytics, and settings.</p>
               </div>
-              <button (click)="startDemoTour()" class="px-4 py-2 bg-primary text-white rounded-full shadow-soft-card text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-secondary">
+              <button (click)="startDemoTour()" class="ee-button ee-motion-press">
                 Start Demo Tour
               </button>
             </div>
-            <div class="surface-card p-1 bg-white/50">
+            <div class="ee-shell__surface">
               <router-outlet></router-outlet>
             </div>
           </div>

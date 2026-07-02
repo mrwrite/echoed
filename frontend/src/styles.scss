@@ -514,6 +514,8 @@ h6 {
 .learner-portal {
   color: var(--ee-text);
   min-height: 100vh;
+  max-width: 1380px;
+  margin-inline: auto;
 }
 
 .ee-page-header,
@@ -600,6 +602,24 @@ h6 {
 .ee-stat-card,
 .ee-navigation-card {
   align-content: start;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.ee-card {
+  min-height: 100%;
+}
+
+.ee-form-card,
+.ee-list-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+    var(--ee-surface);
+  border: 1px solid var(--ee-border);
+  border-radius: var(--ee-radius);
+  box-shadow: var(--ee-shadow-soft);
+  backdrop-filter: blur(22px) saturate(1.2);
   display: grid;
   gap: 1rem;
   padding: clamp(1.1rem, 3vw, 1.6rem);
@@ -761,6 +781,43 @@ a.ee-link-button:active {
   background: rgba(255, 255, 255, 0.045);
   border-color: var(--ee-border);
   border-radius: var(--ee-radius-sm);
+}
+
+.ee-list-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ee-list-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ee-kpi-strip {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+.ee-kpi {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--ee-border);
+  border-radius: 16px;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem;
+}
+
+.ee-kpi span {
+  color: var(--ee-text-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ee-kpi strong {
+  color: var(--ee-text);
 }
 
 .ee-timeline li {

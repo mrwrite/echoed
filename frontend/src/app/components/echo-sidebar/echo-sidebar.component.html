@@ -1,15 +1,15 @@
 <aside
-  class="sidebar-shell bg-white/95 backdrop-blur-lg text-ink h-screen flex flex-col border-r border-slate-200/80 shadow-soft-card"
+  class="sidebar-shell ee-sidebar h-screen flex flex-col"
   [class.sidebar-shell--collapsed]="collapsed"
   [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'"
   aria-label="Sidebar navigation"
 >
-  <div class="flex items-center justify-between p-4 gap-3">
+  <div class="sidebar-brand flex items-center justify-between p-4 gap-3">
     <div class="flex items-center gap-3 min-w-0" *ngIf="!collapsed">
-      <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center font-bold shrink-0">EE</div>
+      <div class="sidebar-logo shrink-0">EE</div>
       <div class="min-w-0">
-        <p class="text-xs uppercase tracking-[0.25em] text-primary">EchoEd</p>
-        <p class="text-sm font-semibold text-slate-800 truncate">Workspace OS</p>
+        <p class="sidebar-kicker">EchoEd</p>
+        <p class="sidebar-title">Workspace OS</p>
       </div>
     </div>
     <button
@@ -27,12 +27,12 @@
     </button>
   </div>
 
-  <nav id="echo-primary-navigation" class="flex-1 px-2 pb-4 space-y-6 overflow-y-auto" aria-label="Primary navigation">
+  <nav id="echo-primary-navigation" class="sidebar-nav flex-1 px-3 pb-4 space-y-6 overflow-y-auto" aria-label="Primary navigation">
     <ng-container *ngIf="ready$ | async; else navSkeleton">
       <ng-container *ngIf="visibleNavSections$ | async as sections">
         <section *ngFor="let section of sections; let sectionIndex = index" [attr.aria-label]="collapsed ? section.title : null" [attr.aria-labelledby]="!collapsed ? 'sidebar-section-' + sectionIndex : null">
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-700 mb-2 px-2" *ngIf="!collapsed" [id]="'sidebar-section-' + sectionIndex">{{ section.title }}</p>
-          <div class="space-y-1">
+          <p class="sidebar-section-title" *ngIf="!collapsed" [id]="'sidebar-section-' + sectionIndex">{{ section.title }}</p>
+          <div class="space-y-1.5">
             <a
               *ngFor="let item of section.items"
               [routerLink]="item.route"
@@ -43,8 +43,10 @@
               [attr.aria-label]="collapsed ? item.label : null"
               [attr.title]="collapsed ? item.label : null"
             >
-              <span aria-hidden="true" class="inline-block h-5 w-5 shrink-0 rounded-full bg-current opacity-70"></span>
-              <span *ngIf="!collapsed" class="font-semibold truncate">{{ item.label }}</span>
+              <span aria-hidden="true" class="sidebar-link__icon">
+                {{ iconGlyph(item) }}
+              </span>
+              <span *ngIf="!collapsed" class="sidebar-link__label">{{ item.label }}</span>
             </a>
           </div>
         </section>
@@ -62,9 +64,12 @@
     </ng-template>
   </nav>
 
-  <div class="p-4 border-t border-slate-200/80" *ngIf="!collapsed && userInfo">
-    <p class="text-xs text-slate-700">Logged in as</p>
-    <p class="font-semibold text-primary">{{ userInfo.fullname }}</p>
-    <p class="text-xs text-slate-700">{{ userInfo.role | titlecase }}</p>
+  <div class="sidebar-profile p-4" *ngIf="!collapsed && userInfo">
+    <div class="sidebar-profile__avatar">{{ userInfo.fullname.charAt(0) }}</div>
+    <div class="min-w-0">
+      <p class="sidebar-profile__eyebrow">Logged in as</p>
+      <p class="sidebar-profile__name">{{ userInfo.fullname }}</p>
+      <p class="sidebar-profile__role">{{ userInfo.role | titlecase }}</p>
+    </div>
   </div>
 </aside>

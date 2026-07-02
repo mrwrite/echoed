@@ -27,6 +27,14 @@
   isolation: isolate;
 }
 
+.ee-shell {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(124, 58, 237, 0.34), transparent 28rem),
+    radial-gradient(circle at 88% 12%, rgba(92, 200, 255, 0.18), transparent 30rem),
+    linear-gradient(135deg, #050714, #0b1026 48%, #090817);
+  color: var(--ee-text);
+}
+
 .home-shell--lesson {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -42,6 +50,54 @@
 
 .home-shell__content {
   min-width: 0;
+}
+
+.ee-shell__workspace {
+  max-width: 1440px;
+}
+
+.ee-shell__surface,
+.ee-command-strip {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+    rgba(16, 20, 43, 0.72);
+  border: 1px solid rgba(184, 197, 255, 0.16);
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(4, 6, 22, 0.34);
+  backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.ee-shell__surface {
+  min-height: calc(100vh - 12rem);
+  padding: 0.35rem;
+}
+
+.ee-command-strip {
+  overflow: hidden;
+  position: relative;
+}
+
+.ee-command-strip::after {
+  background: linear-gradient(90deg, var(--ee-purple), var(--ee-gold), var(--ee-azure));
+  content: '';
+  height: 1px;
+  inset: auto 1.25rem 0;
+  position: absolute;
+}
+
+.ee-command-strip__eyebrow {
+  color: var(--ee-gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ee-command-strip__copy {
+  color: var(--ee-text-soft);
+  font-size: 0.95rem;
+  margin: 0.25rem 0 0;
 }
 
 .home-shell__content:focus {

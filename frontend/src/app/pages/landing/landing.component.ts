@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -10,64 +10,70 @@ import { RouterModule } from '@angular/router';
   styleUrl: './landing.component.scss'
 })
 export class LandingComponent {
-  featureHighlights = [
+  readonly githubUrl = 'https://github.com/mrwrite/echoed';
+  readonly contactEmail = 'support@echoed.com';
+
+  readonly educatorMailto =
+    'mailto:support@echoed.com?subject=EchoEd%20educator%20feedback&body=Hi%20EchoEd%20team%2C%0A%0AI%27m%20an%20educator%20and%20I%27d%20like%20to%20help%20review%20or%20shape%20the%20learning%20experience.%0A%0ARole%2Fcontext%3A%0AWhat%20I%27d%20like%20to%20review%3A%0AAvailability%20for%20a%20walkthrough%3A%0A';
+
+  readonly interestMailto =
+    'mailto:support@echoed.com?subject=I%20want%20to%20help%20with%20EchoEd&body=Hi%20EchoEd%20team%2C%0A%0AI%27d%20like%20to%20help%20with%20EchoEd.%0A%0AName%3A%0ARole%20%28educator%2C%20developer%2C%20student%2C%20organizer%2C%20other%29%3A%0AHow%20I%20want%20to%20help%3A%0AGitHub%2FLinkedIn%20%28optional%29%3A%0A';
+
+  readonly featureHighlights = [
     {
-      title: 'Culturally grounded curriculum',
-      description: 'Stories, primary sources, and activities that celebrate African and African-American history with respect and rigor.',
+      title: 'African and African-American history at the center',
+      description: 'Lessons, activities, and source-aware learning flows designed around Black historical knowledge instead of treating it as an add-on.',
       kicker: '01'
     },
     {
-      title: 'Student progress intelligence',
-      description: 'Live visibility into mastery, pacing, and engagement for every learner.',
+      title: 'A real product educators can test',
+      description: 'The live K-5 demo includes student, teacher, and admin experiences with progress, badges, courses, and guided learning paths.',
       kicker: '02'
     },
     {
-      title: 'Built for any learning model',
-      description: 'Perfect for private schools, microschools, homeschool families, and community learning pods.',
+      title: 'Open-source infrastructure for community ownership',
+      description: 'Developers can inspect the code, improve the platform, strengthen accessibility, and help build tools educators actually need.',
       kicker: '03'
     },
   ];
 
-  animatedCards = [
-    { label: 'Educator-first', value: 'Admin & teacher control centers', detail: 'Curriculum tools, cohorts, and progress views' },
-    { label: 'Learner delight', value: 'Immersive lessons & achievements', detail: 'Story-led lessons, badges, and momentum' },
-    { label: 'Families', value: 'Simple onboarding', detail: 'Parent-friendly account creation and access' },
-    { label: 'Middle + HS', value: 'Coming soon', detail: 'Upper grade pathways are already in motion' },
+  readonly platformSignals = [
+    { label: 'Curriculum', value: 'Story-led K-5 lessons and activities', kicker: 'A' },
+    { label: 'Dashboards', value: 'Student, teacher, and admin views', kicker: 'B' },
+    { label: 'Progress', value: 'Badges, completion, and mastery signals', kicker: 'C' },
+    { label: 'Roadmap', value: 'Middle and high school pathways in motion', kicker: 'D' },
   ];
 
-  walkthroughSteps = [
-    'Open the workspace dashboard and frame the knowledge-to-product model.',
-    'Show Product Studio as the flagship creation workflow.',
-    'Open Review Center to explain trust, readiness, and governance.',
-    'Switch to Learner Portal to show product delivery without changing runtime rules.',
-    'Close with Analytics for product, access, review, and pipeline health.'
+  readonly educatorNeeds = [
+    'Review lesson flow, tone, age fit, and classroom usefulness',
+    'Suggest culturally responsive activities and discussion prompts',
+    'Identify what teachers need before using this with learners',
+    'Help form an advisory circle for Black-centered curriculum review',
   ];
 
-  testimonials = [
+  readonly developerNeeds = [
+    'Improve Angular frontend workflows, responsive polish, and accessibility',
+    'Contribute FastAPI backend features, tests, and data model hardening',
+    'Add documentation, setup help, seed data, and good first issues',
+    'Build curriculum tooling, review workflows, and demo reliability',
+  ];
+
+  readonly contributionPaths = [
     {
-      quote: 'EchoEd gives our leadership team a way to turn internal expertise into governed learning products without adding operational chaos.',
-      name: 'Maya R.',
-      role: 'Enterprise Enablement Leader'
+      title: 'Curriculum review',
+      detail: 'Read a lesson, flag weak spots, suggest sources, and help the learning experience respect both rigor and culture.'
     },
     {
-      quote: 'The review model matters. We can see what is ready, what is blocked, and what learners can safely access.',
-      name: 'Dr. Jonah P.',
-      role: 'Independent School Director'
+      title: 'Accessibility pass',
+      detail: 'Test keyboard flow, contrast, labels, mobile layout, and learner-friendly states across the public demo.'
     },
     {
-      quote: 'It feels less like an LMS and more like a product studio for trusted education experiences.',
-      name: 'Elena W.',
-      role: 'Parent and Learning Pod Organizer'
-    }
-  ];
-
-  roadmap = [
-    { title: 'Future Grades', detail: 'Middle School Suites expanding into grades 6-8 with civics-rich projects and debates.' },
-    { title: 'High School Pathways', detail: 'College-ready modules with primary-source analysis and AP-aligned rigor.' },
-  ];
-
-  audienceCards = [
-    'K-5 content live today',
-    'Middle & High School in motion',
+      title: 'Good first issues',
+      detail: 'Help split small frontend, backend, documentation, and testing tasks so new contributors can start quickly.'
+    },
+    {
+      title: 'Community outreach',
+      detail: 'Introduce EchoEd to Black educator networks, HBCU programs, developer groups, and local learning communities.'
+    },
   ];
 }

@@ -10,10 +10,10 @@ export const FLAGSHIP_COURSE_TITLE =
 export async function loginAsDemoStudent(page: Page): Promise<void> {
   await page.goto('/login');
 
-  await expect(page.getByRole('heading', { name: 'Welcome to EchoEd' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Welcome back to EchoEd' })).toBeVisible();
   await page.getByLabel('Email or Username').fill(DEMO_STUDENT_USERNAME);
   await page.getByLabel('Password').fill(DEMO_STUDENT_PASSWORD);
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.getByRole('button', { name: 'Sign in' }).click();
 
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByTestId('student-dashboard')).toBeVisible();

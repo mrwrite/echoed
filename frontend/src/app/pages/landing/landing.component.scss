@@ -5,7 +5,6 @@
 .landing-shell {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.96)),
-    url('/assets/maps/africa-reference.svg') right 7% top 5rem / min(34rem, 46vw) auto no-repeat,
     #f8fafc;
   color: var(--ee-text, #102033);
   display: grid;
@@ -445,7 +444,6 @@ h1 {
   .landing-shell {
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.98)),
-      url('/assets/maps/africa-reference.svg') right -7rem top 5rem / 22rem auto no-repeat,
       #f8fafc;
     padding: 1rem;
   }

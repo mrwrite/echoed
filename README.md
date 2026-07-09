@@ -1,101 +1,98 @@
 # EchoEd
-[![CI](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/ci.yml) [![Docker](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/docker.yml/badge.svg)](https://github.com/YOUR_USERNAME/EchoEd/actions/workflows/docker.yml)
 
-**Echoing the Past, Educating the Future**
+EchoEd is an open-source education platform centered on African and African-American history. It is being prepared for public community review and contribution from educators, developers, students, homeschool leaders, HBCU communities, and community learning organizers across the United States, Africa, and the Caribbean.
 
-EchoEd is an interactive web and mobile platform designed to educate all ages on African and African-American history. Featuring engaging lessons, gamification, and an interactive timeline, EchoEd makes learning history immersive and accessible.
+Current public app: https://echoed-theta.vercel.app/  
+Repository: https://github.com/mrwrite/echoed  
+License: [MIT](LICENSE)
 
----
+## Current Status
 
-## 🚀 Features
-- **Curated Lessons & Modules** – Short, digestible lessons with media-rich content.
-- **Interactive Timeline** – Explore key historical events dynamically.
-- **Gamification & Achievements** – Earn badges, track progress, and compete on leaderboards.
-- **Community Forum** – Discuss historical topics and engage in "Ask a Historian" sessions.
-- **Oral Storytelling** – Audio narratives to preserve historical traditions.
-- **Future AR Features** – Experience history through augmented reality.
+EchoEd is early and pre-community-launch.
 
----
+- Working K-5 demo exists with student, teacher, and admin experiences.
+- Demo access uses shared demo-only credentials.
+- The project has no current public users, contributors, stars, advisors, or community traction.
+- Phase 1 focuses on trust, documentation, contributor onboarding, and public demo readiness before broad outreach begins.
 
-## 🛠 Tech Stack
-### **Frontend:**
-- **Framework:** Angular
-- **Styling:** TailwindCSS / Material UI
+Do not enter personal, student, school, or production data into the demo.
 
-### **Backend:**
-- **Framework:** FastAPI (Python)
-- **Database:** PostgreSQL
-- **Authentication:** JWT-based authentication
+## Mission
 
-### **Infrastructure:**
-- **Hosting:** AWS / DigitalOcean
-- **CI/CD:** GitHub Actions (Planned)
+EchoEd exists to make culturally grounded Black history learning experiences easier to explore, teach, review, and improve in public. The project aims to combine rigorous historical learning, accessible product design, and open-source community ownership.
 
----
+## Who This Is For
 
-## 📦 Project Structure
-```bash
-EchoEd/
-│── frontend/        # Angular Web & Mobile UI
-│── backend/         # FastAPI API & Database
-│── docs/            # Pitch Deck, Branding Assets, UI Mockups
-│   └── design-guidelines.md  # UI inspiration notes
-│── assets/          # Logos, Icons, Images
-│── tests/           # Automated tests
-│── README.md        # Overview & instructions
-│── .gitignore       # Ignore unnecessary files
-│── LICENSE          # Open-source license
+### Educators
+
+EchoEd needs classroom judgment before it needs scale. Educators can help by reviewing demo flows, lesson tone, age fit, source needs, discussion prompts, and classroom usefulness.
+
+Start here:
+- Try the [public demo guide](docs/public-demo.md).
+- File educator or curriculum feedback using the GitHub issue templates.
+- Read the [community trust guide](docs/community-trust.md) for review expectations and recognition.
+
+### Developers
+
+EchoEd is an Angular and FastAPI application. Developers can help with frontend polish, accessibility, backend tests, demo reliability, documentation, curriculum tooling, and contributor onboarding.
+
+Start here:
+- Read [CONTRIBUTING.md](CONTRIBUTING.md).
+- Review [ARCHITECTURE.md](ARCHITECTURE.md).
+- Look for issues labeled `good first issue`, `help wanted`, `documentation`, `frontend`, `backend`, `testing`, `accessibility`, or `demo`.
+
+### Community Organizers
+
+Community organizers can help connect EchoEd with Black educator networks, homeschool groups, HBCU programs, Black developer groups, and Africa or Caribbean education technology communities.
+
+Start here:
+- Review [docs/outreach-readiness.md](docs/outreach-readiness.md).
+- Share bounded feedback or introductions through GitHub issues or `support@echoed.com`.
+
+## Public Demo
+
+The live app is available at https://echoed-theta.vercel.app/.
+
+Use the demo only for evaluation. Demo credentials and walkthrough steps are documented in [docs/public-demo.md](docs/public-demo.md). The credentials are shared, demo-only, resettable, and not appropriate for real learner data.
+
+## Project Structure
+
+```text
+backend/      FastAPI app, SQLAlchemy models, Alembic migrations, pytest tests
+frontend/     Angular app, Tailwind styling, Playwright demo smoke tests
+docs/         Demo, outreach, and project guidance
+openspec/     Spec-driven change workflow
+curriculum/   Seed curriculum and package material
 ```
 
----
+For a deeper overview, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## 🔧 Installation & Setup
-### **1️⃣ Clone the Repository**
-```sh
-git clone https://github.com/YOUR_USERNAME/EchoEd.git
-cd EchoEd
-```
+## Local Development
 
-### **2️⃣ Backend Setup (FastAPI)**
-```sh
+### Backend
+
+```powershell
 cd backend
 python -m venv venv
-source venv/bin/activate  # (Windows: venv\Scripts\activate)
+venv\Scripts\activate
 pip install -r requirements.txt
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-Seed demo data:
-```sh
-python -m app.seed_demo
-```
+### Frontend
 
-Deterministic live-demo preparation:
-```sh
-backend\venv\Scripts\python.exe backend\scripts\reseed_demo.py
-```
-See [docs/demo-readiness.md](docs/demo-readiness.md) for the operator runbook, demo accounts, learner archetypes, and expected outcomes.
-
-### **3️⃣ Frontend Setup (Angular)**
-```sh
+```powershell
 cd frontend
 npm install
-ng serve
-```
-The Angular dev server proxies `/api` requests to `http://127.0.0.1:8000` via `frontend/proxy.conf.json`, so keep the backend running locally when working in dev mode.
-
-### **Setting Build Environments**
-Angular uses environment files in `frontend/src/environments` to change values during different builds. The default `ng serve` uses `environment.ts`. To build with the production settings from `environment.prod.ts`, run:
-
-```sh
-ng build --configuration production
+npm start
 ```
 
-You can add more environment files (e.g., `environment.staging.ts`) and reference them with `--configuration <name>` once configured in `angular.json`.
+The frontend dev server runs at `http://localhost:4200` and proxies API calls to `http://127.0.0.1:8000` through `frontend/proxy.conf.json`.
 
-## 🗒️ Environment Variables
-The backend loads configuration from a `.env` file using **python-dotenv**. Create a file named `.env` in the project root with values like:
+### Environment
+
+Create a `.env` file in the repository root for backend settings:
 
 ```env
 DATABASE_URL=postgresql://echoed_user:your_secure_password@localhost/echoed
@@ -106,107 +103,69 @@ JWT_SECRET=your_jwt_secret
 FRONTEND_URL=http://localhost:4200
 ```
 
-- `DATABASE_URL` – Connection string used by `database.py` to initialize the database.
-- `STORYBOOK_PATH` – Folder for uploaded storybook pages. `main.py` exposes it at `/storybook`.
-- `COLORINGS_PATH` – Folder for coloring pages served at `/colorings`.
-- `BADGES_PATH` – Folder for badge images served at `/badges`.
-- `JWT_SECRET` – Secret key used for signing JSON Web Tokens.
-- `FRONTEND_URL` – Allowed origin(s) for CORS. Use a comma-separated list for multiple URLs.
-- `STORYBOOK_PATH`, `COLORINGS_PATH`, `BADGES_PATH` – File storage locations for uploads.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup, seed, and test guidance.
 
-> **Org Context Header:** Most org-scoped endpoints require `X-Org-Id` to be set by the frontend (handled by the org interceptor).
+## Demo Data
 
-If any variable is omitted, the application falls back to the example values above.
+To reset deterministic demo users, content, and learner states:
 
-## 🐳 Docker Compose
-1. Create a `.env` file in the project root with the variables above.
-2. Build and start the stack:
-   ```sh
-   docker compose up --build
-   ```
-   This spins up the FastAPI backend along with PostgreSQL and MinIO.
-3. Access the API at [http://localhost:8000/docs](http://localhost:8000/docs).
----
+```powershell
+backend\venv\Scripts\python.exe backend\scripts\reseed_demo.py
+```
 
-## 🚀 Usage
-- **Run Frontend:** Open [http://localhost:4200](http://localhost:4200)
-- **Run Backend API:** Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for API documentation
-  - The `/api/start-course` endpoint now returns `400` with `"Course already completed"` if the user tries to start a finished course.
+Internal operator details live in [docs/demo-readiness.md](docs/demo-readiness.md). Public-facing demo instructions live in [docs/public-demo.md](docs/public-demo.md).
 
-## 🧪 Running Tests
+## Testing
 
-### **Backend**
-```sh
+Backend:
+
+```powershell
 cd backend
 pytest
 ```
 
-Generate coverage:
-```sh
-pytest --cov=app --cov-report=term-missing
-```
+Frontend build:
 
-### **Frontend**
-```sh
+```powershell
 cd frontend
-ng test
+cmd /c npm run build
 ```
 
-Generate coverage:
-```sh
-ng test --code-coverage
+Frontend tests:
+
+```powershell
+cd frontend
+cmd /c .\node_modules\.bin\ng.cmd test --watch=false --browsers=ChromeHeadless
 ```
 
----
+Student demo smoke test:
 
-## 🧭 Platform Roles & Core Flows
+```powershell
+cd frontend
+cmd /c .\node_modules\.bin\playwright.cmd test tests/demo/student-flagship-smoke.spec.ts
+```
 
-### **Platform roles**
-- `super_admin` – Global platform control, diagnostics, and ops.
+## Contributing
 
-### **Organization roles**
-- `org_admin` – Manages org settings, invites, and staffing.
-- `content_admin` – Authors and publishes courses.
-- `teacher` – Manages sections and assignments (in-person or remote).
-- `parent` – Monitors student progress and supports learning at home.
-- `student` – Consumes courses and completes activities.
-- `instructor` – Higher-ed teaching role (remote-first).
-- `viewer` – Read-only access for observers/guests.
+EchoEd welcomes bounded, respectful contributions. Because this project is early and has no paid budget, contribution requests should be specific and transparent.
 
-### **Key flows**
-1. **Organization setup** → New users can create an org during registration or complete the onboarding screen after login. Users with only a Personal Org are prompted to create a real org before continuing.
-2. **Invitations** → Org admins invite users; accepted invites create memberships.
-3. **Course authoring** → Content admins create course containers, draft versions, and publish immutable versions.
-4. **Sections** → Teachers create sections linked to a course version and enroll learners.
-5. **Learning** → Students enroll, resume progress by unit/lesson/activity, and earn badges.
-6. **Assignments & sessions** → Teachers assign units/lessons, start live sessions, and review progress summaries.
----
+Read:
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SECURITY.md](SECURITY.md)
+- [ROADMAP.md](ROADMAP.md)
+- [docs/community-trust.md](docs/community-trust.md)
 
-## 🤝 Contributing
-We welcome contributions! To contribute:
-1. Fork the repository.
-2. Create a new branch (`feature-branch`).
-3. Commit your changes and push to your fork.
-4. Open a Pull Request (PR).
+## Roadmap
 
----
+The current priority is Phase 1 public open-source readiness. See [ROADMAP.md](ROADMAP.md) for staged priorities.
 
-## 📜 License
-This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+## Contact
 
----
+- General community contact: support@echoed.com
+- Security reports: see [SECURITY.md](SECURITY.md)
+- Bugs, feedback, and contribution ideas: use GitHub issues
 
-## 🎨 Design Inspiration
-Looking for styling tips? Check out [docs/design-guidelines.md](docs/design-guidelines.md) for notes on giving EchoEd a look similar to popular course platforms like Udemy or Pluralsight.
+## License
 
----
-
-## 📬 Contact & Community
-- **Website:** [Coming Soon]
-- **Email:** support@echoed.com
-- **GitHub Issues:** Report bugs or request features in the [Issues tab](https://github.com/YOUR_USERNAME/EchoEd/issues).
-- **Follow Us:** [Twitter](#) | [LinkedIn](#)
-
----
-
-Let's **Echo the Past & Educate the Future** together! 🌍📚
+EchoEd is licensed under the [MIT License](LICENSE). Copyright 2025 Anthony Wright.

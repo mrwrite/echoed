@@ -1,5 +1,7 @@
 # EchoEd
 
+[![CI](https://github.com/mrwrite/EchoEd/actions/workflows/ci.yml/badge.svg)](https://github.com/mrwrite/EchoEd/actions/workflows/ci.yml) [![Docker](https://github.com/mrwrite/EchoEd/actions/workflows/docker.yml/badge.svg)](https://github.com/mrwrite/EchoEd/actions/workflows/docker.yml)
+
 EchoEd is an open-source education platform centered on African and African-American history. It is being prepared for public community review and contribution from educators, developers, students, homeschool leaders, HBCU communities, and community learning organizers across the United States, Africa, and the Caribbean.
 
 Current public app: https://echoed-theta.vercel.app/  

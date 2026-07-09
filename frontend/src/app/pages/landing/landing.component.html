@@ -6,61 +6,64 @@
     </a>
 
     <div class="nav-links">
+      <a href="#mission">Mission</a>
       <a href="#product">Product</a>
-      <a href="#solutions">Solutions</a>
-      <a href="#demo">Demo</a>
-      <a href="#resources">Resources</a>
-      <a href="#about">About</a>
+      <a href="#educators">Educators</a>
+      <a href="#developers">Developers</a>
+      <a href="#join">Join</a>
     </div>
 
     <div class="auth-links">
-      <a routerLink="/login" class="ghost-link">Sign in</a>
-      <a routerLink="/registration" class="nav-cta">Book a Demo</a>
+      <a routerLink="/login" class="ghost-link">Try demo</a>
+      <a [href]="githubUrl" target="_blank" rel="noopener" class="nav-cta">GitHub</a>
     </div>
   </nav>
 
-  <section class="hero" aria-labelledby="landing-title">
+  <section class="hero" id="mission" aria-labelledby="landing-title">
     <div class="hero-copy">
-      <p class="eyebrow"><span></span>K-5 Demo Experience</p>
-      <h1 id="landing-title">EchoEd - Beautiful learning journeys rooted in <em>African & African-American history.</em></h1>
+      <p class="eyebrow"><span></span>Open-source Black education platform</p>
+      <h1 id="landing-title">EchoEd</h1>
+      <p class="hero-statement">
+        Culturally grounded learning journeys rooted in African and African-American history.
+      </p>
       <p class="hero-lede">
-        Culturally grounded curriculum, intuitive dashboards, and immersive lessons that scale across classrooms, homes, and communities.
+        EchoEd is building open-source education infrastructure for classrooms, homeschool communities,
+        learning pods, and families who want rigorous, respectful, and joyful Black history learning experiences.
       </p>
 
       <div class="hero-actions" aria-label="Primary calls to action">
-        <a routerLink="/registration" class="button button--primary">Book a Demo <span aria-hidden="true">-&gt;</span></a>
-        <a routerLink="/login" class="button button--secondary">Explore EchoEd</a>
+        <a href="#educators" class="button button--primary">For educators <span aria-hidden="true">-&gt;</span></a>
+        <a href="#developers" class="button button--secondary">For developers</a>
+        <a routerLink="/login" class="button button--secondary">Try demo</a>
       </div>
-
-      <a routerLink="/login" class="tour-link">Start Demo Tour <span aria-hidden="true">-&gt;</span></a>
     </div>
 
-    <aside class="feature-panel" aria-label="EchoEd demo preview">
+    <aside class="feature-panel" aria-label="EchoEd platform preview">
       <div class="panel-header">
-        <span>Demo Mode</span>
-        <strong>K-5 Preview</strong>
+        <span>Live preview</span>
+        <strong>K-5 demo</strong>
       </div>
 
       <div class="signal-grid">
-        <article *ngFor="let card of animatedCards; let i = index" [style.--i]="i">
-          <span class="mini-icon" aria-hidden="true"></span>
+        <article *ngFor="let card of platformSignals">
+          <span class="mini-icon" aria-hidden="true">{{ card.kicker }}</span>
           <strong>{{ card.label }}</strong>
           <p>{{ card.value }}</p>
         </article>
       </div>
 
       <div class="trust-strip">
-        <span aria-hidden="true">EE</span>
+        <span aria-hidden="true">OS</span>
         <div>
-          <strong>Secure, accessible, and WCAG AA conscious</strong>
-          <p>Built for the trust of school leaders and families.</p>
+          <strong>Open source, educator-shaped, and contribution-ready</strong>
+          <p>Built in public so curriculum reviewers, classroom practitioners, and software developers can shape the work.</p>
         </div>
       </div>
     </aside>
   </section>
 
-  <section class="feature-grid" id="product" aria-label="EchoEd highlights">
-    <article *ngFor="let feature of featureHighlights; let i = index">
+  <section class="feature-grid" id="product" aria-label="What EchoEd includes">
+    <article *ngFor="let feature of featureHighlights">
       <span class="feature-icon" aria-hidden="true">{{ feature.kicker }}</span>
       <div>
         <h2>{{ feature.title }}</h2>
@@ -69,41 +72,71 @@
     </article>
   </section>
 
-  <section class="demo-section" id="demo" aria-labelledby="demo-title">
-    <div class="demo-heading">
-      <div>
-        <p class="eyebrow"><span></span>Live K-5 Demo Today</p>
-        <h2 id="demo-title">Today's Demo vs. What's Next</h2>
-        <p>Investors and school leaders can see the live K-5 experience, plus a clear roadmap to upper grades.</p>
-      </div>
-      <div class="audience-row" aria-label="Roadmap status">
-        <span *ngFor="let audience of audienceCards">{{ audience }}</span>
-      </div>
+  <section class="audience-section" aria-labelledby="audience-title">
+    <div class="section-heading">
+      <p class="eyebrow"><span></span>Community invitation</p>
+      <h2 id="audience-title">Help shape what this becomes</h2>
+      <p>
+        EchoEd needs review from Black educators and hands-on support from Black software developers,
+        designers, researchers, and open-source contributors.
+      </p>
     </div>
 
-    <div class="demo-grid">
-      <article class="demo-card">
-        <p class="card-kicker">Today's Demo</p>
-        <h3>K-5 Experience</h3>
+    <div class="audience-grid">
+      <article class="audience-card" id="educators">
+        <p class="card-kicker">For Black educators</p>
+        <h3>Review the learning experience</h3>
+        <p>
+          Bring classroom judgment, cultural context, curriculum feedback, and real learner needs into the product direction.
+        </p>
         <ul>
-          <li>Story-led lessons with activities</li>
-          <li>Dashboards for students, teachers, admins</li>
-          <li>Badges, streaks, and progress insights</li>
+          <li *ngFor="let item of educatorNeeds">{{ item }}</li>
         </ul>
+        <a [href]="educatorMailto" class="button button--primary">Share educator feedback</a>
       </article>
 
-      <article class="demo-card roadmap-card">
-        <p class="card-kicker">Coming Soon</p>
-        <div class="roadmap-list">
-          <div *ngFor="let item of roadmap">
-            <span aria-hidden="true"></span>
-            <div>
-              <strong>{{ item.title }}</strong>
-              <p>{{ item.detail }}</p>
-            </div>
-          </div>
-        </div>
+      <article class="audience-card" id="developers">
+        <p class="card-kicker">For Black developers</p>
+        <h3>Contribute to the platform</h3>
+        <p>
+          Help turn the mission into durable software across frontend, backend, accessibility, tests, docs, and curriculum tooling.
+        </p>
+        <ul>
+          <li *ngFor="let item of developerNeeds">{{ item }}</li>
+        </ul>
+        <a [href]="githubUrl" target="_blank" rel="noopener" class="button button--primary">Contribute on GitHub</a>
       </article>
+    </div>
+  </section>
+
+  <section class="contribution-section" aria-labelledby="contribution-title">
+    <div class="section-heading compact">
+      <p class="eyebrow"><span></span>Ways to help</p>
+      <h2 id="contribution-title">Useful contributions this week</h2>
+    </div>
+
+    <div class="contribution-grid">
+      <article *ngFor="let item of contributionPaths">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.detail }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="join-section" id="join" aria-labelledby="join-title">
+    <div>
+      <p class="eyebrow"><span></span>Join the build</p>
+      <h2 id="join-title">Tell us how you want to help</h2>
+      <p>
+        Send a short note with your role, what you want to review or build, and whether you want a walkthrough.
+        Educators, developers, students, organizers, and community partners are welcome.
+      </p>
+    </div>
+
+    <div class="join-actions" aria-label="Community actions">
+      <a [href]="interestMailto" class="button button--primary">Email interest</a>
+      <a [href]="githubUrl + '/issues'" target="_blank" rel="noopener" class="button button--secondary">View issues</a>
+      <a routerLink="/registration" class="button button--secondary">Request demo</a>
     </div>
   </section>
 </main>

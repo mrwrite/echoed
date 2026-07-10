@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta
 
 from sqlalchemy import or_
@@ -51,8 +52,9 @@ from app.models import (
 DEMO_PASSWORD = "password"
 DEMO_ORG_NAME = "EchoEd Demo School"
 DEMO_COURSE_TITLE = "Introduction to Africa"
-DEMO_STORYBOOK_BASE_URL = "http://127.0.0.1:8000/storybook"
-DEMO_COLORINGS_BASE_URL = "http://127.0.0.1:8000/colorings"
+DEMO_BACKEND_PUBLIC_URL = os.getenv("BACKEND_PUBLIC_URL", "http://127.0.0.1:8000").rstrip("/")
+DEMO_STORYBOOK_BASE_URL = f"{DEMO_BACKEND_PUBLIC_URL}/storybook"
+DEMO_COLORINGS_BASE_URL = f"{DEMO_BACKEND_PUBLIC_URL}/colorings"
 DEMO_MAP_REFERENCE_URL = "/assets/maps/africa-reference.svg"
 DEMO_WORLD_CONTEXT_URL = "/assets/maps/world-context.svg"
 DEMO_STORYBOOK_PAGES = [

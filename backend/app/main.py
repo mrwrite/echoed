@@ -46,9 +46,18 @@ app.mount("/storybook", StaticFiles(directory=STORYBOOK_PATH), name="storybook")
 app.mount("/colorings", StaticFiles(directory=COLORINGS_PATH), name="colorings")
 app.mount("/badges", StaticFiles(directory=BADGES_PATH), name="badges")
 
-allowed_origins = os.getenv(
-    "FRONTEND_URL", "http://localhost:4200,http://127.0.0.1:4200"
-).split(",")
+
+def _parse_allowed_origins(raw_origins: str) -> list[str]:
+    return [
+        origin.strip().rstrip("/")
+        for origin in raw_origins.split(",")
+        if origin.strip()
+    ]
+
+
+allowed_origins = _parse_allowed_origins(
+    os.getenv("FRONTEND_URL", "http://localhost:4200,http://127.0.0.1:4200")
+)
 
 app.add_middleware(
     CORSMiddleware,

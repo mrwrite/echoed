@@ -4,10 +4,15 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_ROOT = REPO_ROOT / "backend"
-if str(BACKEND_ROOT) not in sys.path:
-    sys.path.insert(0, str(BACKEND_ROOT))
+SCRIPT_PATH = Path(__file__).resolve()
+BACKEND_ROOT_CANDIDATES = (
+    SCRIPT_PATH.parents[1],
+    SCRIPT_PATH.parents[2] / "backend",
+)
+for backend_root in BACKEND_ROOT_CANDIDATES:
+    if (backend_root / "app").exists() and str(backend_root) not in sys.path:
+        sys.path.insert(0, str(backend_root))
+        break
 
 from app import seed_demo  # noqa: E402
 from app import seed_v2_demo  # noqa: E402

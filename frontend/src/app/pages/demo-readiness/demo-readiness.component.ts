@@ -23,7 +23,7 @@ import { RouterModule } from '@angular/router';
         </div>
       </header>
 
-      <section class="pitch-strip" aria-label="EchoEd V2 value proposition">
+      <section class="community-strip" aria-label="EchoEd V2 community walkthrough">
         <article *ngFor="let callout of callouts">
           <span>{{ callout.kicker }}</span>
           <strong>{{ callout.title }}</strong>
@@ -68,7 +68,7 @@ import { RouterModule } from '@angular/router';
             <p class="ee-eyebrow">5-Minute Script</p>
             <h2>Tell the platform story in order</h2>
           </div>
-          <span class="ee-badge ee-badge--approved">Pitch ready</span>
+          <span class="ee-badge ee-badge--approved">Walkthrough ready</span>
         </div>
         <ol class="demo-flow">
           <li *ngFor="let step of steps">
@@ -120,11 +120,11 @@ import { RouterModule } from '@angular/router';
   `,
   styles: [`
     code { background: #102033; border-radius: 8px; color: #fff; display: block; font-weight: 800; overflow-x: auto; padding: .9rem; }
-    .pitch-strip { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
-    .pitch-strip article { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); display: grid; gap: .35rem; padding: 1rem; }
-    .pitch-strip span { color: #0f766e; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
-    .pitch-strip strong { color: #102033; }
-    .pitch-strip p { color: #526273; margin: 0; }
+    .community-strip { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+    .community-strip article { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); display: grid; gap: .35rem; padding: 1rem; }
+    .community-strip span { color: #0f766e; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    .community-strip strong { color: #102033; }
+    .community-strip p { color: #526273; margin: 0; }
     .demo-flow { counter-reset: none; display: grid; gap: .85rem; list-style: none; margin: 0; padding: 0; }
     .demo-flow li { border: 1px solid #d8e1ea; border-radius: 8px; display: grid; gap: .85rem; grid-template-columns: 5.5rem 1fr; padding: 1rem; }
     .demo-flow li > span { align-items: center; background: #e7f7f4; border-radius: 999px; color: #0f766e; display: inline-flex; font-weight: 900; height: 2.2rem; justify-content: center; padding: 0 .75rem; width: fit-content; }

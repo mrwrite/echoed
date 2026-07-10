@@ -20,7 +20,7 @@ export class DemoTourService {
     {
       id: 'landing',
       title: 'Landing page',
-      description: 'This is the marketing page for school leaders and investors to explore the mission.',
+      description: 'This is the community page for educators, families, organizers, and contributors to explore the mission.',
       route: '/',
     },
     {

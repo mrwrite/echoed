@@ -52,7 +52,21 @@ from app.models import (
 DEMO_PASSWORD = "password"
 DEMO_ORG_NAME = "EchoEd Demo School"
 DEMO_COURSE_TITLE = "Introduction to Africa"
-DEMO_BACKEND_PUBLIC_URL = os.getenv("BACKEND_PUBLIC_URL", "http://127.0.0.1:8000").rstrip("/")
+
+
+def _demo_backend_public_url() -> str:
+    explicit_url = os.getenv("BACKEND_PUBLIC_URL")
+    if explicit_url:
+        return explicit_url.rstrip("/")
+
+    railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+    if railway_domain:
+        return f"https://{railway_domain.strip().rstrip('/')}"
+
+    return "http://127.0.0.1:8000"
+
+
+DEMO_BACKEND_PUBLIC_URL = _demo_backend_public_url()
 DEMO_STORYBOOK_BASE_URL = f"{DEMO_BACKEND_PUBLIC_URL}/storybook"
 DEMO_COLORINGS_BASE_URL = f"{DEMO_BACKEND_PUBLIC_URL}/colorings"
 DEMO_MAP_REFERENCE_URL = "/assets/maps/africa-reference.svg"

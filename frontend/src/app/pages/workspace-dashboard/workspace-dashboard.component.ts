@@ -40,7 +40,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <app-ee-metric label="Learners" [value]="analytics.totals.learner_count"></app-ee-metric>
         </section>
 
-        <section class="pitch-strip" aria-label="EchoEd V2 lifecycle">
+        <section class="lifecycle-strip" aria-label="EchoEd V2 lifecycle">
           <article><span>Knowledge In</span><strong>Sources enter projects</strong><p>Expert knowledge becomes reusable workspace context.</p></article>
           <article><span>AI Understanding</span><strong>Artifacts capture output</strong><p>Generation metadata is visible without executing AI yet.</p></article>
           <article><span>Review</span><strong>Governance protects trust</strong><p>Wrapper status never overrides lesson readiness.</p></article>
@@ -170,11 +170,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
   styles: [`
     .flow { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); list-style: none; margin: 0; padding: 0; }
     .flow li { background: rgba(255,255,255,.055); border: 1px solid var(--ee-border); border-radius: 18px; color: var(--ee-text); font-weight: 900; padding: .95rem; text-align: center; }
-    .pitch-strip { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
-    .pitch-strip article { background: linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.035)); border: 1px solid var(--ee-border); border-radius: 20px; box-shadow: var(--ee-shadow-soft); display: grid; gap: .3rem; padding: 1rem; }
-    .pitch-strip span { color: var(--ee-gold); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
-    .pitch-strip strong { color: var(--ee-text); }
-    .pitch-strip p { color: var(--ee-text-soft); margin: 0; }
+    .lifecycle-strip { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
+    .lifecycle-strip article { background: linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.035)); border: 1px solid var(--ee-border); border-radius: 20px; box-shadow: var(--ee-shadow-soft); display: grid; gap: .3rem; padding: 1rem; }
+    .lifecycle-strip span { color: var(--ee-gold); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    .lifecycle-strip strong { color: var(--ee-text); }
+    .lifecycle-strip p { color: var(--ee-text-soft); margin: 0; }
     .compact { display: grid; gap: .65rem; margin: 0; }
     .compact div { border-top: 1px solid var(--ee-border); display: grid; gap: .2rem; padding-top: .65rem; }
     dt { color: var(--ee-text-muted); font-size: .74rem; font-weight: 900; text-transform: uppercase; }

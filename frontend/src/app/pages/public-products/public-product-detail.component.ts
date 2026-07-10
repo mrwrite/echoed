@@ -13,14 +13,14 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <header [style.background-image]="heroBackground()">
         <p>{{ label(product.category || product.product_type) }}</p>
         <h1 id="product-title">{{ product.title }}</h1>
-        <span>{{ product.subtitle || product.description || 'Commercial product preview.' }}</span>
-        <button type="button" disabled>Enroll placeholder</button>
+        <span>{{ product.subtitle || product.description || 'Community product preview.' }}</span>
+        <button type="button" disabled>Access placeholder</button>
       </header>
 
       <main>
         <article>
           <h2>Overview</h2>
-          <p>{{ product.description || 'Product overview will be refined before checkout is connected.' }}</p>
+          <p>{{ product.description || 'Product overview will be refined as community review continues.' }}</p>
         </article>
         <article>
           <h2>Curriculum summary</h2>
@@ -36,16 +36,16 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         </article>
         <article>
           <h2>Requirements</h2>
-          <p>{{ product.audience || 'Audience and prerequisites are placeholders for commercialization readiness.' }}</p>
+          <p>{{ product.audience || 'Audience and prerequisites are placeholders for community readiness.' }}</p>
         </article>
         <article>
           <h2>Resources</h2>
           <p>Resources and downloads will be connected through future product packaging work.</p>
         </article>
         <aside>
-          <h2>Pricing</h2>
+          <h2>Access</h2>
           <strong>{{ product.price_placeholder || label(product.pricing_model || 'internal') }}</strong>
-          <p>Checkout and billing are not connected. This page is a commercial-readiness placeholder.</p>
+          <p>Access is handled through the demo and existing governed learner runtime.</p>
         </aside>
       </main>
     </section>

@@ -49,7 +49,7 @@ export class SidebarComponent {
         { label: 'Review Center', route: '/workspace/review-center', icon: 'ClipboardList', permission: 'nav:review-center' },
         { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access' },
         { label: 'Analytics', route: '/workspace/analytics', icon: 'SlidersHorizontal', permission: 'nav:analytics' },
-        { label: 'Commercial', route: '/workspace/commercial', icon: 'SlidersHorizontal', permission: 'nav:commercial' },
+        { label: 'Community', route: '/workspace/commercial', icon: 'Users', permission: 'nav:commercial' },
       ]
     },
     {
@@ -91,7 +91,7 @@ export class SidebarComponent {
       'Review Center': 'RC',
       Access: 'AC',
       Analytics: 'AN',
-      Commercial: 'CM',
+      Community: 'CO',
       Learners: 'LR',
       Cohorts: 'CH',
       Settings: 'ST',

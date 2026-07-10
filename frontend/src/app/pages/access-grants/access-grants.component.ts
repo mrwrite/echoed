@@ -13,7 +13,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <header class="ee-page-header">
         <p class="ee-eyebrow">Access Grants</p>
         <h1 id="access-title">Product access management</h1>
-        <span class="ee-page-copy">Grant product-level access without changing course enrollment, checkout, or lesson governance.</span>
+        <span class="ee-page-copy">Grant product-level access without changing course enrollment or lesson governance.</span>
         <div class="ee-action-row">
           <span class="ee-badge ee-badge--draft">Manual grants</span>
           <span class="ee-badge">Runtime governance preserved</span>

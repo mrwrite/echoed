@@ -46,11 +46,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
             <span>{{ product.access_state }}</span>
           </div>
           <div>
-            <strong>Commercial URL</strong>
+            <strong>Public URL</strong>
             <span>{{ product.slug ? '/products/' + product.slug : 'Generated when published' }}</span>
           </div>
           <div>
-            <strong>Pricing placeholder</strong>
+            <strong>Access model</strong>
             <span>{{ product.price_placeholder || label(product.pricing_model || 'internal') }}</span>
           </div>
         </div>
@@ -63,7 +63,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         </div>
 
         <div class="notice">
-          Product shell details are additive. Wrapper publishing does not override existing lesson governance, create enrollments, execute checkout, or expose runtime lessons outside existing readiness rules.
+          Product shell details are additive. Wrapper publishing does not override existing lesson governance, create enrollments, or expose runtime lessons outside existing readiness rules.
         </div>
       </article>
     </section>

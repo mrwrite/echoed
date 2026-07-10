@@ -86,7 +86,7 @@ const PRODUCT_TYPES = [
         </div>
       </section>
 
-      <section class="panel pitch-cards" aria-label="Product Studio pitch callouts">
+      <section class="panel workflow-cards" aria-label="Product Studio workflow callouts">
         <article><span>Knowledge In</span><strong>Connect project sources</strong><p>Product work starts from traceable workspace knowledge.</p></article>
         <article><span>AI Understanding</span><strong>Prepare analysis safely</strong><p>Generation remains marked as future work in this phase.</p></article>
         <article><span>Review</span><strong>Govern artifacts and products</strong><p>Review status is additive and does not publish lessons.</p></article>
@@ -165,12 +165,12 @@ const PRODUCT_TYPES = [
           </label>
 
           <label>
-            Pricing model
+            Access model
             <select name="pricingModel" [(ngModel)]="pricingModel">
               <option value="internal">Internal</option>
-              <option value="free">Free</option>
-              <option value="paid">Paid placeholder</option>
-              <option value="enterprise">Enterprise placeholder</option>
+              <option value="free">Open access</option>
+              <option value="paid">Invite-only placeholder</option>
+              <option value="enterprise">Community partner placeholder</option>
             </select>
           </label>
 
@@ -267,11 +267,11 @@ const PRODUCT_TYPES = [
     .type-grid button span { color: var(--ee-gold); font-size: .76rem; font-weight: 900; text-transform: uppercase; }
     .type-grid button strong { color: var(--ee-text); }
     .type-grid .type-card--active { background: rgba(124,58,237,.2); border-color: rgba(167,139,250,.42); box-shadow: inset 0 0 0 1px rgba(167,139,250,.18); }
-    .pitch-cards { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
-    .pitch-cards article { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .3rem; padding: .9rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
-    .pitch-cards article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
-    .pitch-cards span { color: var(--ee-gold); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
-    .pitch-cards p { color: var(--ee-text-soft); margin: 0; }
+    .workflow-cards { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+    .workflow-cards article { animation: ee-motion-card-enter var(--ee-duration-slow, 260ms) var(--ee-easing-standard, ease) both; border: 1px solid var(--ee-border); border-radius: 18px; display: grid; gap: .3rem; padding: .9rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
+    .workflow-cards article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
+    .workflow-cards span { color: var(--ee-gold); font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+    .workflow-cards p { color: var(--ee-text-soft); margin: 0; }
     .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr)); }
     .panel { display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 1.5rem); }
     label { color: var(--ee-text-soft); display: grid; font-weight: 800; gap: .4rem; }
@@ -284,7 +284,7 @@ const PRODUCT_TYPES = [
     .product-list article { align-items: center; background: rgba(255,255,255,.045); border: 1px solid var(--ee-border); border-radius: 1rem; display: flex; gap: 1rem; justify-content: space-between; padding: 1rem; transition: transform var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease); }
     .product-list article:hover { transform: var(--ee-hover-lift, translateY(-3px)); }
     .runtime { color: var(--ee-azure) !important; font-weight: 800; }
-    @media (prefers-reduced-motion: reduce) { .workflow li, .pitch-cards article, .status { animation: none; } .workflow li:hover, .pitch-cards article:hover, .product-list article:hover { transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .workflow li, .workflow-cards article, .status { animation: none; } .workflow li:hover, .workflow-cards article:hover, .product-list article:hover { transform: none; } }
   `]
 })
 export class ProductStudioComponent implements OnInit {
@@ -383,9 +383,9 @@ export class ProductStudioComponent implements OnInit {
       access_state: this.selectedCourseId ? 'existing_runtime' : 'private',
       visibility: this.visibility,
       pricing_model: this.pricingModel,
-      price_placeholder: this.pricingModel === 'paid' ? 'Price placeholder - checkout not connected' : null,
+      price_placeholder: this.pricingModel === 'paid' ? 'Access details pending' : null,
       currency: this.pricingModel === 'paid' ? 'USD' : null,
-      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented', checkout: 'not_implemented' },
+      metadata: { source: 'product_studio_phase_3', ai_generation: 'not_implemented', access_workflow: 'manual' },
     }).subscribe({
       next: product => {
         this.statusMessage = `Product shell ready: ${product.title}`;

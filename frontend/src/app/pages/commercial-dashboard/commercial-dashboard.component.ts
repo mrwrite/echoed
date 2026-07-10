@@ -9,18 +9,18 @@ import { V2PlatformService } from '../../services/v2-platform.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <section class="commercial ee-page" aria-labelledby="commercial-title">
+    <section class="community ee-page" aria-labelledby="community-title">
       <header class="ee-page-header">
-        <p class="ee-eyebrow">Commercial Readiness</p>
-        <h1 id="commercial-title" class="ee-page-title">Product monetization command center</h1>
-        <p class="ee-page-copy">Prepare products, visibility, pricing placeholders, and workspace commercial settings. Payments, checkout, subscriptions, and billing execution are not implemented.</p>
+        <p class="ee-eyebrow">Community Readiness</p>
+        <h1 id="community-title" class="ee-page-title">Project stewardship dashboard</h1>
+        <p class="ee-page-copy">Prepare products, visibility, contribution pathways, and workspace community settings for the open-source launch.</p>
       </header>
 
       <section class="ee-metrics">
         <article class="ee-metric"><span>Products</span><strong>{{ products.length }}</strong></article>
         <article class="ee-metric"><span>Drafts</span><strong>{{ countStatus('draft') }}</strong></article>
         <article class="ee-metric"><span>Published</span><strong>{{ countStatus('published') }}</strong></article>
-        <article class="ee-metric"><span>Placeholder ARR</span><strong>$0</strong></article>
+        <article class="ee-metric"><span>Community review</span><strong>{{ countStatus('in_review') }}</strong></article>
       </section>
 
       <section class="ee-grid ee-grid--wide">
@@ -29,7 +29,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <dl><div *ngFor="let item of mapEntries(visibilityCounts())"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] }}</dd></div></dl>
         </article>
         <article class="ee-panel">
-          <h2>Pricing Models</h2>
+          <h2>Access Models</h2>
           <dl><div *ngFor="let item of mapEntries(pricingCounts())"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] }}</dd></div></dl>
         </article>
         <article class="ee-panel">
@@ -37,11 +37,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <dl><div *ngFor="let item of mapEntries(typeCounts())"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] }}</dd></div></dl>
         </article>
         <article class="ee-panel">
-          <h2>Placeholder Metrics</h2>
+          <h2>Community Signals</h2>
           <dl>
-            <div><dt>Revenue</dt><dd>$0 - payment provider absent</dd></div>
-            <div><dt>Conversion</dt><dd>0% - checkout absent</dd></div>
-            <div><dt>ARR</dt><dd>$0 - subscriptions absent</dd></div>
+            <div><dt>Contributor onboarding</dt><dd>Tracked through GitHub issues and docs</dd></div>
+            <div><dt>Educator review</dt><dd>Collected through feedback and walkthroughs</dd></div>
+            <div><dt>Demo access</dt><dd>Manual grants keep the demo bounded</dd></div>
           </dl>
         </article>
       </section>
@@ -50,12 +50,12 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         <div class="ee-panel-header">
           <div>
             <p class="ee-eyebrow">Workspace Settings</p>
-            <h2>Commercial placeholders</h2>
+            <h2>Community placeholders</h2>
           </div>
-          <span class="ee-badge ee-badge--draft">No billing execution</span>
+          <span class="ee-badge ee-badge--draft">Community launch</span>
         </div>
         <div class="settings">
-          <article class="ee-card--interactive" *ngFor="let section of settings"><strong>{{ section }}</strong><span>Placeholder configuration area for future commercialization.</span></article>
+          <article class="ee-card--interactive" *ngFor="let section of settings"><strong>{{ section }}</strong><span>Placeholder configuration area for future community stewardship.</span></article>
         </div>
       </section>
 
@@ -63,7 +63,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         <div class="ee-panel-header">
           <div>
             <p class="ee-eyebrow">Inventory</p>
-            <h2>Commercial product readiness</h2>
+            <h2>Community product readiness</h2>
           </div>
           <a class="ee-link-button" routerLink="/workspace/products">Products</a>
         </div>
@@ -95,7 +95,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
 export class CommercialDashboardComponent implements OnInit {
   private readonly v2Platform = inject(V2PlatformService);
   products: Product[] = [];
-  readonly settings = ['Branding', 'Billing', 'Domains', 'Plans', 'AI Usage'];
+  readonly settings = ['Branding', 'Documentation', 'Domains', 'Roadmap', 'AI Usage'];
 
   ngOnInit(): void {
     this.v2Platform.getProducts().subscribe(products => {

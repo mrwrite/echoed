@@ -13,7 +13,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <header>
         <p>Products</p>
         <h1 id="products-title">Learning products built from trusted knowledge</h1>
-        <span>Commercial pages are preview-ready. Pricing and enrollment actions are placeholders until checkout is implemented.</span>
+        <span>Public previews are ready for community review. Access actions stay bounded to the demo and existing learner runtime.</span>
       </header>
 
       <div class="grid" *ngIf="products.length; else empty">
@@ -35,7 +35,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       <ng-template #empty>
         <div class="empty">
           <h2>No public products yet</h2>
-          <p>Publish a Product wrapper with public visibility to preview commercial product pages.</p>
+          <p>Publish a Product wrapper with public visibility to preview community-facing product pages.</p>
         </div>
       </ng-template>
     </section>

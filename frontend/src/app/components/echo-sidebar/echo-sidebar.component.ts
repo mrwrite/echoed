@@ -80,23 +80,4 @@ export class SidebarComponent {
     )
   );
 
-  iconGlyph(item: NavItem): string {
-    const explicit: Record<string, string> = {
-      Workspace: 'WS',
-      Projects: 'PJ',
-      'Product Studio': 'PS',
-      Products: 'PD',
-      'Knowledge Sources': 'KS',
-      Artifacts: 'AR',
-      'Review Center': 'RC',
-      Access: 'AC',
-      Analytics: 'AN',
-      Community: 'CO',
-      Learners: 'LR',
-      Cohorts: 'CH',
-      Settings: 'ST',
-    };
-    return explicit[item.label] || item.label.slice(0, 2).toUpperCase();
-  }
-
 }

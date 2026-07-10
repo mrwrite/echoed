@@ -137,11 +137,29 @@
   background: #f8fafc;
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
+  color: var(--ee-text-soft, #334155);
   display: inline-flex;
   height: 2rem;
   justify-content: center;
   width: 2rem;
   flex: 0 0 auto;
+  transition:
+    background var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease),
+    border-color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease),
+    color var(--ee-duration-base, 180ms) var(--ee-easing-standard, ease);
+}
+
+.sidebar-link:hover .sidebar-link__icon,
+.sidebar-link:focus-visible .sidebar-link__icon {
+  background: #ffffff;
+  border-color: rgba(15, 118, 110, 0.22);
+  color: var(--echo-primary, #0f766e);
+}
+
+.sidebar-link--active .sidebar-link__icon {
+  background: rgba(15, 118, 110, 0.12);
+  border-color: rgba(15, 118, 110, 0.3);
+  color: var(--echo-primary, #0f766e);
 }
 
 .sidebar-link__label {

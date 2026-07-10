@@ -76,9 +76,14 @@ describe('SidebarComponent', () => {
     fixture.detectChanges();
 
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
+    const icon = firstLink.querySelector('app-icon');
+    const svg = firstLink.querySelector('svg');
     expect(firstLink.getAttribute('aria-label')).toBe('Workspace');
     expect(firstLink.getAttribute('title')).toBe('Workspace');
-    expect(firstLink.textContent?.trim()).toBe('WS');
+    expect(firstLink.textContent?.trim()).toBe('');
+    expect(icon).not.toBeNull();
+    expect(svg).not.toBeNull();
+    expect(svg?.querySelectorAll('path').length).toBeGreaterThan(0);
   });
 
   it('keeps important sidebar controls labeled for accessibility', () => {

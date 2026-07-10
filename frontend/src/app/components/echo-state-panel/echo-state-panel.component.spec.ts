@@ -47,4 +47,15 @@ describe('EchoStatePanelComponent', () => {
     const panel = fixture.nativeElement.querySelector('[data-echo-state="error"]') as HTMLElement;
     expect(panel.classList).toContain('echo-state-panel--center');
   });
+
+  it('uses polite status semantics for permission states', () => {
+    component.variant = 'permission';
+    component.title = 'Permission needed';
+    fixture.detectChanges();
+
+    const panel = fixture.nativeElement.querySelector('[data-echo-state="permission"]') as HTMLElement;
+    expect(panel.getAttribute('role')).toBe('status');
+    expect(panel.getAttribute('aria-live')).toBe('polite');
+    expect(panel.classList).toContain('echo-state-panel--permission');
+  });
 });

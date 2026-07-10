@@ -29,7 +29,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
           <dl><div *ngFor="let item of mapEntries(visibilityCounts())"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] }}</dd></div></dl>
         </article>
         <article class="ee-panel">
-          <h2>Access Models</h2>
+          <h2>Access Settings</h2>
           <dl><div *ngFor="let item of mapEntries(pricingCounts())"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] }}</dd></div></dl>
         </article>
         <article class="ee-panel">
@@ -72,7 +72,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
             <div>
               <span class="ee-badge" [ngClass]="product.status === 'published' ? 'ee-badge--approved' : 'ee-badge--draft'">{{ label(product.status) }}</span>
               <h3>{{ product.title }}</h3>
-              <p>{{ label(product.visibility || 'draft') }} - {{ label(product.pricing_model || 'internal') }} - {{ label(product.product_type) }}</p>
+              <p>{{ label(product.visibility || 'draft') }} - {{ label(product.pricing_model || 'internal') }} access - {{ label(product.product_type) }}</p>
             </div>
             <a class="ee-link-button ee-link-button--primary" [routerLink]="['/workspace/products', product.id]">Manage</a>
           </article>

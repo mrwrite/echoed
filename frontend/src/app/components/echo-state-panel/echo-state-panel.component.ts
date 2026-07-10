@@ -7,7 +7,9 @@ export type EchoStateVariant =
   | 'empty'
   | 'error'
   | 'unavailable'
-  | 'blocked';
+  | 'blocked'
+  | 'permission'
+  | 'success';
 
 @Component({
   selector: 'app-echo-state-panel',
@@ -48,6 +50,10 @@ export class EchoStatePanelComponent {
     }
 
     switch (this.variant) {
+      case 'permission':
+        return 'Lock';
+      case 'success':
+        return 'CheckCircle';
       case 'blocked':
         return 'Users';
       case 'unavailable':

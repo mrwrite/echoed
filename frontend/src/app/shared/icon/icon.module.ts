@@ -22,6 +22,10 @@ const ICON_PATHS: IconPathMap = {
     'M8 6H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2',
     'M8 12h8M8 16h8',
   ],
+  CheckCircle: [
+    'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z',
+    'm9 12 2 2 4-5',
+  ],
   FileText: [
     'M6 3h8l4 4v14H6V3Z',
     'M14 3v5h5',
@@ -30,6 +34,10 @@ const ICON_PATHS: IconPathMap = {
   Home: [
     'M3 11.5 12 4l9 7.5',
     'M5 10.5V21h5v-6h4v6h5V10.5',
+  ],
+  Lock: [
+    'M7 11V8a5 5 0 0 1 10 0v3',
+    'M6 11h12v10H6V11Z',
   ],
   Menu: [
     'M4 6h16',

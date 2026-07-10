@@ -24,6 +24,7 @@ import { Organization } from '../../models/organization';
 import { PermissionsService } from '../../services/permissions.service';
 import { EchoStatePanelComponent } from '../echo-state-panel/echo-state-panel.component';
 import { EchoLoadingStateComponent } from '../echo-loading-state/echo-loading-state.component';
+import { ShellNavigationService, ShellSpaceSummary } from '../../services/shell-navigation.service';
 
 
 @Component({
@@ -47,6 +48,7 @@ import { EchoLoadingStateComponent } from '../echo-loading-state/echo-loading-st
 
 export class EchoHeaderComponent implements OnInit {
   @Input() userinfo!: UserInfo;
+  @Input() mobileNavigationOpen = false;
   menuOpen: boolean = false;
   organizations: Organization[] = [];
   activeOrgId: string | null = null;
@@ -55,6 +57,12 @@ export class EchoHeaderComponent implements OnInit {
   switchPending = false;
   switchError = '';
   switchSuccess = '';
+  shellSpace: ShellSpaceSummary = {
+    name: 'EchoEd',
+    eyebrow: 'EchoEd',
+    description: 'Continue your learning community work.',
+    canonicalRoute: '/home',
+  };
 
   @ViewChild('menuContainer') menuContainer!: ElementRef;
 
@@ -63,7 +71,8 @@ export class EchoHeaderComponent implements OnInit {
     private router: Router,
     private demoTourService: DemoTourService,
     private organizationService: OrganizationService,
-    private permissionsService: PermissionsService
+    private permissionsService: PermissionsService,
+    private shellNavigation: ShellNavigationService
   ) {}
 
   ngOnInit(): void {
@@ -74,6 +83,9 @@ export class EchoHeaderComponent implements OnInit {
     });
     this.organizationService.organizations$.subscribe(orgs => {
       this.organizations = orgs;
+    });
+    this.permissionsService.permissions$.subscribe((permissions) => {
+      this.shellSpace = this.shellNavigation.getPrimarySpace(permissions);
     });
   }
 
@@ -87,6 +99,10 @@ export class EchoHeaderComponent implements OnInit {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
   }
 
   get activeOrganizationName(): string {
@@ -109,6 +125,11 @@ export class EchoHeaderComponent implements OnInit {
     if (this.menuContainer && !this.menuContainer.nativeElement.contains(targetElement)) {
       this.menuOpen = false;
     }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeMenu();
   }
 
   refreshOrganizations(): void {

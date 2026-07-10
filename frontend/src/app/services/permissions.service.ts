@@ -83,6 +83,10 @@ export class PermissionsService {
     return this.permissionsSubject.value.has(permission);
   }
 
+  getCurrentPermissions(): Set<string> {
+    return new Set<string>(this.permissionsSubject.value);
+  }
+
   hasAnyRole(...rolesToCheck: string[]): boolean {
     const permissions = this.permissionsSubject.value;
     return rolesToCheck.some(role => permissions.has(`role:${role}`));

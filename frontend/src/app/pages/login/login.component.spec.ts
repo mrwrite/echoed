@@ -5,6 +5,7 @@ import { LoginComponent } from './login.component';
 import { AuthService } from '../../services/auth.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { BootstrapOutcome } from '../../services/permissions.service';
+import { ShellNavigationService } from '../../services/shell-navigation.service';
 
 class MockAuthService {
   login() {
@@ -17,6 +18,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let router: jasmine.SpyObj<Router>;
   let permissionsService: jasmine.SpyObj<PermissionsService>;
+  let shellNavigation: jasmine.SpyObj<ShellNavigationService>;
 
   const readyOutcome: BootstrapOutcome = {
     status: 'ready',
@@ -35,6 +37,8 @@ describe('LoginComponent', () => {
 
     permissionsService = jasmine.createSpyObj<PermissionsService>('PermissionsService', ['bootstrapSession', 'getCurrentOutcome']);
     permissionsService.getCurrentOutcome.and.returnValue(readyOutcome);
+    shellNavigation = jasmine.createSpyObj<ShellNavigationService>('ShellNavigationService', ['canonicalRouteForCurrentUser']);
+    shellNavigation.canonicalRouteForCurrentUser.and.returnValue('/home');
 
     TestBed.overrideComponent(LoginComponent, {
       set: {
@@ -48,6 +52,7 @@ describe('LoginComponent', () => {
         { provide: Router, useValue: router },
         { provide: AuthService, useClass: MockAuthService },
         { provide: PermissionsService, useValue: permissionsService },
+        { provide: ShellNavigationService, useValue: shellNavigation },
       ]
     })
     .compileComponents();
@@ -62,7 +67,7 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('awaits session bootstrap before navigating to dashboard', fakeAsync(() => {
+  it('awaits session bootstrap before navigating to the canonical role destination', fakeAsync(() => {
     let resolveBootstrap: () => void = () => {};
     permissionsService.bootstrapSession.and.returnValue(new Promise<void>((resolve) => {
       resolveBootstrap = resolve;
@@ -72,7 +77,7 @@ describe('LoginComponent', () => {
     tick();
 
     expect(permissionsService.bootstrapSession).toHaveBeenCalled();
-    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/home');
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/learn');
 
     resolveBootstrap();
     tick();
@@ -80,14 +85,15 @@ describe('LoginComponent', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
   }));
 
-  it('routes login to home when bootstrap outcome is ready', fakeAsync(() => {
+  it('routes login to the canonical role destination when bootstrap outcome is ready', fakeAsync(() => {
     permissionsService.bootstrapSession.and.resolveTo();
     permissionsService.getCurrentOutcome.and.returnValue(readyOutcome);
+    shellNavigation.canonicalRouteForCurrentUser.and.returnValue('/learn');
 
     component.login(new Event('submit'));
     tick();
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/learn');
     expect(router.navigateByUrl).not.toHaveBeenCalledWith('/onboarding/organization');
   }));
 
@@ -131,6 +137,7 @@ describe('LoginComponent', () => {
       activeOrgRole: null,
       organizations: [],
     });
+    shellNavigation.canonicalRouteForCurrentUser.and.returnValue('/home');
 
     component.login(new Event('submit'));
     tick();

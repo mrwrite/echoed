@@ -123,7 +123,7 @@ describe('HomeComponent', () => {
 
   it('keeps shell width stable when compact navigation expands as an overlay', () => {
     component.compactShell = true;
-    component.sidebarCollapsed = false;
+    component.openMobileNavigation();
     fixture.detectChanges();
 
     const shell = fixture.nativeElement.querySelector('.home-shell') as HTMLElement;
@@ -131,5 +131,37 @@ describe('HomeComponent', () => {
     expect(component.sidebarOverlayMode).toBeTrue();
     expect(shell.style.getPropertyValue('--echo-shell-sidebar-width')).toBe('var(--echo-sidebar-collapsed-width)');
     expect(sidebar.classList).toContain('home-shell__sidebar--overlay');
+  });
+
+  it('opens and closes mobile navigation with Escape', () => {
+    component.compactShell = true;
+    fixture.detectChanges();
+
+    component.openMobileNavigation();
+    fixture.detectChanges();
+    expect(component.mobileNavigationOpen).toBeTrue();
+    expect(document.body.classList).toContain('echo-mobile-nav-open');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(component.mobileNavigationOpen).toBeFalse();
+    expect(document.body.classList).not.toContain('echo-mobile-nav-open');
+  });
+
+  it('returns focus to the mobile trigger when navigation closes', async () => {
+    component.compactShell = true;
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('.mobile-nav-trigger') as HTMLButtonElement;
+    trigger.focus();
+    trigger.click();
+    fixture.detectChanges();
+
+    component.closeMobileNavigation(true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(trigger);
   });
 });

@@ -45,6 +45,7 @@ class MockOrganizationService {
 
 class MockPermissionsService {
   readonly ready$ = new BehaviorSubject<boolean>(true);
+  readonly permissions$ = new BehaviorSubject<Set<string>>(new Set(['role:teacher']));
   resetSession = jasmine.createSpy('resetSession');
   bootstrapSession = jasmine.createSpy('bootstrapSession').and.resolveTo();
 }
@@ -206,5 +207,25 @@ describe('EchoHeaderComponent', () => {
     expect(profileButton).not.toBeNull();
     expect(profileButton.getAttribute('aria-haspopup')).toBe('menu');
     expect(profileButton.getAttribute('aria-controls')).toBe('echo-header-profile-menu');
+  });
+
+  it('renders the current role-aware shell space', () => {
+    permissionsService.permissions$.next(new Set(['role:student']));
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('EchoEd Learn');
+    expect(compiled.textContent).toContain('Learn');
+    expect(compiled.textContent).toContain('Resume learning');
+  });
+
+  it('closes the profile menu on Escape', () => {
+    fixture.detectChanges();
+    component.menuOpen = true;
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(component.menuOpen).toBeFalse();
   });
 });

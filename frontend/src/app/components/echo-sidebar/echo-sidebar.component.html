@@ -1,21 +1,22 @@
 <aside
   class="sidebar-shell ee-sidebar h-screen flex flex-col"
   [class.sidebar-shell--collapsed]="collapsed"
+  [class.sidebar-shell--mobile]="mobileMode"
   [style.width]="collapsed ? 'var(--echo-sidebar-collapsed-width)' : 'var(--echo-sidebar-expanded-width)'"
   aria-label="Sidebar navigation"
 >
   <div class="sidebar-brand flex items-center justify-between p-4 gap-3">
-    <div class="flex items-center gap-3 min-w-0" *ngIf="!collapsed">
+    <div class="flex items-center gap-3 min-w-0" *ngIf="!collapsed" >
       <div class="sidebar-logo shrink-0">EE</div>
-      <div class="min-w-0">
-        <p class="sidebar-kicker">EchoEd</p>
-        <p class="sidebar-title">Workspace OS</p>
+      <div class="min-w-0" *ngIf="primarySpace$ | async as primarySpace">
+        <p class="sidebar-kicker">{{ primarySpace.eyebrow }}</p>
+        <p class="sidebar-title">{{ primarySpace.name }}</p>
       </div>
     </div>
     <button
       (click)="toggle.emit()"
       class="sidebar-toggle shrink-0 rounded-xl p-2"
-      aria-label="Toggle sidebar"
+      [attr.aria-label]="mobileMode ? 'Close navigation menu' : 'Toggle sidebar'"
       [attr.aria-expanded]="!collapsed"
       aria-controls="echo-primary-navigation"
     >
@@ -33,6 +34,7 @@
               *ngFor="let item of section.items"
               [routerLink]="item.route"
               routerLinkActive="sidebar-link--active"
+              [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
               ariaCurrentWhenActive="page"
               class="sidebar-link flex items-center rounded-xl transition"
               [class.sidebar-link--collapsed]="collapsed"

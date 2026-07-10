@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EchoEd Design Lab</title>
+    <link rel="stylesheet" href="./design-lab.css">
+  </head>
+  <body>
+    <header class="lab-topbar">
+      <a class="skip-link" href="#main">Skip to prototype</a>
+      <div class="brand-mark">EE</div>
+      <div>
+        <p class="eyebrow">EchoEd design lab</p>
+        <h1>Role-based learning experience</h1>
+      </div>
+      <nav aria-label="Prototype sections">
+        <a href="#public">Public</a>
+        <a href="#student">Student</a>
+        <a href="#teacher">Teacher</a>
+        <a href="#admin">Admin</a>
+        <a href="#states">States</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="public" class="screen public-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Community learning platform</p>
+          <h2>EchoEd</h2>
+          <p>Explore African and African-American history through guided lessons, classroom support, source-aware content, and community stewardship.</p>
+          <div class="actions">
+            <a class="button primary" href="#login">Sign in</a>
+            <a class="button secondary" href="#student">Preview learning</a>
+          </div>
+        </div>
+        <div class="archive-panel">
+          <p class="eyebrow">Featured pathway</p>
+          <h3>Introduction to Africa</h3>
+          <p>Geography, kingdoms, knowledge traditions, community care, and creative expression for K-5 learners.</p>
+          <div class="map-card" aria-label="Stylized Africa map preview"></div>
+        </div>
+      </section>
+
+      <section id="login" class="screen two-col">
+        <aside class="context-panel">
+          <p class="eyebrow">Welcome back</p>
+          <h2>Continue with your role.</h2>
+          <p>The app resolves your organization and sends you to Learn, Teach, Studio, or Admin based on confirmed access.</p>
+        </aside>
+        <form class="form-card" aria-label="Login prototype form">
+          <label>Email or username<input value="student1"></label>
+          <label>Password<input type="password" value="password"></label>
+          <button class="button primary" type="button">Sign in</button>
+          <p class="hint">Demo examples: student1, teacher, orgadmin, contentadmin.</p>
+        </form>
+      </section>
+
+      <section id="student" class="app-frame">
+        <nav class="side-nav learner" aria-label="Student navigation">
+          <div class="brand-mark">EE</div>
+          <a class="active" href="#student">Home</a>
+          <a href="#course">Courses</a>
+          <a href="#lesson">Lesson</a>
+          <a href="#states">Progress</a>
+        </nav>
+        <div class="app-content">
+          <header class="page-header">
+            <p class="eyebrow">Learn</p>
+            <h2>Welcome back, Sami.</h2>
+            <p>Your next lesson in Introduction to Africa is ready.</p>
+          </header>
+          <div class="priority-grid">
+            <article class="next-card">
+              <p class="eyebrow">Next learning</p>
+              <h3>Introduction to Africa</h3>
+              <p>Continue: Africa is a continent with many places, languages, and communities.</p>
+              <div class="progress"><span style="width: 42%"></span></div>
+              <a class="button primary" href="#lesson">Resume lesson</a>
+            </article>
+            <article class="panel">
+              <p class="eyebrow">Progress</p>
+              <strong class="metric">42%</strong>
+              <p>3 lessons complete. One badge is close.</p>
+            </article>
+            <article class="panel">
+              <p class="eyebrow">Achievement</p>
+              <h3>Map Explorer</h3>
+              <p>Earned for careful geography observations.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="course" class="screen">
+        <header class="page-header">
+          <p class="eyebrow">Course overview</p>
+          <h2>Introduction to Africa</h2>
+          <p>Follow a guided path through geography, routes, kingdoms, libraries, ecosystems, art, and community care.</p>
+        </header>
+        <div class="lesson-list">
+          <article><span class="status done">Complete</span><h3>What is Africa?</h3><p>Build a map vocabulary and continent-scale context.</p></article>
+          <article><span class="status active">Ready</span><h3>Rivers, routes, and communities</h3><p>Explore how places connect people and ideas.</p></article>
+          <article><span class="status locked">Later</span><h3>Kingdoms and knowledge</h3><p>Unlocks after the current lesson.</p></article>
+        </div>
+      </section>
+
+      <section id="lesson" class="lesson-frame">
+        <header class="lesson-bar">
+          <a class="button secondary" href="#student">Exit lesson</a>
+          <span>Governed delivery</span>
+          <strong>Introduction to Africa</strong>
+        </header>
+        <article class="lesson-content">
+          <p class="eyebrow">Lesson 2</p>
+          <h2>Rivers, routes, and communities</h2>
+          <p>People use rivers, roads, stories, and shared knowledge to stay connected. Today you will notice how geography can shape daily life.</p>
+          <div class="activity-box">
+            <h3>Reflection</h3>
+            <p>Choose one way a community can share knowledge across distance.</p>
+            <label><input type="radio" name="reflection"> A river route</label>
+            <label><input type="radio" name="reflection"> A story told by elders</label>
+            <label><input type="radio" name="reflection"> A school or library</label>
+          </div>
+          <button class="button primary">Complete lesson</button>
+        </article>
+      </section>
+
+      <section id="teacher" class="app-frame staff">
+        <nav class="side-nav" aria-label="Teacher navigation">
+          <div class="brand-mark">EE</div>
+          <a class="active" href="#teacher">Today</a>
+          <a href="#class">Classes</a>
+          <a href="#assignment">Assignments</a>
+          <a href="#course">Curriculum</a>
+        </nav>
+        <div class="app-content">
+          <header class="page-header">
+            <p class="eyebrow">Teach</p>
+            <h2>Today in EchoEd Demo School</h2>
+            <p>Review learner support first, then manage classes and assignments.</p>
+          </header>
+          <div class="dashboard-grid">
+            <article class="panel wide">
+              <h3>Learners needing support</h3>
+              <ul class="data-list">
+                <li><strong>Binta Reteach</strong><span>Reteach recommended: map vocabulary</span><button>Open</button></li>
+                <li><strong>Chidi Review</strong><span>Review recommended: community routes</span><button>Open</button></li>
+              </ul>
+            </article>
+            <article class="panel"><p class="eyebrow">Active classes</p><strong class="metric">3</strong></article>
+            <article class="panel"><p class="eyebrow">Submissions</p><strong class="metric">12</strong></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="class" class="screen">
+        <header class="page-header">
+          <p class="eyebrow">Class detail</p>
+          <h2>Grade 4 History Circle</h2>
+          <p>Roster, assignments, progress, and discussion are grouped in one class context.</p>
+        </header>
+        <div class="tabs" role="tablist" aria-label="Class sections">
+          <button class="active">Overview</button><button>Roster</button><button>Assignments</button><button>Progress</button>
+        </div>
+        <ul class="data-list">
+          <li><strong>Sami Student</strong><span>42% complete</span><button>View progress</button></li>
+          <li><strong>Amara Mastery</strong><span>Ready for enrichment</span><button>Open support</button></li>
+        </ul>
+      </section>
+
+      <section id="assignment" class="screen">
+        <header class="page-header">
+          <p class="eyebrow">Assignment workflow</p>
+          <h2>Assign learning</h2>
+          <p>Choose curriculum, select learners, review, then confirm.</p>
+        </header>
+        <div class="stepper"><span class="active">1 Content</span><span>2 Learners</span><span>3 Review</span></div>
+        <article class="panel">
+          <h3>Selected content</h3>
+          <p>Introduction to Africa - Rivers, routes, and communities</p>
+          <button class="button primary">Continue to learners</button>
+        </article>
+      </section>
+
+      <section id="admin" class="app-frame staff">
+        <nav class="side-nav admin" aria-label="Admin navigation">
+          <div class="brand-mark">EE</div>
+          <a class="active" href="#admin">Overview</a>
+          <a href="#users">Users</a>
+          <a href="#course">Curriculum</a>
+          <a href="#states">Moderation</a>
+        </nav>
+        <div class="app-content">
+          <header class="page-header">
+            <p class="eyebrow">Admin</p>
+            <h2>Platform health</h2>
+            <p>Resolve access, content, and safety issues before routine management.</p>
+          </header>
+          <div class="dashboard-grid">
+            <article class="panel"><p class="eyebrow">Students</p><strong class="metric">7</strong></article>
+            <article class="panel"><p class="eyebrow">Teachers</p><strong class="metric">1</strong></article>
+            <article class="panel"><p class="eyebrow">Courses</p><strong class="metric">2</strong></article>
+            <article class="panel wide warning"><h3>2 publish checks need review</h3><p>Open course governance before publishing new learner content.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="users" class="screen">
+        <header class="page-header">
+          <p class="eyebrow">User management</p>
+          <h2>People and roles</h2>
+          <p>Search users, review organization roles, and confirm high-risk changes.</p>
+        </header>
+        <div class="toolbar"><input aria-label="Search users" placeholder="Search users"><button class="button secondary">Filters</button></div>
+        <ul class="data-list">
+          <li><strong>orgadmin@demo.com</strong><span>Org admin</span><button>Manage</button></li>
+          <li><strong>teacher@demo.com</strong><span>Teacher</span><button>Manage</button></li>
+          <li><strong>student1@demo.com</strong><span>Student</span><button class="danger-text">Delete</button></li>
+        </ul>
+      </section>
+
+      <section id="states" class="screen states">
+        <header class="page-header">
+          <p class="eyebrow">Shared states</p>
+          <h2>Loading, empty, error, permission</h2>
+        </header>
+        <div class="state-grid">
+          <article class="state-card"><h3>Loading</h3><p>Restoring your lesson path.</p></article>
+          <article class="state-card"><h3>No assignments yet</h3><p>Your teacher has not assigned learning for this class.</p></article>
+          <article class="state-card error"><h3>Could not load roster</h3><p>No changes were made. Try again.</p><button>Retry</button></article>
+          <article class="state-card"><h3>Access needed</h3><p>You are signed in as a student. Switch organization or ask an admin for access.</p></article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

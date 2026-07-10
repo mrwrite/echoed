@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { PermissionsService } from '../../services/permissions.service';
+import { ShellNavigationService } from '../../services/shell-navigation.service';
 
 @Component({
   selector: 'echo-login',
@@ -26,6 +27,7 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService,
     private permissionsService: PermissionsService,
+    private shellNavigation: ShellNavigationService,
   ) { }
 
   async login(event: Event) {
@@ -38,7 +40,7 @@ export class LoginComponent {
 
       switch (outcome.status) {
         case 'ready':
-          await this.router.navigateByUrl('/home');
+          await this.router.navigateByUrl(this.shellNavigation.canonicalRouteForCurrentUser());
           return;
         case 'onboardingRequired':
           await this.router.navigateByUrl('/onboarding/organization');

@@ -15,11 +15,10 @@ export async function loginAsDemoStudent(page: Page): Promise<void> {
   await page.getByLabel('Password').fill(DEMO_STUDENT_PASSWORD);
   await page.getByRole('button', { name: 'Sign in' }).click();
 
-  await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByTestId('student-dashboard')).toBeVisible();
+  await expect(page).toHaveURL(/\/learn$/);
+  await expect(page.getByRole('heading', { name: 'Your products and learning paths' })).toBeVisible();
 }
 
 export async function expectFlagshipCourseOnStudentDashboard(page: Page): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'My Courses' })).toBeVisible();
-  await expect(page.getByTestId('student-active-course-title')).toHaveText(FLAGSHIP_COURSE_TITLE);
+  await expect(page.getByText(FLAGSHIP_COURSE_TITLE)).toBeVisible();
 }

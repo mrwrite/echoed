@@ -1,6 +1,7 @@
 @use 'styles/typography';
 
 @import '@angular/cdk/overlay-prebuilt.css';
+@import 'styles/tokens/design-tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,29 +9,29 @@
 @include typography.echoed-typography;
 
 :root {
-  --echo-primary: #0F766E;
-  --echo-secondary: #2563EB;
-  --echo-accent: #EFB700;
-  --echo-ink: #0F172A;
-  --echo-sand: #F7F3ED;
-  --echo-emerald: #1D9A6C;
-  --echo-rose: #E46D6D;
-  --echo-surface: #ffffff;
-  --echo-v2-bg: #f6f8fb;
-  --echo-v2-panel: #ffffff;
-  --echo-v2-line: #d8e1ea;
-  --echo-v2-muted: #526273;
-  --echo-v2-teal: #0f766e;
-  --echo-v2-blue: #2563eb;
-  --echo-v2-warning: #a16207;
-  --echo-v2-danger: #be123c;
-  --echo-text-main: #111827;
-  --echo-text-muted: #1f2937;
-  --echo-text-on-dark: #F9FAFB;
-  --echo-text-on-dark-muted: #E2E8F0;
+  --echo-primary: var(--ee-color-action-primary-background);
+  --echo-secondary: var(--ee-color-river-600);
+  --echo-accent: var(--ee-color-gold-500);
+  --echo-ink: var(--ee-color-text-default);
+  --echo-sand: var(--ee-color-surface-page);
+  --echo-emerald: var(--ee-color-palm-600);
+  --echo-rose: var(--ee-color-berry-600);
+  --echo-surface: var(--ee-color-surface-raised);
+  --echo-v2-bg: var(--ee-color-surface-page);
+  --echo-v2-panel: var(--ee-color-surface-default);
+  --echo-v2-line: var(--ee-color-border-subtle);
+  --echo-v2-muted: var(--ee-color-text-muted);
+  --echo-v2-teal: var(--ee-color-action-primary-background);
+  --echo-v2-blue: var(--ee-color-river-600);
+  --echo-v2-warning: var(--ee-color-status-warning-text);
+  --echo-v2-danger: var(--ee-color-status-danger-text);
+  --echo-text-main: var(--ee-color-text-default);
+  --echo-text-muted: var(--ee-color-text-muted);
+  --echo-text-on-dark: var(--ee-color-text-inverse);
+  --echo-text-on-dark-muted: var(--ee-color-paper-200);
   --echo-muted: var(--echo-text-muted);
-  --echo-shadow: 0 16px 40px -18px rgba(15, 23, 42, 0.3);
-  --echo-radius: 18px;
+  --echo-shadow: var(--ee-shadow-raised);
+  --echo-radius: var(--ee-radius-card-large);
   --echo-sidebar-collapsed-width: 5rem;
   --echo-sidebar-expanded-width: 18rem;
 }
@@ -49,6 +50,10 @@ html, body {
 
 body.large-type {
   font-size: 18px;
+}
+
+body.echo-mobile-nav-open {
+  overflow: hidden;
 }
 
 body.large-type .surface-card {
@@ -71,9 +76,9 @@ blockquote, cite {
 
 :where(a, button, [role='button'], input, select, textarea, summary):focus,
 :where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
-  outline: 2px solid rgba(239, 183, 0, 0.8);
-  box-shadow: 0 0 0 4px rgba(239, 183, 0, 0.22);
-  border-radius: 10px;
+  outline: var(--ee-focus-ring-width, 2px) solid var(--ee-focus-ring-color, #0f766e);
+  box-shadow: var(--ee-focus-ring-shadow, 0 0 0 4px rgba(15, 118, 110, 0.18));
+  border-radius: var(--ee-radius-control-default, 0.5rem);
 }
 
 .surface-card {
@@ -426,33 +431,33 @@ textarea::placeholder {
 }
 
 :root {
-  --ee-midnight: #f8fafc;
-  --ee-indigo: #eef6ff;
-  --ee-indigo-2: #e2e8f0;
-  --ee-surface: #ffffff;
-  --ee-surface-strong: #f8fafc;
-  --ee-border: rgba(15, 23, 42, 0.12);
-  --ee-border-strong: rgba(15, 118, 110, 0.24);
-  --ee-text: #102033;
-  --ee-text-soft: #334155;
-  --ee-text-muted: #64748b;
-  --ee-purple: #2563eb;
-  --ee-purple-strong: #0f766e;
-  --ee-gold: #a16207;
-  --ee-azure: #0284c7;
-  --ee-emerald: #047857;
-  --ee-danger: #be123c;
-  --ee-warning: #a16207;
-  --ee-shadow: 0 22px 60px rgba(15, 23, 42, 0.14);
-  --ee-shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.1);
-  --ee-radius: 22px;
-  --ee-radius-sm: 18px;
-  --ee-duration-fast: 120ms;
-  --ee-duration-base: 180ms;
-  --ee-duration-slow: 260ms;
-  --ee-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ee-easing-emphasized: cubic-bezier(0.2, 0, 0, 1.08);
-  --ee-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ee-midnight: var(--ee-color-surface-page);
+  --ee-indigo: var(--ee-color-status-info-background);
+  --ee-indigo-2: var(--ee-color-border-subtle);
+  --ee-surface: var(--ee-color-surface-raised);
+  --ee-surface-strong: var(--ee-color-surface-default);
+  --ee-border: var(--ee-color-border-subtle);
+  --ee-border-strong: var(--ee-color-border-default);
+  --ee-text: var(--ee-color-text-default);
+  --ee-text-soft: var(--ee-color-text-muted);
+  --ee-text-muted: var(--ee-color-text-subtle);
+  --ee-purple: var(--ee-color-action-primary-background);
+  --ee-purple-strong: var(--ee-color-palm-700);
+  --ee-gold: var(--ee-color-gold-500);
+  --ee-azure: var(--ee-color-river-600);
+  --ee-emerald: var(--ee-color-palm-600);
+  --ee-danger: var(--ee-color-status-danger-text);
+  --ee-warning: var(--ee-color-status-warning-text);
+  --ee-shadow: var(--ee-shadow-overlay);
+  --ee-shadow-soft: var(--ee-shadow-raised);
+  --ee-radius: var(--ee-radius-card-large);
+  --ee-radius-sm: var(--ee-radius-card-default);
+  --ee-duration-fast: var(--ee-motion-duration-fast);
+  --ee-duration-base: var(--ee-motion-duration-base);
+  --ee-duration-slow: var(--ee-motion-duration-slow);
+  --ee-easing-standard: var(--ee-motion-easing-standard);
+  --ee-easing-emphasized: var(--ee-motion-easing-standard);
+  --ee-easing-exit: var(--ee-motion-easing-exit);
   --ee-hover-lift: translateY(-3px);
   --ee-press-scale: scale(0.98);
   --ee-focus-ring: 0 0 0 5px rgba(15, 118, 110, 0.16);
@@ -472,17 +477,14 @@ textarea::placeholder {
 
 html,
 body {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(15, 118, 110, 0.1), transparent 28rem),
-    radial-gradient(circle at 86% 14%, rgba(2, 132, 199, 0.09), transparent 26rem),
-    linear-gradient(135deg, #ffffff, var(--ee-midnight) 48%, #f1f5f9);
+  background: var(--ee-color-surface-page);
   color: var(--ee-text);
 }
 
 body::before {
   background:
-    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(16, 32, 51, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 32, 51, 0.025) 1px, transparent 1px);
   background-size: 56px 56px;
   content: '';
   inset: 0;
@@ -502,8 +504,8 @@ h6 {
 
 :where(a, button, [role='button'], input, select, textarea, summary):focus,
 :where(a, button, [role='button'], input, select, textarea, summary):focus-visible {
-  outline: 2px solid rgba(92, 200, 255, 0.88);
-  box-shadow: var(--ee-focus-ring);
+  outline: var(--ee-focus-ring-width, 2px) solid var(--ee-focus-ring-color, #0f766e);
+  box-shadow: var(--ee-focus-ring-shadow, var(--ee-focus-ring));
 }
 
 .ee-page,

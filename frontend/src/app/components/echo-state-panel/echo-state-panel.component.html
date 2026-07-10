@@ -6,6 +6,8 @@
   [class.echo-state-panel--error]="variant === 'error'"
   [class.echo-state-panel--unavailable]="variant === 'unavailable'"
   [class.echo-state-panel--blocked]="variant === 'blocked'"
+  [class.echo-state-panel--permission]="variant === 'permission'"
+  [class.echo-state-panel--success]="variant === 'success'"
   [attr.data-echo-state]="variant"
   [attr.role]="role"
   [attr.aria-live]="ariaLive"
@@ -13,7 +15,7 @@
 >
   <div class="echo-state-panel__inner">
     <div class="echo-state-panel__icon-shell" aria-hidden="true">
-      <span aria-hidden="true" class="inline-block h-5 w-5 rounded-full bg-current opacity-70"></span>
+      <app-icon [name]="resolvedIconName" [size]="22"></app-icon>
     </div>
 
     <div class="echo-state-panel__content">

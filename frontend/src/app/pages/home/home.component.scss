@@ -5,13 +5,13 @@
   z-index: 60;
   transform: translateY(-220%);
   border-radius: 9999px;
-  background: #ffffff;
-  color: var(--echo-primary, #0e7490);
+  background: var(--ee-color-surface-raised, #ffffff);
+  color: var(--ee-color-action-primary-background, #0f766e);
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-weight: 700;
-  box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
-  transition: transform 140ms ease;
+  box-shadow: var(--ee-focus-ring-shadow, 0 0 0 4px rgba(15, 118, 110, 0.18));
+  transition: transform var(--ee-motion-duration-fast, 120ms) var(--ee-motion-easing-standard, ease);
 }
 
 .skip-link:focus {
@@ -22,17 +22,14 @@
 .home-shell {
   display: grid;
   grid-template-columns: var(--echo-shell-sidebar-width, var(--echo-sidebar-expanded-width)) minmax(0, 1fr);
-  transition: grid-template-columns 300ms ease;
+  transition: grid-template-columns var(--ee-motion-duration-slow, 260ms) var(--ee-motion-easing-standard, ease);
   overflow-x: clip;
   isolation: isolate;
 }
 
 .ee-shell {
-  background:
-    radial-gradient(circle at 16% 8%, rgba(15, 118, 110, 0.1), transparent 28rem),
-    radial-gradient(circle at 88% 12%, rgba(2, 132, 199, 0.08), transparent 30rem),
-    linear-gradient(135deg, #ffffff, #f8fafc 48%, #eef6ff);
-  color: var(--ee-text);
+  background: var(--ee-color-surface-page, #f8f2e8);
+  color: var(--ee-color-text-default, #102033);
 }
 
 .home-shell--lesson {
@@ -58,10 +55,10 @@
 
 .ee-shell__surface,
 .ee-command-strip {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 24px;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  background: var(--ee-color-surface-default, #fffdf8);
+  border: 1px solid var(--ee-color-border-subtle, #dccdb7);
+  border-radius: var(--ee-radius-card-large, 0.75rem);
+  box-shadow: var(--ee-shadow-raised, 0 12px 28px rgba(16, 32, 51, 0.12));
   backdrop-filter: none;
 }
 
@@ -76,7 +73,7 @@
 }
 
 .ee-command-strip::after {
-  background: linear-gradient(90deg, var(--ee-purple), var(--ee-gold), var(--ee-azure));
+  background: var(--ee-color-action-primary-background, #0f766e);
   content: '';
   height: 1px;
   inset: auto 1.25rem 0;
@@ -84,7 +81,7 @@
 }
 
 .ee-command-strip__eyebrow {
-  color: var(--echo-primary);
+  color: var(--ee-color-action-primary-background, #0f766e);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -93,7 +90,7 @@
 }
 
 .ee-command-strip__copy {
-  color: var(--ee-text-soft);
+  color: var(--ee-color-text-muted, #40546b);
   font-size: 0.95rem;
   margin: 0.25rem 0 0;
 }
@@ -104,7 +101,7 @@
 
 @media (max-width: 1023px) {
   .home-shell {
-    grid-template-columns: var(--echo-shell-sidebar-width, var(--echo-sidebar-collapsed-width)) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .home-shell__sidebar--overlay {
@@ -112,13 +109,62 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: var(--echo-sidebar-expanded-width);
+    width: min(22rem, calc(100vw - 2rem));
     max-width: min(20rem, calc(100vw - 1rem));
+    z-index: 70;
   }
 }
 
 @media (max-width: 767px) {
   .home-shell {
-    grid-template-columns: var(--echo-shell-sidebar-width, 4.5rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mobile-nav-trigger {
+  align-items: center;
+  background: var(--ee-color-action-primary-background, #0f766e);
+  border: 1px solid var(--ee-color-action-primary-border, #0f766e);
+  border-radius: var(--ee-radius-control-pill, 999px);
+  box-shadow: var(--ee-shadow-raised, 0 12px 28px rgba(16, 32, 51, 0.12));
+  color: var(--ee-color-action-primary-text, #ffffff);
+  display: inline-flex;
+  font-weight: 800;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  z-index: 65;
+}
+
+.mobile-nav-trigger:focus-visible,
+.mobile-nav-backdrop:focus-visible {
+  outline: var(--ee-focus-ring-width, 2px) solid var(--ee-focus-ring-color, #0f766e);
+  outline-offset: var(--ee-focus-ring-offset, 3px);
+  box-shadow: var(--ee-focus-ring-shadow, 0 0 0 4px rgba(15, 118, 110, 0.18));
+}
+
+.mobile-nav-backdrop {
+  background: rgba(16, 32, 51, 0.42);
+  border: 0;
+  cursor: default;
+  inset: 0;
+  position: fixed;
+  z-index: 60;
+}
+
+:host-context(body.echo-mobile-nav-open) {
+  overflow: hidden;
+}
+
+:host-context(body.echo-mobile-nav-open) .home-shell__content {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
   }
 }

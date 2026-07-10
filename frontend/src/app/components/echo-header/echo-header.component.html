@@ -3,8 +3,9 @@
     <div class="echo-header__brand flex min-w-0 items-center gap-3 md:gap-4">
       <div class="echo-header__mark">EE</div>
       <div class="min-w-0">
-        <p class="echo-header__eyebrow">EchoEd Dashboard</p>
-        <h1 class="echo-header__title">Command center</h1>
+        <p class="echo-header__eyebrow">{{ shellSpace.eyebrow }}</p>
+        <h1 class="echo-header__title">{{ shellSpace.name }}</h1>
+        <p class="echo-header__description">{{ shellSpace.description }}</p>
         <echo-breadcrumbs></echo-breadcrumbs>
       </div>      
     </div>
@@ -101,6 +102,16 @@
             <span>{{ userinfo.role | titlecase }}</span>
           </div>
           <ul class="py-1 text-sm">
+            <li class="lg:hidden">
+              <a
+                class="echo-header__menu-item block px-4 py-2 transition-colors"
+                [routerLink]="shellSpace.canonicalRoute"
+                role="menuitem"
+                (click)="closeMenu()"
+              >
+                Open {{ shellSpace.name }}
+              </a>
+            </li>
             <li>
               <a
                 class="echo-header__menu-item block px-4 py-2 transition-colors"

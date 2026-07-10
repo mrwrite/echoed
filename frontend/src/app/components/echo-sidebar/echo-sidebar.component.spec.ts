@@ -35,27 +35,35 @@ describe('SidebarComponent', () => {
   });
 
   it('does not render Sections when permissions exclude it', () => {
-    permissionsService.permissions$.next(new Set(['nav:workspace', 'nav:products', 'nav:settings']));
+    permissionsService.permissions$.next(new Set(['role:content_admin', 'nav:workspace', 'nav:products', 'nav:settings']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).not.toContain('Cohorts');
+    expect(text).not.toContain('Classes');
   });
 
   it('renders navigation immediately when ready emits', () => {
-    permissionsService.permissions$.next(new Set(['nav:workspace', 'nav:projects', 'nav:product-studio', 'nav:products', 'nav:learners', 'nav:settings']));
+    permissionsService.permissions$.next(new Set([
+      'role:content_admin',
+      'nav:workspace',
+      'nav:projects',
+      'nav:product-studio',
+      'nav:products',
+      'nav:knowledge-sources',
+      'nav:settings',
+    ]));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Workspace');
+    expect(text).toContain('Studio');
     expect(text).toContain('Projects');
-    expect(text).toContain('Product Studio');
-    expect(text).toContain('Products');
-    expect(text).toContain('Learners');
+    expect(text).toContain('Content Studio');
+    expect(text).toContain('Learning Products');
+    expect(text).toContain('Sources');
     expect(text).toContain('Settings');
   });
 
@@ -70,7 +78,7 @@ describe('SidebarComponent', () => {
 
   it('keeps compact navigation usable when collapsed', () => {
     component.collapsed = true;
-    permissionsService.permissions$.next(new Set(['nav:workspace']));
+    permissionsService.permissions$.next(new Set(['role:content_admin', 'nav:workspace']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
@@ -78,8 +86,8 @@ describe('SidebarComponent', () => {
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
     const icon = firstLink.querySelector('app-icon');
     const svg = firstLink.querySelector('svg');
-    expect(firstLink.getAttribute('aria-label')).toBe('Workspace');
-    expect(firstLink.getAttribute('title')).toBe('Workspace');
+    expect(firstLink.getAttribute('aria-label')).toBe('Studio Home');
+    expect(firstLink.getAttribute('title')).toBe('Studio Home');
     expect(firstLink.textContent?.trim()).toBe('');
     expect(icon).not.toBeNull();
     expect(svg).not.toBeNull();
@@ -87,7 +95,7 @@ describe('SidebarComponent', () => {
   });
 
   it('keeps important sidebar controls labeled for accessibility', () => {
-    permissionsService.permissions$.next(new Set(['nav:workspace']));
+    permissionsService.permissions$.next(new Set(['role:content_admin', 'nav:workspace']));
     permissionsService.ready$.next(true);
 
     fixture.detectChanges();
@@ -101,5 +109,16 @@ describe('SidebarComponent', () => {
     expect(toggleButton.getAttribute('aria-label')).toBe('Toggle sidebar');
     expect(toggleButton.getAttribute('aria-expanded')).toBe('true');
     expect(toggleButton.getAttribute('aria-controls')).toBe('echo-primary-navigation');
+  });
+
+  it('uses mobile close language when rendered as an overlay', () => {
+    component.mobileMode = true;
+    permissionsService.permissions$.next(new Set(['role:student']));
+    permissionsService.ready$.next(true);
+
+    fixture.detectChanges();
+
+    const toggleButton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(toggleButton.getAttribute('aria-label')).toBe('Close navigation menu');
   });
 });

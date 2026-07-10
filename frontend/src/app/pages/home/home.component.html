@@ -7,17 +7,37 @@
       [class.home-shell--compact]="compactShell"
       [style.--echo-shell-sidebar-width]="lessonMode ? '0px' : sidebarWidth"
     >
+      <button
+        *ngIf="!lessonMode && compactShell"
+        #mobileNavTrigger
+        type="button"
+        class="mobile-nav-trigger"
+        aria-label="Open navigation menu"
+        aria-controls="echo-primary-navigation"
+        [attr.aria-expanded]="mobileNavigationOpen"
+        (click)="openMobileNavigation()"
+      >
+        Menu
+      </button>
+      <button
+        *ngIf="sidebarOverlayMode"
+        type="button"
+        class="mobile-nav-backdrop"
+        aria-label="Close navigation menu"
+        (click)="closeMobileNavigation(true)"
+      ></button>
       <echo-sidebar
-        *ngIf="!lessonMode"
+        *ngIf="!lessonMode && (!compactShell || mobileNavigationOpen)"
         class="home-shell__sidebar"
         [class.home-shell__sidebar--overlay]="sidebarOverlayMode"
         [userInfo]="userInfo"
-        [collapsed]="sidebarCollapsed"
-        (toggle)="sidebarCollapsed = !sidebarCollapsed"
+        [collapsed]="compactShell ? false : sidebarCollapsed"
+        [mobileMode]="sidebarOverlayMode"
+        (toggle)="toggleSidebar()"
         @fade
       ></echo-sidebar>
       <div class="home-shell__main flex flex-col min-h-screen">
-        <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" @fade></echo-header>
+        <echo-header *ngIf="!lessonMode" [userinfo]="userInfo" [mobileNavigationOpen]="mobileNavigationOpen" @fade></echo-header>
         <main
           id="echoed-main-content"
           class="home-shell__content flex-1 overflow-y-auto p-4 md:p-5 xl:p-6"
@@ -27,8 +47,8 @@
           <div *ngIf="!lessonMode" class="ee-shell__workspace mx-auto">
             <div class="ee-command-strip mb-4 flex flex-wrap items-center justify-between gap-3 p-4 md:p-5">
               <div>
-                <p class="ee-command-strip__eyebrow">Workspace OS</p>
-                <p class="ee-command-strip__copy">Move between product creation, knowledge intake, review governance, learner access, analytics, and settings.</p>
+                <p class="ee-command-strip__eyebrow">Learning community</p>
+                <p class="ee-command-strip__copy">Use the navigation to move through the learning, teaching, studio, organization, and administration spaces available to your role.</p>
               </div>
               <button (click)="startDemoTour()" class="ee-button ee-motion-press">
                 Start Demo Tour

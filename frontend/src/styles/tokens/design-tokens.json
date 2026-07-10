@@ -1,0 +1,201 @@
+{
+  "color": {
+    "primitive": {
+      "ink": {
+        "900": "#102033",
+        "700": "#24384f",
+        "600": "#40546b",
+        "500": "#64748b"
+      },
+      "paper": {
+        "50": "#fffdf8",
+        "100": "#f8f2e8",
+        "200": "#eadfce",
+        "300": "#d8c8ae"
+      },
+      "palm": {
+        "50": "#eaf7f2",
+        "100": "#ccebe0",
+        "600": "#0f766e",
+        "700": "#0b5f59",
+        "800": "#084c47"
+      },
+      "gold": {
+        "50": "#fff8df",
+        "100": "#fdeba8",
+        "500": "#d59b00",
+        "700": "#8a5b00"
+      },
+      "river": {
+        "50": "#eef8ff",
+        "100": "#d8efff",
+        "600": "#2479a8",
+        "700": "#1b5f85"
+      },
+      "clay": {
+        "50": "#fff3ed",
+        "100": "#ffd9c7",
+        "600": "#b65f38",
+        "700": "#874225"
+      },
+      "berry": {
+        "50": "#fff1f3",
+        "100": "#ffd9df",
+        "600": "#be123c",
+        "700": "#9f1239"
+      },
+      "white": "#ffffff",
+      "black": "#000000"
+    },
+    "surface": {
+      "page": "#f8f2e8",
+      "default": "#fffdf8",
+      "raised": "#ffffff",
+      "subtle": "#f4eadc",
+      "inverse": "#102033"
+    },
+    "text": {
+      "default": "#102033",
+      "muted": "#40546b",
+      "subtle": "#64748b",
+      "inverse": "#fffdf8",
+      "link": "#1b5f85"
+    },
+    "border": {
+      "subtle": "#dccdb7",
+      "default": "#cdbda3",
+      "strong": "#8f7e63",
+      "focus": "#0f766e"
+    },
+    "action": {
+      "primary": {
+        "background": "#0f766e",
+        "backgroundHover": "#0b5f59",
+        "text": "#ffffff",
+        "border": "#0f766e"
+      },
+      "secondary": {
+        "background": "#fffdf8",
+        "backgroundHover": "#f4eadc",
+        "text": "#102033",
+        "border": "#cdbda3"
+      },
+      "danger": {
+        "background": "#be123c",
+        "backgroundHover": "#9f1239",
+        "text": "#ffffff",
+        "border": "#be123c"
+      }
+    },
+    "status": {
+      "success": {
+        "background": "#eaf7f2",
+        "text": "#0b5f59",
+        "border": "#ccebe0"
+      },
+      "warning": {
+        "background": "#fff8df",
+        "text": "#8a5b00",
+        "border": "#fdeba8"
+      },
+      "danger": {
+        "background": "#fff1f3",
+        "text": "#9f1239",
+        "border": "#ffd9df"
+      },
+      "info": {
+        "background": "#eef8ff",
+        "text": "#1b5f85",
+        "border": "#d8efff"
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "body": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+      "display": "Cal Sans, Inter, ui-sans-serif, system-ui, sans-serif",
+      "serif": "Georgia, Cambria, Times New Roman, serif"
+    },
+    "size": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "md": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "2rem",
+      "4xl": "2.5rem"
+    },
+    "lineHeight": {
+      "tight": "1.15",
+      "heading": "1.25",
+      "body": "1.6"
+    },
+    "weight": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "650",
+      "bold": "750"
+    }
+  },
+  "space": {
+    "0": "0",
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "5": "1.25rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem",
+    "layout": {
+      "page": "clamp(1rem, 3vw, 2rem)",
+      "section": "clamp(1.5rem, 4vw, 4rem)",
+      "contentMax": "72rem"
+    }
+  },
+  "radius": {
+    "control": {
+      "sm": "0.375rem",
+      "default": "0.5rem",
+      "pill": "999px"
+    },
+    "card": {
+      "default": "0.5rem",
+      "large": "0.75rem"
+    },
+    "dialog": "0.75rem"
+  },
+  "shadow": {
+    "none": "none",
+    "raised": "0 12px 28px rgba(16, 32, 51, 0.12)",
+    "overlay": "0 24px 64px rgba(16, 32, 51, 0.24)"
+  },
+  "motion": {
+    "duration": {
+      "fast": "120ms",
+      "base": "180ms",
+      "slow": "260ms"
+    },
+    "easing": {
+      "standard": "cubic-bezier(0.2, 0, 0, 1)",
+      "exit": "cubic-bezier(0.4, 0, 1, 1)"
+    }
+  },
+  "focus": {
+    "ring": {
+      "color": "#0f766e",
+      "width": "2px",
+      "offset": "3px",
+      "shadow": "0 0 0 4px rgba(15, 118, 110, 0.18)"
+    }
+  },
+  "breakpoint": {
+    "mobile": "390px",
+    "tablet": "768px",
+    "smallDesktop": "1280px",
+    "desktop": "1440px"
+  }
+}

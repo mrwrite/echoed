@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../components/echo-sidebar/echo-sidebar.component';
@@ -27,10 +27,12 @@ import { PermissionsService } from '../../services/permissions.service';
     ])
   ]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   sidebarCollapsed = false;
   lessonMode = false;
   compactShell = false;
+  mobileNavigationOpen = false;
+  @ViewChild('mobileNavTrigger') mobileNavTrigger?: ElementRef<HTMLButtonElement>;
   private readonly permissionsService = inject(PermissionsService);
   readonly userInfo$ = this.permissionsService.user$;
   readonly ready$ = this.permissionsService.ready$;
@@ -47,7 +49,14 @@ export class HomeComponent implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.lessonMode = this.router.url.includes('/lesson/');
+        if (this.compactShell) {
+          this.closeMobileNavigation();
+        }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.setScrollLock(false);
   }
 
   @HostListener('window:resize')
@@ -55,8 +64,48 @@ export class HomeComponent implements OnInit {
     this.syncShellViewport();
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.mobileNavigationOpen) {
+      this.closeMobileNavigation(true);
+    }
+  }
+
   startDemoTour() {
     this.demoTourService.startTour();
+  }
+
+  openMobileNavigation(): void {
+    this.mobileNavigationOpen = true;
+    this.sidebarCollapsed = false;
+    this.setScrollLock(true);
+  }
+
+  closeMobileNavigation(restoreFocus = false): void {
+    if (!this.mobileNavigationOpen) {
+      return;
+    }
+
+    this.mobileNavigationOpen = false;
+    this.sidebarCollapsed = true;
+    this.setScrollLock(false);
+
+    if (restoreFocus) {
+      queueMicrotask(() => this.mobileNavTrigger?.nativeElement.focus());
+    }
+  }
+
+  toggleSidebar(): void {
+    if (this.compactShell) {
+      if (this.mobileNavigationOpen) {
+        this.closeMobileNavigation(true);
+      } else {
+        this.openMobileNavigation();
+      }
+      return;
+    }
+
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
   get sidebarWidth(): string {
@@ -70,7 +119,7 @@ export class HomeComponent implements OnInit {
   }
 
   get sidebarOverlayMode(): boolean {
-    return this.compactShell && !this.sidebarCollapsed;
+    return this.compactShell && this.mobileNavigationOpen;
   }
 
   private syncShellViewport(): void {
@@ -79,6 +128,15 @@ export class HomeComponent implements OnInit {
       this.sidebarCollapsed = true;
     }
 
+    if (!nextCompactShell && this.mobileNavigationOpen) {
+      this.closeMobileNavigation();
+      this.sidebarCollapsed = false;
+    }
+
     this.compactShell = nextCompactShell;
+  }
+
+  private setScrollLock(locked: boolean): void {
+    document.body.classList.toggle('echo-mobile-nav-open', locked);
   }
 }

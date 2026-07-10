@@ -1,0 +1,56 @@
+{
+  "components": [
+    {
+      "name": "AppShell",
+      "variants": ["Student", "Teacher", "Studio", "Organization", "Admin", "Lesson"],
+      "sourceSpec": "docs/ux-overhaul/component-specifications.md#application-shell"
+    },
+    {
+      "name": "Navigation/Sidebar",
+      "variants": ["Expanded", "Collapsed", "MobileDrawer"],
+      "states": ["Default", "Active", "Focus", "Disabled", "Loading"]
+    },
+    {
+      "name": "Navigation/MobileBottomNav",
+      "variants": ["Student", "TeacherCompact"],
+      "states": ["Default", "Active", "Focus"]
+    },
+    {
+      "name": "Button",
+      "variants": ["Primary", "Secondary", "Tertiary", "Danger", "Ghost", "Link", "Icon"],
+      "sizes": ["Small", "Medium", "Large"],
+      "states": ["Default", "Hover", "Active", "Focus", "Disabled", "Loading"]
+    },
+    {
+      "name": "Form/Input",
+      "variants": ["Text", "Password", "Search", "Email"],
+      "states": ["Default", "Focus", "Error", "Success", "Disabled"]
+    },
+    {
+      "name": "Card/Course",
+      "variants": ["Assigned", "Available", "Completed", "StaffPreview"],
+      "states": ["Default", "Hover", "Focus", "Selected", "Unavailable"]
+    },
+    {
+      "name": "Card/Assignment",
+      "variants": ["NotStarted", "InProgress", "Submitted", "Returned", "Overdue"]
+    },
+    {
+      "name": "LessonPlayer",
+      "variants": ["Student", "TeacherPreview", "Blocked", "Completed", "Loading"]
+    },
+    {
+      "name": "DataList",
+      "variants": ["Roster", "Users", "Assignments", "ReviewQueue"],
+      "breakpoints": ["DesktopTable", "MobileCards"]
+    },
+    {
+      "name": "StatePanel",
+      "variants": ["Empty", "Loading", "Error", "PermissionDenied", "Success"]
+    },
+    {
+      "name": "ConfirmationDialog",
+      "variants": ["Standard", "Destructive", "Publish", "RevokeAccess"]
+    }
+  ]
+}

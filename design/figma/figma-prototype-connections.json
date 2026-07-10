@@ -1,0 +1,59 @@
+{
+  "connections": [
+    {
+      "from": "public-landing.primaryCta",
+      "to": "auth-login",
+      "interaction": "click"
+    },
+    {
+      "from": "auth-login.studentDemoSubmit",
+      "to": "student-home",
+      "interaction": "submit success"
+    },
+    {
+      "from": "student-home.continueLearning",
+      "to": "student-lesson-player",
+      "interaction": "click"
+    },
+    {
+      "from": "student-lesson-player.completeLesson",
+      "to": "student-home",
+      "interaction": "click success"
+    },
+    {
+      "from": "auth-login.teacherDemoSubmit",
+      "to": "teacher-dashboard",
+      "interaction": "submit success"
+    },
+    {
+      "from": "teacher-dashboard.openClass",
+      "to": "teacher-class-detail",
+      "interaction": "click"
+    },
+    {
+      "from": "teacher-class-detail.createAssignment",
+      "to": "teacher-assignment-flow",
+      "interaction": "click"
+    },
+    {
+      "from": "teacher-assignment-flow.confirm",
+      "to": "teacher-class-detail",
+      "interaction": "submit success"
+    },
+    {
+      "from": "auth-login.adminDemoSubmit",
+      "to": "admin-dashboard",
+      "interaction": "submit success"
+    },
+    {
+      "from": "admin-dashboard.manageUsers",
+      "to": "admin-user-management",
+      "interaction": "click"
+    },
+    {
+      "from": "admin-user-management.cancelDelete",
+      "to": "admin-user-management",
+      "interaction": "click"
+    }
+  ]
+}

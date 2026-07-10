@@ -1,0 +1,67 @@
+{
+  "collections": [
+    {
+      "name": "EchoEd Foundations",
+      "modes": ["Light"],
+      "variables": {
+        "color.surface.page": "#f8f2e8",
+        "color.surface.default": "#fffdf8",
+        "color.surface.raised": "#ffffff",
+        "color.text.default": "#102033",
+        "color.text.muted": "#40546b",
+        "color.text.link": "#1b5f85",
+        "color.action.primary.background": "#0f766e",
+        "color.action.primary.text": "#ffffff",
+        "color.action.secondary.background": "#fffdf8",
+        "color.action.secondary.text": "#102033",
+        "color.status.success.background": "#eaf7f2",
+        "color.status.success.text": "#0b5f59",
+        "color.status.warning.background": "#fff8df",
+        "color.status.warning.text": "#8a5b00",
+        "color.status.danger.background": "#fff1f3",
+        "color.status.danger.text": "#9f1239",
+        "space.layout.page": "32",
+        "space.layout.section": "64",
+        "space.1": "4",
+        "space.2": "8",
+        "space.3": "12",
+        "space.4": "16",
+        "space.6": "24",
+        "space.8": "32",
+        "radius.control.default": "8",
+        "radius.card.default": "8",
+        "radius.dialog": "12",
+        "elevation.raised": "0 12 28 rgba(16,32,51,0.12)",
+        "state.focus.ring": "#0f766e"
+      }
+    },
+    {
+      "name": "EchoEd Typography",
+      "modes": ["Default"],
+      "variables": {
+        "font.family.body": "Inter",
+        "font.family.display": "Cal Sans",
+        "font.size.body": "16",
+        "font.size.small": "14",
+        "font.size.h1": "40",
+        "font.size.h2": "32",
+        "font.size.h3": "24",
+        "line.height.body": "26",
+        "line.height.heading": "1.25"
+      }
+    },
+    {
+      "name": "EchoEd Responsive",
+      "modes": ["Desktop", "Small Desktop", "Tablet", "Mobile"],
+      "variables": {
+        "frame.width.desktop": "1440",
+        "frame.width.smallDesktop": "1280",
+        "frame.width.tablet": "768",
+        "frame.width.mobile": "390",
+        "nav.sidebar.width": "288",
+        "nav.sidebar.collapsedWidth": "80",
+        "control.touch.minHeight": "44"
+      }
+    }
+  ]
+}

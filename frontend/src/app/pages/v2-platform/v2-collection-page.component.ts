@@ -132,7 +132,7 @@ export class V2CollectionPageComponent implements OnInit {
           metrics: [
             { label: 'Access', value: this.label(item.access_state || 'private') },
             { label: 'Visibility', value: this.label(item.visibility || 'draft') },
-            { label: 'Pricing', value: this.label(item.pricing_model || 'internal') },
+            { label: 'Access model', value: this.label(item.pricing_model || 'internal') },
           ],
           nextAction: item.course_id ? 'Validate runtime link' : 'Connect runtime',
           detailRoute: `/workspace/products/${item.id}`,

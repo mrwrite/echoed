@@ -34,6 +34,7 @@ import { ReviewCenterComponent } from './pages/review-center/review-center.compo
 import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
 import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
 import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
+import { StudentCourseOverviewComponent } from './pages/learner-portal/student-course-overview.component';
 import { AccessGrantsComponent } from './pages/access-grants/access-grants.component';
 import { WorkspaceAnalyticsComponent } from './pages/workspace-analytics/workspace-analytics.component';
 import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
@@ -356,6 +357,7 @@ export const routes: Routes = [
         children: [
           { path: '', component: LearnerPortalComponent },
           { path: 'products', component: LearnerProductsComponent },
+          { path: 'courses/:courseId', component: StudentCourseOverviewComponent },
           { path: 'paths', component: ProgramsComponent },
           { path: 'certificates', component: CertificationsComponent },
           { path: 'resources', component: LearnerResourcesComponent },

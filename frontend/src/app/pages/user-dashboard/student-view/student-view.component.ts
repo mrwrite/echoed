@@ -122,7 +122,7 @@ export class StudentViewComponent implements OnInit {
 
   /** Navigate to the full available courses page */
   goToAvailableCourses(): void {
-    this.router.navigate(['/home/courses']);
+    this.router.navigate(['/learn/products']);
   }
   
 
@@ -395,7 +395,7 @@ enrollInCourse(courseId: string): void {
       if (segment.delivery_state === 'governed_available' && segment.unit_progress_id) {
         this.governedDeliveryState = null;
         this.governedDeliveryDetail = '';
-        this.router.navigate(['/home/lesson', segment.unit_progress_id]);
+        this.router.navigate(['/learn/lesson', segment.unit_progress_id]);
         return;
       }
 
@@ -406,11 +406,11 @@ enrollInCourse(courseId: string): void {
   }
 
   goToPrograms(): void {
-    this.router.navigate(['/home/programs']);
+    this.router.navigate(['/learn/paths']);
   }
 
   goToCertifications(): void {
-    this.router.navigate(['/home/certifications']);
+    this.router.navigate(['/learn/certificates']);
   }
 
   retryCourseLoad(): void {

@@ -25,8 +25,14 @@ export class LessonViewComponent implements OnInit {
   demoMode = false;
   loading = true;
   loadErrorMessage = '';
+  completionErrorMessage = '';
+  completingSegment = false;
   governedDeliveryState: SegmentResponse['delivery_state'] | null = null;
   governedDeliveryDetail = '';
+  courseContextTitle = '';
+  courseContextId = '';
+  unitContextTitle = '';
+  lessonPositionLabel = '';
 
   get governedStateTitle(): string {
     switch (this.governedDeliveryState) {
@@ -145,6 +151,7 @@ export class LessonViewComponent implements OnInit {
     this.coursesService.getLessonById(lessonId).subscribe({
       next: (lesson) => {
         this.lesson = lesson;
+        this.resolveLessonContext(lesson.id);
         this.loading = false;
       },
       error: (err) => {
@@ -169,13 +176,16 @@ export class LessonViewComponent implements OnInit {
     this.courseCompleted = true;
     return;
   }
-  if (!this.segment || !this.segment.lesson_id || !this.unitProgressId) {
+  if (this.completingSegment || !this.segment || !this.segment.lesson_id || !this.unitProgressId) {
     console.warn('Incomplete data to mark lesson complete');
     return;
   }
 
+    this.completingSegment = true;
+    this.completionErrorMessage = '';
     this.coursesService.markSegmentCompleted(this.unitProgressId, this.segment.lesson_id).subscribe({
     next: (res: CompleteSegmentResponse) => {
+      this.completingSegment = false;
       const nextSeg = res.next_segment;
       if (nextSeg.delivery_state === 'governed_available' && nextSeg.lesson_id) {
         if (nextSeg.unit_progress_id) {
@@ -198,6 +208,8 @@ export class LessonViewComponent implements OnInit {
       }
     },
     error: (err) => {
+      this.completingSegment = false;
+      this.completionErrorMessage = 'We could not save this lesson completion. Your lesson is still open, so try again before leaving.';
       console.error('Failed to mark segment complete:', err);
     }
   });
@@ -239,11 +251,59 @@ export class LessonViewComponent implements OnInit {
 
   returnToDashboard(): void {
     this.courseCompleted = false;
-    this.router.navigate(['/home']);
+    this.router.navigate(['/learn']);
+  }
+
+  returnToCourse(): void {
+    this.courseCompleted = false;
+    if (this.courseContextId) {
+      this.router.navigate(['/learn/courses', this.courseContextId]);
+      return;
+    }
+    this.router.navigate(['/learn']);
   }
 
   retryLoad(): void {
     this.loadSegmentAndLesson();
+  }
+
+  private resolveLessonContext(lessonId: string): void {
+    this.courseContextTitle = '';
+    this.courseContextId = '';
+    this.unitContextTitle = '';
+    this.lessonPositionLabel = '';
+
+    this.coursesService.getStudentCourses().subscribe({
+      next: (studentCourses: StudentCourseWithDetails[]) => {
+        for (const studentCourse of studentCourses) {
+          const units = studentCourse.course.units || [];
+          for (const unit of units) {
+            const lessons = [...(unit.lessons || [])].sort((left, right) => {
+              const leftOrder = left.order ?? Number.MAX_SAFE_INTEGER;
+              const rightOrder = right.order ?? Number.MAX_SAFE_INTEGER;
+              if (leftOrder !== rightOrder) {
+                return leftOrder - rightOrder;
+              }
+              return left.title.localeCompare(right.title);
+            });
+            const lessonIndex = lessons.findIndex(lesson => lesson.id === lessonId);
+            if (lessonIndex >= 0) {
+              this.courseContextTitle = studentCourse.course.title;
+              this.courseContextId = studentCourse.course_id;
+              this.unitContextTitle = unit.title;
+              this.lessonPositionLabel = `Lesson ${lessonIndex + 1} of ${lessons.length}`;
+              return;
+            }
+          }
+        }
+      },
+      error: () => {
+        this.courseContextTitle = '';
+        this.courseContextId = '';
+        this.unitContextTitle = '';
+        this.lessonPositionLabel = '';
+      },
+    });
   }
 
 }

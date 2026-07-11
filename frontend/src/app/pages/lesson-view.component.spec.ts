@@ -19,7 +19,7 @@ class MockCoursesService {
   markSegmentCompleted = jasmine.createSpy('markSegmentCompleted');
   getCourses = jasmine.createSpy('getCourses');
   getCourseById = jasmine.createSpy('getCourseById');
-  getStudentCourses = jasmine.createSpy('getStudentCourses');
+  getStudentCourses = jasmine.createSpy('getStudentCourses').and.returnValue(of([]));
 }
 
 describe('LessonViewComponent', () => {
@@ -54,7 +54,7 @@ describe('LessonViewComponent', () => {
 
     expect(compiled.querySelector('[data-echo-state="blocked"]')).not.toBeNull();
     expect(compiled.textContent).toContain('This lesson is waiting for governed approval.');
-    expect(compiled.textContent).toContain('Return to dashboard');
+    expect(compiled.textContent).toContain('Return to Learn');
   });
 
   it('renders the canonical loading state while the lesson segment is resolving', async () => {
@@ -71,7 +71,7 @@ describe('LessonViewComponent', () => {
     expect(compiled.textContent).toContain('Preparing lesson delivery');
   });
 
-  it('preserves the learner-safe exit control label used by the smoke flow', () => {
+  it('preserves the learner-safe return control used by the smoke flow', () => {
     const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
     coursesService.getCurrentSegment.and.returnValue(of({
       delivery_state: 'governed_available',
@@ -89,9 +89,45 @@ describe('LessonViewComponent', () => {
     fixture.detectChanges();
 
     const exitButton = Array.from(fixture.nativeElement.querySelectorAll('button'))
-      .find((button) => (button as HTMLButtonElement).getAttribute('aria-label') === 'Exit lesson and return to dashboard') as HTMLButtonElement;
+      .find((button) => (button as HTMLButtonElement).getAttribute('aria-label') === 'Return to the course overview') as HTMLButtonElement;
 
     expect(exitButton).not.toBeNull();
+  });
+
+  it('shows course and unit context when the current lesson is found in student courses', () => {
+    const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    coursesService.getCurrentSegment.and.returnValue(of({
+      delivery_state: 'governed_available',
+      lesson_id: 'lesson-1',
+      unit_progress_id: 'student-unit-1',
+    }));
+    coursesService.getLessonById.and.returnValue(of({
+      id: 'lesson-1',
+      title: 'Mapping Africa',
+      activities: [],
+    }));
+    coursesService.getStudentCourses.and.returnValue(of([{
+      course_id: 'course-1',
+      course: {
+        title: 'Introduction to Africa',
+        units: [{
+          title: 'Place and People',
+          lessons: [
+            { id: 'lesson-1', title: 'Mapping Africa', order: 1 },
+            { id: 'lesson-2', title: 'Communities', order: 2 },
+          ],
+        }],
+      },
+    }] as any));
+
+    fixture = TestBed.createComponent(LessonViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Introduction to Africa');
+    expect(compiled.textContent).toContain('Place and People');
+    expect(compiled.textContent).toContain('Lesson 1 of 2');
   });
 
   it('keeps lesson error and governed states labeled for assistive technology', () => {
@@ -149,6 +185,32 @@ describe('LessonViewComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['../', 'student-unit-2'], { relativeTo: TestBed.inject(ActivatedRoute) });
     expect(component.loadErrorMessage).toBe('');
     expect(component.lesson?.title).toBe('Recovered lesson');
+  });
+
+  it('shows a save failure without marking the lesson complete', () => {
+    const coursesService = TestBed.inject(CoursesService) as unknown as MockCoursesService;
+    coursesService.getCurrentSegment.and.returnValue(of({
+      delivery_state: 'governed_available',
+      lesson_id: 'lesson-1',
+      unit_progress_id: 'student-unit-1',
+    }));
+    coursesService.getLessonById.and.returnValue(of({
+      id: 'lesson-1',
+      title: 'Introduction to Africa',
+      activities: [],
+    }));
+    coursesService.markSegmentCompleted.and.returnValue(throwError(() => new Error('save failed')));
+
+    fixture = TestBed.createComponent(LessonViewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.onLessonCompleted();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('We could not save this lesson completion');
+    expect(component.courseCompleted).toBeFalse();
   });
 
   it('prefers the Introduction to Africa course for demo lessons', async () => {

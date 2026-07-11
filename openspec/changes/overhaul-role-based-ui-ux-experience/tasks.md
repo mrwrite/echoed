@@ -26,10 +26,16 @@
 
 ## 5. Student Experience
 
-- [ ] 5.1 Make `/learn` the student-first dashboard using existing learner/student data; affected screens: `/learn`, current student dashboard; APIs: `/api/student-courses`, `/api/analytics/student-progress`, badge/certification/program APIs; tests: student view specs; a11y: next action first; responsive: mobile bottom nav; frontend-only: yes; rollback: current dashboard.
-- [ ] 5.2 Redesign learner course library and course overview; affected screens: `/learn/products`, `/home/courses`; APIs: `/api/courses`, `/api/learner-portal/products`, `/api/enroll`; tests: service/page specs; a11y: card labels/status; responsive: filter drawer; frontend-only: yes; rollback: current catalog.
-- [ ] 5.3 Redesign lesson player and activity/assessment states without changing governed progress APIs; affected screens: `/learn/lesson/:id`, `/home/lesson/:id`, `/home/assessments/:id`; APIs: progress, lessons, assessments; tests: lesson/assessment specs and Playwright student smoke; a11y: live save/advance announcements; responsive: sticky mobile action bar; frontend-only: yes; rollback: old lesson template.
-- [ ] 5.4 Redesign progress, achievements, certifications, and learner resources; affected screens: progress sections, `/learn/certificates`, `/learn/resources`; APIs: analytics, badges, certifications, resources; tests: component/page specs; a11y: no color-only progress; responsive: single-column mobile; frontend-only: yes; rollback: previous sections.
+- [x] 5.1 Make `/learn` the student-first dashboard using existing learner/student data; affected screens: `/learn`, current student dashboard; APIs: `/api/student-courses`, `/api/analytics/student-progress`, badge/certification/program APIs; tests: student view specs; a11y: next action first; responsive: mobile bottom nav; frontend-only: yes; rollback: current dashboard.
+- [x] 5.2 Redesign learner course library and course overview; affected screens: `/learn/products`, `/home/courses`; APIs: `/api/courses`, `/api/learner-portal/products`, `/api/enroll`; tests: service/page specs; a11y: card labels/status; responsive: filter drawer; frontend-only: yes; rollback: current catalog.
+  - [x] 5.2a Reframe `/learn/products` as student Courses/available learning while preserving the existing learner-product API.
+  - [x] 5.2b Add canonical `/learn/courses/:courseId` overview with reusable unit/lesson hierarchy and governed start/resume actions.
+- [x] 5.3 Redesign lesson player and activity/assessment states without changing governed progress APIs; affected screens: `/learn/lesson/:id`, `/home/lesson/:id`, `/home/assessments/:id`; APIs: progress, lessons, assessments; tests: lesson/assessment specs and Playwright student smoke; a11y: live save/advance announcements; responsive: sticky mobile action bar; frontend-only: yes; rollback: old lesson template.
+  - [x] 5.3a Add canonical `/learn` return behavior plus completion saving and failure states to the governed lesson runtime.
+  - [x] 5.3b Add course/unit context to lesson runtime, local activity validation states, and assessment final confirmation/result states.
+- [x] 5.4 Redesign progress, achievements, certifications, and learner resources; affected screens: progress sections, `/learn/certificates`, `/learn/resources`; APIs: analytics, badges, certifications, resources; tests: component/page specs; a11y: no color-only progress; responsive: single-column mobile; frontend-only: yes; rollback: previous sections.
+  - [x] 5.4a Add `/learn` progress summary plus badge/certification preview and honest resources empty state.
+  - [x] 5.4b Refine `/learn/certificates` as a student achievements/certificates view with shared loading, empty, and error states.
 
 ## 6. Teacher Experience
 

@@ -10,11 +10,13 @@ import { CommonModule } from '@angular/common';
     <button
       [ngClass]="[
         'ee-button',
+        color === 'secondary' ? 'ee-button--secondary' : '',
         color === 'tertiary' ? 'ee-button--secondary' : '',
         color === 'warn' ? 'ee-button--warn' : '',
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       ]"
       [disabled]="disabled"
+      [attr.aria-label]="ariaLabel || null"
     >
       {{ label }}
     </button>
@@ -22,6 +24,7 @@ import { CommonModule } from '@angular/common';
 })
 export class EchoButtonComponent {
   @Input() label: string = 'Echo Button';
-  @Input() color: 'primary' | 'accent' | 'warn' | 'tertiary' = 'primary';
+  @Input() color: 'primary' | 'accent' | 'secondary' | 'warn' | 'tertiary' = 'primary';
   @Input() disabled = false;
+  @Input() ariaLabel = '';
 }

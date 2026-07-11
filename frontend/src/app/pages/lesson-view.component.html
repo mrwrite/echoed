@@ -4,7 +4,13 @@
       <div class="min-w-0">
         <p class="section-heading text-primary text-sm">Immersive Lesson</p>
         <h2 id="lesson-page-title" class="text-2xl font-bold text-ink">{{ lesson?.title || 'Preparing your next lesson' }}</h2>
-        <p class="mt-2 text-sm leading-6 text-slate-700">Step through each governed activity with clear focus and consistent learner guidance.</p>
+        <p class="mt-2 text-sm leading-6 text-slate-700">
+          <span *ngIf="courseContextTitle">{{ courseContextTitle }}</span>
+          <span *ngIf="courseContextTitle && unitContextTitle"> / </span>
+          <span *ngIf="unitContextTitle">{{ unitContextTitle }}</span>
+          <span *ngIf="lessonPositionLabel"> / {{ lessonPositionLabel }}</span>
+          <span *ngIf="!courseContextTitle">Step through each governed activity with clear focus and consistent learner guidance.</span>
+        </p>
       </div>
       <div class="flex flex-col items-stretch gap-3 sm:items-end">
         <div class="flex flex-wrap gap-2" *ngIf="lesson">
@@ -18,16 +24,26 @@
             {{ lesson.duration_minutes }} min
           </span>
         </div>
-        <button aria-label="Exit lesson and return to dashboard" class="lesson-runtime__exit-button rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5" (click)="returnToDashboard()">Exit lesson</button>
+        <button aria-label="Return to the course overview" class="lesson-runtime__exit-button rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5" (click)="returnToCourse()">Return to course</button>
       </div>
     </header>
 
     <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-slate-700" *ngIf="lesson" aria-label="Lesson state">
       <span class="rounded-full bg-primary/10 px-3 py-1 text-primary">Active segment</span>
+      <span *ngIf="unitContextTitle" class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{{ unitContextTitle }}</span>
+      <span *ngIf="lessonPositionLabel" class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{{ lessonPositionLabel }}</span>
       <span class="rounded-full bg-accent/30 px-3 py-1 text-ink">Guided reading & activities</span>
-      <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Safe to return to dashboard at any time</span>
+      <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">Safe to return to Learn at any time</span>
       <span *ngIf="demoMode" class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">Demo preview</span>
     </div>
+
+    <p *ngIf="completingSegment" class="lesson-runtime__save-status" role="status" aria-live="polite">
+      Saving your lesson progress...
+    </p>
+
+    <p *ngIf="completionErrorMessage" class="lesson-runtime__save-status lesson-runtime__save-status--error" role="alert">
+      {{ completionErrorMessage }}
+    </p>
 
     <app-echo-loading-state
       *ngIf="loading"
@@ -53,8 +69,8 @@
       eyebrow="Governed lesson state"
       [title]="governedStateTitle"
       [body]="governedStateBody"
-      actionLabel="Return to dashboard"
-      actionAriaLabel="Return to the learner dashboard"
+      actionLabel="Return to Learn"
+      actionAriaLabel="Return to Learn"
       (action)="returnToDashboard()"
     ></app-echo-state-panel>
 
@@ -75,9 +91,9 @@
 
 <app-echo-modal
   [open]="courseCompleted"
-  title="Course completed!"
-  description="You finished this governed lesson path. Return to the dashboard to review your progress or continue with your next available course."
-  confirmText="Back to Dashboard"
+  title="Learning path complete"
+  description="You finished this governed lesson path. Return to Learn to review your progress or continue with your next available course."
+  confirmText="Back to Learn"
   [showCancel]="false"
   (confirm)="returnToDashboard()"
 />

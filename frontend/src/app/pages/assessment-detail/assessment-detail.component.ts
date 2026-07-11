@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { EchoButtonComponent } from '../../components/echo-button/echo-button.component';
+import { EchoConfirmationDialogComponent } from '../../components/echo-confirmation-dialog/echo-confirmation-dialog.component';
 import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
 import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-state-panel.component';
 import {
@@ -18,7 +19,7 @@ import { ToastService } from '../../services/toast.service';
 @Component({
   selector: 'app-assessment-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, EchoButtonComponent, EchoLoadingStateComponent, EchoStatePanelComponent],
+  imports: [CommonModule, FormsModule, RouterLink, EchoButtonComponent, EchoConfirmationDialogComponent, EchoLoadingStateComponent, EchoStatePanelComponent],
   templateUrl: './assessment-detail.component.html',
   styleUrl: './assessment-detail.component.scss'
 })
@@ -31,6 +32,7 @@ export class AssessmentDetailComponent implements OnInit {
   submitting = false;
   loadErrorMessage = '';
   submitErrorMessage = '';
+  showSubmitConfirmation = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -91,12 +93,43 @@ export class AssessmentDetailComponent implements OnInit {
       : 'Submitting your assessment and saving your latest learner evidence.';
   }
 
+  get answeredQuestionCount(): number {
+    return this.assessment?.questions.filter(question => !!this.answers[question.id]?.trim()).length || 0;
+  }
+
+  get questionCount(): number {
+    return this.assessment?.questions.length || 0;
+  }
+
+  get assessmentResultLabel(): string {
+    if (!this.result) {
+      return '';
+    }
+    return this.result.passed ? 'Passed' : 'Needs more practice';
+  }
+
+  requestSubmitConfirmation(): void {
+    if (!this.canSubmit) {
+      this.submitErrorMessage = 'Answer every question before submitting this assessment.';
+      return;
+    }
+    this.submitErrorMessage = '';
+    this.showSubmitConfirmation = true;
+  }
+
+  cancelSubmitConfirmation(): void {
+    if (!this.submitting) {
+      this.showSubmitConfirmation = false;
+    }
+  }
+
   submit(): void {
     if (!this.assessment || !this.canSubmit) {
       return;
     }
 
     this.submitting = true;
+    this.showSubmitConfirmation = true;
     this.submitErrorMessage = '';
     this.awardedCertifications = [];
     const payload = this.assessment.questions.map(question => ({
@@ -109,6 +142,7 @@ export class AssessmentDetailComponent implements OnInit {
         this.result = result;
         if (!this.assessment?.program_id) {
           this.submitting = false;
+          this.showSubmitConfirmation = false;
           this.toastService.show('Assessment submitted.', result.passed ? 'success' : 'error');
           return;
         }
@@ -117,6 +151,7 @@ export class AssessmentDetailComponent implements OnInit {
           next: (certifications) => {
             if (certifications.length === 0) {
               this.submitting = false;
+              this.showSubmitConfirmation = false;
               this.toastService.show('Assessment submitted.', result.passed ? 'success' : 'error');
               return;
             }
@@ -125,6 +160,7 @@ export class AssessmentDetailComponent implements OnInit {
               next: (evaluations) => {
                 this.awardedCertifications = evaluations.filter(evaluation => evaluation.awarded);
                 this.submitting = false;
+                this.showSubmitConfirmation = false;
                 this.toastService.show(
                   this.awardedCertifications.length > 0
                     ? 'Assessment submitted and certification status updated.'
@@ -134,18 +170,21 @@ export class AssessmentDetailComponent implements OnInit {
               },
               error: () => {
                 this.submitting = false;
+                this.showSubmitConfirmation = false;
                 this.toastService.show('Assessment submitted, but certification status could not be refreshed.', 'error');
               }
             });
           },
           error: () => {
             this.submitting = false;
+            this.showSubmitConfirmation = false;
             this.toastService.show('Assessment submitted.', result.passed ? 'success' : 'error');
           }
         });
       },
       error: () => {
         this.submitting = false;
+        this.showSubmitConfirmation = true;
         this.submitErrorMessage = 'We could not submit this assessment. Your answers are still here, so review them and try again.';
         this.toastService.show('Unable to submit the assessment.', 'error');
       }

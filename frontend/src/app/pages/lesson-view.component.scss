@@ -6,3 +6,18 @@
   outline: none;
   box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.18);
 }
+
+.lesson-runtime__save-status {
+  background: var(--ee-status-info-bg, #e0f2fe);
+  border: 1px solid var(--ee-status-info-border, #38bdf8);
+  border-radius: var(--ee-radius, 6px);
+  color: var(--ee-text);
+  font-weight: 700;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.lesson-runtime__save-status--error {
+  background: var(--ee-status-danger-bg, #fee2e2);
+  border-color: var(--ee-status-danger-border, #ef4444);
+}

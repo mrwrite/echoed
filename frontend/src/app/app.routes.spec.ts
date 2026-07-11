@@ -3,6 +3,7 @@ import { routes } from './app.routes';
 import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
 import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
 import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
+import { StudentCourseOverviewComponent } from './pages/learner-portal/student-course-overview.component';
 import { LessonViewComponent } from './pages/lesson-view.component';
 import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
 import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
@@ -81,6 +82,7 @@ describe('app routes', () => {
       'learn',
       'learn/',
       'learn/products',
+      'learn/courses/:courseId',
       'learn/paths',
       'learn/certificates',
       'learn/resources',
@@ -93,6 +95,7 @@ describe('app routes', () => {
     const learnerShell = learnRoute?.children?.find(route => route.path === '');
     expect(learnerShell?.children?.find(route => route.path === '')?.component).toBe(LearnerPortalComponent);
     expect(learnerShell?.children?.find(route => route.path === 'products')?.component).toBe(LearnerProductsComponent);
+    expect(learnerShell?.children?.find(route => route.path === 'courses/:courseId')?.component).toBe(StudentCourseOverviewComponent);
     expect(learnerShell?.children?.find(route => route.path === 'resources')?.component).toBe(LearnerResourcesComponent);
     expect(learnerShell?.children?.find(route => route.path === 'lesson/:id')?.component).toBe(LessonViewComponent);
     expect(findRoute(routes, 'home/lesson/:id')?.component).toBe(LessonViewComponent);

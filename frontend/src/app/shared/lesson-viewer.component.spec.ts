@@ -102,6 +102,40 @@ describe('LessonViewerComponent', () => {
     expect(radiogroup.getAttribute('aria-label')).toBe('Quiz response options');
   });
 
+  it('keeps quiz activity input in place and announces validation before advancing', () => {
+    component.lesson = {
+      ...component.lesson,
+      hook: undefined,
+      content: undefined,
+      guided_practice: undefined,
+      discussion_questions: [],
+      activities: [{
+        title: 'Check Your Understanding',
+        type: 'quiz',
+        content: JSON.stringify({
+          question: 'Which claim is best supported?',
+          options: ['Claim A', 'Claim B'],
+        }),
+      } as any],
+    };
+
+    fixture.detectChanges();
+    component.goToStep(component.lessonSteps.findIndex(step => step.kind === 'activity'));
+    fixture.detectChanges();
+
+    component.goToNextStep();
+    fixture.detectChanges();
+
+    expect(component.currentStep?.kind).toBe('activity');
+    expect(fixture.nativeElement.textContent).toContain('Choose an answer before continuing');
+
+    component.selectedOption = 'Claim A';
+    fixture.detectChanges();
+    component.goToNextStep();
+
+    expect(component.activityErrorMessage).toBe('');
+  });
+
   it('preserves next-activity flow for richer seeded activity patterns', () => {
     component.lesson = {
       ...component.lesson,

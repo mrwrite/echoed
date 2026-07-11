@@ -245,14 +245,14 @@ import { ToastService } from '../../services/toast.service';
     }
 
     .student-course__track {
-      background: var(--ee-border);
+      background: var(--ee-color-border-subtle, var(--ee-border, #dccdb7));
       border-radius: 999px;
       height: 0.72rem;
       overflow: hidden;
     }
 
     .student-course__bar {
-      background: var(--ee-action-primary);
+      background: var(--ee-color-action-primary-background, var(--ee-action-primary, #0f766e));
       border-radius: inherit;
       height: 100%;
       min-width: 0.15rem;

@@ -82,7 +82,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
               <div class="learn-progress__track">
                 <div
                   class="learn-progress__bar"
-                  [style.width.%]="activeCourseProgress"
+                  [style.width]="progressWidth(activeCourseProgress)"
                   role="progressbar"
                   aria-label="Active course progress"
                   [attr.aria-valuenow]="activeCourseProgress"
@@ -185,7 +185,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
               <div class="learn-progress__track">
                 <div
                   class="learn-progress__bar"
-                  [style.width.%]="normalizedProgress(course.progress)"
+                  [style.width]="progressWidth(course.progress)"
                   role="progressbar"
                   [attr.aria-label]="course.course.title + ' progress'"
                   [attr.aria-valuenow]="normalizedProgress(course.progress)"
@@ -644,7 +644,13 @@ export class LearnerPortalComponent implements OnInit {
   }
 
   normalizedProgress(value: number | undefined): number {
-    return Math.max(0, Math.min(100, value || 0));
+    const numericValue = value || 0;
+    const percentValue = numericValue > 0 && numericValue <= 1 ? numericValue * 100 : numericValue;
+    return Math.max(0, Math.min(100, percentValue));
+  }
+
+  progressWidth(value: number | undefined): string {
+    return `${this.normalizedProgress(value)}%`;
   }
 
   statusLabel(status: string | undefined, progress: number | undefined): string {

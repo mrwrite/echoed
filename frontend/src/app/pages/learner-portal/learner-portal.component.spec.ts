@@ -140,6 +140,19 @@ describe('LearnerPortalComponent', () => {
     expect(component.activeCourseStatusLabel).toBe('In progress');
   });
 
+  it('fills progress bars to the normalized percentage width', () => {
+    fixture.detectChanges();
+
+    const activeProgressBar = fixture.nativeElement.querySelector('[aria-label="Active course progress"]') as HTMLElement;
+    expect(activeProgressBar.style.width).toBe('42%');
+    expect(activeProgressBar.getAttribute('aria-valuenow')).toBe('42');
+  });
+
+  it('normalizes fractional progress values before rendering width', () => {
+    expect(component.normalizedProgress(0.42)).toBe(42);
+    expect(component.progressWidth(0.42)).toBe('42%');
+  });
+
   it('navigates course continuation through the canonical /learn lesson route', () => {
     component.startCourse(makeStudentCourse());
 

@@ -43,10 +43,13 @@
 
 .home-shell__main {
   min-width: 0;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .home-shell__content {
   min-width: 0;
+  scroll-padding-top: 1rem;
 }
 
 .ee-shell__workspace {

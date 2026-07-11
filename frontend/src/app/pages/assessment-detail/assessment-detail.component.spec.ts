@@ -109,7 +109,7 @@ describe('AssessmentDetailComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Assessment not ready for learner submission');
-    expect(compiled.textContent).not.toContain('Submit Assessment');
+    expect(compiled.textContent).not.toContain('Submit assessment');
     expect(compiled.querySelector('[data-echo-state="unavailable"]')).not.toBeNull();
   });
 
@@ -141,6 +141,23 @@ describe('AssessmentDetailComponent', () => {
     expect(compiled.textContent).toContain('Preparing assessment');
   });
 
+  it('opens final confirmation before submitting a completed assessment', () => {
+    programsServiceSpy.getAssessment.and.returnValue(of(buildAvailableAssessment()));
+
+    fixture = TestBed.createComponent(AssessmentDetailComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.answers['question-1'] = '4';
+    component.requestSubmitConfirmation();
+    fixture.detectChanges();
+
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialog).not.toBeNull();
+    expect(dialog.textContent).toContain('Submit assessment');
+    expect(programsServiceSpy.submitAssessment).not.toHaveBeenCalled();
+  });
+
   it('shows a clear submit-pending state without changing submit behavior', () => {
     const pendingSubmit = new Subject<any>();
     programsServiceSpy.getAssessment.and.returnValue(of(buildAvailableAssessment()));
@@ -158,6 +175,7 @@ describe('AssessmentDetailComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(component.submitting).toBeTrue();
+    expect(component.showSubmitConfirmation).toBeTrue();
     expect(compiled.querySelector('form')?.getAttribute('aria-busy')).toBe('true');
     expect(compiled.querySelector('[data-echo-loading="compact"]')).not.toBeNull();
     expect(compiled.textContent).toContain('Submitting assessment');
@@ -182,5 +200,7 @@ describe('AssessmentDetailComponent', () => {
     expect(failurePanel?.getAttribute('role')).toBe('alert');
     expect(failurePanel?.getAttribute('aria-label')).toBe('We could not submit your assessment');
     expect(compiled.textContent).toContain('We could not submit your assessment');
+    expect(component.showSubmitConfirmation).toBeTrue();
+    expect(component.answers['question-1']).toBe('4');
   });
 });

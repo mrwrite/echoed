@@ -73,11 +73,15 @@
         </h3>
       </div>
       <p class="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700" role="status" aria-live="polite">
-        Step {{ currentStepIndex + 1 }} of {{ stepCount }}
+        {{ currentStepStateLabel }} · Step {{ currentStepIndex + 1 }} of {{ stepCount }}
       </p>
     </div>
+    <p class="lesson-viewer__step-instruction" id="current-step-instruction">{{ currentStepInstruction }}</p>
+    <p *ngIf="activityErrorMessage" class="lesson-viewer__activity-error" role="alert">
+      {{ activityErrorMessage }}
+    </p>
 
-    <div class="lesson-viewer__activity-body rounded-2xl border border-slate-200 bg-white p-4 text-sm md:p-5">
+    <div class="lesson-viewer__activity-body rounded-2xl border border-slate-200 bg-white p-4 text-sm md:p-5" aria-describedby="current-step-instruction">
       <ng-container [ngSwitch]="step.kind">
         <div *ngSwitchCase="'overview'" class="space-y-4">
           <div *ngIf="lesson.learning_objectives">

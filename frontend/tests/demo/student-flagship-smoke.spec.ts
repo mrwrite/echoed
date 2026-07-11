@@ -11,13 +11,13 @@ test.describe('demo student flagship smoke', () => {
     await loginAsDemoStudent(page);
 
     await expectFlagshipCourseOnStudentDashboard(page);
-    await expect(page.getByText('Products organize your access')).toBeVisible();
-    await page.getByRole('button', { name: /continue/i }).first().click();
+    await expect(page.getByText('Next learning')).toBeVisible();
+    await page.getByRole('button', { name: /start lesson|resume lesson/i }).first().click();
 
     await expect(page).toHaveURL(/\/learn\/lesson\//);
     await expect(page.getByLabel('Lesson experience')).toBeVisible();    
     await expect(
-      page.getByRole('button', { name: 'Exit lesson and return to dashboard' }),
+      page.getByRole('button', { name: 'Exit lesson and return to Learn' }),
     ).toBeVisible();
   });
 });

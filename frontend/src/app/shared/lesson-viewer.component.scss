@@ -7,6 +7,22 @@
   min-width: 0;
 }
 
+.lesson-viewer__step-instruction {
+  color: var(--ee-text-soft, #475569);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.lesson-viewer__activity-error {
+  background: var(--ee-color-status-danger-background, #fff1f3);
+  border: 1px solid var(--ee-color-status-danger-border, #ffd9df);
+  border-radius: var(--ee-radius-card-default, 0.5rem);
+  color: var(--ee-color-status-danger-text, #9f1239);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 0.75rem;
+}
+
 .lesson-viewer__step-list {
   display: flex;
   gap: 0.5rem;

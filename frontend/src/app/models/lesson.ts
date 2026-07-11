@@ -35,6 +35,7 @@ export interface Lesson {
     assessment?: string;
     review_status?: 'draft' | 'reviewed' | 'approved' | string;
     reviewed_by?: string;
+    order?: number;
     duration_minutes?: number;
     sources?: Source[];
     is_ready_for_approval?: boolean;

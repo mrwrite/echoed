@@ -32,6 +32,7 @@ export class LessonViewerComponent implements OnChanges {
   currentStepIndex = 0;
   reflectionResponse = '';
   selectedOption = '';
+  activityErrorMessage = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['lesson']) {
@@ -39,6 +40,7 @@ export class LessonViewerComponent implements OnChanges {
       this.currentStepIndex = 0;
       this.reflectionResponse = '';
       this.selectedOption = '';
+      this.activityErrorMessage = '';
     }
   }
 
@@ -138,6 +140,36 @@ export class LessonViewerComponent implements OnChanges {
     return this.currentStep?.label || 'Lesson';
   }
 
+  get currentStepStateLabel(): string {
+    if (!this.currentStep) {
+      return 'Not started';
+    }
+    if (this.isLastActivity) {
+      return 'Ready to complete';
+    }
+    if (this.currentStep.kind === 'activity' && this.quizPayload && !this.selectedOption) {
+      return 'In progress';
+    }
+    return 'Ready to continue';
+  }
+
+  get currentStepInstruction(): string {
+    const step = this.currentStep;
+    if (!step) {
+      return 'Start the lesson when you are ready.';
+    }
+    if (step.kind === 'activity' && this.quizPayload) {
+      return 'Choose one answer before moving to the next step.';
+    }
+    if (step.kind === 'activity' && this.currentActivity?.type === 'reflection') {
+      return 'Write your reflection, then continue when you are ready.';
+    }
+    if (step.kind === 'discussion') {
+      return 'Use the prompts to think, talk, draw, or write.';
+    }
+    return 'Review this step, then continue when you are ready.';
+  }
+
   get currentStepTitle(): string {
     const step = this.currentStep;
     if (!step) {
@@ -185,6 +217,9 @@ export class LessonViewerComponent implements OnChanges {
   }
 
   goToNextStep(): void {
+    if (!this.canLeaveCurrentStep()) {
+      return;
+    }
     if (this.currentStepIndex < this.stepCount - 1) {
       this.currentStepIndex++;
       this.syncActivityIndex();
@@ -209,6 +244,16 @@ export class LessonViewerComponent implements OnChanges {
   private resetStepInputs(): void {
     this.reflectionResponse = '';
     this.selectedOption = '';
+    this.activityErrorMessage = '';
+  }
+
+  private canLeaveCurrentStep(): boolean {
+    if (this.currentStep?.kind === 'activity' && this.quizPayload && !this.selectedOption) {
+      this.activityErrorMessage = 'Choose an answer before continuing. Your selection is not submitted until the lesson is completed.';
+      return false;
+    }
+    this.activityErrorMessage = '';
+    return true;
   }
 
   isYouTubeLink(url: string): boolean {

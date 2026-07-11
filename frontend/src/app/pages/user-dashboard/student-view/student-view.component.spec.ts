@@ -398,7 +398,7 @@ describe('StudentViewComponent', () => {
 
     action.click();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/home/courses']);
+    expect(router.navigate).toHaveBeenCalledWith(['/learn/products']);
   });
 
   it('keeps the continue lesson action bound to the selected course during remediation guidance', () => {

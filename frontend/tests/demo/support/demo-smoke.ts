@@ -16,7 +16,7 @@ export async function loginAsDemoStudent(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Sign in' }).click();
 
   await expect(page).toHaveURL(/\/learn$/);
-  await expect(page.getByRole('heading', { name: 'Your products and learning paths' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Continue your learning' })).toBeVisible();
 }
 
 export async function expectFlagshipCourseOnStudentDashboard(page: Page): Promise<void> {

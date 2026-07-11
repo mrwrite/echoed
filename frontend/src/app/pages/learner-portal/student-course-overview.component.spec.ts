@@ -110,6 +110,7 @@ describe('StudentCourseOverviewComponent', () => {
 
   it('loads the authorized course overview with unit hierarchy and current lesson state', () => {
     const compiled = fixture.nativeElement as HTMLElement;
+    const progressBar = compiled.querySelector('[aria-label="Course progress"]') as HTMLElement;
 
     expect(coursesService.getCourseById).toHaveBeenCalledWith('course-1');
     expect(compiled.textContent).toContain('Introduction to Africa');
@@ -119,6 +120,19 @@ describe('StudentCourseOverviewComponent', () => {
     expect(compiled.textContent).toContain('Locked');
     expect(component.curriculumUnits[0].lessons[0].canOpen).toBeTrue();
     expect(component.curriculumUnits[0].lessons[1].canOpen).toBeFalse();
+    expect(progressBar.style.width).toBe('25%');
+    expect(progressBar.getAttribute('aria-valuenow')).toBe('25');
+  });
+
+  it('normalizes fractional course progress values before rendering width', () => {
+    coursesService.progressResponse = of(0.5);
+    fixture = TestBed.createComponent(StudentCourseOverviewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const progressBar = fixture.nativeElement.querySelector('[aria-label="Course progress"]') as HTMLElement;
+    expect(component.courseProgress).toBe(50);
+    expect(progressBar.style.width).toBe('50%');
   });
 
   it('resumes an in-progress course through the governed start-course endpoint', () => {

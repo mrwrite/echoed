@@ -86,7 +86,7 @@ import { ToastService } from '../../services/toast.service';
                   aria-valuemin="0"
                   aria-valuemax="100"
                   [attr.aria-valuenow]="courseProgress"
-                  [style.width.%]="courseProgress"
+                  [style.width]="progressWidth(courseProgress)"
                 ></div>
               </div>
             </div>
@@ -598,6 +598,12 @@ export class StudentCourseOverviewComponent implements OnInit {
   }
 
   private normalizeProgress(progress: number | undefined): number {
-    return Math.max(0, Math.min(100, progress || 0));
+    const numericProgress = progress || 0;
+    const percentProgress = numericProgress > 0 && numericProgress <= 1 ? numericProgress * 100 : numericProgress;
+    return Math.max(0, Math.min(100, percentProgress));
+  }
+
+  progressWidth(progress: number | undefined): string {
+    return `${this.normalizeProgress(progress)}%`;
   }
 }

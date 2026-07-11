@@ -4,6 +4,9 @@
   border-bottom: 1px solid var(--ee-color-border-subtle, #dccdb7);
   box-shadow: var(--ee-shadow-raised, 0 12px 28px rgba(16, 32, 51, 0.12));
   backdrop-filter: none;
+  position: sticky;
+  top: 0;
+  z-index: 55;
 }
 
 .echo-header button,

@@ -347,8 +347,8 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     .learn-progress { background: var(--ee-surface-muted, #f8fafc); border: 1px solid var(--ee-border); border-radius: var(--ee-radius, 6px); display: grid; gap: .65rem; padding: .85rem; }
     .learn-progress > div:first-child { align-items: center; display: flex; justify-content: space-between; }
     .learn-progress strong { color: var(--ee-action-primary); }
-    .learn-progress__track { background: var(--ee-border); border-radius: 999px; height: .7rem; overflow: hidden; }
-    .learn-progress__bar { background: var(--ee-action-primary); border-radius: inherit; height: 100%; min-width: .15rem; }
+    .learn-progress__track { background: var(--ee-color-border-subtle, var(--ee-border, #dccdb7)); border-radius: 999px; height: .7rem; overflow: hidden; }
+    .learn-progress__bar { background: var(--ee-color-action-primary-background, var(--ee-action-primary, #0f766e)); border-radius: inherit; height: 100%; min-width: .15rem; }
     .learn-progress--compact { padding: .65rem; }
     .learn-support { border: 1px solid var(--ee-border); border-radius: var(--ee-radius, 6px); display: grid; gap: .45rem; padding: .85rem; }
     .learn-support[data-support-state="remediation"] { background: var(--ee-status-warning-bg, #fef3c7); border-color: var(--ee-status-warning-border, #f59e0b); }

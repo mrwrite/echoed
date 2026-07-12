@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Assignment, Section } from '../models/section';
+import { Assignment, Enrollment, Section, SectionSummary } from '../models/section';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +18,14 @@ export class SectionsService {
 
   createSection(payload: Partial<Section>): Observable<Section> {
     return this.http.post<Section>(`${this.apiUrl}/sections`, payload);
+  }
+
+  getRoster(sectionId: string): Observable<Enrollment[]> {
+    return this.http.get<Enrollment[]>(`${this.apiUrl}/sections/${sectionId}/roster`);
+  }
+
+  getSectionSummary(sectionId: string): Observable<SectionSummary> {
+    return this.http.get<SectionSummary>(`${this.apiUrl}/sections/${sectionId}/analytics/summary`);
   }
 
   getAssignments(sectionId: string): Observable<Assignment[]> {

@@ -42,6 +42,9 @@ import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.co
 import { PublicProductsComponent } from './pages/public-products/public-products.component';
 import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
 import { CommercialDashboardComponent } from './pages/commercial-dashboard/commercial-dashboard.component';
+import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
+import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
+import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -55,6 +58,57 @@ export const routes: Routes = [
   { path: 'registration', component: RegistrationComponent },
   { path: 'onboarding/organization', component: OnboardingOrganizationComponent },
   { path: 'access-denied', component: AccessDeniedComponent },
+  {
+    path: 'teach',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      {
+        path: '',
+        component: UserDashboardComponent,
+        children: [
+          { path: '', component: EchoedRoleSelectorComponent },
+          {
+            path: 'classes',
+            component: SectionsComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor', 'org_admin'] }
+          },
+          {
+            path: 'classes/:id',
+            component: SectionDetailComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor', 'org_admin'] }
+          },
+          {
+            path: 'curriculum',
+            component: TeacherCurriculumComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor'] }
+          },
+          {
+            path: 'courses/:courseId/preview',
+            component: TeacherCoursePreviewComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor'] }
+          },
+          {
+            path: 'assignments',
+            component: SectionsComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor', 'org_admin'] }
+          },
+          {
+            path: 'learners/:learnerId',
+            component: TeacherLearnerDetailComponent,
+            canActivate: [RoleGuard],
+            data: { roles: ['teacher', 'instructor', 'org_admin'] }
+          },
+          { path: 'settings', component: PreferencesComponent },
+        ]
+      }
+    ]
+  },
   {
     path: 'home',
     component: HomeComponent,

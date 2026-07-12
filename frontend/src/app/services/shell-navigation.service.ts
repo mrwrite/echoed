@@ -54,12 +54,13 @@ export class ShellNavigationService {
       title: 'Teach',
       space: 'teach',
       items: [
-        { label: 'Teaching Overview', route: '/home', icon: 'Home', roles: ['teacher', 'instructor'], exact: true },
-        { label: 'Classes', route: '/home/sections', icon: 'Users', roles: ['teacher', 'instructor', 'org_admin'] },
-        { label: 'Curriculum', route: '/home/courses', icon: 'BookOpen', roles: ['teacher', 'instructor'] },
+        { label: 'Teaching Overview', route: '/teach', icon: 'Home', roles: ['teacher', 'instructor'], exact: true },
+        { label: 'Classes', route: '/teach/classes', icon: 'Users', roles: ['teacher', 'instructor', 'org_admin'] },
+        { label: 'Assignments', route: '/teach/assignments', icon: 'ClipboardList', roles: ['teacher', 'instructor', 'org_admin'] },
+        { label: 'Curriculum', route: '/teach/curriculum', icon: 'BookOpen', roles: ['teacher', 'instructor'] },
         { label: 'Learning Paths', route: '/home/programs', icon: 'ClipboardList', roles: ['teacher', 'instructor'] },
-        { label: 'Learner Progress', route: '/workspace/learners', icon: 'SlidersHorizontal', roles: ['teacher', 'instructor'] },
-        { label: 'Settings', route: '/home/me/preferences', icon: 'Settings', roles: ['teacher', 'instructor'] },
+        { label: 'Learner Progress', route: '/teach', icon: 'SlidersHorizontal', roles: ['teacher', 'instructor'] },
+        { label: 'Settings', route: '/teach/settings', icon: 'Settings', roles: ['teacher', 'instructor'] },
       ],
     },
     {

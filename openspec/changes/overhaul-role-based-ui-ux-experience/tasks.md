@@ -39,10 +39,10 @@
 
 ## 6. Teacher Experience
 
-- [ ] 6.1 Redesign teacher Today dashboard around learner support and classes; affected screens: teacher dashboard; APIs: `/api/courses`, `/api/users/students`, `/api/analytics/teacher-summary`, governance summary; tests: teacher specs; a11y: data list summaries; responsive: priority stack; frontend-only: yes; rollback: old teacher view.
-- [ ] 6.2 Redesign classes/sections and class detail; affected screens: `/home/sections`, `/home/sections/:id`, cohort aliases; APIs: sections, roster, assignments, section analytics; tests: section specs and Playwright teacher flow; a11y: tabs/list keyboard support; responsive: tabs/cards; frontend-only: yes; rollback: old templates.
-- [ ] 6.3 Add guided assignment workflow over existing assignment/assign-course APIs; affected screens: class detail assignment flow; APIs: `/api/sections/{id}/assignments`, `/api/assign-course`; tests: workflow specs; a11y: stepper and validation; responsive: mobile wizard; frontend-only: yes; rollback: current inline assignment controls.
-- [ ] 6.4 Redesign curriculum preview, learner progress, review/feedback, and discussion/moderation surfaces where existing APIs support them; affected screens: curriculum, assessment, discussion; APIs: courses, assessments, posts/threads; tests: targeted specs; a11y: form/table semantics; responsive: data cards; frontend-only: yes unless feedback/moderation persistence is selected; rollback: hide unsupported surfaces.
+- [x] 6.1 Redesign teacher Today dashboard around learner support and classes; affected screens: teacher dashboard; APIs: `/api/courses`, `/api/users/students`, `/api/analytics/teacher-summary`, governance summary; tests: teacher specs; a11y: data list summaries; responsive: priority stack; frontend-only: yes; rollback: old teacher view.
+- [x] 6.2 Redesign classes/sections and class detail; affected screens: `/home/sections`, `/home/sections/:id`, cohort aliases; APIs: sections, roster, assignments, section analytics; tests: section specs and Playwright teacher flow; a11y: tabs/list keyboard support; responsive: tabs/cards; frontend-only: yes; rollback: old templates.
+- [x] 6.3 Add guided assignment workflow over existing assignment/assign-course APIs; affected screens: class detail assignment flow; APIs: `/api/sections/{id}/assignments`, `/api/assign-course`; tests: workflow specs; a11y: stepper and validation; responsive: mobile wizard; frontend-only: yes; rollback: current inline assignment controls.
+- [x] 6.4 Redesign curriculum preview, learner progress, review/feedback, and discussion/moderation surfaces where existing APIs support them; affected screens: curriculum, assessment, discussion; APIs: courses, assessments, posts/threads; tests: targeted specs; a11y: form/table semantics; responsive: data cards; frontend-only: yes unless feedback/moderation persistence is selected; rollback: hide unsupported surfaces.
 
 ## 7. Administrator Experience
 

@@ -1,35 +1,210 @@
-<div class="p-6 space-y-6">
-  <div class="flex flex-col gap-2">
-    <h2 class="text-2xl font-bold text-ink">Section detail</h2>
-    <p class="text-sm text-slate-600">Manage assignments and run live lesson sessions.</p>
-  </div>
+<section class="class-detail" aria-labelledby="class-detail-title">
+  <a routerLink="/teach/classes" class="class-detail__back">Back to classes</a>
 
-  <div class="surface-card p-6 space-y-4">
-    <h3 class="text-lg font-semibold text-ink">New assignment</h3>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <select class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="targetType">
-        <option value="unit">Unit</option>
-        <option value="lesson">Lesson</option>
-      </select>
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="targetId" placeholder="Target ID" />
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="dueAt" placeholder="Due date (optional)" />
-      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createAssignment()">Assign</button>
-    </div>
-    <textarea class="w-full border border-slate-200 rounded-xl px-3 py-2" rows="3" [(ngModel)]="instructions" placeholder="Instructions"></textarea>
-  </div>
+  <app-echo-loading-state
+    *ngIf="loading"
+    density="page"
+    ariaLabel="class-detail-loading"
+    title="Loading class"
+    body="We are loading roster, assignments, and supported progress."
+  ></app-echo-loading-state>
 
-  <div class="surface-card p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-ink">Assignments</h3>
-      <button class="px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold">Start lesson session</button>
-    </div>
-    <div *ngIf="assignments.length === 0" class="text-sm text-slate-500">No assignments yet.</div>
-    <div class="space-y-3" *ngIf="assignments.length > 0">
-      <div *ngFor="let assignment of assignments" class="border border-slate-200 rounded-2xl p-4 bg-white">
-        <p class="font-semibold text-ink">{{ assignment.target_type | titlecase }} · {{ assignment.target_id }}</p>
-        <p class="text-xs text-slate-500">Due: {{ assignment.due_at || 'Flexible' }}</p>
-        <p class="text-sm text-slate-600" *ngIf="assignment.instructions">{{ assignment.instructions }}</p>
+  <app-echo-state-panel
+    *ngIf="!loading && loadError"
+    variant="error"
+    eyebrow="Class unavailable"
+    title="We could not load this class"
+    [body]="loadError"
+    actionLabel="Retry"
+    (action)="loadClass()"
+  ></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadError && section">
+    <header class="class-detail__header">
+      <div>
+        <p class="class-detail__eyebrow">Class overview</p>
+        <h1 id="class-detail-title">{{ className }}</h1>
+        <p>{{ section.mode | titlecase }} class. Organization and section authorization remain enforced by the existing backend APIs.</p>
       </div>
-    </div>
-  </div>
-</div>
+      <a routerLink="/teach/curriculum">Assign from curriculum</a>
+    </header>
+
+    <nav class="class-detail__tabs" aria-label="Class sections">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        [class.class-detail__tab--active]="activeTab === tab.id"
+        [attr.aria-current]="activeTab === tab.id ? 'page' : null"
+        (click)="setTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <section *ngIf="activeTab === 'overview'" class="class-detail__panel" aria-labelledby="class-overview-heading">
+      <p class="class-detail__eyebrow">Today</p>
+      <h2 id="class-overview-heading">Class status</h2>
+      <div class="class-detail__metrics">
+        <article>
+          <span>Learners</span>
+          <strong>{{ rosterCount }}</strong>
+        </article>
+        <article>
+          <span>Assignments</span>
+          <strong>{{ assignments.length }}</strong>
+        </article>
+        <article>
+          <span>Lessons complete</span>
+          <strong>{{ completedLessons }}</strong>
+        </article>
+        <article>
+          <span>Units complete</span>
+          <strong>{{ completedUnits }}</strong>
+        </article>
+      </div>
+      <div class="class-detail__two-column">
+        <div>
+          <h3>Current assignments</h3>
+          <p *ngIf="assignments.length === 0" class="class-detail__muted">No assignments have been created for this class.</p>
+          <ul *ngIf="assignments.length > 0" class="class-detail__list">
+            <li *ngFor="let assignment of upcomingAssignments | slice:0:4">
+              <strong>{{ assignmentTargetLabel(assignment) }}</strong>
+              <span>{{ assignment.due_at ? ('Due ' + (assignment.due_at | date:'MMM d, y, h:mm a')) : 'No due date' }}</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3>Work review</h3>
+          <p class="class-detail__muted">
+            Existing assignment APIs expose assignment creation and student submission status, but no teacher review queue,
+            manual scoring, feedback save, or return-work endpoint is verified.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="activeTab === 'roster'" class="class-detail__panel" aria-labelledby="class-roster-heading">
+      <p class="class-detail__eyebrow">Roster</p>
+      <h2 id="class-roster-heading">Learners in this class</h2>
+      <app-echo-state-panel
+        *ngIf="roster.length === 0"
+        variant="empty"
+        eyebrow="No enrolled learners"
+        title="Roster is empty"
+        body="Learners enrolled through the existing section enrollment API will appear here."
+      ></app-echo-state-panel>
+      <div *ngIf="roster.length > 0" class="class-detail__data-list" data-educator-responsive="class-roster">
+        <article *ngFor="let enrollment of roster" class="class-detail__row">
+          <div>
+            <h3>{{ learnerName(enrollment) }}</h3>
+            <p>{{ enrollment.status | titlecase }} enrollment</p>
+          </div>
+          <dl>
+            <div>
+              <dt>Role</dt>
+              <dd>{{ enrollment.role_in_section | titlecase }}</dd>
+            </div>
+            <div>
+              <dt>Joined</dt>
+              <dd>{{ enrollment.enrolled_at | date:'MMM d, y' }}</dd>
+            </div>
+          </dl>
+          <a [routerLink]="['/teach/learners', enrollment.user_id]" [queryParams]="{ sectionId: section.id }">View learner</a>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="activeTab === 'assignments'" class="class-detail__panel" aria-labelledby="class-assignments-heading">
+      <p class="class-detail__eyebrow">Assignments</p>
+      <h2 id="class-assignments-heading">Assign learning</h2>
+      <form class="class-detail__assignment-form" (ngSubmit)="requestAssignmentCreate()" aria-describedby="assignment-error assignment-help">
+        <label>
+          <span>Target type</span>
+          <select [(ngModel)]="targetType" name="targetType">
+            <option value="course">Course</option>
+            <option value="unit">Unit</option>
+            <option value="lesson">Lesson</option>
+          </select>
+        </label>
+        <label>
+          <span>Learning target</span>
+          <select *ngIf="targetType === 'course'" [(ngModel)]="targetId" name="courseTarget">
+            <option value="">Choose a course</option>
+            <option *ngFor="let course of courses" [value]="course.id">{{ course.title }}</option>
+          </select>
+          <input *ngIf="targetType !== 'course'" [(ngModel)]="targetId" name="targetId" placeholder="Unit or lesson ID" />
+        </label>
+        <label>
+          <span>Due date</span>
+          <input [(ngModel)]="dueAt" name="dueAt" type="datetime-local" />
+        </label>
+        <label class="class-detail__wide">
+          <span>Instructions</span>
+          <textarea [(ngModel)]="instructions" name="instructions" rows="4"></textarea>
+        </label>
+        <button type="submit" [disabled]="savingAssignment">{{ savingAssignment ? 'Assigning...' : 'Review assignment' }}</button>
+      </form>
+      <p id="assignment-help" class="class-detail__muted">Assignments apply to this class section. The current API does not support selecting individual learners during class assignment creation.</p>
+      <p *ngIf="assignmentError" id="assignment-error" class="class-detail__error" role="alert">{{ assignmentError }}</p>
+
+      <div class="class-detail__data-list">
+        <article *ngFor="let assignment of upcomingAssignments" class="class-detail__row">
+          <div>
+            <h3>{{ assignmentTargetLabel(assignment) }}</h3>
+            <p>{{ assignment.instructions || 'No teacher instructions provided.' }}</p>
+          </div>
+          <dl>
+            <div>
+              <dt>Target</dt>
+              <dd>{{ assignment.target_type | titlecase }}</dd>
+            </div>
+            <div>
+              <dt>Due</dt>
+              <dd>{{ assignment.due_at ? (assignment.due_at | date:'MMM d, y, h:mm a') : 'Flexible' }}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="activeTab === 'progress'" class="class-detail__panel" aria-labelledby="class-progress-heading">
+      <p class="class-detail__eyebrow">Progress</p>
+      <h2 id="class-progress-heading">Supported class progress</h2>
+      <p class="class-detail__muted">This class view uses the section analytics summary endpoint. Learner-by-learner lesson status is available only through broader teacher summary APIs and may not be class-scoped.</p>
+      <div class="class-detail__metrics">
+        <article>
+          <span>Learners enrolled</span>
+          <strong>{{ rosterCount }}</strong>
+        </article>
+        <article>
+          <span>Lessons complete</span>
+          <strong>{{ completedLessons }}</strong>
+        </article>
+        <article>
+          <span>Units complete</span>
+          <strong>{{ completedUnits }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="activeTab === 'discussion'" class="class-detail__panel" aria-labelledby="class-discussion-heading">
+      <p class="class-detail__eyebrow">Discussion</p>
+      <h2 id="class-discussion-heading">Class discussion entry points</h2>
+      <p class="class-detail__muted">Thread and post APIs exist, but they are not currently class-scoped or permission-scoped for teacher moderation. No class discussion feed is shown here until that backend scope is verified.</p>
+    </section>
+  </ng-container>
+
+  <app-echo-confirmation-dialog
+    [open]="confirmationOpen"
+    title="Assign learning to this class?"
+    [description]="'This creates an assignment for ' + className + '. Learners are not selected individually by the current API.'"
+    [objectName]="targetId"
+    confirmLabel="Create assignment"
+    loadingLabel="Creating..."
+    [loading]="savingAssignment"
+    [errorMessage]="assignmentError"
+    variant="publish"
+    (confirm)="createAssignment()"
+    (cancel)="cancelAssignmentCreate()"
+  ></app-echo-confirmation-dialog>
+</section>

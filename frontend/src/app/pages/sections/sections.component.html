@@ -1,32 +1,102 @@
-<div class="p-6 space-y-6">
-  <div class="flex flex-col gap-2">
-    <h2 class="text-2xl font-bold text-ink">Sections & classrooms</h2>
-    <p class="text-sm text-slate-600">Create cohorts, assign lessons, and monitor progress.</p>
-  </div>
-
-  <div class="surface-card p-6 space-y-4">
-    <h3 class="text-lg font-semibold text-ink">New section</h3>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="name" placeholder="Section name" />
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="courseVersionId" placeholder="Course version ID" />
-      <select class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="mode">
-        <option value="in_person">In-person</option>
-        <option value="remote">Remote</option>
-        <option value="hybrid">Hybrid</option>
-        <option value="home">Home</option>
-      </select>
-      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createSection()">Create section</button>
+<section class="teach-classes" aria-labelledby="classes-title">
+  <header class="teach-classes__header">
+    <div>
+      <p class="teach-classes__eyebrow">Teach</p>
+      <h1 id="classes-title">My classes</h1>
+      <p>View classes and sections you are authorized to manage. Learner counts come from the existing section summary API.</p>
     </div>
-  </div>
+    <a routerLink="/teach/curriculum">Browse curriculum</a>
+  </header>
 
-  <div class="surface-card p-6">
-    <h3 class="text-lg font-semibold text-ink mb-4">My sections</h3>
-    <div *ngIf="sections.length === 0" class="text-sm text-slate-500">No sections yet.</div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="sections.length > 0">
-      <a *ngFor="let section of sections" [routerLink]="['/home/sections', section.id]" class="border border-slate-200 rounded-2xl p-4 bg-white hover:shadow-soft-card transition">
-        <h4 class="text-lg font-semibold text-ink">{{ section.name }}</h4>
-        <p class="text-sm text-slate-500">Mode: {{ section.mode | titlecase }}</p>
+  <section class="teach-classes__panel" aria-labelledby="new-class-title">
+    <div>
+      <p class="teach-classes__eyebrow">Create class</p>
+      <h2 id="new-class-title">New class section</h2>
+      <p>The current backend creates a class from a course version ID. This does not enroll learners automatically.</p>
+    </div>
+    <form class="teach-classes__form" (ngSubmit)="createSection()" aria-describedby="class-form-help class-form-error">
+      <label>
+        <span>Class name <strong aria-hidden="true">*</strong></span>
+        <input [(ngModel)]="name" name="name" required autocomplete="off" />
+      </label>
+      <label>
+        <span>Course version ID <strong aria-hidden="true">*</strong></span>
+        <input [(ngModel)]="courseVersionId" name="courseVersionId" required autocomplete="off" />
+      </label>
+      <label>
+        <span>Class mode</span>
+        <select [(ngModel)]="mode" name="mode">
+          <option value="in_person">In person</option>
+          <option value="remote">Remote</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="home">Home</option>
+        </select>
+      </label>
+      <button type="submit" [disabled]="creating">{{ creating ? 'Creating...' : 'Create class' }}</button>
+    </form>
+    <p id="class-form-help" class="teach-classes__muted">Use a course version that already exists in the current organization context.</p>
+    <p *ngIf="formError" id="class-form-error" class="teach-classes__error" role="alert">{{ formError }}</p>
+  </section>
+
+  <section class="teach-classes__panel" aria-labelledby="class-list-title">
+    <div class="teach-classes__panel-heading">
+      <div>
+        <p class="teach-classes__eyebrow">Authorized classes</p>
+        <h2 id="class-list-title">Class list</h2>
+      </div>
+      <label class="teach-classes__search">
+        <span>Search classes</span>
+        <input [(ngModel)]="searchTerm" name="classSearch" type="search" placeholder="Search by class or mode" />
+      </label>
+    </div>
+
+    <app-echo-loading-state
+      *ngIf="loading"
+      density="section"
+      ariaLabel="classes-loading"
+      title="Loading classes"
+      body="We are loading your authorized classes."
+    ></app-echo-loading-state>
+    <app-echo-state-panel
+      *ngIf="!loading && loadError"
+      variant="error"
+      eyebrow="Classes unavailable"
+      title="We could not load classes"
+      [body]="loadError"
+      actionLabel="Retry"
+      (action)="loadSections()"
+    ></app-echo-state-panel>
+    <app-echo-state-panel
+      *ngIf="!loading && !loadError && sections.length === 0"
+      variant="empty"
+      eyebrow="No classes yet"
+      title="Create your first class"
+      body="Classes you create or are enrolled in as an educator will appear here."
+    ></app-echo-state-panel>
+    <app-echo-state-panel
+      *ngIf="!loading && !loadError && sections.length > 0 && filteredSections.length === 0"
+      variant="empty"
+      eyebrow="No matching classes"
+      title="No class matches your search"
+      body="Clear the search field to return to the full authorized class list."
+    ></app-echo-state-panel>
+
+    <div *ngIf="!loading && !loadError && filteredSections.length > 0" class="teach-classes__grid" data-educator-responsive="teacher-classes">
+      <a *ngFor="let section of filteredSections" [routerLink]="['/teach/classes', section.id]" class="teach-classes__card">
+        <span>{{ section.mode | titlecase }}</span>
+        <h3>{{ section.name }}</h3>
+        <dl>
+          <div>
+            <dt>Learners</dt>
+            <dd>{{ learnerCount(section) }}</dd>
+          </div>
+          <div>
+            <dt>Lessons complete</dt>
+            <dd>{{ lessonCount(section) }}</dd>
+          </div>
+        </dl>
+        <p>Open class overview</p>
       </a>
     </div>
-  </div>
-</div>
+  </section>
+</section>

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { UserInfo } from '../../../models/user-info';
 import { CoursesService } from '../../../services/courses.service';
 import { Course } from '../../../models/course';
@@ -34,7 +35,7 @@ interface RuntimeInterventionCourseGroup {
 @Component({
   selector: 'echoed-teacher-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconModule, EchoStatePanelComponent, EchoLoadingStateComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IconModule, EchoStatePanelComponent, EchoLoadingStateComponent],
   templateUrl: './teacher-view.component.html',
   styleUrl: './teacher-view.component.scss'
 })

@@ -10,6 +10,11 @@ import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.co
 import { PublicProductsComponent } from './pages/public-products/public-products.component';
 import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
 import { RoleGuard } from './guards/role.guard';
+import { SectionsComponent } from './pages/sections/sections.component';
+import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
+import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
+import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
+import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -88,6 +93,31 @@ describe('app routes', () => {
       'learn/resources',
       'learn/lesson/:id',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+  });
+
+  it('adds canonical Teach aliases while preserving legacy teacher routes', () => {
+    [
+      'teach',
+      'teach/',
+      'teach/classes',
+      'teach/classes/:id',
+      'teach/curriculum',
+      'teach/courses/:courseId/preview',
+      'teach/assignments',
+      'teach/learners/:learnerId',
+      'home/sections',
+      'home/sections/:id',
+      'workspace/learners/cohorts',
+      'workspace/learners/cohorts/:id',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+
+    expect(findRoute(routes, 'teach/classes')?.component).toBe(SectionsComponent);
+    expect(findRoute(routes, 'teach/classes/:id')?.component).toBe(SectionDetailComponent);
+    expect(findRoute(routes, 'teach/curriculum')?.component).toBe(TeacherCurriculumComponent);
+    expect(findRoute(routes, 'teach/courses/:courseId/preview')?.component).toBe(TeacherCoursePreviewComponent);
+    expect(findRoute(routes, 'teach/learners/:learnerId')?.component).toBe(TeacherLearnerDetailComponent);
+    expect(findRoute(routes, 'teach/classes')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'teach/curriculum')?.canActivate).toContain(RoleGuard);
   });
 
   it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {

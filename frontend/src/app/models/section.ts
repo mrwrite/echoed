@@ -19,3 +19,21 @@ export interface Assignment {
   created_by: string;
   created_at: string;
 }
+
+export interface Enrollment {
+  id: string;
+  section_id: string;
+  user_id: string;
+  role_in_section: string;
+  status: string;
+  enrolled_at: string;
+}
+
+export interface SectionSummary {
+  section_id: string;
+  totals: {
+    enrolled: number;
+    lessons_completed: number;
+    units_completed: number;
+  };
+}

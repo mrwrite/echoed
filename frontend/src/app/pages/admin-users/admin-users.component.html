@@ -1,29 +1,40 @@
-<div class="surface-card p-6">
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <p class="section-heading text-primary text-sm">Admin</p>
-      <h2 class="text-2xl font-bold text-ink">All Signups</h2>
-    </div>
-    <span class="badge-soft">User governance</span>
-  </div>
-  <table class="w-full text-sm text-gray-700">
-    <thead class="bg-slate-50 text-slate-600">
-      <tr class="text-left border-b">
-        <th class="py-2 px-2">Name</th>
-        <th class="py-2 px-2">Role</th>
-        <th class="py-2 px-2">Signup Date</th>
-        <th class="py-2 px-2 text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-slate-100">
-      <tr *ngFor="let user of users" class="tracking-tight leading-snug hover:bg-slate-50">
-        <td class="py-3 px-2 font-semibold text-ink">{{ user.firstname }} {{user.lastname}}</td>
-        <td class="py-3 px-2">{{ user.role }}</td>
-        <td class="py-3 px-2 text-slate-500">{{ user.created_at | date: 'MMM d, y' }}</td>
-        <td class="py-3 px-2 text-right">
-          <button class="text-red-600 text-sm font-semibold hover:underline" (click)="deleteUser(user.id)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<main class="admin-page" aria-labelledby="admin-users-title">
+  <header class="admin-page__header">
+    <div><p class="admin-page__eyebrow">Admin / Users</p><h1 id="admin-users-title">Users</h1><p class="admin-page__intro">Review platform roles and open an account record for supported access changes.</p></div>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading users" body="The protected user directory is being prepared." ariaLabel="User directory loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && loadFailed" variant="error" title="Users could not be loaded" body="No account information has changed. Try the request again." actionLabel="Retry" (action)="loadUsers()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadFailed">
+    <section class="admin-panel" aria-label="User filters">
+      <div class="admin-toolbar">
+        <div class="admin-field"><label for="admin-user-search">Search by name</label><input id="admin-user-search" class="admin-control" type="search" [(ngModel)]="search" autocomplete="off" /></div>
+        <div class="admin-field"><label for="admin-role-filter">Role</label><select id="admin-role-filter" class="admin-control" [(ngModel)]="roleFilter"><option value="all">All roles</option><option *ngFor="let role of roles" [value]="role">{{ roleLabel(role) | titlecase }}</option></select></div>
+      </div>
+      <p class="admin-results" aria-live="polite">{{ filteredUsers.length }} {{ filteredUsers.length === 1 ? 'user' : 'users' }} shown</p>
+    </section>
+
+    <app-echo-state-panel *ngIf="users.length === 0" variant="empty" title="No users found" body="No platform user records were returned."></app-echo-state-panel>
+    <app-echo-state-panel *ngIf="users.length > 0 && filteredUsers.length === 0" variant="empty" title="No users match these filters" body="Change the name search or role filter to see more accounts."></app-echo-state-panel>
+
+    <section *ngIf="filteredUsers.length" class="admin-panel" aria-labelledby="user-results-title">
+      <h2 id="user-results-title">User directory</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table"><caption class="sr-only">Platform users and account actions</caption><thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Created</th><th scope="col">Actions</th></tr></thead>
+          <tbody><tr *ngFor="let user of filteredUsers"><td><strong>{{ displayName(user) }}</strong></td><td><span class="admin-pill">{{ roleLabel(user.role) }}</span></td><td>{{ user.created_at | date:'mediumDate' }}</td><td><a class="admin-link" [routerLink]="['/admin/users', user.id]" [attr.aria-label]="'Review ' + displayName(user)">Review details</a></td></tr></tbody>
+        </table>
+      </div>
+      <div class="admin-mobile-list">
+        <article *ngFor="let user of filteredUsers" class="admin-panel admin-mobile-record"><div><strong>{{ displayName(user) }}</strong><br><span class="admin-pill">{{ roleLabel(user.role) }}</span></div><span>Created {{ user.created_at | date:'mediumDate' }}</span><a class="admin-link" [routerLink]="['/admin/users', user.id]">Review details</a></article>
+      </div>
+    </section>
+  </ng-container>
+
+  <app-echo-confirmation-dialog
+    [open]="!!pendingDelete" variant="danger" title="Delete user account"
+    [description]="'This permanently removes the account and may also remove authored discussions, badge awards, and learning links. This action cannot be undone.'"
+    [objectName]="pendingDelete ? displayName(pendingDelete) : ''" confirmLabel="Delete user" [loading]="deleting" loadingLabel="Deleting user..." [errorMessage]="deleteError"
+    (cancel)="cancelDelete()" (confirm)="confirmDelete()"
+  ></app-echo-confirmation-dialog>
+</main>

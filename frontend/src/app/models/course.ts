@@ -16,5 +16,9 @@ export interface Course {
     /** Optional number of ratings */
     ratingCount?: number;
     units?: Unit[];
-    created_at: Date;
+    created_at?: Date;
+    created_by?: string | null;
+    organization_id?: string | null;
+    revision_status?: string;
+    published_at?: string | null;
 }

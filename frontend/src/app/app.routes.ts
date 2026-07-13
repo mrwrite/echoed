@@ -45,6 +45,10 @@ import { CommercialDashboardComponent } from './pages/commercial-dashboard/comme
 import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
 import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
 import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
+import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
+import { AdminUserDetailComponent } from './pages/admin-user-detail/admin-user-detail.component';
+import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
+import { AdminReportsComponent } from './pages/admin-reports/admin-reports.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -58,6 +62,22 @@ export const routes: Routes = [
   { path: 'registration', component: RegistrationComponent },
   { path: 'onboarding/organization', component: OnboardingOrganizationComponent },
   { path: 'access-denied', component: AccessDeniedComponent },
+  {
+    path: 'admin',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      { path: '', component: AdminOverviewComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'users', component: AdminUsersComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'users/:userId', component: AdminUserDetailComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'organizations', component: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'organizations/:organizationId', component: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'courses', component: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'courses/:courseId', component: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'badges', component: AdminBadgesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+    ],
+  },
   {
     path: 'teach',
     component: HomeComponent,

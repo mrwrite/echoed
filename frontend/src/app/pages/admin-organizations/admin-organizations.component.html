@@ -1,0 +1,20 @@
+<main class="admin-page" [attr.aria-labelledby]="detailMode ? 'organization-detail-title' : 'organizations-title'">
+  <a *ngIf="detailMode" class="admin-link" routerLink="/admin/organizations">Back to organizations</a>
+  <header class="admin-page__header"><div><p class="admin-page__eyebrow">Admin / Organizations</p><h1 [id]="detailMode ? 'organization-detail-title' : 'organizations-title'">{{ detailMode && selected ? selected.name : 'Organizations' }}</h1><p class="admin-page__intro">Platform visibility is limited to organizations associated with the current account. Organization self-service remains in the Organization area.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading organizations" ariaLabel="Organizations loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="error" title="Organizations could not be loaded" body="No organization information has changed." actionLabel="Retry" (action)="load()"></app-echo-state-panel>
+  <app-echo-state-panel *ngIf="!loading && detailMode && !selected" variant="permission" title="Organization unavailable" body="This organization is not associated with the current account or does not exist."></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !failed && !detailMode">
+    <div class="admin-callout"><p><strong>Scoped organization visibility</strong></p><p>The current API does not provide a platform-wide organization directory, member counts, administrator counts, invitations, sections, or organization lifecycle status. These values are not inferred.</p></div>
+    <app-echo-state-panel *ngIf="organizations.length === 0" variant="empty" title="No organizations available" body="This account has no organization memberships returned by the current API."></app-echo-state-panel>
+    <section *ngIf="organizations.length" class="admin-card-grid" aria-label="Organizations available to this account">
+      <article *ngFor="let organization of organizations" class="admin-panel admin-mobile-record"><div><h2>{{ organization.name }}</h2><span class="admin-pill">{{ label(organization.type) }}</span></div><p>{{ organization.country || 'Country not provided' }}<span *ngIf="organization.timezone"> · {{ organization.timezone }}</span></p><p class="admin-results">Your membership: {{ label(organization.role) | titlecase }}</p><a class="admin-link" [routerLink]="['/admin/organizations', organization.id]">Review details</a></article>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && selected">
+    <section class="admin-panel" aria-labelledby="organization-context-title"><h2 id="organization-context-title">Organization context</h2><dl class="admin-definition"><div><dt>Name</dt><dd>{{ selected.name }}</dd></div><div><dt>Type</dt><dd>{{ label(selected.type) | titlecase }}</dd></div><div><dt>Country</dt><dd>{{ selected.country || 'Not provided' }}</dd></div><div><dt>Timezone</dt><dd>{{ selected.timezone || 'Not provided' }}</dd></div><div><dt>Created</dt><dd>{{ selected.created_at ? (selected.created_at | date:'mediumDate') : 'Not available' }}</dd></div><div><dt>Your organization role</dt><dd>{{ label(selected.role) | titlecase }}</dd></div></dl></section>
+    <section class="admin-panel" aria-labelledby="organization-access-title"><h2 id="organization-access-title">Oversight availability</h2><p>Members, organization administrators, invitations, classes, assigned learning, and status are read-only unavailable because no platform-scoped read API exposes them. No organization-changing actions are shown.</p></section>
+  </ng-container>
+</main>

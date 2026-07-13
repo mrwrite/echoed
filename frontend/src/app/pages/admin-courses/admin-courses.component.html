@@ -1,26 +1,24 @@
-<div class="surface-card p-6">
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <p class="section-heading text-primary text-sm">Products</p>
-      <h2 class="text-2xl font-bold text-ink">Course-backed products</h2>
-    </div>
-    <button class="px-3 py-2 rounded-xl bg-primary text-white text-sm font-semibold" (click)="goToCreateCourse()">Create Product</button>
-  </div>
-  <table class="w-full text-sm">
-    <thead class="bg-slate-50 text-slate-600">
-      <tr class="text-left">
-        <th class="py-2 px-2">Title</th>
-        <th class="py-2 px-2 text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-slate-100">
-      <tr *ngFor="let course of courses" class="hover:bg-slate-50">
-        <td class="py-3 px-2 font-semibold text-ink">{{ course.title }}</td>
-        <td class="py-3 px-2 text-right space-x-2">
-          <button class="text-sm text-primary font-semibold" (click)="onManageCourse(course.id)">Manage</button>
-          <button class="text-sm text-red-600 font-semibold" (click)="onDeleteCourse(course.id)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<main class="admin-page" [attr.aria-labelledby]="detailMode ? 'course-detail-title' : 'admin-courses-title'">
+  <a *ngIf="detailMode" class="admin-link" routerLink="/admin/courses">Back to courses</a>
+  <header class="admin-page__header"><div><p class="admin-page__eyebrow">Admin / Courses</p><h1 [id]="detailMode ? 'course-detail-title' : 'admin-courses-title'">{{ detailMode && selected ? selected.title : 'Course oversight' }}</h1><p class="admin-page__intro">Inspect curriculum availability and governance without entering content-authoring workflows.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading course oversight" ariaLabel="Course oversight loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="permission" title="Course information unavailable" body="The course does not exist, could not be loaded, or your current role cannot access it." actionLabel="Retry" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !failed && !detailMode">
+    <section class="admin-panel" aria-label="Course filters"><div class="admin-toolbar"><div class="admin-field"><label for="admin-course-search">Search courses</label><input id="admin-course-search" class="admin-control" type="search" [(ngModel)]="search" /></div></div><p class="admin-results" aria-live="polite">{{ filteredCourses.length }} {{ filteredCourses.length === 1 ? 'course' : 'courses' }} shown</p></section>
+    <app-echo-state-panel *ngIf="courses.length === 0" variant="empty" title="No courses available" body="No course records were returned."></app-echo-state-panel>
+    <app-echo-state-panel *ngIf="courses.length && filteredCourses.length === 0" variant="empty" title="No courses match this search" body="Clear or change the title search."></app-echo-state-panel>
+    <section *ngIf="filteredCourses.length" class="admin-panel" aria-labelledby="course-list-title"><h2 id="course-list-title">Courses</h2><div class="admin-table-wrap"><table class="admin-table"><caption class="sr-only">Courses available for platform oversight</caption><thead><tr><th scope="col">Title</th><th scope="col">Status</th><th scope="col">Organization context</th><th scope="col">Action</th></tr></thead><tbody><tr *ngFor="let course of filteredCourses"><td><strong>{{ course.title }}</strong></td><td><span class="admin-pill">{{ label(status(course)) | titlecase }}</span></td><td>{{ course.organization_id ? 'Organization assigned' : 'Not provided' }}</td><td><a class="admin-link" [routerLink]="['/admin/courses', course.id]">Review oversight</a></td></tr></tbody></table></div>
+      <div class="admin-mobile-list"><article *ngFor="let course of filteredCourses" class="admin-panel admin-mobile-record"><strong>{{ course.title }}</strong><span class="admin-pill">{{ label(status(course)) | titlecase }}</span><span>{{ course.organization_id ? 'Organization assigned' : 'Organization not provided' }}</span><a class="admin-link" [routerLink]="['/admin/courses', course.id]">Review oversight</a></article></div>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && selected">
+    <section class="admin-panel" aria-labelledby="course-identity-title"><h2 id="course-identity-title">Course identity</h2><dl class="admin-definition"><div><dt>Title</dt><dd>{{ selected.title }}</dd></div><div><dt>Status</dt><dd>{{ label(status(selected)) | titlecase }}</dd></div><div><dt>Organization context</dt><dd>{{ selected.organization_id ? 'Assigned' : 'Not provided' }}</dd></div><div><dt>Units</dt><dd>{{ selected.units?.length || 0 }}</dd></div><div><dt>Published</dt><dd>{{ selected.published_at ? (selected.published_at | date:'mediumDate') : 'Not available' }}</dd></div><div><dt>Authoring access</dt><dd>Not provided in Admin</dd></div></dl><p>{{ selected.description || 'No course description is available.' }}</p></section>
+    <app-echo-state-panel *ngIf="governanceFailed" variant="error" title="Course governance could not be loaded" body="Course identity remains available. Retry governance checks separately." actionLabel="Retry governance" (action)="loadGovernance(selected.id)"></app-echo-state-panel>
+    <section *ngIf="governance" class="admin-panel" aria-labelledby="governance-title"><h2 id="governance-title">Governance status</h2><dl class="admin-definition"><div><dt>Publish readiness</dt><dd>{{ governance.publish_readiness.is_ready ? 'Ready' : 'Needs review' }} ({{ governance.publish_readiness.blocking_issue_count }} blocking)</dd></div><div><dt>Safe publish validation</dt><dd>{{ governance.safe_publish_validation.is_safe ? 'Safe' : 'Not safe' }}</dd></div><div><dt>Lineage</dt><dd>{{ governance.lineage_safety_visibility.is_coherent ? 'Coherent' : 'Needs review' }}</dd></div><div><dt>Assessment evidence</dt><dd>{{ governance.competency_evidence_integrity.is_valid ? 'Valid' : 'Needs review' }}</dd></div></dl></section>
+    <section class="admin-panel admin-danger-zone" aria-labelledby="course-danger-title"><h2 id="course-danger-title">High-impact actions</h2><p>Deleting this course permanently removes the current course record and can disrupt learning access. The current API does not provide archive or restore.</p><button type="button" class="admin-button admin-button--danger" (click)="requestDelete(selected)">Delete course</button></section>
+  </ng-container>
+
+  <app-echo-confirmation-dialog [open]="!!pendingDelete" variant="danger" title="Delete course" [description]="'This permanently removes the course record and can disrupt learner access. No archive or restore is available. This action cannot be undone.'" [objectName]="pendingDelete?.title || ''" confirmLabel="Delete course" [loading]="deleting" loadingLabel="Deleting course..." [errorMessage]="deleteError" (cancel)="cancelDelete()" (confirm)="confirmDelete()"></app-echo-confirmation-dialog>
+</main>

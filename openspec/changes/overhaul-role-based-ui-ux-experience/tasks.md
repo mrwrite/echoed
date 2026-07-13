@@ -46,9 +46,9 @@
 
 ## 7. Administrator Experience
 
-- [ ] 7.1 Redesign admin dashboard with alerts before routine metrics; affected screens: admin dashboard; APIs: `/api/analytics/overview`, users, courses, governance summary; tests: admin specs; a11y: alert ordering; responsive: metrics stack; frontend-only: yes; rollback: old admin view.
-- [ ] 7.2 Redesign user and role management with confirmation flows; affected screens: `/home/admin/users`; APIs: `/api/users`, org/invite APIs; tests: user management specs; a11y: data list and confirmation; responsive: filters drawer; frontend-only: yes; rollback: old admin users.
-- [ ] 7.3 Redesign course, badge, upload/asset, reporting, moderation, and platform settings surfaces; affected screens: admin courses, badges, analytics/reports, review/moderation; APIs: courses, badges, uploads, analytics, review, posts/threads; tests: page specs; a11y: destructive/publish confirmations; responsive: data list; frontend-only: yes unless asset library/moderation backend is selected; rollback: old surfaces.
+- [x] 7.1 Redesign admin dashboard with alerts before routine metrics; affected screens: admin dashboard; APIs: `/api/analytics/overview`, users, courses, governance summary; tests: admin specs; a11y: alert ordering; responsive: metrics stack; frontend-only: yes; rollback: old admin view.
+- [x] 7.2 Redesign user and role management with confirmation flows; affected screens: `/home/admin/users`; APIs: `/api/users`, org/invite APIs; tests: user management specs; a11y: data list and confirmation; responsive: filters drawer; frontend-only: yes; rollback: old admin users.
+- [x] 7.3 Redesign course, badge, upload/asset, reporting, moderation, and platform settings surfaces; affected screens: admin courses, badges, analytics/reports, review/moderation; APIs: courses, badges, uploads, analytics, review, posts/threads; tests: page specs; a11y: destructive/publish confirmations; responsive: data list; frontend-only: yes unless asset library/moderation backend is selected; rollback: old surfaces.
 
 ## 8. Studio, Organization, and Community Surfaces
 

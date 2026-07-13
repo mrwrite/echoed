@@ -17,7 +17,7 @@ test.describe('demo student flagship smoke', () => {
     await expect(page).toHaveURL(/\/learn\/lesson\//);
     await expect(page.getByLabel('Lesson experience')).toBeVisible();    
     await expect(
-      page.getByRole('button', { name: 'Exit lesson and return to Learn' }),
+      page.getByRole('button', { name: 'Return to the course overview' }),
     ).toBeVisible();
   });
 });

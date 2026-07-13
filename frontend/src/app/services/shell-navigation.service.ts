@@ -91,13 +91,12 @@ export class ShellNavigationService {
       title: 'Admin',
       space: 'admin',
       items: [
-        { label: 'Admin Overview', route: '/home', icon: 'Home', roles: ['admin', 'super_admin'], exact: true },
-        { label: 'Users', route: '/home/admin/users', icon: 'Users', permission: 'nav:admin-users', roles: ['admin', 'super_admin'] },
-        { label: 'Courses', route: '/home/admin/courses', icon: 'BookOpen', permission: 'nav:admin-courses', roles: ['admin', 'super_admin'] },
-        { label: 'Badges', route: '/home/admin/badges', icon: 'Award', permission: 'nav:admin-badges', roles: ['admin', 'super_admin'] },
-        { label: 'Reports', route: '/workspace/analytics', icon: 'SlidersHorizontal', permission: 'nav:analytics', roles: ['admin', 'super_admin'] },
-        { label: 'Community', route: '/workspace/commercial', icon: 'Users', permission: 'nav:commercial', roles: ['admin', 'super_admin'] },
-        { label: 'Settings', route: '/workspace/settings', icon: 'Settings', permission: 'nav:settings', roles: ['admin', 'super_admin'] },
+        { label: 'Admin Overview', route: '/admin', icon: 'Home', roles: ['admin', 'super_admin'], exact: true },
+        { label: 'Users', route: '/admin/users', icon: 'Users', permission: 'nav:admin-users', roles: ['admin'] },
+        { label: 'Organizations', route: '/admin/organizations', icon: 'Users', roles: ['admin', 'super_admin'] },
+        { label: 'Courses', route: '/admin/courses', icon: 'BookOpen', permission: 'nav:admin-courses', roles: ['admin'] },
+        { label: 'Badges', route: '/admin/badges', icon: 'Award', roles: ['admin', 'super_admin'] },
+        { label: 'Reports', route: '/admin/reports', icon: 'SlidersHorizontal', permission: 'nav:admin-reports', roles: ['admin'] },
       ],
     },
   ];
@@ -119,7 +118,7 @@ export class ShellNavigationService {
         name: 'Admin',
         eyebrow: 'EchoEd Admin',
         description: 'Manage people, curriculum oversight, reporting, and platform safeguards.',
-        canonicalRoute: '/home',
+        canonicalRoute: '/admin',
       };
     }
 

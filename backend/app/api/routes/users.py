@@ -19,9 +19,17 @@ def get_users(
     return db.query(User).all()
 
 
+@router.get("/users/students")
+def get_student_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin", "teacher")),
+):
+    return db.query(User).filter(User.role == "student").all()
+
+
 @router.get("/users/{user_id}")
 def get_user_by_id(
-    user_id: str,
+    user_id: uuid.UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("admin")),
 ):
@@ -31,17 +39,9 @@ def get_user_by_id(
     return user
 
 
-@router.get("/users/students")
-def get_student_users(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("admin", "teacher")),
-):
-    return db.query(User).filter(User.role == "student").all()
-
-
 @router.put("/users/{user_id}")
 def update_user(
-    user_id: str,
+    user_id: uuid.UUID,
     user: UserDto,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("admin")),

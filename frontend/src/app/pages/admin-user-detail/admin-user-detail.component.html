@@ -1,0 +1,23 @@
+<main class="admin-page" aria-labelledby="admin-user-title">
+  <a class="admin-link" routerLink="/admin/users">Back to users</a>
+  <app-echo-loading-state *ngIf="loading" title="Loading user record" ariaLabel="User record loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="permission" title="User record unavailable" body="The record does not exist or your current role cannot access it." actionLabel="Return to users" (action)="router.navigate(['/admin/users'])"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && user">
+    <header class="admin-page__header"><div><p class="admin-page__eyebrow">Admin / Users / Detail</p><h1 id="admin-user-title">{{ displayName }}</h1><p class="admin-page__intro">Account identity and platform access. Learning progress and private profile data are not shown here.</p></div><span class="admin-pill">{{ roleLabel(user.role) }}</span></header>
+    <app-echo-state-panel *ngIf="successMessage" variant="success" title="Account updated" [body]="successMessage"></app-echo-state-panel>
+
+    <section class="admin-panel" aria-labelledby="identity-title"><h2 id="identity-title">Identity</h2><dl class="admin-definition"><div><dt>Display name</dt><dd>{{ displayName }}</dd></div><div><dt>Username</dt><dd>{{ user.username }}</dd></div><div><dt>Email</dt><dd>{{ user.email }}</dd></div><div><dt>Created</dt><dd>{{ user.created_at | date:'medium' }}</dd></div><div><dt>Platform role</dt><dd>{{ roleLabel(user.role) | titlecase }}</dd></div><div><dt>Organization memberships</dt><dd>Not available from the current user API</dd></div></dl></section>
+
+    <section class="admin-panel" aria-labelledby="access-title"><h2 id="access-title">Role and access</h2>
+      <div *ngIf="isSelf" class="admin-callout"><p><strong>Your own role cannot be changed here.</strong></p><p>This prevents accidental loss of access. The backend does not provide a protected self-role workflow.</p></div>
+      <div *ngIf="!isSelf" class="admin-toolbar"><div class="admin-field"><label for="user-role">Platform role</label><select id="user-role" class="admin-control" [(ngModel)]="selectedRole"><option *ngFor="let role of assignableRoles" [value]="role">{{ roleLabel(role) | titlecase }}</option></select></div><button type="button" class="admin-button" [disabled]="selectedRole === user.role" (click)="requestRoleChange()">Review role change</button></div>
+      <p class="admin-results">Organization administrator and content administrator access is organization-scoped and is not assigned through this control. Partially implemented roles are not assignable here.</p>
+    </section>
+
+    <section class="admin-panel admin-danger-zone" aria-labelledby="danger-title"><h2 id="danger-title">High-impact actions</h2><p>Deleting this account is permanent and may remove authored discussions, badge awards, and learning links. It does not delete organizations or courses.</p><button type="button" class="admin-button admin-button--danger" [disabled]="isSelf" (click)="actionError=''; confirmDelete=true">Delete user account</button><p *ngIf="isSelf" class="admin-results">You cannot delete your own account from Admin.</p></section>
+  </ng-container>
+
+  <app-echo-confirmation-dialog [open]="confirmRole" title="Change platform role" [description]="'This changes which platform areas ' + displayName + ' can access. Organization-scoped access is not changed.'" [objectName]="displayName" confirmLabel="Change role" [loading]="saving" loadingLabel="Changing role..." [errorMessage]="actionError" (cancel)="confirmRole=false" (confirm)="applyRoleChange()"></app-echo-confirmation-dialog>
+  <app-echo-confirmation-dialog [open]="confirmDelete" variant="danger" title="Delete user account" [description]="'This permanently removes the account and may remove authored discussions, badge awards, and learning links. Organizations and courses are not deleted. This action cannot be undone.'" [objectName]="displayName" confirmLabel="Delete user" [loading]="deleting" loadingLabel="Deleting user..." [errorMessage]="actionError" (cancel)="confirmDelete=false" (confirm)="deleteUser()"></app-echo-confirmation-dialog>
+</main>

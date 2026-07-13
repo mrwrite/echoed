@@ -15,6 +15,9 @@ import { SectionDetailComponent } from './pages/section-detail/section-detail.co
 import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
 import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
 import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
+import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
+import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
+import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -118,6 +121,30 @@ describe('app routes', () => {
     expect(findRoute(routes, 'teach/learners/:learnerId')?.component).toBe(TeacherLearnerDetailComponent);
     expect(findRoute(routes, 'teach/classes')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'teach/curriculum')?.canActivate).toContain(RoleGuard);
+  });
+
+  it('adds guarded canonical Admin routes while preserving legacy aliases', () => {
+    [
+      'admin',
+      'admin/users',
+      'admin/users/:userId',
+      'admin/organizations',
+      'admin/organizations/:organizationId',
+      'admin/courses',
+      'admin/courses/:courseId',
+      'admin/badges',
+      'admin/reports',
+      'home/admin/users',
+      'home/admin/courses',
+      'home/admin/badges',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+
+    expect(findRoute(routes, 'admin/')?.component).toBe(AdminOverviewComponent);
+    expect(findRoute(routes, 'admin/users')?.component).toBe(AdminUsersComponent);
+    expect(findRoute(routes, 'admin/organizations')?.component).toBe(AdminOrganizationsComponent);
+    expect(findRoute(routes, 'admin/users')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'admin/users')?.data?.['roles']).toEqual(['admin']);
+    expect(findRoute(routes, 'admin/organizations')?.data?.['roles']).toEqual(['admin', 'super_admin']);
   });
 
   it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {

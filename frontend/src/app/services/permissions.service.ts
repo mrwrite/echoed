@@ -268,6 +268,7 @@ export class PermissionsService {
       permissions.add('nav:admin-badges');
       permissions.add('nav:admin-users');
       permissions.add('nav:admin-courses');
+      permissions.add('nav:admin-reports');
     }
 
     if (this.hasRole(roleSet, ['org_admin', 'content_admin'])) {

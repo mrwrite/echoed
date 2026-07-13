@@ -1,1 +1,4 @@
 /* Add any custom styles for badges admin here */
+@use '../../../styles/admin-production';
+
+img { border-radius: var(--ee-radius-card-default); object-fit: cover; }

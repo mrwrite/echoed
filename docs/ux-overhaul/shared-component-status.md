@@ -45,11 +45,23 @@
 - Global teacher assignment list is still a class-first alias because no global assignment API was verified.
 - Teacher feedback panels remain deferred because no feedback persistence endpoint was verified.
 
+## Added Or Migrated In Admin Phase
+
+| Component/screen | Path | Status | Notes |
+| --- | --- | --- | --- |
+| Admin production layout | `frontend/src/styles/_admin-production.scss` | Production active | Shared Admin page, panel, filter, semantic table/mobile record, status, action, and detail patterns. |
+| Admin overview | `frontend/src/app/pages/admin-overview/` | Production active | Independent partial-failure counts, limitations, and supported shortcuts. |
+| Admin users/detail | `frontend/src/app/pages/admin-users/`, `admin-user-detail/` | Production active | Privacy-minimized responsive list, confirmed role changes and deletion. |
+| Admin organizations | `frontend/src/app/pages/admin-organizations/` | Production active, read-only | Explicit current-account membership scope and neutral deep-link handling. |
+| Admin courses | `frontend/src/app/pages/admin-courses/` | Production active | Oversight/governance only; confirmed delete; no authoring controls. |
+| Admin badges | `frontend/src/app/pages/admin-badges/` | Production active | Create/upload for admin, read-only compatibility, accessible images. |
+| Admin reports | `frontend/src/app/pages/admin-reports/` | Production active | Defined current aggregate counts only. |
+| Confirmation dialog | `frontend/src/app/components/echo-confirmation-dialog/` | Adopted in Admin | User role, user delete, and course delete consequences use shared focus-safe dialog. |
+
 ## Required Future Adoption
 
-- Admin user deletes/role changes.
-- Course archive/delete/publish actions.
-- Badge create/update/delete flows.
+- Course archive/publish actions if supported outside Studio.
+- Badge update/delete flows if APIs are approved.
 - Organization invite revocation.
 - Access grant revoke flows.
 - Product publish/review transitions.

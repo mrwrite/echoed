@@ -1,0 +1,58 @@
+<main class="admin-page" aria-labelledby="admin-overview-title">
+  <header class="admin-page__header">
+    <div>
+      <p class="admin-page__eyebrow">Platform administration</p>
+      <h1 id="admin-overview-title">Admin overview</h1>
+      <p class="admin-page__intro">Review platform access, learning resources, and supported operational status.</p>
+    </div>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading Admin overview" body="Supported platform counts are being checked independently." ariaLabel="Admin overview loading"></app-echo-loading-state>
+
+  <app-echo-state-panel
+    *ngIf="!loading && !isAdmin"
+    variant="permission"
+    title="Limited super-admin compatibility"
+    body="This role can open the Admin area, but current user, course, reporting, and badge-write APIs authorize the admin role only. Unsupported controls are not shown."
+  ></app-echo-state-panel>
+
+  <app-echo-state-panel
+    *ngIf="!loading && failedSources.size"
+    variant="error"
+    title="Some platform information could not be loaded"
+    body="Available information remains visible. Retry to check the unavailable sources again."
+    actionLabel="Retry"
+    (action)="load()"
+  ></app-echo-state-panel>
+
+  <section *ngIf="!loading" aria-labelledby="attention-title">
+    <h2 id="attention-title">Needs attention</h2>
+    <div class="admin-callout">
+      <p><strong>No verified platform attention queue is available.</strong></p>
+      <p>Review users, course governance, and organizations directly. Community reports and moderation actions are not presented because the current APIs do not provide authorized, scoped queues.</p>
+    </div>
+  </section>
+
+  <section *ngIf="!loading" aria-labelledby="summary-title">
+    <h2 id="summary-title">Platform summary</h2>
+    <div class="admin-summary-grid" aria-live="polite">
+      <article *ngIf="isAdmin && !failedSources.has('users')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ counts.users }}</p><p class="admin-metric__label">Total users</p></article>
+      <article *ngIf="isAdmin && overview && !failedSources.has('overview')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ overview.totals.students }}</p><p class="admin-metric__label">Students</p></article>
+      <article *ngIf="isAdmin && overview && !failedSources.has('overview')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ overview.totals.teachers }}</p><p class="admin-metric__label">Teachers</p></article>
+      <article *ngIf="!failedSources.has('organizations')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ counts.organizations }}</p><p class="admin-metric__label">Organizations available to this account</p></article>
+      <article *ngIf="isAdmin && !failedSources.has('courses')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ counts.courses }}</p><p class="admin-metric__label">Courses</p></article>
+      <article *ngIf="!failedSources.has('badges')" class="admin-panel admin-metric"><p class="admin-metric__value">{{ counts.badges }}</p><p class="admin-metric__label">Badges</p></article>
+    </div>
+  </section>
+
+  <section *ngIf="!loading" aria-labelledby="shortcuts-title">
+    <h2 id="shortcuts-title">Administrative shortcuts</h2>
+    <div class="admin-shortcuts">
+      <a *ngIf="isAdmin" class="admin-panel admin-link" routerLink="/admin/users">Manage users</a>
+      <a class="admin-panel admin-link" routerLink="/admin/organizations">Review organizations</a>
+      <a *ngIf="isAdmin" class="admin-panel admin-link" routerLink="/admin/courses">Review courses</a>
+      <a class="admin-panel admin-link" routerLink="/admin/badges">{{ isAdmin ? 'Manage badges' : 'Review badges' }}</a>
+      <a *ngIf="isAdmin" class="admin-panel admin-link" routerLink="/admin/reports">Review platform reporting</a>
+    </div>
+  </section>
+</main>

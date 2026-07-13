@@ -1,5 +1,5 @@
 <ng-container *ngIf="userInfo">
-    <echoed-admin-view *ngIf="userInfo.role === 'admin'" [userInfo]="userInfo"></echoed-admin-view>
+    <app-admin-overview *ngIf="userInfo.role === 'admin' || userInfo.role === 'super_admin'"></app-admin-overview>
     <echoed-student-view *ngIf="userInfo.role === 'student'" [userInfo]="userInfo"></echoed-student-view>
     <echoed-teacher-view *ngIf="userInfo.role === 'teacher' || userInfo.role === 'instructor'" [userInfo]="userInfo"></echoed-teacher-view>
   </ng-container>

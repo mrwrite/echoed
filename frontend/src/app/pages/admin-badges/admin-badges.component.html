@@ -1,36 +1,19 @@
-<div class="surface-card p-6">
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <p class="section-heading text-primary text-sm">Admin</p>
-      <h2 class="text-2xl font-bold text-ink">Manage Badges</h2>
-      <p class="muted-text">Create and preview recognition moments for students.</p>
-    </div>
-    <span class="badge-soft">Engagement</span>
-  </div>
-  <form [formGroup]="badgeForm" (ngSubmit)="onSubmit()" class="grid gap-3 md:grid-cols-2 mb-6">
-    <div class="space-y-2">
-      <label class="text-sm font-semibold text-primary">Title</label>
-      <input formControlName="title" placeholder="Title" class="w-full rounded-xl border border-slate-200 px-3 py-2" />
-    </div>
-    <div class="space-y-2">
-      <label class="text-sm font-semibold text-primary">Description</label>
-      <input formControlName="description" placeholder="Description" class="w-full rounded-xl border border-slate-200 px-3 py-2" />
-    </div>
-    <div class="space-y-2">
-      <label class="text-sm font-semibold text-primary">Badge image</label>
-      <input type="file" (change)="onFileSelected($event)" class="w-full rounded-xl border border-slate-200 px-3 py-2 bg-white" />
-    </div>
-    <div class="flex items-end">
-      <button type="submit" class="px-4 py-3 bg-primary text-white rounded-xl shadow-soft-card" [disabled]="badgeForm.invalid">Add Badge</button>
-    </div>
-  </form>
-  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-    <div *ngFor="let badge of badges" class="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-      <img *ngIf="badge.image_url" [src]="badge.image_url" class="w-10 h-10 rounded-full object-cover" />
-      <div>
-        <p class="font-semibold text-ink">{{ badge.title }}</p>
-        <p class="text-xs text-slate-500">{{ badge.description }}</p>
-      </div>
-    </div>
-  </div>
-</div>
+<main class="admin-page" aria-labelledby="admin-badges-title">
+  <header class="admin-page__header"><div><p class="admin-page__eyebrow">Admin / Badges</p><h1 id="admin-badges-title">Badge administration</h1><p class="admin-page__intro">Create supported recognition badges and review the current catalog. Editing, deleting, archiving, and criteria management are not available from current APIs.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading badges" ariaLabel="Badge catalog loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="error" title="Badges could not be loaded" body="No badge information has changed." actionLabel="Retry" (action)="loadBadges()"></app-echo-state-panel>
+  <app-echo-state-panel *ngIf="successMessage" variant="success" title="Badge created" [body]="successMessage"></app-echo-state-panel>
+
+  <section *ngIf="!loading && !failed && canCreate" class="admin-panel" aria-labelledby="create-badge-title"><h2 id="create-badge-title">Create badge</h2><form [formGroup]="badgeForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="admin-card-grid"><div class="admin-field"><label for="badge-title">Name</label><input id="badge-title" class="admin-control" formControlName="title" [attr.aria-invalid]="badgeForm.controls['title'].invalid && badgeForm.controls['title'].touched" /><span *ngIf="badgeForm.controls['title'].invalid && badgeForm.controls['title'].touched" role="alert">Enter a badge name.</span></div><div class="admin-field"><label for="badge-description">Description</label><textarea id="badge-description" class="admin-control" formControlName="description" rows="3"></textarea></div><div class="admin-field"><label for="badge-image">Badge image</label><input id="badge-image" class="admin-control" type="file" accept="image/png,image/jpeg,image/webp" (change)="onFileSelected($event)" /><span class="admin-results">Optional PNG, JPEG, or WebP image.</span></div></div>
+    <p *ngIf="submitError" role="alert">{{ submitError }}</p><button type="submit" class="admin-button" [disabled]="submitting">{{ submitting ? 'Creating badge...' : 'Create badge' }}</button>
+  </form></section>
+  <div *ngIf="!loading && !failed && !canCreate" class="admin-callout"><p><strong>Read-only badge catalog</strong></p><p>The current backend permits badge writes only for the admin role. No write controls are shown for this role.</p></div>
+
+  <ng-container *ngIf="!loading && !failed">
+    <section class="admin-panel" aria-label="Badge search"><div class="admin-field"><label for="badge-search">Search badges</label><input id="badge-search" class="admin-control" type="search" [(ngModel)]="search" [ngModelOptions]="{standalone: true}" /></div><p class="admin-results" aria-live="polite">{{ filteredBadges.length }} {{ filteredBadges.length === 1 ? 'badge' : 'badges' }} shown</p></section>
+    <app-echo-state-panel *ngIf="badges.length === 0" variant="empty" title="No badges created" body="Created badges will appear here."></app-echo-state-panel>
+    <app-echo-state-panel *ngIf="badges.length && filteredBadges.length === 0" variant="empty" title="No badges match this search" body="Clear or change the badge search."></app-echo-state-panel>
+    <section *ngIf="filteredBadges.length" class="admin-card-grid" aria-label="Badge catalog"><article *ngFor="let badge of filteredBadges" class="admin-panel admin-mobile-record"><img *ngIf="badge.image_url; else missingImage" [src]="badge.image_url" [alt]="badge.title + ' badge'" width="72" height="72" /><ng-template #missingImage><div class="admin-callout" role="img" [attr.aria-label]="badge.title + ' badge image not provided'">Image not provided</div></ng-template><div><h2>{{ badge.title }}</h2><p>{{ badge.description || 'No description provided.' }}</p><p class="admin-results">Created {{ badge.created_at | date:'mediumDate' }}</p></div></article></section>
+  </ng-container>
+</main>

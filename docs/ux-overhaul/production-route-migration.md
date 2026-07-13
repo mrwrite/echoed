@@ -1,10 +1,10 @@
 # Production Route Migration
 
-Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links.
+Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links.
 
 | Current route | Canonical route | Role | Redirect behavior | Guard behavior | Migration phase | Removal criteria | Deep-link risk |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/home` | `/teach` for teacher/instructor; `/home` remains admin transitional | teacher, instructor, admin, super_admin-compatible | No redirect | `HomeSessionGuard`; child guards unchanged | Phase 3 teacher alias added | Remove teacher reliance only after `/teach` smoke tests and usage validation | High |
+| `/home` | `/teach` for teacher/instructor; `/admin` for admin/super_admin-compatible | teacher, instructor, admin, super_admin-compatible | No redirect; legacy role dashboard remains | `HomeSessionGuard`; child guards unchanged | Phase 4 Admin canonical landing added | Remove role-dashboard reliance only after compatibility redirect and usage validation | High |
 | `/teach` | `/teach` | teacher, instructor | No redirect; role landing now points here | `HomeSessionGuard`; child guards unchanged | Phase 3 | None planned | Low |
 | `/teach/classes` | `/teach/classes` | teacher, instructor, org_admin | No redirect | `HomeSessionGuard` plus `RoleGuard` section roles | Phase 3 | None planned | Low |
 | `/teach/classes/:id` | `/teach/classes/:id` | teacher, instructor, org_admin | No redirect | `HomeSessionGuard` plus `RoleGuard` section roles; frontend verifies route section is in authorized section list | Phase 3 | None planned | Low |
@@ -22,9 +22,13 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 | `/workspace` | `/workspace` | content_admin | No redirect | `HomeSessionGuard` plus existing role guards | Phase 1 | None planned | Medium |
 | `/workspace/learners` | `/workspace/learners` | org_admin | No redirect | Existing creator-role guard | Phase 1 | Replace only if organization home becomes a dedicated route | Medium |
 | `/workspace/commercial` | `/workspace/commercial` with visible label `Community` | admin/content_admin/org_admin/teacher/instructor via existing creator role set | No redirect | Existing creator-role guard | Phase 1 | Add alias and deprecation only after community surface is redesigned | Medium |
-| `/home/admin/users` | `/home/admin/users` | admin | No redirect | Existing `RoleGuard` admin-only | Phase 1 | Dedicated Admin IA route exists and old path is aliased | High |
-| `/home/admin/courses` | `/home/admin/courses` | admin | No redirect | Existing `RoleGuard` admin-only | Phase 1 | Dedicated Admin IA route exists and old path is aliased | High |
-| `/home/admin/badges` | `/home/admin/badges` | admin | No redirect | Existing `RoleGuard` admin-only | Phase 1 | Dedicated Admin IA route exists and old path is aliased | High |
+| `/home/admin/users` and `/workspace/learners/users` | `/admin/users` | admin | Legacy routes remain; canonical navigation uses `/admin/users` | `HomeSessionGuard` plus `RoleGuard` admin-only | Phase 4 | Add explicit redirects after bookmark/usage validation | Medium |
+| No legacy detail | `/admin/users/:userId` | admin | New route | `HomeSessionGuard` plus `RoleGuard` admin-only; backend exact admin check | Phase 4 | None planned | Low |
+| No platform directory route | `/admin/organizations` and `:organizationId` | admin, super_admin | New scoped read-only routes | `HomeSessionGuard` plus `RoleGuard`; API returns current-account memberships only | Phase 4 | Replace only after platform directory API is approved | Low |
+| `/home/admin/courses` and `/workspace/products/manage` | `/admin/courses` | admin | Legacy routes remain; canonical navigation uses `/admin/courses` | `HomeSessionGuard` plus `RoleGuard` admin-only | Phase 4 | Add explicit redirects after bookmark/usage validation | Medium |
+| No legacy oversight detail | `/admin/courses/:courseId` | admin | New route | `HomeSessionGuard` plus `RoleGuard` admin-only | Phase 4 | None planned | Low |
+| `/home/admin/badges` and `/workspace/settings/badges` | `/admin/badges` | admin; super_admin read-only compatible | Legacy routes remain admin-only; canonical route permits supported read compatibility | `HomeSessionGuard` plus `RoleGuard`; writes remain backend admin-only | Phase 4 | Add explicit redirects after bookmark/usage validation | Medium |
+| `/workspace/analytics` | `/admin/reports` for platform counts; workspace route remains Studio analytics | admin | No redirect because definitions differ | `HomeSessionGuard` plus `RoleGuard` admin-only | Phase 4 | None; keep reporting domains separate | Low |
 | `/home/sections` | `/teach/classes` | teacher, instructor, org_admin | No redirect | Existing `RoleGuard` section roles | Phase 3 alias added | Remove only after teacher bookmarks and smoke tests move to `/teach/classes` | High |
 | `/home/sections/:id` | `/teach/classes/:id` | teacher, instructor, org_admin | No redirect | Existing `RoleGuard` section roles | Phase 3 alias added | Remove only after class detail deep links have compatibility redirects | High |
 | `/home/courses` | `/home/courses` | teacher, instructor, student transitional | No redirect | Existing child route, no added guard | Phase 1 | Course library split is implemented and tested | Medium |
@@ -40,8 +44,8 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - `instructor`: `/teach`
 - `content_admin`: `/workspace`
 - `org_admin`: `/workspace/learners`
-- `admin`: `/home`
-- `super_admin`: `/home`
+- `admin`: `/admin`
+- `super_admin`: `/admin` with partial compatibility state
 
 ## Route Compatibility Notes
 
@@ -53,3 +57,5 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - No dedicated unit route was added because existing APIs do not expose unit-level student progress or direct-link authorization.
 - Phase 3 adds canonical Teach routes without deleting `/home/sections`, `/home/sections/:id`, or `/workspace/learners/cohorts` compatibility routes.
 - Teacher course preview intentionally avoids `/api/start-course`; it uses `/api/courses/{id}` only.
+- Phase 4 does not add moderation or platform-settings routes because no safely authorized capability exists.
+- `super_admin` is not treated as inherited `admin`; unsupported child routes stay guarded and hidden.

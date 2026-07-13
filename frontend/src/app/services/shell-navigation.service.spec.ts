@@ -92,16 +92,22 @@ describe('ShellNavigationService', () => {
 
   it('maps admins and super-admin-compatible users to Admin without inventing unsupported portals', () => {
     const adminLabels = service
-      .visibleSections(new Set(['role:admin', 'nav:admin-users', 'nav:commercial']))
+      .visibleSections(new Set(['role:admin', 'nav:admin-users', 'nav:admin-courses', 'nav:admin-reports']))
       .flatMap((section) => section.items.map((item) => item.label));
     const superAdminLabels = service
       .visibleSections(new Set(['role:super_admin']))
       .flatMap((section) => section.items.map((item) => item.label));
 
     expect(service.getPrimarySpace(new Set(['role:admin'])).name).toBe('Admin');
+    expect(service.getPrimarySpace(new Set(['role:admin'])).canonicalRoute).toBe('/admin');
     expect(service.getPrimarySpace(new Set(['role:super_admin'])).name).toBe('Admin');
-    expect(adminLabels).toContain('Community');
-    expect(superAdminLabels).toEqual(['Admin Overview']);
+    expect(adminLabels).toContain('Users');
+    expect(adminLabels).toContain('Organizations');
+    expect(adminLabels).toContain('Courses');
+    expect(adminLabels).toContain('Badges');
+    expect(adminLabels).toContain('Reports');
+    expect(adminLabels).not.toContain('Community');
+    expect(superAdminLabels).toEqual(['Admin Overview', 'Organizations', 'Badges']);
   });
 
   it('does not expose navigation for unsupported parent or viewer roles', () => {

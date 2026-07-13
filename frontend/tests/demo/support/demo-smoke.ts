@@ -20,5 +20,5 @@ export async function loginAsDemoStudent(page: Page): Promise<void> {
 }
 
 export async function expectFlagshipCourseOnStudentDashboard(page: Page): Promise<void> {
-  await expect(page.getByText(FLAGSHIP_COURSE_TITLE)).toBeVisible();
+  await expect(page.getByTestId('student-active-course-title')).toHaveText(FLAGSHIP_COURSE_TITLE);
 }

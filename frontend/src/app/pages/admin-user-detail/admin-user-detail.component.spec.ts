@@ -14,6 +14,9 @@ describe('AdminUserDetailComponent', () => {
   const users = jasmine.createSpyObj('UsersService', ['getUser', 'updateUserRole', 'deleteUser']);
 
   beforeEach(async () => {
+    users.getUser.calls.reset();
+    users.updateUserRole.calls.reset();
+    users.deleteUser.calls.reset();
     users.getUser.and.returnValue(of(user)); users.updateUserRole.and.returnValue(of({ message: 'ok' })); users.deleteUser.and.returnValue(of({}));
     await TestBed.configureTestingModule({ imports: [RouterTestingModule, AdminUserDetailComponent], providers: [
       { provide: UsersService, useValue: users }, { provide: PermissionsService, useValue: { user$: of({ user_id: 'admin-1' }) } },

@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "smoke:demo:student": "playwright test tests/demo/student-flagship-smoke.spec.ts",
-    "smoke:demo:admin": "playwright test tests/demo/admin-platform-smoke.spec.ts"
+    "smoke:demo:admin": "playwright test tests/demo/admin-platform-smoke.spec.ts",
+    "smoke:demo:studio": "playwright test tests/demo/studio-content-smoke.spec.ts"
   },
   "private": true,
   "dependencies": {

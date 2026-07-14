@@ -67,13 +67,15 @@ export class ShellNavigationService {
       title: 'Studio',
       space: 'studio',
       items: [
-        { label: 'Studio Home', route: '/workspace', icon: 'Home', roles: ['content_admin', 'org_admin'], exact: true },
-        { label: 'Projects', route: '/workspace/projects', icon: 'ClipboardList', permission: 'nav:projects', roles: ['content_admin', 'org_admin'] },
-        { label: 'Content Studio', route: '/workspace/product-studio', icon: 'BookOpen', permission: 'nav:product-studio', roles: ['content_admin', 'org_admin'] },
-        { label: 'Learning Products', route: '/workspace/products', icon: 'Book', permission: 'nav:products', roles: ['content_admin', 'org_admin'] },
-        { label: 'Sources', route: '/workspace/knowledge-sources', icon: 'FileText', permission: 'nav:knowledge-sources', roles: ['content_admin', 'org_admin'] },
-        { label: 'Review', route: '/workspace/review-center', icon: 'ClipboardList', permission: 'nav:review-center', roles: ['content_admin', 'org_admin'] },
-        { label: 'Analytics', route: '/workspace/analytics', icon: 'SlidersHorizontal', permission: 'nav:analytics', roles: ['content_admin', 'org_admin'] },
+        { label: 'Studio Overview', route: '/studio', icon: 'Home', roles: ['content_admin'], exact: true },
+        { label: 'Projects', route: '/studio/projects', icon: 'ClipboardList', permission: 'nav:projects', roles: ['content_admin'] },
+        { label: 'Content', route: '/studio/content', icon: 'BookOpen', permission: 'nav:products', roles: ['content_admin'] },
+        { label: 'Courses', route: '/studio/courses', icon: 'Book', permission: 'nav:products', roles: ['content_admin'] },
+        { label: 'Programs and Paths', route: '/studio/programs', icon: 'ClipboardList', permission: 'nav:products', roles: ['content_admin'] },
+        { label: 'Sources', route: '/studio/sources', icon: 'FileText', permission: 'nav:knowledge-sources', roles: ['content_admin'] },
+        { label: 'Content Drafts', route: '/studio/drafts', icon: 'FileText', permission: 'nav:product-studio', roles: ['content_admin'] },
+        { label: 'Review', route: '/studio/review', icon: 'ClipboardList', permission: 'nav:review-center', roles: ['content_admin'] },
+        { label: 'Publishing', route: '/studio/publishing', icon: 'SlidersHorizontal', permission: 'nav:products', roles: ['content_admin'] },
       ],
     },
     {
@@ -81,10 +83,10 @@ export class ShellNavigationService {
       space: 'organization',
       items: [
         { label: 'Organization Home', route: '/workspace/learners', icon: 'Home', roles: ['org_admin'], exact: true },
-        { label: 'Invitations', route: '/workspace/settings/invites', icon: 'Users', permission: 'nav:org-invites', roles: ['org_admin', 'content_admin'] },
+        { label: 'Invitations', route: '/workspace/settings/invites', icon: 'Users', permission: 'nav:org-invites', roles: ['org_admin'] },
         { label: 'Classes', route: '/workspace/learners/cohorts', icon: 'Users', permission: 'nav:cohorts', roles: ['org_admin'] },
-        { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access', roles: ['org_admin', 'content_admin'] },
-        { label: 'Settings', route: '/workspace/settings', icon: 'Settings', permission: 'nav:settings', roles: ['org_admin', 'content_admin'] },
+        { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access', roles: ['org_admin'] },
+        { label: 'Settings', route: '/workspace/settings', icon: 'Settings', permission: 'nav:settings', roles: ['org_admin'] },
       ],
     },
     {
@@ -136,7 +138,7 @@ export class ShellNavigationService {
         name: 'Studio',
         eyebrow: 'EchoEd Studio',
         description: 'Prepare, review, and steward learning content for your community.',
-        canonicalRoute: '/workspace',
+        canonicalRoute: '/studio',
       };
     }
 

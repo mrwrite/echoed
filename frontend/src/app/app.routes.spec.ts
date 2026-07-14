@@ -18,6 +18,8 @@ import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/te
 import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
+import { StudioOverviewComponent } from './pages/studio-overview/studio-overview.component';
+import { StudioLibraryComponent } from './pages/studio-library/studio-library.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -145,6 +147,32 @@ describe('app routes', () => {
     expect(findRoute(routes, 'admin/users')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'admin/users')?.data?.['roles']).toEqual(['admin']);
     expect(findRoute(routes, 'admin/organizations')?.data?.['roles']).toEqual(['admin', 'super_admin']);
+  });
+
+  it('adds guarded canonical Studio routes while preserving workspace deep links', () => {
+    [
+      'studio',
+      'studio/create',
+      'studio/projects',
+      'studio/projects/:projectId',
+      'studio/content',
+      'studio/content/:productId',
+      'studio/courses',
+      'studio/programs',
+      'studio/sources',
+      'studio/drafts',
+      'studio/drafts/:artifactId',
+      'studio/review',
+      'studio/publishing',
+      'workspace/product-studio',
+      'workspace/products',
+      'workspace/review-center',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+
+    expect(findRoute(routes, 'studio/')?.component).toBe(StudioOverviewComponent);
+    expect(findRoute(routes, 'studio/courses')?.component).toBe(StudioLibraryComponent);
+    expect(findRoute(routes, 'studio/courses')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'studio/courses')?.data?.['roles']).toEqual(['content_admin']);
   });
 
   it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {

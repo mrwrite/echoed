@@ -1,6 +1,6 @@
 # Production Route Migration
 
-Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links.
+Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links. Phase 5 adds the guarded `/studio` family over the supported V2 content-operations APIs while retaining all `/workspace/**` routes.
 
 | Current route | Canonical route | Role | Redirect behavior | Guard behavior | Migration phase | Removal criteria | Deep-link risk |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -20,6 +20,15 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 | `/learn/resources` | `/learn/resources` | student | No redirect | `HomeSessionGuard`; no API | Phase 2 partial | Remove only if a supported resources surface is not planned | Low |
 | `/learn/lesson/:id` | `/learn/lesson/:id` | student | No redirect; `:id` remains a student unit progress id | `HomeSessionGuard`; governed segment restore unchanged | Phase 2 | None planned | Low |
 | `/workspace` | `/workspace` | content_admin | No redirect | `HomeSessionGuard` plus existing role guards | Phase 1 | None planned | Medium |
+| `/workspace` | `/studio` | content_admin | No redirect; login and canonical navigation now use `/studio` | `HomeSessionGuard` plus `RoleGuard` content-admin-only on canonical route | Phase 5 | Keep legacy until bookmarks and broad creator-role use are migrated | Medium |
+| `/workspace/projects` and `/:projectId` | `/studio/projects` and `/:projectId` | content_admin | Legacy routes remain; canonical links use `/studio` | Canonical routes are content-admin-only; V2 backend enforces workspace scope | Phase 5 | Add redirects only after non-Studio creator usage is separated | Medium |
+| `/workspace/product-studio` | `/studio/create` | content_admin | Legacy route remains | Canonical route excludes unsupported runtime course selector and uses V2 create APIs | Phase 5 | Legacy Product Studio remains for compatibility | High |
+| `/workspace/products` and `/:productId` | `/studio/content` and `/:productId` | content_admin | Legacy routes remain | Canonical routes are content-admin-only; V2 backend scope remains authoritative | Phase 5 | Remove only after all creator roles have appropriate destinations | Medium |
+| `/workspace/knowledge-sources` | `/studio/sources` | content_admin | Legacy route remains | Canonical read is content-admin-only; creation remains project-scoped | Phase 5 | Keep until legacy navigation usage is retired | Low |
+| `/workspace/artifacts` and `/:artifactId` | `/studio/drafts` and `/:artifactId` | content_admin | Legacy route remains | Canonical route uses content-draft terminology and V2 organization scope | Phase 5 | Keep until legacy technical deep links are migrated | Medium |
+| `/workspace/review-center` | `/studio/review` | content_admin | Legacy route remains | Canonical route confirms mutations and waits for API success | Phase 5 | Keep until broad creator-role review ownership is resolved | Medium |
+| `/workspace/products` | `/studio/publishing` | content_admin | No redirect; this is a filtered state view | Public publish mutation remains on canonical content detail | Phase 5 | None planned | Low |
+| `/workspace/product-studio/courses` | No canonical route | content_admin/org_admin legacy guard | Legacy broken screen retained | Backend course list/create dependencies reject these roles | Phase 5 audited | Remove only after a complete authorized course authoring API and replacement exist | High |
 | `/workspace/learners` | `/workspace/learners` | org_admin | No redirect | Existing creator-role guard | Phase 1 | Replace only if organization home becomes a dedicated route | Medium |
 | `/workspace/commercial` | `/workspace/commercial` with visible label `Community` | admin/content_admin/org_admin/teacher/instructor via existing creator role set | No redirect | Existing creator-role guard | Phase 1 | Add alias and deprecation only after community surface is redesigned | Medium |
 | `/home/admin/users` and `/workspace/learners/users` | `/admin/users` | admin | Legacy routes remain; canonical navigation uses `/admin/users` | `HomeSessionGuard` plus `RoleGuard` admin-only | Phase 4 | Add explicit redirects after bookmark/usage validation | Medium |
@@ -42,7 +51,7 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - `student`: `/learn`
 - `teacher`: `/teach`
 - `instructor`: `/teach`
-- `content_admin`: `/workspace`
+- `content_admin`: `/studio`
 - `org_admin`: `/workspace/learners`
 - `admin`: `/admin`
 - `super_admin`: `/admin` with partial compatibility state
@@ -59,3 +68,6 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - Teacher course preview intentionally avoids `/api/start-course`; it uses `/api/courses/{id}` only.
 - Phase 4 does not add moderation or platform-settings routes because no safely authorized capability exists.
 - `super_admin` is not treated as inherited `admin`; unsupported child routes stay guarded and hidden.
+- Phase 5 keeps `/workspace/**` intact because those routes are shared by several creator roles and demo tooling.
+- Canonical Studio intentionally omits lesson, assessment, asset, upload, and curriculum-ordering routes because the current content-admin APIs do not safely support those workflows.
+- Studio draft preview reads only V2 artifact content and does not call learner runtime, enrollment, lesson-session, or progress APIs.

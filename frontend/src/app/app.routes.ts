@@ -49,6 +49,13 @@ import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.co
 import { AdminUserDetailComponent } from './pages/admin-user-detail/admin-user-detail.component';
 import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
 import { AdminReportsComponent } from './pages/admin-reports/admin-reports.component';
+import { StudioOverviewComponent } from './pages/studio-overview/studio-overview.component';
+import { StudioLibraryComponent } from './pages/studio-library/studio-library.component';
+import { StudioCreateComponent } from './pages/studio-create/studio-create.component';
+import { StudioProjectDetailComponent } from './pages/studio-project-detail/studio-project-detail.component';
+import { StudioContentDetailComponent } from './pages/studio-content-detail/studio-content-detail.component';
+import { StudioDraftDetailComponent } from './pages/studio-draft-detail/studio-draft-detail.component';
+import { StudioReviewComponent } from './pages/studio-review/studio-review.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -76,6 +83,26 @@ export const routes: Routes = [
       { path: 'courses/:courseId', component: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
       { path: 'badges', component: AdminBadgesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
       { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+    ],
+  },
+  {
+    path: 'studio',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      { path: '', component: StudioOverviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'create', component: StudioCreateComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'projects', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'projects' } },
+      { path: 'projects/:projectId', component: StudioProjectDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'content', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'content' } },
+      { path: 'content/:productId', component: StudioContentDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'courses', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'courses' } },
+      { path: 'programs', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'programs' } },
+      { path: 'sources', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'sources' } },
+      { path: 'drafts', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'drafts' } },
+      { path: 'drafts/:artifactId', component: StudioDraftDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'review', component: StudioReviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'publishing', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'publishing' } },
     ],
   },
   {

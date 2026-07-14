@@ -1,0 +1,11 @@
+@use '../../../styles/studio-production';
+.studio-form-grid { display: grid; gap: var(--ee-space-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.studio-form { align-content: start; display: grid; gap: var(--ee-space-4); }
+.studio-form p { color: var(--ee-color-text-muted); margin-bottom: 0; }
+.studio-control { resize: vertical; }
+.studio-error { background: var(--ee-color-status-danger-background); border: 1px solid var(--ee-color-status-danger-border); border-radius: var(--ee-radius-card-default); color: var(--ee-color-status-danger-text) !important; padding: var(--ee-space-3); }
+.record-row { border-top: 1px solid var(--ee-color-border-subtle); color: inherit; display: grid; gap: var(--ee-space-1); padding-top: var(--ee-space-3); text-decoration: none; }
+.record-row span, .record-row small { color: var(--ee-color-text-muted); overflow-wrap: anywhere; }
+.record-row--link { color: var(--ee-color-text-link); }
+.record-row--link:focus-visible { box-shadow: var(--ee-focus-ring-shadow); outline: var(--ee-focus-ring-width) solid var(--ee-focus-ring-color); outline-offset: var(--ee-focus-ring-offset); }
+@media (max-width: 47.99rem) { .studio-form-grid { grid-template-columns: 1fr; } }

@@ -65,3 +65,13 @@
 - Organization invite revocation.
 - Access grant revoke flows.
 - Product publish/review transitions.
+## Phase 5 Studio adoption
+
+- `EchoLoadingStateComponent`: Studio overview, libraries, creation, project, content, and draft detail.
+- `EchoStatePanelComponent`: Studio empty, partial/error, retry, and missing-record states.
+- `EchoConfirmationDialogComponent`: wrapper publishing and all review-state decisions with focus trapping/restoration.
+- Shared shell/navigation: canonical `/studio` destination and content-admin-only Studio section.
+- Shared semantic tokens: Studio production layout, forms, records, status text, focus, and mobile targets.
+- Existing Admin responsive table styles were not reused as a separate Studio system; Studio uses content-oriented responsive records and forms.
+
+Studio does not add an asset picker, reorder control, block editor, tab system, or upload-progress component because no verified content-admin API requires those controls.

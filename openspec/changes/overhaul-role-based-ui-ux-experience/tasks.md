@@ -52,7 +52,7 @@
 
 ## 8. Studio, Organization, and Community Surfaces
 
-- [ ] 8.1 Redesign Studio navigation and product/source/artifact/review screens for content admins; affected screens: workspace projects/product-studio/products/sources/artifacts/review; APIs: V2 platform APIs; tests: V2 service/page specs; a11y: review status text; responsive: queue cards; frontend-only: yes; rollback: old workspace templates.
+- [x] 8.1 Redesign Studio navigation and product/source/artifact/review screens for content admins; affected screens: workspace projects/product-studio/products/sources/artifacts/review; APIs: V2 platform APIs; tests: V2 service/page specs; a11y: review status text; responsive: queue cards; frontend-only: yes; rollback: old workspace templates.
 - [ ] 8.2 Redesign organization people, invites, access, and settings over existing org/invite/access APIs; affected screens: org invites, access grants, settings; APIs: orgs, invites, access grants; tests: org/access specs; a11y: role descriptions and confirmation; responsive: mobile lists; frontend-only: yes; rollback: old screens.
 - [x] 8.3 Rename visible community-facing labels while preserving `/workspace/commercial` route until alias/deprecation is planned; affected screens: community route/nav; APIs: none; tests: route/nav specs and copy search; a11y: clear labels; responsive: no layout regression; frontend-only: yes; rollback: label revert.
 

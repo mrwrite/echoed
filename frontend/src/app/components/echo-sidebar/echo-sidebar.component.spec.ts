@@ -61,10 +61,11 @@ describe('SidebarComponent', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Studio');
     expect(text).toContain('Projects');
-    expect(text).toContain('Content Studio');
-    expect(text).toContain('Learning Products');
+    expect(text).toContain('Content');
+    expect(text).toContain('Courses');
+    expect(text).toContain('Programs and Paths');
     expect(text).toContain('Sources');
-    expect(text).toContain('Settings');
+    expect(text).not.toContain('Settings');
   });
 
   it('renders loading state before readiness', () => {
@@ -86,8 +87,8 @@ describe('SidebarComponent', () => {
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
     const icon = firstLink.querySelector('app-icon');
     const svg = firstLink.querySelector('svg');
-    expect(firstLink.getAttribute('aria-label')).toBe('Studio Home');
-    expect(firstLink.getAttribute('title')).toBe('Studio Home');
+    expect(firstLink.getAttribute('aria-label')).toBe('Studio Overview');
+    expect(firstLink.getAttribute('title')).toBe('Studio Overview');
     expect(firstLink.textContent?.trim()).toBe('');
     expect(icon).not.toBeNull();
     expect(svg).not.toBeNull();

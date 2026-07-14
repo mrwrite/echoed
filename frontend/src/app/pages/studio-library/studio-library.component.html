@@ -1,0 +1,53 @@
+<main class="studio-page" aria-labelledby="studio-library-title">
+  <header class="studio-page__header">
+    <div>
+      <p class="studio-page__eyebrow">{{ copy.eyebrow }}</p>
+      <h1 id="studio-library-title">{{ copy.title }}</h1>
+      <p class="studio-page__intro">{{ copy.intro }}</p>
+    </div>
+    <a *ngIf="mode === 'projects' || mode === 'content'" class="studio-button" routerLink="/studio/create">Create record</a>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" [title]="'Loading ' + copy.title" body="Studio is checking the current organization-scoped records." [ariaLabel]="copy.title + ' loading'"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="error" [title]="copy.title + ' could not be loaded'" body="No changes were made. Retry the request or return to Studio overview." actionLabel="Retry" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !failed">
+    <section class="studio-panel" aria-label="Search and filters">
+      <div class="studio-toolbar">
+        <div class="studio-field">
+          <label for="studio-search">Search</label>
+          <input id="studio-search" class="studio-control" type="search" [(ngModel)]="search" [placeholder]="'Search ' + copy.title.toLowerCase()" />
+        </div>
+        <div class="studio-field">
+          <label for="studio-status">Status</label>
+          <select id="studio-status" class="studio-control" [(ngModel)]="statusFilter">
+            <option value="all">All statuses</option>
+            <option *ngFor="let status of statusOptions" [value]="status">{{ label(status) }}</option>
+          </select>
+        </div>
+        <p class="studio-results" role="status" aria-live="polite">{{ resultText }}</p>
+      </div>
+    </section>
+
+    <section *ngIf="filteredItems.length; else emptyState" class="studio-records" [attr.aria-label]="copy.title">
+      <article *ngFor="let item of filteredItems" class="studio-panel studio-record">
+        <div class="studio-record__heading">
+          <h2>{{ item.title }}</h2>
+          <span class="studio-status" [ngClass]="statusClass(item.status)">{{ label(item.status) }}</span>
+        </div>
+        <p class="studio-record__summary">{{ item.summary }}</p>
+        <dl class="studio-record__meta">
+          <div><dt>Type</dt><dd>{{ item.type }}</dd></div>
+          <div><dt>Context</dt><dd>{{ item.context }}</dd></div>
+        </dl>
+        <div class="studio-actions" *ngIf="item.detailRoute">
+          <a class="studio-link" [routerLink]="item.detailRoute" [attr.aria-label]="'Review ' + item.title">Review details</a>
+        </div>
+      </article>
+    </section>
+
+    <ng-template #emptyState>
+      <app-echo-state-panel variant="empty" [title]="items.length ? 'No items match these filters' : copy.empty" [body]="items.length ? 'Clear or change the search and status filters.' : 'Create a supported record when content work is ready.'"></app-echo-state-panel>
+    </ng-template>
+  </ng-container>
+</main>

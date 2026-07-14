@@ -1,0 +1,31 @@
+<main class="studio-page" aria-labelledby="studio-create-title">
+  <header class="studio-page__header"><div><p class="studio-page__eyebrow">New content record</p><h1 id="studio-create-title">Create in Studio</h1><p class="studio-page__intro">Create a curriculum project or a governed learning-offering wrapper using the current content-operations APIs.</p></div><a class="studio-link" routerLink="/studio">Return to Studio overview</a></header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading creation options" body="Studio is checking your available workspaces and projects." ariaLabel="Studio creation options loading"></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && failed" variant="error" title="Creation options could not be loaded" body="No changes were made. Retry after checking your active organization context." actionLabel="Retry" (action)="load()"></app-echo-state-panel>
+
+  <p *ngIf="statusMessage" class="studio-callout" role="status">{{ statusMessage }}</p>
+
+  <div *ngIf="!loading && !failed" class="studio-form-grid">
+    <form class="studio-panel studio-form" (ngSubmit)="createProject()" aria-labelledby="create-project-title">
+      <div><h2 id="create-project-title">Create curriculum project</h2><p>Projects group related sources, content drafts, and learning offerings.</p></div>
+      <div class="studio-field"><label for="project-workspace">Organization workspace</label><select id="project-workspace" class="studio-control" name="projectWorkspace" [(ngModel)]="projectForm.workspaceId" required><option value="" disabled>Select workspace</option><option *ngFor="let workspace of workspaces" [value]="workspace.id">{{ workspace.name }}</option></select></div>
+      <div class="studio-field"><label for="project-name">Project name <span aria-hidden="true">*</span></label><input id="project-name" class="studio-control" name="projectName" [(ngModel)]="projectForm.name" required /></div>
+      <div class="studio-field"><label for="project-description">Description</label><textarea id="project-description" class="studio-control" name="projectDescription" [(ngModel)]="projectForm.description" rows="4"></textarea></div>
+      <p *ngIf="projectError" class="studio-error" role="alert">{{ projectError }}</p>
+      <button class="studio-button" type="submit" [disabled]="savingProject || !projectForm.workspaceId || !projectForm.name.trim()">{{ savingProject ? 'Creating project…' : 'Create project' }}</button>
+    </form>
+
+    <form class="studio-panel studio-form" (ngSubmit)="createContent()" aria-labelledby="create-content-title">
+      <div><h2 id="create-content-title">Create learning offering</h2><p>This creates a reviewable wrapper. It does not create units, lessons, activities, enrollments, or learner progress.</p></div>
+      <div class="studio-field"><label for="content-workspace">Organization workspace</label><select id="content-workspace" class="studio-control" name="contentWorkspace" [(ngModel)]="contentForm.workspaceId" (ngModelChange)="workspaceChanged()" required><option value="" disabled>Select workspace</option><option *ngFor="let workspace of workspaces" [value]="workspace.id">{{ workspace.name }}</option></select></div>
+      <div class="studio-field"><label for="content-project">Curriculum project</label><select id="content-project" class="studio-control" name="contentProject" [(ngModel)]="contentForm.projectId"><option value="">No project association</option><option *ngFor="let project of availableProjects" [value]="project.id">{{ project.name }}</option></select></div>
+      <div class="studio-field"><label for="content-type">Offering type</label><select id="content-type" class="studio-control" name="contentType" [(ngModel)]="contentForm.type"><option *ngFor="let type of contentTypes" [value]="type">{{ label(type) }}</option></select></div>
+      <div class="studio-field"><label for="content-title">Title <span aria-hidden="true">*</span></label><input id="content-title" class="studio-control" name="contentTitle" [(ngModel)]="contentForm.title" required /></div>
+      <div class="studio-field"><label for="content-description">Learner-facing description</label><textarea id="content-description" class="studio-control" name="contentDescription" [(ngModel)]="contentForm.description" rows="4"></textarea></div>
+      <div class="studio-field"><label for="content-visibility">Initial visibility</label><select id="content-visibility" class="studio-control" name="contentVisibility" [(ngModel)]="contentForm.visibility"><option value="draft">Draft</option><option value="private">Private</option><option value="workspace">Current workspace</option><option value="invite_only">Invite only</option></select></div>
+      <p *ngIf="contentError" class="studio-error" role="alert">{{ contentError }}</p>
+      <button class="studio-button" type="submit" [disabled]="savingContent || !contentForm.workspaceId || !contentForm.title.trim()">{{ savingContent ? 'Creating offering…' : 'Create learning offering' }}</button>
+    </form>
+  </div>
+</main>

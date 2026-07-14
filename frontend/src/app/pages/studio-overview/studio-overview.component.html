@@ -1,0 +1,73 @@
+<main class="studio-page" aria-labelledby="studio-overview-title">
+  <header class="studio-page__header">
+    <div>
+      <p class="studio-page__eyebrow">Content stewardship</p>
+      <h1 id="studio-overview-title">Studio overview</h1>
+      <p class="studio-page__intro">Organize source-backed content, review draft materials, and verify publishing states within your current organization scope.</p>
+    </div>
+    <a class="studio-button" routerLink="/studio/create">Create content record</a>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading Studio overview" body="Content summaries and review work are being checked independently." ariaLabel="Studio overview loading"></app-echo-loading-state>
+
+  <app-echo-state-panel
+    *ngIf="!loading && failedSources.size"
+    variant="error"
+    title="Some Studio information could not be loaded"
+    body="Available content remains visible. Retry to check the unavailable information again."
+    actionLabel="Retry"
+    (action)="load()"
+  ></app-echo-state-panel>
+
+  <section *ngIf="!loading" aria-labelledby="attention-title">
+    <h2 id="attention-title">Needs attention</h2>
+    <div *ngIf="review && attentionCount; else noAttention" class="studio-records" aria-live="polite">
+      <article class="studio-panel studio-record">
+        <div class="studio-record__heading"><h2>Content drafts</h2><span class="studio-status studio-status--warning">{{ review.pending_artifacts.length }}</span></div>
+        <p class="studio-record__summary">Draft outputs waiting for a wrapper review decision.</p>
+        <a class="studio-link" routerLink="/studio/review">Open review</a>
+      </article>
+      <article class="studio-panel studio-record">
+        <div class="studio-record__heading"><h2>Learning offerings</h2><span class="studio-status studio-status--warning">{{ review.draft_products.length }}</span></div>
+        <p class="studio-record__summary">Course, path, and resource wrappers that are not yet published.</p>
+        <a class="studio-link" routerLink="/studio/publishing">Review publishing</a>
+      </article>
+      <article class="studio-panel studio-record">
+        <div class="studio-record__heading"><h2>Lesson governance</h2><span class="studio-status studio-status--warning">{{ review.lesson_governance_items.length }}</span></div>
+        <p class="studio-record__summary">Existing course content with verified readiness blockers or warnings.</p>
+        <a class="studio-link" routerLink="/studio/review">Review readiness</a>
+      </article>
+    </div>
+    <ng-template #noAttention>
+      <div class="studio-callout"><p><strong>No supported review items currently require attention.</strong></p><p>Source records and published wrappers can still be reviewed directly.</p></div>
+    </ng-template>
+  </section>
+
+  <section *ngIf="!loading && summary" aria-labelledby="summary-title">
+    <h2 id="summary-title">Content summary</h2>
+    <div class="studio-summary-grid" aria-live="polite">
+      <article class="studio-panel studio-metric"><p class="studio-metric__value">{{ summary.totals.total_projects }}</p><p class="studio-metric__label">Curriculum projects</p></article>
+      <article class="studio-panel studio-metric"><p class="studio-metric__value">{{ summary.totals.total_products }}</p><p class="studio-metric__label">Learning offerings</p></article>
+      <article class="studio-panel studio-metric"><p class="studio-metric__value">{{ summary.totals.total_knowledge_sources }}</p><p class="studio-metric__label">Source records</p></article>
+      <article class="studio-panel studio-metric"><p class="studio-metric__value">{{ summary.totals.total_artifacts }}</p><p class="studio-metric__label">Content drafts</p></article>
+      <article class="studio-panel studio-metric"><p class="studio-metric__value">{{ summary.review_health['published_products'] || 0 }}</p><p class="studio-metric__label">Published wrappers</p></article>
+    </div>
+  </section>
+
+  <section *ngIf="!loading" aria-labelledby="shortcuts-title">
+    <h2 id="shortcuts-title">Studio shortcuts</h2>
+    <div class="studio-shortcuts">
+      <a class="studio-panel studio-link" routerLink="/studio/projects">Curriculum projects</a>
+      <a class="studio-panel studio-link" routerLink="/studio/courses">Course wrappers</a>
+      <a class="studio-panel studio-link" routerLink="/studio/programs">Programs and paths</a>
+      <a class="studio-panel studio-link" routerLink="/studio/sources">Source library</a>
+      <a class="studio-panel studio-link" routerLink="/studio/review">Review content</a>
+      <a class="studio-panel studio-link" routerLink="/studio/publishing">Publishing states</a>
+    </div>
+  </section>
+
+  <section *ngIf="!loading" aria-labelledby="limitations-title">
+    <h2 id="limitations-title">Current authoring scope</h2>
+    <div class="studio-callout"><p><strong>Studio currently manages content-operation records and wrapper governance.</strong></p><p>Full course, unit, lesson, assessment, and asset editing is not shown because the current content-administrator APIs do not provide a complete authorized workflow.</p></div>
+  </section>
+</main>

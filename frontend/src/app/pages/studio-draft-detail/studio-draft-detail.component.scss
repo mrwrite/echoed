@@ -1,0 +1,7 @@
+@use '../../../styles/studio-production';
+.studio-detail-grid { display: grid; gap: var(--ee-space-3); grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.studio-detail-grid div { border-bottom: 1px solid var(--ee-color-border-subtle); padding-bottom: var(--ee-space-3); }
+.studio-detail-grid dt { color: var(--ee-color-text-muted); font-size: var(--ee-font-size-sm); }
+.studio-detail-grid dd { margin: var(--ee-space-1) 0 0; overflow-wrap: anywhere; }
+.draft-body { line-height: var(--ee-line-height-body); overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (max-width: 47.99rem) { .studio-detail-grid { grid-template-columns: 1fr; } }

@@ -72,9 +72,12 @@ describe('ShellNavigationService', () => {
     const labels = sections.flatMap((section) => section.items.map((item) => item.label));
 
     expect(service.getPrimarySpace(new Set(['role:content_admin'])).name).toBe('Studio');
-    expect(labels).toContain('Content Studio');
-    expect(labels).toContain('Learning Products');
+    expect(service.getPrimarySpace(new Set(['role:content_admin'])).canonicalRoute).toBe('/studio');
+    expect(labels).toContain('Content');
+    expect(labels).toContain('Courses');
+    expect(labels).toContain('Programs and Paths');
     expect(labels).toContain('Sources');
+    expect(labels).not.toContain('Invitations');
     expect(labels).not.toContain('Commercial');
   });
 

@@ -1,0 +1,31 @@
+<main class="organization-page" aria-labelledby="organization-invitations-title">
+  <header class="organization-page__header"><div><p class="organization-page__eyebrow">Organization access</p><h1 id="organization-invitations-title">Invitations</h1><p class="organization-page__intro">Invite supported roles into the active organization and review current invitation status.</p></div></header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading invitations" body="Checking invitations for the active organization."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Invitations unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <form class="organization-panel organization-form" (ngSubmit)="requestInvite()" aria-labelledby="invite-member-title">
+      <div><h2 id="invite-member-title">Invite a member</h2><p>Invitations expire seven days after creation unless the backend specifies another date.</p></div>
+      <div class="organization-field"><label for="organization-invite-email">Email address</label><input id="organization-invite-email" class="organization-control" name="email" type="email" autocomplete="email" [(ngModel)]="email" required></div>
+      <div class="organization-field"><label for="organization-invite-role">Organization role</label><select id="organization-invite-role" class="organization-control" name="role" [(ngModel)]="role"><option *ngFor="let option of roles" [value]="option">{{ label(option) }}</option></select></div>
+      <p *ngIf="formError" role="alert">{{ formError }}</p>
+      <p *ngIf="successMessage" class="organization-callout" role="status">{{ successMessage }}</p>
+      <button class="organization-button" type="submit" [disabled]="saving">{{ saving ? 'Creating invitation...' : 'Create invitation' }}</button>
+    </form>
+
+    <section aria-labelledby="invitation-list-title"><h2 id="invitation-list-title">Invitation status</h2>
+      <app-echo-state-panel *ngIf="!invites.length" variant="empty" title="No invitations" body="New organization invitations will appear here."></app-echo-state-panel>
+      <div class="organization-records" *ngIf="invites.length">
+        <article class="organization-record" *ngFor="let invite of invites">
+          <div class="organization-record__heading"><h3>{{ invite.email }}</h3><span class="organization-status" [class.organization-status--warning]="status(invite) !== 'Accepted'" [class.organization-status--success]="status(invite) === 'Accepted'">{{ status(invite) }}</span></div>
+          <dl class="organization-meta"><div><dt>Organization role</dt><dd>{{ label(invite.role) }}</dd></div><div><dt>Expires</dt><dd>{{ invite.expires_at | date:'medium' }}</dd></div><div *ngIf="invite.accepted_at"><dt>Accepted</dt><dd>{{ invite.accepted_at | date:'medium' }}</dd></div></dl>
+        </article>
+      </div>
+    </section>
+
+    <aside class="organization-callout"><strong>Resend and cancellation are unavailable.</strong><p>The current invitation API supports creating and reviewing invitations only. Secret invitation tokens are intentionally omitted from this page.</p></aside>
+  </ng-container>
+
+  <app-echo-confirmation-dialog [open]="confirmationOpen" title="Create a privileged organization invitation?" description="This invitation will allow the recipient to manage organization content or administration after acceptance. It does not grant platform Admin access." [objectName]="email" confirmLabel="Create privileged invitation" loadingLabel="Creating invitation..." [loading]="saving" [errorMessage]="formError" (cancel)="cancelConfirmation()" (confirm)="createInvite()"></app-echo-confirmation-dialog>
+</main>

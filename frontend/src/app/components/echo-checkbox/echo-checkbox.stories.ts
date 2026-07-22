@@ -16,3 +16,7 @@ export const Default: Story = {
     checked: false,
   },
 };
+
+export const ValidationError: Story = {
+  args: { label: 'I agree to the community guidelines', required: true, error: 'Agreement is required.' },
+};

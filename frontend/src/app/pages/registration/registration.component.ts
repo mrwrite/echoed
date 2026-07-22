@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { RegisterDto } from '../../models/register-dto';
 import { MetaService, EnumOption } from '../../services/meta.service';
+import { finalize } from 'rxjs';
 import {
   normalizePendingOrganizationSetup,
   writePendingOrganizationSetup,
@@ -30,6 +31,7 @@ export class RegistrationComponent implements OnInit {
   inferredOrgTypeValue = '';
   showStudentOrgHint = false;
   registrationSubmitted = false;
+  isSubmitting = false;
 
   constructor(
     private router: Router,
@@ -113,6 +115,9 @@ export class RegistrationComponent implements OnInit {
       this.registrationForm.markAllAsTouched();
       return;
     }
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+    this.errorMessage = '';
 
     const formValue = this.registrationForm.value;
     const user: RegisterDto = {
@@ -124,8 +129,8 @@ export class RegistrationComponent implements OnInit {
       role: formValue.role,
     };
 
-    this.authService.register(user).subscribe(
-      (response) => {
+    this.authService.register(user).pipe(finalize(() => this.isSubmitting = false)).subscribe({
+      next: () => {
         const pendingSetup = normalizePendingOrganizationSetup({
           createOrganization: formValue.createOrganization,
           organizationName: formValue.organizationName,
@@ -134,12 +139,12 @@ export class RegistrationComponent implements OnInit {
         writePendingOrganizationSetup(pendingSetup);
         this.router.navigate(['/login']);
       },
-      (error) => {
+      error: (error) => {
         this.errorMessage =
           error?.error?.detail ||
           'Registration failed. Please check your details and try again.';
       },
-    );
+    });
   }
 
   private updateInferredOrgType(): void {

@@ -42,3 +42,6 @@ Thumbs.db
 frontend/test-results/
 frontend/playwright-report/
 backend/.pytest_tmp/
+
+.pytest_tmp/
+.pytest_cache/

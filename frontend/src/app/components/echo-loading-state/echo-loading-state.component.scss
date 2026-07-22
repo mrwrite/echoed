@@ -98,6 +98,10 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .echo-loading-state__skeleton { animation: none; }
+}
+
 @media (min-width: 640px) {
   .echo-loading-state {
     padding: 1.5rem;

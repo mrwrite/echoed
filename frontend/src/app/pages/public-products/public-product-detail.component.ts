@@ -1,20 +1,28 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { finalize } from 'rxjs';
+import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
+import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-state-panel.component';
 import { Product } from '../../models/v2-platform.model';
 import { V2PlatformService } from '../../services/v2-platform.service';
 
 @Component({
   selector: 'app-public-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EchoLoadingStateComponent, EchoStatePanelComponent],
   template: `
+    <app-echo-loading-state *ngIf="loading" density="page" title="Loading product preview"
+      body="Checking the latest community-reviewed product information."></app-echo-loading-state>
+    <app-echo-state-panel *ngIf="!loading && error" variant="error" title="Product preview unavailable" [body]="error"
+      impact="No learning progress or access changed." actionLabel="Retry" (action)="loadProduct()"
+      secondaryActionLabel="Browse public learning" (secondaryAction)="returnToProducts()"></app-echo-state-panel>
     <section class="product-page" *ngIf="product" aria-labelledby="product-title">
       <header [style.background-image]="heroBackground()">
         <p>{{ label(product.category || product.product_type) }}</p>
         <h1 id="product-title">{{ product.title }}</h1>
         <span>{{ product.subtitle || product.description || 'Community product preview.' }}</span>
-        <button type="button" disabled>Access placeholder</button>
+        <a class="access-link" routerLink="/login">Sign in to explore access</a>
       </header>
 
       <main>
@@ -57,7 +65,7 @@ import { V2PlatformService } from '../../services/v2-platform.service';
     h1, h2 { margin: 0; }
     h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); line-height: .95; max-width: 12ch; }
     header span { font-size: 1.1rem; max-width: 58ch; }
-    button { background: #fff; border: 0; border-radius: 999px; color: #102033; font-weight: 900; padding: .8rem 1.1rem; width: fit-content; }
+    .access-link { background: #fff; border: 0; border-radius: 999px; color: #102033; font-weight: 900; min-height: 2.75rem; padding: .8rem 1.1rem; text-decoration: none; width: fit-content; }
     main { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem); padding: clamp(1rem, 4vw, 2.5rem); }
     article, aside { background: #fff; border: 1px solid #d8e1ea; border-radius: 8px; box-shadow: 0 14px 32px rgba(16,32,51,.08); padding: 1.25rem; }
     article { grid-column: 1; }
@@ -72,18 +80,33 @@ import { V2PlatformService } from '../../services/v2-platform.service';
 })
 export class PublicProductDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly v2Platform = inject(V2PlatformService);
   product: Product | null = null;
+  loading = true;
+  error = '';
 
   ngOnInit(): void {
+    this.loadProduct();
+  }
+
+  loadProduct(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
+    this.product = null;
+    this.error = '';
     if (!slug) {
+      this.loading = false;
+      this.error = 'This product link is incomplete.';
       return;
     }
-    this.v2Platform.getPublicProduct(slug).subscribe(product => {
-      this.product = product;
+    this.loading = true;
+    this.v2Platform.getPublicProduct(slug).pipe(finalize(() => this.loading = false)).subscribe({
+      next: product => this.product = product,
+      error: () => this.error = 'The product preview request failed. Check the link or try again.',
     });
   }
+
+  returnToProducts(): void { void this.router.navigateByUrl('/products'); }
 
   heroBackground(): string {
     return this.product?.hero_image_url ? `linear-gradient(rgba(16,32,51,.35), rgba(16,32,51,.8)), url('${this.product.hero_image_url}')` : 'linear-gradient(135deg, #102033, #0f766e)';

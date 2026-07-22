@@ -9,7 +9,8 @@
     "test": "ng test",
     "smoke:demo:student": "playwright test tests/demo/student-flagship-smoke.spec.ts",
     "smoke:demo:admin": "playwright test tests/demo/admin-platform-smoke.spec.ts",
-    "smoke:demo:studio": "playwright test tests/demo/studio-content-smoke.spec.ts"
+    "smoke:demo:studio": "playwright test tests/demo/studio-content-smoke.spec.ts",
+    "smoke:demo:organization": "playwright test tests/demo/organization-admin-smoke.spec.ts"
   },
   "private": true,
   "dependencies": {

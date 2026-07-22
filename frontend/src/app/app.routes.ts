@@ -56,6 +56,13 @@ import { StudioProjectDetailComponent } from './pages/studio-project-detail/stud
 import { StudioContentDetailComponent } from './pages/studio-content-detail/studio-content-detail.component';
 import { StudioDraftDetailComponent } from './pages/studio-draft-detail/studio-draft-detail.component';
 import { StudioReviewComponent } from './pages/studio-review/studio-review.component';
+import { OrganizationOverviewComponent } from './pages/organization-overview/organization-overview.component';
+import { OrganizationPeopleComponent } from './pages/organization-people/organization-people.component';
+import { OrganizationInvitationsComponent } from './pages/organization-invitations/organization-invitations.component';
+import { OrganizationSectionsComponent } from './pages/organization-sections/organization-sections.component';
+import { OrganizationSectionDetailComponent } from './pages/organization-section-detail/organization-section-detail.component';
+import { OrganizationCoursesComponent } from './pages/organization-courses/organization-courses.component';
+import { OrganizationSettingsComponent } from './pages/organization-settings/organization-settings.component';
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
@@ -103,6 +110,22 @@ export const routes: Routes = [
       { path: 'drafts/:artifactId', component: StudioDraftDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
       { path: 'review', component: StudioReviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
       { path: 'publishing', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'publishing' } },
+    ],
+  },
+  {
+    path: 'organization',
+    component: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      { path: '', component: OrganizationOverviewComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'members', component: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'members' } },
+      { path: 'teachers', component: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'teachers' } },
+      { path: 'students', component: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'students' } },
+      { path: 'invitations', component: OrganizationInvitationsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'sections', component: OrganizationSectionsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'sections/:sectionId', component: OrganizationSectionDetailComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'courses', component: OrganizationCoursesComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'settings', component: OrganizationSettingsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
     ],
   },
   {

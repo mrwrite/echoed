@@ -33,7 +33,7 @@
         <span class="demo-badge">Demo Mode</span>
       </div>
 
-      <form #loginForm="ngForm" (submit)="login($event)" class="login-form" novalidate>
+      <form #loginForm="ngForm" (submit)="login($event)" class="login-form" novalidate [attr.aria-describedby]="errorMessage ? 'login-error' : null">
         <label class="field" for="username">
           <span>Email or Username</span>
           <input
@@ -75,10 +75,10 @@
           </small>
         </label>
 
-        <p class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+        <p id="login-error" class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-        <button type="submit" class="primary-cta" [disabled]="loginForm.invalid">
-          Sign in <span aria-hidden="true">-&gt;</span>
+        <button type="submit" class="primary-cta" [disabled]="loginForm.invalid || isSubmitting" [attr.aria-busy]="isSubmitting || null">
+          {{ isSubmitting ? 'Signing in…' : 'Sign in' }} <span *ngIf="!isSubmitting" aria-hidden="true">-&gt;</span>
         </button>
       </form>
 

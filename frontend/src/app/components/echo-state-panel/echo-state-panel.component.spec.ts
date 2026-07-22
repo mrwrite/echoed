@@ -58,4 +58,18 @@ describe('EchoStatePanelComponent', () => {
     expect(panel.getAttribute('aria-live')).toBe('polite');
     expect(panel.classList).toContain('echo-state-panel--permission');
   });
+
+  it('explains context and impact and offers a safe secondary action', () => {
+    component.variant = 'permission';
+    component.context = 'Organization administrator · Freedom Learning Center';
+    component.impact = 'No data was changed.';
+    component.secondaryActionLabel = 'Return to organization';
+    spyOn(component.secondaryAction, 'emit');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.echo-state-panel__details').textContent).toContain('No data was changed.');
+    const buttons = fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
+    buttons[1].click();
+    expect(component.secondaryAction.emit).toHaveBeenCalled();
+  });
 });

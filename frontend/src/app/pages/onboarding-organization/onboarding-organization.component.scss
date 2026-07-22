@@ -1,34 +1,25 @@
-:host {
-  display: block;
-}
-
-.onboarding-helper {
-  color: #475569;
-}
-
-.onboarding-input {
-  border-color: #cbd5e1;
-  color: #0f172a;
-}
-
-.onboarding-input::placeholder {
-  color: #64748b;
-}
-
-.onboarding-submit:disabled {
-  background: #756a9a;
-  box-shadow: none;
-}
-
-.form-state-text {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.form-state-text--warning {
-  color: #92400e;
-}
-
-.form-state-text--error {
-  color: #b91c1c;
-}
+:host { display: block; }
+.onboarding-shell { background: linear-gradient(135deg, #fff, #f8fafc 55%, #eef6ff); color: var(--ee-text, #102033); min-height: 100vh; padding: clamp(1rem, 3vw, 2rem); }
+.onboarding-stage { background: rgba(255,255,255,.88); border: 1px solid rgba(15,23,42,.12); border-radius: 18px; display: grid; gap: clamp(1.5rem, 4vw, 3.5rem); grid-template-columns: minmax(17rem,.72fr) minmax(0,1fr); margin-inline: auto; max-width: 1120px; min-height: min(46rem,calc(100vh - 4rem)); padding: clamp(1.5rem,4vw,4rem); }
+.onboarding-story, .onboarding-card, .onboarding-card header, form, .field, .type-summary { display: grid; }
+.onboarding-story { align-content: center; gap: 1rem; }
+.onboarding-story h1, .onboarding-card h2, p { margin: 0; }
+.onboarding-story h1 { font-size: clamp(2.5rem,6vw,4.75rem); line-height: .95; }
+.onboarding-story > p, .onboarding-card header > p:last-child, .field small, .type-summary p, .student-note p { color: var(--ee-text-soft,#475569); line-height: 1.55; }
+.eyebrow { color: var(--echo-primary,#0f766e); font-size: .76rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.onboarding-story ol { display: grid; gap: .75rem; list-style: none; margin: 1rem 0 0; padding: 0; }
+.onboarding-story li { border-left: 3px solid #f3b24d; display: grid; gap: .2rem; padding-left: .85rem; }
+.onboarding-story li span { color: var(--ee-text-soft,#475569); }
+.onboarding-card { align-content: center; background: #fff; border: 1px solid rgba(15,23,42,.12); border-radius: 16px; box-shadow: 0 24px 70px rgba(15,23,42,.1); gap: 1.25rem; padding: clamp(1.25rem,3vw,2.25rem); }
+.onboarding-card header, form { gap: 1rem; }
+.onboarding-card h2 { font-size: clamp(1.65rem,3vw,2.35rem); line-height: 1.05; }
+.field { font-size: .875rem; font-weight: 800; gap: .45rem; }
+input { background: #fff; border: 1px solid rgba(15,23,42,.18); border-radius: 10px; color: var(--ee-text,#102033); font: inherit; min-height: 3rem; padding: .8rem .9rem; width: 100%; }
+.type-summary, .student-note { background: #f8fafc; border: 1px solid rgba(15,23,42,.1); border-radius: 10px; gap: .4rem; padding: 1rem; }
+.student-note { background: #fffbeb; border-color: #fde68a; }
+.field-error, .auth-error { color: #be123c; }
+.auth-error { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; font-weight: 750; padding: .8rem; }
+.onboarding-submit { background: var(--echo-primary,#0f766e); border: 1px solid rgba(15,118,110,.24); border-radius: 10px; color: #fff; cursor: pointer; font: inherit; font-weight: 900; min-height: 3rem; padding: .8rem 1rem; }
+.onboarding-submit:disabled { cursor: not-allowed; opacity: .58; }
+:where(button,input):focus-visible { outline: 2px solid rgba(15,118,110,.88); outline-offset: 3px; }
+@media (max-width: 760px) { .onboarding-shell { padding: 0; } .onboarding-stage { border-radius: 0; grid-template-columns: 1fr; min-height: 100vh; padding: 1.25rem; } .onboarding-story { align-content: start; } .onboarding-story h1 { font-size: clamp(2.35rem,13vw,3.75rem); } }

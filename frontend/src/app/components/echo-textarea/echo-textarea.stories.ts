@@ -38,3 +38,7 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const Success: Story = {
+  args: { label: 'Reflection', value: 'Learning belongs to the community.', success: 'Draft saved.' },
+};

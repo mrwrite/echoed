@@ -83,14 +83,23 @@ describe('ShellNavigationService', () => {
 
   it('maps organization administrators to Organization navigation', () => {
     const space = service.getPrimarySpace(new Set(['role:org_admin']));
-    const labels = service
-      .visibleSections(new Set(['role:org_admin', 'nav:cohorts', 'nav:settings']))
+    const sections = service.visibleSections(new Set(['role:org_admin', 'nav:cohorts', 'nav:settings']));
+    const labels = sections
       .flatMap((section) => section.items.map((item) => item.label));
 
     expect(space.name).toBe('Organization');
-    expect(space.canonicalRoute).toBe('/workspace/learners');
-    expect(labels).toContain('Organization Home');
+    expect(space.canonicalRoute).toBe('/organization');
+    expect(sections.map(section => section.title)).toEqual(['Organization']);
+    expect(labels).toContain('Organization Overview');
+    expect(labels).toContain('Members');
+    expect(labels).toContain('Teachers');
+    expect(labels).toContain('Students');
+    expect(labels).toContain('Invitations');
     expect(labels).toContain('Classes');
+    expect(labels).toContain('Course Availability');
+    expect(labels).toContain('Settings');
+    expect(labels).not.toContain('Assignments');
+    expect(labels).not.toContain('Content');
   });
 
   it('maps admins and super-admin-compatible users to Admin without inventing unsupported portals', () => {

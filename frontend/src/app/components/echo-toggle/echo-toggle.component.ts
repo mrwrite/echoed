@@ -1,37 +1,33 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { NgClass, NgIf } from '@angular/common';
+
+let nextToggleId = 0;
 
 @Component({
   selector: 'app-echo-toggle',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, NgIf],
   template: `
-    <label class="flex items-center gap-2 cursor-pointer select-none">
-      <div
-        class="relative w-12 h-6 rounded-full transition-colors duration-200"
-        [ngClass]="checked ? 'bg-primary' : 'bg-gray-300'"
-      >
-        <div
-          class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
-          [ngClass]="{ 'translate-x-6': checked }"
-        ></div>
-      </div>
-      <input
-        type="checkbox"
-        class="hidden"
-        [checked]="checked"
-        (change)="toggle()"
-      />
-      <span *ngIf="label">{{ label }}</span>
-    </label>
+    <div class="ee-choice">
+      <button type="button" class="ee-switch" role="switch" [class.ee-switch--checked]="checked"
+        [attr.aria-checked]="checked" [attr.aria-describedby]="hint ? hintId : null" [disabled]="disabled" (click)="toggle()">
+        <span class="ee-switch__track" aria-hidden="true"><span class="ee-switch__thumb"></span></span>
+        <span>{{ label }}</span>
+      </button>
+      <p *ngIf="hint" class="ee-field__hint" [id]="hintId">{{ hint }}</p>
+    </div>
   `,
 })
 export class EchoToggleComponent {
   @Input() checked = false;
   @Input() label = '';
+  @Input() disabled = false;
+  @Input() hint = '';
   @Output() checkedChange = new EventEmitter<boolean>();
+  readonly hintId = `echo-toggle-${++nextToggleId}-hint`;
 
   toggle() {
+    if (this.disabled) return;
     this.checked = !this.checked;
     this.checkedChange.emit(this.checked);
   }

@@ -1,54 +1,52 @@
-<div class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#0f1629] via-[#1f1b37] to-[#281531]">
-  <div class="max-w-3xl w-full glass-panel p-6">
-    <div class="bg-white rounded-2xl shadow-soft-card p-6 lg:p-8">
-      <p class="text-sm text-primary font-semibold">Welcome to EchoEd</p>
-      <h1 class="text-3xl font-bold text-ink">Create your organization</h1>
-      <p class="onboarding-helper mt-2">
-        Set up your organization to unlock invites, reporting, collaborative tools, and structured certification programs.
-      </p>
-      <div class="mt-4 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">What happens next</p>
-        <p class="mt-2 text-sm text-slate-700">
-          After this step, you will land in your dashboard where courses, programs, assessments, and certification progress become available in the same shell.
-        </p>
-      </div>
+<main class="onboarding-shell">
+  <section class="onboarding-stage" aria-labelledby="onboarding-title">
+    <aside class="onboarding-story" aria-label="Organization setup guidance">
+      <p class="eyebrow">One guided step</p>
+      <h1 id="onboarding-title">Create your organization</h1>
+      <p>Give your learning community a clear home for people, classes, invitations, and shared learning.</p>
+      <ol>
+        <li><strong>1. Name your community</strong><span>Use the name learners and educators will recognize.</span></li>
+        <li><strong>2. Confirm the suggested type</strong><span>The suggestion comes from your registration role.</span></li>
+        <li><strong>3. Continue in context</strong><span>EchoEd activates the new organization before opening your dashboard.</span></li>
+      </ol>
+    </aside>
 
-      <form class="mt-6 space-y-4" (ngSubmit)="onSubmit($event)">
-        <div class="space-y-2">
-          <label class="text-sm font-semibold text-primary" for="organizationName">Organization name</label>
-          <input
-            id="organizationName"
-            type="text"
-            name="organizationName"
-            [(ngModel)]="organizationName"
-            placeholder="e.g. Bright Futures Academy"
-            class="onboarding-input w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-accent/50"
-          />
+    <section class="onboarding-card" aria-labelledby="setup-heading">
+      <header>
+        <p class="eyebrow">Organization setup</p>
+        <h2 id="setup-heading">Tell us about your learning community</h2>
+        <p>Only the organization name is required here. You can review supported settings after setup.</p>
+      </header>
+
+      <form (ngSubmit)="onSubmit($event)" #organizationForm="ngForm" novalidate [attr.aria-describedby]="errorMessage ? 'organization-error' : null">
+        <label class="field" for="organizationName">
+          <span>Organization name</span>
+          <input #organizationNameModel="ngModel" id="organizationName" type="text" name="organizationName"
+            [(ngModel)]="organizationName" required autocomplete="organization" placeholder="Bright Futures Academy"
+            aria-required="true" [attr.aria-invalid]="organizationNameModel.invalid && organizationNameModel.touched"
+            aria-describedby="organization-name-hint organization-name-error" />
+          <small id="organization-name-hint">Use the public-facing name your community already knows.</small>
+          <small id="organization-name-error" class="field-error" *ngIf="organizationNameModel.invalid && organizationNameModel.touched">Organization name is required.</small>
+        </label>
+
+        <section class="type-summary" aria-labelledby="type-heading">
+          <p class="eyebrow" id="type-heading">Suggested organization type</p>
+          <strong>{{ inferredTypeLabel }}</strong>
+          <p>Based on your {{ userRole || 'current' }} role. No additional type choice is required now.</p>
+        </section>
+
+        <div *ngIf="isStudentRole" class="student-note" role="note">
+          <strong>Students usually join an existing organization.</strong>
+          <p>Create a family space only if that matches your learning context; otherwise ask an administrator for an invitation.</p>
         </div>
 
-        <div class="rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
-          <p class="onboarding-helper text-xs uppercase tracking-[0.2em]">Organization type</p>
-          <p class="text-sm font-semibold text-main">{{ inferredTypeLabel }}</p>
-          <p class="onboarding-helper text-xs mt-1">We suggested a type based on your role.</p>
-        </div>
+        <p id="organization-error" class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-        <div *ngIf="isStudentRole" class="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
-          <p class="form-state-text form-state-text--warning text-sm font-semibold">Student accounts usually join an existing organization.</p>
-          <p class="form-state-text form-state-text--warning text-xs mt-1">
-            If you need a family space, you can create one here. Otherwise, ask an admin for an invite.
-          </p>
-        </div>
-
-        <p class="form-state-text form-state-text--error text-sm" *ngIf="errorMessage">{{ errorMessage }}</p>
-
-        <button
-          class="onboarding-submit w-full py-3 bg-primary text-white font-semibold rounded-xl shadow-soft-card hover:-translate-y-0.5 transition disabled:cursor-not-allowed disabled:opacity-60"
-          type="submit"
-          [disabled]="!organizationName || isSubmitting"
-        >
+        <button class="onboarding-submit" type="submit" [disabled]="organizationForm.invalid || isSubmitting"
+          [attr.aria-busy]="isSubmitting || null">
           {{ isSubmitting ? 'Creating organization…' : 'Create organization' }}
         </button>
       </form>
-    </div>
-  </div>
-</div>
+    </section>
+  </section>
+</main>

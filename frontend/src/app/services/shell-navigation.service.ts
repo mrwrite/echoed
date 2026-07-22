@@ -55,8 +55,8 @@ export class ShellNavigationService {
       space: 'teach',
       items: [
         { label: 'Teaching Overview', route: '/teach', icon: 'Home', roles: ['teacher', 'instructor'], exact: true },
-        { label: 'Classes', route: '/teach/classes', icon: 'Users', roles: ['teacher', 'instructor', 'org_admin'] },
-        { label: 'Assignments', route: '/teach/assignments', icon: 'ClipboardList', roles: ['teacher', 'instructor', 'org_admin'] },
+        { label: 'Classes', route: '/teach/classes', icon: 'Users', roles: ['teacher', 'instructor'] },
+        { label: 'Assignments', route: '/teach/assignments', icon: 'ClipboardList', roles: ['teacher', 'instructor'] },
         { label: 'Curriculum', route: '/teach/curriculum', icon: 'BookOpen', roles: ['teacher', 'instructor'] },
         { label: 'Learning Paths', route: '/home/programs', icon: 'ClipboardList', roles: ['teacher', 'instructor'] },
         { label: 'Learner Progress', route: '/teach', icon: 'SlidersHorizontal', roles: ['teacher', 'instructor'] },
@@ -82,11 +82,14 @@ export class ShellNavigationService {
       title: 'Organization',
       space: 'organization',
       items: [
-        { label: 'Organization Home', route: '/workspace/learners', icon: 'Home', roles: ['org_admin'], exact: true },
-        { label: 'Invitations', route: '/workspace/settings/invites', icon: 'Users', permission: 'nav:org-invites', roles: ['org_admin'] },
-        { label: 'Classes', route: '/workspace/learners/cohorts', icon: 'Users', permission: 'nav:cohorts', roles: ['org_admin'] },
-        { label: 'Access', route: '/workspace/access', icon: 'Users', permission: 'nav:access', roles: ['org_admin'] },
-        { label: 'Settings', route: '/workspace/settings', icon: 'Settings', permission: 'nav:settings', roles: ['org_admin'] },
+        { label: 'Organization Overview', route: '/organization', icon: 'Home', roles: ['org_admin'], exact: true },
+        { label: 'Members', route: '/organization/members', icon: 'Users', roles: ['org_admin'] },
+        { label: 'Teachers', route: '/organization/teachers', icon: 'Users', roles: ['org_admin'] },
+        { label: 'Students', route: '/organization/students', icon: 'Users', roles: ['org_admin'] },
+        { label: 'Invitations', route: '/organization/invitations', icon: 'Users', roles: ['org_admin'] },
+        { label: 'Classes', route: '/organization/sections', icon: 'BookOpen', roles: ['org_admin'] },
+        { label: 'Course Availability', route: '/organization/courses', icon: 'Book', roles: ['org_admin'] },
+        { label: 'Settings', route: '/organization/settings', icon: 'Settings', roles: ['org_admin'] },
       ],
     },
     {
@@ -129,7 +132,7 @@ export class ShellNavigationService {
         name: 'Organization',
         eyebrow: 'EchoEd Organization',
         description: 'Manage members, invitations, classes, access, and organization settings.',
-        canonicalRoute: '/workspace/learners',
+        canonicalRoute: '/organization',
       };
     }
 

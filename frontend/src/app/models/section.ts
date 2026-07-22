@@ -7,6 +7,8 @@ export interface Section {
   start_date?: string | null;
   end_date?: string | null;
   created_by: string;
+  learner_count?: number;
+  teacher_count?: number;
 }
 
 export interface Assignment {

@@ -20,6 +20,8 @@ import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
 import { StudioOverviewComponent } from './pages/studio-overview/studio-overview.component';
 import { StudioLibraryComponent } from './pages/studio-library/studio-library.component';
+import { OrganizationOverviewComponent } from './pages/organization-overview/organization-overview.component';
+import { OrganizationPeopleComponent } from './pages/organization-people/organization-people.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -173,6 +175,28 @@ describe('app routes', () => {
     expect(findRoute(routes, 'studio/courses')?.component).toBe(StudioLibraryComponent);
     expect(findRoute(routes, 'studio/courses')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'studio/courses')?.data?.['roles']).toEqual(['content_admin']);
+  });
+
+  it('adds guarded canonical Organization routes while preserving workspace deep links', () => {
+    [
+      'organization',
+      'organization/members',
+      'organization/teachers',
+      'organization/students',
+      'organization/invitations',
+      'organization/sections',
+      'organization/sections/:sectionId',
+      'organization/courses',
+      'organization/settings',
+      'workspace/learners',
+      'workspace/settings/invites',
+      'workspace/learners/cohorts',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+
+    expect(findRoute(routes, 'organization/')?.component).toBe(OrganizationOverviewComponent);
+    expect(findRoute(routes, 'organization/members')?.component).toBe(OrganizationPeopleComponent);
+    expect(findRoute(routes, 'organization/members')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'organization/members')?.data?.['roles']).toEqual(['org_admin']);
   });
 
   it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {

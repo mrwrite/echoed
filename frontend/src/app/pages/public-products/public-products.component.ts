@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs';
+import { EchoLoadingStateComponent } from '../../components/echo-loading-state/echo-loading-state.component';
+import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-state-panel.component';
 import { Product } from '../../models/v2-platform.model';
 import { V2PlatformService } from '../../services/v2-platform.service';
 
 @Component({
   selector: 'app-public-products',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EchoLoadingStateComponent, EchoStatePanelComponent],
   template: `
     <section class="public-products" aria-labelledby="products-title">
       <header>
@@ -16,7 +19,11 @@ import { V2PlatformService } from '../../services/v2-platform.service';
         <span>Public previews are ready for community review. Access actions stay bounded to the demo and existing learner runtime.</span>
       </header>
 
-      <div class="grid" *ngIf="products.length; else empty">
+      <app-echo-loading-state *ngIf="loading" title="Loading public learning" body="Checking the latest community-ready products."></app-echo-loading-state>
+      <app-echo-state-panel *ngIf="!loading && error" variant="error" title="Public learning could not be loaded"
+        [body]="error" impact="No product information changed." actionLabel="Retry" (action)="loadProducts()"></app-echo-state-panel>
+
+      <div class="grid" *ngIf="!loading && !error && products.length; else empty">
         <article *ngFor="let product of products">
           <img *ngIf="product.thumbnail_url || product.hero_image_url" [src]="product.thumbnail_url || product.hero_image_url || ''" [alt]="product.title" />
           <div>
@@ -33,10 +40,8 @@ import { V2PlatformService } from '../../services/v2-platform.service';
       </div>
 
       <ng-template #empty>
-        <div class="empty">
-          <h2>No public products yet</h2>
-          <p>Publish a Product wrapper with public visibility to preview community-facing product pages.</p>
-        </div>
+        <app-echo-state-panel *ngIf="!loading && !error" variant="empty" title="No public learning is available yet"
+          body="Community-ready learning will appear here after it has completed review."></app-echo-state-panel>
       </ng-template>
     </section>
   `,
@@ -58,10 +63,19 @@ import { V2PlatformService } from '../../services/v2-platform.service';
 export class PublicProductsComponent implements OnInit {
   private readonly v2Platform = inject(V2PlatformService);
   products: Product[] = [];
+  loading = true;
+  error = '';
 
   ngOnInit(): void {
-    this.v2Platform.getPublicProducts().subscribe(products => {
-      this.products = products;
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.loading = true;
+    this.error = '';
+    this.v2Platform.getPublicProducts().pipe(finalize(() => this.loading = false)).subscribe({
+      next: products => this.products = products,
+      error: () => this.error = 'The public catalog request failed. Check your connection and try again.',
     });
   }
 

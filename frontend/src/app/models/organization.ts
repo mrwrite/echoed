@@ -23,3 +23,13 @@ export interface OrganizationMembershipSummary {
   id: string;
   role: string;
 }
+
+export interface OrganizationMember {
+  id: string;
+  user_id: string;
+  display_name: string;
+  username: string;
+  role: string;
+  status: string;
+  joined_at: string;
+}

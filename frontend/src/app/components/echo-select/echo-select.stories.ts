@@ -43,3 +43,7 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const ValidationError: Story = {
+  args: { label: 'Organization role', options: ['Teacher', 'Student'], required: true, error: 'Choose a role.' },
+};

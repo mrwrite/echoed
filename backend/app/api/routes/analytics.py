@@ -6,6 +6,7 @@ from uuid import UUID
 from app.crud.badges import BADGE_RULES, calculate_streak_days, get_or_create_badge
 from app.database import get_db
 from app.deps import require_roles, require_org_roles
+from app.section_scope import require_scoped_section
 from app.enum import MembershipStatus, ProgressStatus
 from app.models import (
     AccessGrant,
@@ -1045,15 +1046,16 @@ def get_section_summary(
     db: Session = Depends(get_db),
     membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
+    section = require_scoped_section(db, membership, section_id)
     total_enrolled = (
         db.query(Enrollment)
-        .filter(Enrollment.section_id == section_id)
+        .filter(Enrollment.section_id == section.id)
         .count()
     )
     completed_lessons = (
         db.query(SegmentProgress)
         .filter(
-            SegmentProgress.section_id == section_id,
+            SegmentProgress.section_id == section.id,
             SegmentProgress.status == ProgressStatus.COMPLETED,
         )
         .count()
@@ -1061,13 +1063,13 @@ def get_section_summary(
     completed_units = (
         db.query(StudentUnitProgress)
         .filter(
-            StudentUnitProgress.section_id == section_id,
+            StudentUnitProgress.section_id == section.id,
             StudentUnitProgress.status == ProgressStatus.COMPLETED,
         )
         .count()
     )
     return {
-        "section_id": section_id,
+        "section_id": str(section.id),
         "totals": {
             "enrolled": total_enrolled,
             "lessons_completed": completed_lessons,

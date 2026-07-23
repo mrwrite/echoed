@@ -146,10 +146,8 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
-    logger.debug("Raw Token Received: %s", token)
-
     if not token:
-        logger.error("ERROR: Missing token")
+        logger.warning("Authentication rejected: missing token")
         raise HTTPException(status_code=401, detail="Invalid token format")
 
     # Remove ONLY ONE "Bearer " if it exists
@@ -158,37 +156,29 @@ def get_current_user(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logger.debug("Decoded Token Payload: %s", payload)
 
         exp_timestamp = payload.get("exp", 0)
-        exp_time = datetime.fromtimestamp(
-            exp_timestamp, tz=timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S UTC")
-        logger.debug("Token Expiration Timestamp: %s", exp_timestamp)
-        logger.debug("Token Expiration Time: %s", exp_time)
 
         # Token expiration check
         if datetime.now(timezone.utc).timestamp() > exp_timestamp:
-            logger.error("ERROR: Token has expired")
+            logger.warning("Authentication rejected: token expired")
             raise HTTPException(status_code=401, detail="Token has expired")
 
         username: str | None = payload.get("sub")
-        logger.debug("Username from Token: %s", username)
 
         if username is None:
-            logger.error("ERROR: No username found in token")
+            logger.warning("Authentication rejected: subject claim missing")
             raise HTTPException(
                 status_code=401, detail="Invalid authentication credentials"
             )
 
         user = db.query(User).filter(User.username == username).first()
-        logger.debug("User from Database: %s", user)
 
         if user is None:
-            logger.error("ERROR: User not found in the database")
+            logger.warning("Authentication rejected: subject not found")
             raise HTTPException(status_code=401, detail="User not found")
 
         return user
     except JWTError as e:
-        logger.error("JWT Decode Error: %s", str(e))
+        logger.warning("Authentication rejected: token decode failed")
         raise HTTPException(status_code=401, detail="Invalid token")

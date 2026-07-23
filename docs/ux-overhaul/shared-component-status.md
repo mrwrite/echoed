@@ -14,6 +14,9 @@
 | Component | Path | Status | Notes |
 | --- | --- | --- | --- |
 | Button | `frontend/src/app/components/echo-button/echo-button.component.ts` | Extended in Phase 2 | Adds `secondary` color support and optional `ariaLabel` for accessible student action labels. |
+| Shared form controls | `frontend/src/app/components/echo-{input,select,textarea,checkbox,radio,radio-group,toggle}/` | Upgraded | Stable labels and IDs, hint/error/success descriptions, disabled/loading/required states, native semantics, visible focus, and 44px targets. |
+| Search | `frontend/src/app/components/echo-search/` | Available | Named native search input with clear action, result count announcement, loading state, and Storybook coverage. |
+| Responsive data list | `frontend/src/app/components/echo-data-list/` | Available | Equivalent captioned table and mobile record views with named actions, result announcements, and empty state. |
 | Confirmation dialog | `frontend/src/app/components/echo-confirmation-dialog/` | Connected to assessment submission | Used as a neutral consequential confirmation before assessment attempts. |
 | Lesson viewer | `frontend/src/app/shared/lesson-viewer.component.*` | Migrated for local activity states | Adds activity instruction, quiz validation alert, and current step state text without adding scoring behavior. |
 | Certifications page | `frontend/src/app/pages/certifications/` | Migrated for student achievements | Uses shared loading, empty, and error states and learner-facing certificate language. |
@@ -21,6 +24,7 @@
 | Header | `frontend/src/app/components/echo-header/` | Production active | Uses role-aware shell titles and shared state panels for organization states. |
 | Sidebar | `frontend/src/app/components/echo-sidebar/` | Production active | Uses role-aware navigation sections and tokenized active/focus states. |
 | State panel | `frontend/src/app/components/echo-state-panel/` | Production active | Adds `permission` and `success` variants and real icon rendering. |
+| Standard page states | `frontend/src/app/components/echo-state-panel/`, `echo-loading-state/` | Production active | Loading, empty, error, success, unavailable, blocked, and permission states support impact/context, retry and safe secondary actions, compact/mobile layouts, live semantics, and reduced motion. |
 | Access denied | `frontend/src/app/pages/access-denied/` | Migrated | Uses shared permission state. |
 | Icon registry | `frontend/src/app/shared/icon/icon.module.ts` | Extended | Adds `Lock` and `CheckCircle` paths. |
 | Student curriculum | `frontend/src/app/components/student-curriculum/student-curriculum.component.ts` | Reused in teacher preview | Teacher course preview renders the same unit/lesson hierarchy in preview-only mode without starting learner progress. |
@@ -37,10 +41,9 @@
 
 ## Still Legacy
 
-- Form controls, tables, filter controls, page-specific buttons, dashboard cards, and internal page layouts are still mixed Tailwind/SCSS implementations.
+- Tables, page-specific buttons, dashboard cards, and internal page layouts are still mixed Tailwind/SCSS implementations; shared controls are available for incremental adoption.
 - Existing Storybook/design-lab artifacts remain references; production consumers were not migrated wholesale.
 - Destructive actions still need page-by-page adoption of `EchoConfirmationDialogComponent`.
-- Form controls, tables, filter controls, page-specific buttons, dashboard cards, and internal page layouts are still mixed Tailwind/SCSS implementations.
 - Activity controls delegated to canvas, map, and storybook components still need full accessibility and responsive QA.
 - Global teacher assignment list is still a class-first alias because no global assignment API was verified.
 - Teacher feedback panels remain deferred because no feedback persistence endpoint was verified.
@@ -75,3 +78,13 @@
 - Existing Admin responsive table styles were not reused as a separate Studio system; Studio uses content-oriented responsive records and forms.
 
 Studio does not add an asset picker, reorder control, block editor, tab system, or upload-progress component because no verified content-admin API requires those controls.
+
+## Phase 6 Organization adoption
+
+- `EchoLoadingStateComponent` and `EchoStatePanelComponent`: overview, people, invitations, classes, course availability, and settings states.
+- `EchoConfirmationDialogComponent`: privileged organization invitations with exact role and organization impact.
+- Shared shell/navigation: canonical `/organization` destination and org-admin-only navigation without Teacher, Admin, or Studio controls.
+- Shared semantic tokens and responsive records: organization metrics, filters, member/invite/class/offering lists, details, and forms.
+- Existing organization, invite, section, analytics, and V2 services were extended or reused; no Organization-only component framework was introduced.
+
+Member mutation, invitation cancellation/resend, editable course access, and class authoring were not created because current APIs do not safely support them.

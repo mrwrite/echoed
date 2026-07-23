@@ -1,0 +1,15 @@
+<main class="organization-page" aria-labelledby="organization-settings-title">
+  <header class="organization-page__header"><div><p class="organization-page__eyebrow">Organization administration</p><h1 id="organization-settings-title">Organization settings</h1><p class="organization-page__intro">Review organization identity and update only the fields supported by the current organization API.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading organization settings" body="Checking the active organization and your current membership."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Organization settings unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+  <ng-container *ngIf="!loading && organization">
+    <form class="organization-panel organization-form" (ngSubmit)="save()" aria-labelledby="organization-identity-title">
+      <div><h2 id="organization-identity-title">Organization identity</h2><p>The name is the only organization field that the current API permits administrators to change.</p></div>
+      <div class="organization-field"><label for="organization-name">Organization name</label><input id="organization-name" class="organization-control" name="organizationName" [(ngModel)]="nameDraft" required></div>
+      <p *ngIf="formError" role="alert">{{ formError }}</p><p *ngIf="successMessage" class="organization-callout" role="status">{{ successMessage }}</p>
+      <button class="organization-button" type="submit" [disabled]="saving">{{ saving ? 'Saving...' : 'Save organization name' }}</button>
+    </form>
+    <section class="organization-panel" aria-labelledby="organization-context-title"><h2 id="organization-context-title">Organization context</h2><dl class="organization-meta"><div><dt>Type</dt><dd>{{ label(organization.type) }}</dd></div><div><dt>Country</dt><dd>{{ organization.country || 'Not provided' }}</dd></div><div><dt>Time zone</dt><dd>{{ organization.timezone || 'Not provided' }}</dd></div><div><dt>Your organization role</dt><dd>{{ label(organization.role || 'org_admin') }}</dd></div><div><dt>Created</dt><dd>{{ organization.created_at | date:'mediumDate' }}</dd></div></dl></section>
+    <aside class="organization-callout"><strong>Unsupported settings are not editable.</strong><p>Branding, contacts, announcements, billing, licensing, district hierarchy, and organization lifecycle settings are not present in the current API.</p></aside>
+  </ng-container>
+</main>

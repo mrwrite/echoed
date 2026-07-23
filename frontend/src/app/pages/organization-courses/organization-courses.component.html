@@ -1,0 +1,21 @@
+<main class="organization-page" aria-labelledby="organization-courses-title">
+  <header class="organization-page__header"><div><p class="organization-page__eyebrow">Organization learning</p><h1 id="organization-courses-title">Course availability</h1><p class="organization-page__intro">Review course, learning-path, and certification wrappers visible within the active organization workspace.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading course availability" body="Checking scoped learning offerings and current access grants."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Course availability unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+  <ng-container *ngIf="!loading && !loadError">
+    <section class="organization-panel organization-toolbar" aria-label="Course availability filters">
+      <div class="organization-field"><label for="organization-course-search">Search</label><input id="organization-course-search" class="organization-control" type="search" [(ngModel)]="searchTerm" placeholder="Search learning offerings"></div>
+      <div class="organization-field"><label for="organization-course-type">Offering type</label><select id="organization-course-type" class="organization-control" [(ngModel)]="typeFilter"><option value="">All types</option><option *ngFor="let type of types" [value]="type">{{ label(type) }}</option></select></div>
+      <p class="organization-results" role="status" aria-live="polite">{{ filteredProducts.length }} offerings shown</p>
+    </section>
+    <app-echo-state-panel *ngIf="!filteredProducts.length" variant="empty" title="No learning offerings found" body="No course, path, or certification wrappers match the current organization scope and filters."></app-echo-state-panel>
+    <section class="organization-records" aria-label="Available learning offerings" *ngIf="filteredProducts.length">
+      <article class="organization-record" *ngFor="let product of filteredProducts">
+        <div class="organization-record__heading"><h2>{{ product.title }}</h2><span class="organization-status" [class.organization-status--success]="product.status === 'published'">{{ label(product.status) }}</span></div>
+        <p>{{ product.description || 'No organization-facing description is available.' }}</p>
+        <dl class="organization-meta"><div><dt>Type</dt><dd>{{ label(product.product_type) }}</dd></div><div><dt>Visibility</dt><dd>{{ label(product.visibility) }}</dd></div><div><dt>Availability state</dt><dd>{{ label(product.access_state) }}</dd></div><div><dt>Active access grants</dt><dd>{{ activeGrantCount(product.id) }}</dd></div><div><dt>Certificate</dt><dd>{{ product.certificate_available ? 'Available' : 'Not indicated' }}</dd></div></dl>
+      </article>
+    </section>
+    <aside class="organization-callout"><strong>Read-only availability</strong><p>Organization administrators can inspect scoped offering and access state here. Content editing belongs in Studio, and grant creation is withheld until the API can validate the target against organization membership.</p></aside>
+  </ng-container>
+</main>

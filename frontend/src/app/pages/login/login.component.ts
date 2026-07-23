@@ -22,6 +22,7 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
   showPassword = false;
+  isSubmitting = false;
 
   constructor(
     private router: Router,
@@ -32,6 +33,9 @@ export class LoginComponent {
 
   async login(event: Event) {
     event.preventDefault();
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+    this.errorMessage = '';
 
     try {
       await firstValueFrom(this.authService.login(this.username, this.password));
@@ -58,6 +62,8 @@ export class LoginComponent {
       }
     } catch (error: any) {
       this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
+    } finally {
+      this.isSubmitting = false;
     }
   }
 }

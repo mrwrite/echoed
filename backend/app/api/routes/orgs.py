@@ -7,15 +7,28 @@ from app.auth import ActiveOrganizationContext, create_access_token
 from app.database import get_db
 from app.deps import get_current_user
 from app.enum import OrganizationType, OrganizationRole
-from app.models import Organization, OrganizationMembership
+from app.models import Enrollment, Organization, OrganizationMembership, Section, User
 from app.schemas import (
     OrganizationCreate,
     OrganizationResponse,
+    OrganizationMemberResponse,
+    OrganizationSectionResponse,
     OrganizationSwitchResponse,
     OrganizationUpdate,
 )
+from app.deps import require_org_roles
 
 router = APIRouter()
+
+
+def _require_requested_organization(org_id: str, membership: OrganizationMembership) -> uuid.UUID:
+    try:
+        org_uuid = uuid.UUID(org_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid organization id") from exc
+    if membership.organization_id != org_uuid:
+        raise HTTPException(status_code=403, detail="Organization mismatch")
+    return org_uuid
 
 
 @router.get("/orgs", response_model=list[OrganizationResponse])
@@ -43,6 +56,67 @@ def list_orgs(
         }
         for org in organizations
     ]
+
+
+@router.get("/orgs/{org_id}/members", response_model=list[OrganizationMemberResponse])
+def list_org_members(
+    org_id: str,
+    db: Session = Depends(get_db),
+    membership=Depends(require_org_roles("org_admin")),
+):
+    org_uuid = _require_requested_organization(org_id, membership)
+    rows = (
+        db.query(OrganizationMembership, User)
+        .join(User, User.id == OrganizationMembership.user_id)
+        .filter(OrganizationMembership.organization_id == org_uuid)
+        .order_by(User.firstname.asc(), User.lastname.asc(), User.username.asc())
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "user_id": user.id,
+            "display_name": f"{user.firstname or ''} {user.lastname or ''}".strip() or user.username,
+            "username": user.username,
+            "role": row.role.value,
+            "status": row.status.value,
+            "joined_at": row.created_at,
+        }
+        for row, user in rows
+    ]
+
+
+@router.get("/orgs/{org_id}/sections", response_model=list[OrganizationSectionResponse])
+def list_org_sections(
+    org_id: str,
+    db: Session = Depends(get_db),
+    membership=Depends(require_org_roles("org_admin")),
+):
+    org_uuid = _require_requested_organization(org_id, membership)
+    sections = (
+        db.query(Section)
+        .filter(Section.organization_id == org_uuid)
+        .order_by(Section.name.asc(), Section.created_at.asc())
+        .all()
+    )
+    results = []
+    for section in sections:
+        enrollments = db.query(Enrollment).filter(Enrollment.section_id == section.id).all()
+        results.append(
+            {
+                "id": section.id,
+                "organization_id": section.organization_id,
+                "course_version_id": section.course_version_id,
+                "name": section.name,
+                "mode": section.mode.value,
+                "start_date": section.start_date,
+                "end_date": section.end_date,
+                "created_by": section.created_by,
+                "learner_count": sum(1 for row in enrollments if row.role_in_section == "student"),
+                "teacher_count": sum(1 for row in enrollments if row.role_in_section in {"teacher", "instructor"}),
+            }
+        )
+    return results
 
 
 @router.post("/orgs", response_model=OrganizationResponse)

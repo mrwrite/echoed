@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Organization } from '../models/organization';
+import { Organization, OrganizationMember } from '../models/organization';
+import { Section } from '../models/section';
 import { AuthService } from './auth.service';
 import { TokenResponse } from '../models/token-response';
 
@@ -61,6 +62,14 @@ export class OrganizationService {
         this.activeOrgSubject.next(response.active_org_id ?? null);
       })
     );
+  }
+
+  getMembers(orgId: string): Observable<OrganizationMember[]> {
+    return this.http.get<OrganizationMember[]>(`${this.apiUrl}/orgs/${orgId}/members`);
+  }
+
+  getSections(orgId: string): Observable<Section[]> {
+    return this.http.get<Section[]>(`${this.apiUrl}/orgs/${orgId}/sections`);
   }
 
   clearActiveOrg(): void {

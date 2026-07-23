@@ -109,4 +109,18 @@ describe('OrganizationService', () => {
     expect(localStorage.getItem('active_org_role')).toBe('teacher');
     expect(activeOrgValues.at(-1)).toBe('org-1');
   });
+
+  it('loads the privacy-minimized member directory for one organization', () => {
+    service.getMembers('org-1').subscribe(members => expect(members[0].display_name).toBe('Ada Teacher'));
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/orgs/org-1/members`);
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 'm1', user_id: 'u1', display_name: 'Ada Teacher', username: 'ada', role: 'teacher', status: 'active', joined_at: '2026-01-01' }]);
+  });
+
+  it('loads organization-scoped class summaries', () => {
+    service.getSections('org-1').subscribe(sections => expect(sections[0].learner_count).toBe(4));
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/orgs/org-1/sections`);
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 's1', organization_id: 'org-1', course_version_id: 'v1', name: 'Class', mode: 'remote', created_by: 'u1', learner_count: 4, teacher_count: 1 }]);
+  });
 });

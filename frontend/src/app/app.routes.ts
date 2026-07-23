@@ -1,249 +1,274 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './pages/login/login.component';
-import { UserDashboardComponent } from './pages/user-dashboard/user-dashboard.component';
-import { RegistrationComponent } from './pages/registration/registration.component';
-import { HomeComponent } from './pages/home/home.component';
-import { CourseWizardComponent } from './pages/admin/course-wizard/course-wizard.component';
-import { EchoedRoleSelectorComponent } from './pages/user-dashboard/echoed-role-selector/echoed-role-selector.component';
-import { LessonViewComponent } from './pages/lesson-view.component';
-import { LandingComponent } from './pages/landing/landing.component';
-import { AvailableCoursesComponent } from './pages/available-courses/available-courses.component';
-import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
-import { AdminCoursesComponent } from './pages/admin-courses/admin-courses.component';
-import { AdminBadgesComponent } from './pages/admin-badges/admin-badges.component';
 import { RoleGuard } from './guards/role.guard';
-import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
-import { OrgInvitesComponent } from './pages/org-invites/org-invites.component';
-import { StudioCoursesComponent } from './pages/studio-courses/studio-courses.component';
-import { SectionsComponent } from './pages/sections/sections.component';
-import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
-import { PreferencesComponent } from './pages/preferences/preferences.component';
-import { OnboardingOrganizationComponent } from './pages/onboarding-organization/onboarding-organization.component';
 import { HomeSessionGuard } from './guards/home-session.guard';
-import { ProgramsComponent } from './pages/programs/programs.component';
-import { AssessmentDetailComponent } from './pages/assessment-detail/assessment-detail.component';
-import { CertificationsComponent } from './pages/certifications/certifications.component';
-import { V2PlatformPageComponent } from './pages/v2-platform/v2-platform-page.component';
-import { ProductStudioComponent } from './pages/product-studio/product-studio.component';
-import { V2CollectionPageComponent } from './pages/v2-platform/v2-collection-page.component';
-import { ProductDetailComponent } from './pages/product-detail/product-detail.component';
-import { ProjectDetailComponent } from './pages/project-detail/project-detail.component';
-import { ArtifactDetailComponent } from './pages/artifact-detail/artifact-detail.component';
-import { GenerationRunDetailComponent } from './pages/generation-run-detail/generation-run-detail.component';
-import { ReviewCenterComponent } from './pages/review-center/review-center.component';
-import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
-import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
-import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
-import { StudentCourseOverviewComponent } from './pages/learner-portal/student-course-overview.component';
-import { AccessGrantsComponent } from './pages/access-grants/access-grants.component';
-import { WorkspaceAnalyticsComponent } from './pages/workspace-analytics/workspace-analytics.component';
-import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
-import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
-import { PublicProductsComponent } from './pages/public-products/public-products.component';
-import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
-import { CommercialDashboardComponent } from './pages/commercial-dashboard/commercial-dashboard.component';
-import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
-import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
-import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
-import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
-import { AdminUserDetailComponent } from './pages/admin-user-detail/admin-user-detail.component';
-import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
-import { AdminReportsComponent } from './pages/admin-reports/admin-reports.component';
-import { StudioOverviewComponent } from './pages/studio-overview/studio-overview.component';
-import { StudioLibraryComponent } from './pages/studio-library/studio-library.component';
-import { StudioCreateComponent } from './pages/studio-create/studio-create.component';
-import { StudioProjectDetailComponent } from './pages/studio-project-detail/studio-project-detail.component';
-import { StudioContentDetailComponent } from './pages/studio-content-detail/studio-content-detail.component';
-import { StudioDraftDetailComponent } from './pages/studio-draft-detail/studio-draft-detail.component';
-import { StudioReviewComponent } from './pages/studio-review/studio-review.component';
+
+const AccessDeniedComponent = () => import('./pages/access-denied/access-denied.component').then((m) => m.AccessDeniedComponent);
+const AccessGrantsComponent = () => import('./pages/access-grants/access-grants.component').then((m) => m.AccessGrantsComponent);
+const AdminBadgesComponent = () => import('./pages/admin-badges/admin-badges.component').then((m) => m.AdminBadgesComponent);
+const AdminCoursesComponent = () => import('./pages/admin-courses/admin-courses.component').then((m) => m.AdminCoursesComponent);
+const AdminOrganizationsComponent = () => import('./pages/admin-organizations/admin-organizations.component').then((m) => m.AdminOrganizationsComponent);
+const AdminOverviewComponent = () => import('./pages/admin-overview/admin-overview.component').then((m) => m.AdminOverviewComponent);
+const AdminReportsComponent = () => import('./pages/admin-reports/admin-reports.component').then((m) => m.AdminReportsComponent);
+const AdminUserDetailComponent = () => import('./pages/admin-user-detail/admin-user-detail.component').then((m) => m.AdminUserDetailComponent);
+const AdminUsersComponent = () => import('./pages/admin-users/admin-users.component').then((m) => m.AdminUsersComponent);
+const ArtifactDetailComponent = () => import('./pages/artifact-detail/artifact-detail.component').then((m) => m.ArtifactDetailComponent);
+const AssessmentDetailComponent = () => import('./pages/assessment-detail/assessment-detail.component').then((m) => m.AssessmentDetailComponent);
+const AvailableCoursesComponent = () => import('./pages/available-courses/available-courses.component').then((m) => m.AvailableCoursesComponent);
+const CertificationsComponent = () => import('./pages/certifications/certifications.component').then((m) => m.CertificationsComponent);
+const CommercialDashboardComponent = () => import('./pages/commercial-dashboard/commercial-dashboard.component').then((m) => m.CommercialDashboardComponent);
+const CourseWizardComponent = () => import('./pages/admin/course-wizard/course-wizard.component').then((m) => m.CourseWizardComponent);
+const DemoReadinessComponent = () => import('./pages/demo-readiness/demo-readiness.component').then((m) => m.DemoReadinessComponent);
+const EchoedRoleSelectorComponent = () => import('./pages/user-dashboard/echoed-role-selector/echoed-role-selector.component').then((m) => m.EchoedRoleSelectorComponent);
+const GenerationRunDetailComponent = () => import('./pages/generation-run-detail/generation-run-detail.component').then((m) => m.GenerationRunDetailComponent);
+const HomeComponent = () => import('./pages/home/home.component').then((m) => m.HomeComponent);
+const LandingComponent = () => import('./pages/landing/landing.component').then((m) => m.LandingComponent);
+const LearnerPortalComponent = () => import('./pages/learner-portal/learner-portal.component').then((m) => m.LearnerPortalComponent);
+const LearnerProductsComponent = () => import('./pages/learner-portal/learner-products.component').then((m) => m.LearnerProductsComponent);
+const LearnerResourcesComponent = () => import('./pages/learner-portal/learner-resources.component').then((m) => m.LearnerResourcesComponent);
+const LessonViewComponent = () => import('./pages/lesson-view.component').then((m) => m.LessonViewComponent);
+const LoginComponent = () => import('./pages/login/login.component').then((m) => m.LoginComponent);
+const OnboardingOrganizationComponent = () => import('./pages/onboarding-organization/onboarding-organization.component').then((m) => m.OnboardingOrganizationComponent);
+const OrganizationCoursesComponent = () => import('./pages/organization-courses/organization-courses.component').then((m) => m.OrganizationCoursesComponent);
+const OrganizationInvitationsComponent = () => import('./pages/organization-invitations/organization-invitations.component').then((m) => m.OrganizationInvitationsComponent);
+const OrganizationOverviewComponent = () => import('./pages/organization-overview/organization-overview.component').then((m) => m.OrganizationOverviewComponent);
+const OrganizationPeopleComponent = () => import('./pages/organization-people/organization-people.component').then((m) => m.OrganizationPeopleComponent);
+const OrganizationSectionDetailComponent = () => import('./pages/organization-section-detail/organization-section-detail.component').then((m) => m.OrganizationSectionDetailComponent);
+const OrganizationSectionsComponent = () => import('./pages/organization-sections/organization-sections.component').then((m) => m.OrganizationSectionsComponent);
+const OrganizationSettingsComponent = () => import('./pages/organization-settings/organization-settings.component').then((m) => m.OrganizationSettingsComponent);
+const OrgInvitesComponent = () => import('./pages/org-invites/org-invites.component').then((m) => m.OrgInvitesComponent);
+const PreferencesComponent = () => import('./pages/preferences/preferences.component').then((m) => m.PreferencesComponent);
+const ProductDetailComponent = () => import('./pages/product-detail/product-detail.component').then((m) => m.ProductDetailComponent);
+const ProductStudioComponent = () => import('./pages/product-studio/product-studio.component').then((m) => m.ProductStudioComponent);
+const ProgramsComponent = () => import('./pages/programs/programs.component').then((m) => m.ProgramsComponent);
+const ProjectDetailComponent = () => import('./pages/project-detail/project-detail.component').then((m) => m.ProjectDetailComponent);
+const PublicProductDetailComponent = () => import('./pages/public-products/public-product-detail.component').then((m) => m.PublicProductDetailComponent);
+const PublicProductsComponent = () => import('./pages/public-products/public-products.component').then((m) => m.PublicProductsComponent);
+const RegistrationComponent = () => import('./pages/registration/registration.component').then((m) => m.RegistrationComponent);
+const ReviewCenterComponent = () => import('./pages/review-center/review-center.component').then((m) => m.ReviewCenterComponent);
+const RouteLoadErrorComponent = () => import('./pages/route-load-error/route-load-error.component').then((m) => m.RouteLoadErrorComponent);
+const SectionDetailComponent = () => import('./pages/section-detail/section-detail.component').then((m) => m.SectionDetailComponent);
+const SectionsComponent = () => import('./pages/sections/sections.component').then((m) => m.SectionsComponent);
+const StudentCourseOverviewComponent = () => import('./pages/learner-portal/student-course-overview.component').then((m) => m.StudentCourseOverviewComponent);
+const StudioContentDetailComponent = () => import('./pages/studio-content-detail/studio-content-detail.component').then((m) => m.StudioContentDetailComponent);
+const StudioCoursesComponent = () => import('./pages/studio-courses/studio-courses.component').then((m) => m.StudioCoursesComponent);
+const StudioCreateComponent = () => import('./pages/studio-create/studio-create.component').then((m) => m.StudioCreateComponent);
+const StudioDraftDetailComponent = () => import('./pages/studio-draft-detail/studio-draft-detail.component').then((m) => m.StudioDraftDetailComponent);
+const StudioLibraryComponent = () => import('./pages/studio-library/studio-library.component').then((m) => m.StudioLibraryComponent);
+const StudioOverviewComponent = () => import('./pages/studio-overview/studio-overview.component').then((m) => m.StudioOverviewComponent);
+const StudioProjectDetailComponent = () => import('./pages/studio-project-detail/studio-project-detail.component').then((m) => m.StudioProjectDetailComponent);
+const StudioReviewComponent = () => import('./pages/studio-review/studio-review.component').then((m) => m.StudioReviewComponent);
+const TeacherCoursePreviewComponent = () => import('./pages/teacher-curriculum/teacher-course-preview.component').then((m) => m.TeacherCoursePreviewComponent);
+const TeacherCurriculumComponent = () => import('./pages/teacher-curriculum/teacher-curriculum.component').then((m) => m.TeacherCurriculumComponent);
+const TeacherLearnerDetailComponent = () => import('./pages/teacher-learner-detail/teacher-learner-detail.component').then((m) => m.TeacherLearnerDetailComponent);
+const UserDashboardComponent = () => import('./pages/user-dashboard/user-dashboard.component').then((m) => m.UserDashboardComponent);
+const V2CollectionPageComponent = () => import('./pages/v2-platform/v2-collection-page.component').then((m) => m.V2CollectionPageComponent);
+const WorkspaceAnalyticsComponent = () => import('./pages/workspace-analytics/workspace-analytics.component').then((m) => m.WorkspaceAnalyticsComponent);
+const WorkspaceDashboardComponent = () => import('./pages/workspace-dashboard/workspace-dashboard.component').then((m) => m.WorkspaceDashboardComponent);
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
 const studioRoles = ['content_admin', 'org_admin'];
 const sectionRoles = ['teacher', 'org_admin', 'instructor'];
 
 export const routes: Routes = [
-  { path: '', component: LandingComponent },
-  { path: 'products', component: PublicProductsComponent },
-  { path: 'products/:slug', component: PublicProductDetailComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'registration', component: RegistrationComponent },
-  { path: 'onboarding/organization', component: OnboardingOrganizationComponent },
-  { path: 'access-denied', component: AccessDeniedComponent },
+  { path: '', loadComponent: LandingComponent },
+  { path: 'products', loadComponent: PublicProductsComponent },
+  { path: 'products/:slug', loadComponent: PublicProductDetailComponent },
+  { path: 'login', loadComponent: LoginComponent },
+  { path: 'registration', loadComponent: RegistrationComponent },
+  { path: 'onboarding/organization', loadComponent: OnboardingOrganizationComponent },
+  { path: 'access-denied', loadComponent: AccessDeniedComponent },
+  { path: 'load-error', loadComponent: RouteLoadErrorComponent },
   {
     path: 'admin',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
-      { path: '', component: AdminOverviewComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
-      { path: 'users', component: AdminUsersComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-      { path: 'users/:userId', component: AdminUserDetailComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-      { path: 'organizations', component: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
-      { path: 'organizations/:organizationId', component: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
-      { path: 'courses', component: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-      { path: 'courses/:courseId', component: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-      { path: 'badges', component: AdminBadgesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
-      { path: 'reports', component: AdminReportsComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: '', loadComponent: AdminOverviewComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'users', loadComponent: AdminUsersComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'users/:userId', loadComponent: AdminUserDetailComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'organizations', loadComponent: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'organizations/:organizationId', loadComponent: AdminOrganizationsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'courses', loadComponent: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'courses/:courseId', loadComponent: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'badges', loadComponent: AdminBadgesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
+      { path: 'reports', loadComponent: AdminReportsComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
     ],
   },
   {
     path: 'studio',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
-      { path: '', component: StudioOverviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'create', component: StudioCreateComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'projects', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'projects' } },
-      { path: 'projects/:projectId', component: StudioProjectDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'content', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'content' } },
-      { path: 'content/:productId', component: StudioContentDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'courses', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'courses' } },
-      { path: 'programs', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'programs' } },
-      { path: 'sources', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'sources' } },
-      { path: 'drafts', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'drafts' } },
-      { path: 'drafts/:artifactId', component: StudioDraftDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'review', component: StudioReviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
-      { path: 'publishing', component: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'publishing' } },
+      { path: '', loadComponent: StudioOverviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'create', loadComponent: StudioCreateComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'projects', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'projects' } },
+      { path: 'projects/:projectId', loadComponent: StudioProjectDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'content', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'content' } },
+      { path: 'content/:productId', loadComponent: StudioContentDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'courses', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'courses' } },
+      { path: 'programs', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'programs' } },
+      { path: 'sources', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'sources' } },
+      { path: 'drafts', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'drafts' } },
+      { path: 'drafts/:artifactId', loadComponent: StudioDraftDetailComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'review', loadComponent: StudioReviewComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'] } },
+      { path: 'publishing', loadComponent: StudioLibraryComponent, canActivate: [RoleGuard], data: { roles: ['content_admin'], mode: 'publishing' } },
+    ],
+  },
+  {
+    path: 'organization',
+    loadComponent: HomeComponent,
+    canActivate: [HomeSessionGuard],
+    children: [
+      { path: '', loadComponent: OrganizationOverviewComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'members', loadComponent: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'members' } },
+      { path: 'teachers', loadComponent: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'teachers' } },
+      { path: 'students', loadComponent: OrganizationPeopleComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'], mode: 'students' } },
+      { path: 'invitations', loadComponent: OrganizationInvitationsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'sections', loadComponent: OrganizationSectionsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'sections/:sectionId', loadComponent: OrganizationSectionDetailComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'courses', loadComponent: OrganizationCoursesComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
+      { path: 'settings', loadComponent: OrganizationSettingsComponent, canActivate: [RoleGuard], data: { roles: ['org_admin'] } },
     ],
   },
   {
     path: 'teach',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',
-        component: UserDashboardComponent,
+        loadComponent: UserDashboardComponent,
         children: [
-          { path: '', component: EchoedRoleSelectorComponent },
+          { path: '', loadComponent: EchoedRoleSelectorComponent },
           {
             path: 'classes',
-            component: SectionsComponent,
+            loadComponent: SectionsComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor', 'org_admin'] }
           },
           {
             path: 'classes/:id',
-            component: SectionDetailComponent,
+            loadComponent: SectionDetailComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor', 'org_admin'] }
           },
           {
             path: 'curriculum',
-            component: TeacherCurriculumComponent,
+            loadComponent: TeacherCurriculumComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor'] }
           },
           {
             path: 'courses/:courseId/preview',
-            component: TeacherCoursePreviewComponent,
+            loadComponent: TeacherCoursePreviewComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor'] }
           },
           {
             path: 'assignments',
-            component: SectionsComponent,
+            loadComponent: SectionsComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor', 'org_admin'] }
           },
           {
             path: 'learners/:learnerId',
-            component: TeacherLearnerDetailComponent,
+            loadComponent: TeacherLearnerDetailComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'instructor', 'org_admin'] }
           },
-          { path: 'settings', component: PreferencesComponent },
+          { path: 'settings', loadComponent: PreferencesComponent },
         ]
       }
     ]
   },
   {
     path: 'home',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',
-        component: UserDashboardComponent,
+        loadComponent: UserDashboardComponent,
         children: [
-          { path: '', component: EchoedRoleSelectorComponent },
+          { path: '', loadComponent: EchoedRoleSelectorComponent },
           {
             path: 'courses/new',
-            component: CourseWizardComponent,
+            loadComponent: CourseWizardComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin', 'teacher'] }
           },
           {
             path: 'courses/:courseId/edit',
-            component: CourseWizardComponent,
+            loadComponent: CourseWizardComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin', 'teacher'] }
           },
-          { path: 'courses', component: AvailableCoursesComponent },
-          { path: 'programs', component: ProgramsComponent },
-          { path: 'assessments/:id', component: AssessmentDetailComponent },
-          { path: 'certifications', component: CertificationsComponent },
+          { path: 'courses', loadComponent: AvailableCoursesComponent },
+          { path: 'programs', loadComponent: ProgramsComponent },
+          { path: 'assessments/:id', loadComponent: AssessmentDetailComponent },
+          { path: 'certifications', loadComponent: CertificationsComponent },
           {
             path: 'org/invites',
-            component: OrgInvitesComponent,
+            loadComponent: OrgInvitesComponent,
             canActivate: [RoleGuard],
             data: { roles: ['org_admin', 'content_admin'] }
           },
           {
             path: 'studio/courses',
-            component: StudioCoursesComponent,
+            loadComponent: StudioCoursesComponent,
             canActivate: [RoleGuard],
             data: { roles: ['content_admin', 'org_admin'] }
           },
           {
             path: 'sections',
-            component: SectionsComponent,
+            loadComponent: SectionsComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'org_admin', 'instructor'] }
           },
           {
             path: 'sections/:id',
-            component: SectionDetailComponent,
+            loadComponent: SectionDetailComponent,
             canActivate: [RoleGuard],
             data: { roles: ['teacher', 'org_admin', 'instructor'] }
           },
-          { path: 'me/preferences', component: PreferencesComponent },
+          { path: 'me/preferences', loadComponent: PreferencesComponent },
           {
             path: 'admin/courses',
-            component: AdminCoursesComponent,
+            loadComponent: AdminCoursesComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin'] }
           },
           {
             path: 'admin/badges',
-            component: AdminBadgesComponent,
+            loadComponent: AdminBadgesComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin'] }
           },
           {
             path: 'admin/users',
-            component: AdminUsersComponent,
+            loadComponent: AdminUsersComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin'] }
           },
-          { path: 'lesson/:id', component: LessonViewComponent },
+          { path: 'lesson/:id', loadComponent: LessonViewComponent },
         ]
       }
     ]
   },
   {
     path: 'workspace',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',
-        component: WorkspaceDashboardComponent,
+        loadComponent: WorkspaceDashboardComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'projects',
-        component: V2CollectionPageComponent,
+        loadComponent: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
@@ -256,25 +281,25 @@ export const routes: Routes = [
       },
       {
         path: 'projects/:projectId',
-        component: ProjectDetailComponent,
+        loadComponent: ProjectDetailComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'product-studio',
-        component: ProductStudioComponent,
+        loadComponent: ProductStudioComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'product-studio/create',
-        component: ProductStudioComponent,
+        loadComponent: ProductStudioComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'product-studio/generation-runs',
-        component: V2CollectionPageComponent,
+        loadComponent: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
@@ -287,31 +312,31 @@ export const routes: Routes = [
       },
       {
         path: 'product-studio/generation-runs/:generationRunId',
-        component: GenerationRunDetailComponent,
+        loadComponent: GenerationRunDetailComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'product-studio/courses',
-        component: StudioCoursesComponent,
+        loadComponent: StudioCoursesComponent,
         canActivate: [RoleGuard],
         data: { roles: studioRoles }
       },
       {
         path: 'product-studio/courses/new',
-        component: CourseWizardComponent,
+        loadComponent: CourseWizardComponent,
         canActivate: [RoleGuard],
         data: { roles: ['admin', 'teacher'] }
       },
       {
         path: 'product-studio/courses/:courseId/edit',
-        component: CourseWizardComponent,
+        loadComponent: CourseWizardComponent,
         canActivate: [RoleGuard],
         data: { roles: ['admin', 'teacher'] }
       },
       {
         path: 'products',
-        component: V2CollectionPageComponent,
+        loadComponent: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
@@ -324,19 +349,19 @@ export const routes: Routes = [
       },
       {
         path: 'products/:productId',
-        component: ProductDetailComponent,
+        loadComponent: ProductDetailComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'products/manage',
-        component: AdminCoursesComponent,
+        loadComponent: AdminCoursesComponent,
         canActivate: [RoleGuard],
         data: { roles: ['admin'] }
       },
       {
         path: 'knowledge-sources',
-        component: V2CollectionPageComponent,
+        loadComponent: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
@@ -349,7 +374,7 @@ export const routes: Routes = [
       },
       {
         path: 'artifacts',
-        component: V2CollectionPageComponent,
+        loadComponent: V2CollectionPageComponent,
         canActivate: [RoleGuard],
         data: {
           roles: creatorRoles,
@@ -362,47 +387,47 @@ export const routes: Routes = [
       },
       {
         path: 'artifacts/:artifactId',
-        component: ArtifactDetailComponent,
+        loadComponent: ArtifactDetailComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'review-center',
-        component: ReviewCenterComponent,
+        loadComponent: ReviewCenterComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'access',
-        component: AccessGrantsComponent,
+        loadComponent: AccessGrantsComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'learners',
-        component: UserDashboardComponent,
+        loadComponent: UserDashboardComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles },
         children: [
-          { path: '', component: EchoedRoleSelectorComponent },
-          { path: 'products', component: AvailableCoursesComponent },
-          { path: 'paths', component: ProgramsComponent },
-          { path: 'certificates', component: CertificationsComponent },
+          { path: '', loadComponent: EchoedRoleSelectorComponent },
+          { path: 'products', loadComponent: AvailableCoursesComponent },
+          { path: 'paths', loadComponent: ProgramsComponent },
+          { path: 'certificates', loadComponent: CertificationsComponent },
           {
             path: 'users',
-            component: AdminUsersComponent,
+            loadComponent: AdminUsersComponent,
             canActivate: [RoleGuard],
             data: { roles: ['admin'] }
           },
           {
             path: 'cohorts',
-            component: SectionsComponent,
+            loadComponent: SectionsComponent,
             canActivate: [RoleGuard],
             data: { roles: sectionRoles }
           },
           {
             path: 'cohorts/:id',
-            component: SectionDetailComponent,
+            loadComponent: SectionDetailComponent,
             canActivate: [RoleGuard],
             data: { roles: sectionRoles }
           }
@@ -410,59 +435,59 @@ export const routes: Routes = [
       },
       {
         path: 'analytics',
-        component: WorkspaceAnalyticsComponent,
+        loadComponent: WorkspaceAnalyticsComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'commercial',
-        component: CommercialDashboardComponent,
+        loadComponent: CommercialDashboardComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'demo-readiness',
-        component: DemoReadinessComponent,
+        loadComponent: DemoReadinessComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'settings',
-        component: PreferencesComponent,
+        loadComponent: PreferencesComponent,
         canActivate: [RoleGuard],
         data: { roles: creatorRoles }
       },
       {
         path: 'settings/invites',
-        component: OrgInvitesComponent,
+        loadComponent: OrgInvitesComponent,
         canActivate: [RoleGuard],
         data: { roles: ['org_admin', 'content_admin'] }
       },
       {
         path: 'settings/badges',
-        component: AdminBadgesComponent,
+        loadComponent: AdminBadgesComponent,
         canActivate: [RoleGuard],
         data: { roles: ['admin'] }
       },
-      { path: 'lesson/:id', component: LessonViewComponent },
+      { path: 'lesson/:id', loadComponent: LessonViewComponent },
     ]
   },
   {
     path: 'learn',
-    component: HomeComponent,
+    loadComponent: HomeComponent,
     canActivate: [HomeSessionGuard],
     children: [
       {
         path: '',
-        component: UserDashboardComponent,
+        loadComponent: UserDashboardComponent,
         children: [
-          { path: '', component: LearnerPortalComponent },
-          { path: 'products', component: LearnerProductsComponent },
-          { path: 'courses/:courseId', component: StudentCourseOverviewComponent },
-          { path: 'paths', component: ProgramsComponent },
-          { path: 'certificates', component: CertificationsComponent },
-          { path: 'resources', component: LearnerResourcesComponent },
-          { path: 'lesson/:id', component: LessonViewComponent },
+          { path: '', loadComponent: LearnerPortalComponent },
+          { path: 'products', loadComponent: LearnerProductsComponent },
+          { path: 'courses/:courseId', loadComponent: StudentCourseOverviewComponent },
+          { path: 'paths', loadComponent: ProgramsComponent },
+          { path: 'certificates', loadComponent: CertificationsComponent },
+          { path: 'resources', loadComponent: LearnerResourcesComponent },
+          { path: 'lesson/:id', loadComponent: LessonViewComponent },
         ]
       }
     ]

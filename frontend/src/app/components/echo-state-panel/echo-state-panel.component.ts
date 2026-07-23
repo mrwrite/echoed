@@ -22,15 +22,20 @@ export class EchoStatePanelComponent {
   @Input() variant: EchoStateVariant = 'empty';
   @Input() title = 'State unavailable';
   @Input() body = '';
+  @Input() context = '';
+  @Input() impact = '';
   @Input() eyebrow = '';
   @Input() actionLabel?: string;
   @Input() actionAriaLabel?: string;
+  @Input() secondaryActionLabel?: string;
+  @Input() secondaryActionAriaLabel?: string;
   @Input() ariaLabel?: string;
   @Input() compact = false;
   @Input() iconName?: string;
   @Input() align: 'left' | 'center' = 'left';
 
   @Output() action = new EventEmitter<void>();
+  @Output() secondaryAction = new EventEmitter<void>();
 
   get role(): 'status' | 'alert' {
     return this.variant === 'error' ? 'alert' : 'status';

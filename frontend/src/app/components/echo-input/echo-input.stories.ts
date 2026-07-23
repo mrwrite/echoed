@@ -12,6 +12,7 @@ type Story = StoryObj<EchoInputComponent>;
 
 export const Default: Story = {
   args: {
+    label: 'Name',
     placeholder: 'Your name...',
     value: '',
   },
@@ -29,4 +30,8 @@ export const Disabled: Story = {
     placeholder: 'Disabled input',
     disabled: true,
   },
+};
+
+export const ValidationError: Story = {
+  args: { label: 'Email address', required: true, value: 'invalid', error: 'Enter a valid email address.' },
 };

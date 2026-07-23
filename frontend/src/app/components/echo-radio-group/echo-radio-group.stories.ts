@@ -21,3 +21,7 @@ export const Default: Story = {
     name: 'demo-group',
   },
 };
+
+export const ValidationError: Story = {
+  args: { label: 'Organization role', options: [{ label: 'Teacher', value: 'teacher' }, { label: 'Student', value: 'student' }], error: 'Choose a role.' },
+};

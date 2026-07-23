@@ -1,25 +1,6 @@
 import { Route, Routes } from '@angular/router';
 import { routes } from './app.routes';
-import { LearnerPortalComponent } from './pages/learner-portal/learner-portal.component';
-import { LearnerProductsComponent } from './pages/learner-portal/learner-products.component';
-import { LearnerResourcesComponent } from './pages/learner-portal/learner-resources.component';
-import { StudentCourseOverviewComponent } from './pages/learner-portal/student-course-overview.component';
-import { LessonViewComponent } from './pages/lesson-view.component';
-import { WorkspaceDashboardComponent } from './pages/workspace-dashboard/workspace-dashboard.component';
-import { DemoReadinessComponent } from './pages/demo-readiness/demo-readiness.component';
-import { PublicProductsComponent } from './pages/public-products/public-products.component';
-import { PublicProductDetailComponent } from './pages/public-products/public-product-detail.component';
 import { RoleGuard } from './guards/role.guard';
-import { SectionsComponent } from './pages/sections/sections.component';
-import { SectionDetailComponent } from './pages/section-detail/section-detail.component';
-import { TeacherCurriculumComponent } from './pages/teacher-curriculum/teacher-curriculum.component';
-import { TeacherCoursePreviewComponent } from './pages/teacher-curriculum/teacher-course-preview.component';
-import { TeacherLearnerDetailComponent } from './pages/teacher-learner-detail/teacher-learner-detail.component';
-import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
-import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
-import { AdminOrganizationsComponent } from './pages/admin-organizations/admin-organizations.component';
-import { StudioOverviewComponent } from './pages/studio-overview/studio-overview.component';
-import { StudioLibraryComponent } from './pages/studio-library/studio-library.component';
 
 function findRoute(routeList: Routes, path: string): Route | undefined {
   const exactRoute = routeList.find(candidate => candidate.path === path);
@@ -47,15 +28,23 @@ function findRoute(routeList: Routes, path: string): Route | undefined {
   return passthrough?.children ? findRoute(passthrough.children, path) : undefined;
 }
 
+async function expectLazyComponent(route: Route | undefined, expectedName: string): Promise<void> {
+  expect(route).toBeTruthy();
+  expect(route?.component).toBeUndefined();
+  expect(route?.loadComponent).toEqual(jasmine.any(Function));
+  const component = await route!.loadComponent!();
+  expect((component as { name?: string }).name).toBe(expectedName);
+}
+
 describe('app routes', () => {
-  it('preserves the legacy authenticated home route', () => {
+  it('preserves the legacy authenticated home route', async () => {
     expect(findRoute(routes, 'home')).toBeTruthy();
     expect(findRoute(routes, 'home/')).toBeTruthy();
-    expect(findRoute(routes, 'products')?.component).toBe(PublicProductsComponent);
-    expect(findRoute(routes, 'products/:slug')?.component).toBe(PublicProductDetailComponent);
+    await expectLazyComponent(findRoute(routes, 'products'), 'PublicProductsComponent');
+    await expectLazyComponent(findRoute(routes, 'products/:slug'), 'PublicProductDetailComponent');
   });
 
-  it('adds V2 workspace aliases for platform navigation', () => {
+  it('adds V2 workspace aliases for platform navigation', async () => {
     [
       'workspace',
       'workspace/projects',
@@ -79,8 +68,8 @@ describe('app routes', () => {
       'workspace/demo-readiness',
       'workspace/settings',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
-    expect(findRoute(routes, 'workspace/')?.component).toBe(WorkspaceDashboardComponent);
-    expect(findRoute(routes, 'workspace/demo-readiness')?.component).toBe(DemoReadinessComponent);
+    await expectLazyComponent(findRoute(routes, 'workspace/'), 'WorkspaceDashboardComponent');
+    await expectLazyComponent(findRoute(routes, 'workspace/demo-readiness'), 'DemoReadinessComponent');
     expect(findRoute(routes, 'workspace/')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'workspace/products')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'workspace/products/:productId')?.canActivate).toContain(RoleGuard);
@@ -100,7 +89,7 @@ describe('app routes', () => {
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
   });
 
-  it('adds canonical Teach aliases while preserving legacy teacher routes', () => {
+  it('adds canonical Teach aliases while preserving legacy teacher routes', async () => {
     [
       'teach',
       'teach/',
@@ -116,16 +105,16 @@ describe('app routes', () => {
       'workspace/learners/cohorts/:id',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
 
-    expect(findRoute(routes, 'teach/classes')?.component).toBe(SectionsComponent);
-    expect(findRoute(routes, 'teach/classes/:id')?.component).toBe(SectionDetailComponent);
-    expect(findRoute(routes, 'teach/curriculum')?.component).toBe(TeacherCurriculumComponent);
-    expect(findRoute(routes, 'teach/courses/:courseId/preview')?.component).toBe(TeacherCoursePreviewComponent);
-    expect(findRoute(routes, 'teach/learners/:learnerId')?.component).toBe(TeacherLearnerDetailComponent);
+    await expectLazyComponent(findRoute(routes, 'teach/classes'), 'SectionsComponent');
+    await expectLazyComponent(findRoute(routes, 'teach/classes/:id'), 'SectionDetailComponent');
+    await expectLazyComponent(findRoute(routes, 'teach/curriculum'), 'TeacherCurriculumComponent');
+    await expectLazyComponent(findRoute(routes, 'teach/courses/:courseId/preview'), 'TeacherCoursePreviewComponent');
+    await expectLazyComponent(findRoute(routes, 'teach/learners/:learnerId'), 'TeacherLearnerDetailComponent');
     expect(findRoute(routes, 'teach/classes')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'teach/curriculum')?.canActivate).toContain(RoleGuard);
   });
 
-  it('adds guarded canonical Admin routes while preserving legacy aliases', () => {
+  it('adds guarded canonical Admin routes while preserving legacy aliases', async () => {
     [
       'admin',
       'admin/users',
@@ -141,15 +130,15 @@ describe('app routes', () => {
       'home/admin/badges',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
 
-    expect(findRoute(routes, 'admin/')?.component).toBe(AdminOverviewComponent);
-    expect(findRoute(routes, 'admin/users')?.component).toBe(AdminUsersComponent);
-    expect(findRoute(routes, 'admin/organizations')?.component).toBe(AdminOrganizationsComponent);
+    await expectLazyComponent(findRoute(routes, 'admin/'), 'AdminOverviewComponent');
+    await expectLazyComponent(findRoute(routes, 'admin/users'), 'AdminUsersComponent');
+    await expectLazyComponent(findRoute(routes, 'admin/organizations'), 'AdminOrganizationsComponent');
     expect(findRoute(routes, 'admin/users')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'admin/users')?.data?.['roles']).toEqual(['admin']);
     expect(findRoute(routes, 'admin/organizations')?.data?.['roles']).toEqual(['admin', 'super_admin']);
   });
 
-  it('adds guarded canonical Studio routes while preserving workspace deep links', () => {
+  it('adds guarded canonical Studio routes while preserving workspace deep links', async () => {
     [
       'studio',
       'studio/create',
@@ -169,20 +158,45 @@ describe('app routes', () => {
       'workspace/review-center',
     ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
 
-    expect(findRoute(routes, 'studio/')?.component).toBe(StudioOverviewComponent);
-    expect(findRoute(routes, 'studio/courses')?.component).toBe(StudioLibraryComponent);
+    await expectLazyComponent(findRoute(routes, 'studio/'), 'StudioOverviewComponent');
+    await expectLazyComponent(findRoute(routes, 'studio/courses'), 'StudioLibraryComponent');
     expect(findRoute(routes, 'studio/courses')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'studio/courses')?.data?.['roles']).toEqual(['content_admin']);
   });
 
-  it('maps Learner Portal V2 routes to V2 pages while reusing lesson runtime', () => {
+  it('adds guarded canonical Organization routes while preserving workspace deep links', async () => {
+    [
+      'organization',
+      'organization/members',
+      'organization/teachers',
+      'organization/students',
+      'organization/invitations',
+      'organization/sections',
+      'organization/sections/:sectionId',
+      'organization/courses',
+      'organization/settings',
+      'workspace/learners',
+      'workspace/settings/invites',
+      'workspace/learners/cohorts',
+    ].forEach(path => expect(findRoute(routes, path)).withContext(path).toBeTruthy());
+
+    await expectLazyComponent(findRoute(routes, 'organization/'), 'OrganizationOverviewComponent');
+    await expectLazyComponent(findRoute(routes, 'organization/members'), 'OrganizationPeopleComponent');
+    expect(findRoute(routes, 'organization/members')?.canActivate).toContain(RoleGuard);
+    expect(findRoute(routes, 'organization/members')?.data?.['roles']).toEqual(['org_admin']);
+  });
+
+  it('maps Learner Portal V2 routes to lazy V2 pages while reusing lesson runtime', async () => {
     const learnRoute = findRoute(routes, 'learn');
     const learnerShell = learnRoute?.children?.find(route => route.path === '');
-    expect(learnerShell?.children?.find(route => route.path === '')?.component).toBe(LearnerPortalComponent);
-    expect(learnerShell?.children?.find(route => route.path === 'products')?.component).toBe(LearnerProductsComponent);
-    expect(learnerShell?.children?.find(route => route.path === 'courses/:courseId')?.component).toBe(StudentCourseOverviewComponent);
-    expect(learnerShell?.children?.find(route => route.path === 'resources')?.component).toBe(LearnerResourcesComponent);
-    expect(learnerShell?.children?.find(route => route.path === 'lesson/:id')?.component).toBe(LessonViewComponent);
-    expect(findRoute(routes, 'home/lesson/:id')?.component).toBe(LessonViewComponent);
+    await expectLazyComponent(learnerShell?.children?.find(route => route.path === ''), 'LearnerPortalComponent');
+    await expectLazyComponent(learnerShell?.children?.find(route => route.path === 'products'), 'LearnerProductsComponent');
+    await expectLazyComponent(learnerShell?.children?.find(route => route.path === 'courses/:courseId'), 'StudentCourseOverviewComponent');
+    await expectLazyComponent(learnerShell?.children?.find(route => route.path === 'resources'), 'LearnerResourcesComponent');
+    const learnerLesson = learnerShell?.children?.find(route => route.path === 'lesson/:id');
+    const legacyLesson = findRoute(routes, 'home/lesson/:id');
+    await expectLazyComponent(learnerLesson, 'LessonViewComponent');
+    await expectLazyComponent(legacyLesson, 'LessonViewComponent');
+    expect(learnerLesson?.loadComponent).toBe(legacyLesson?.loadComponent);
   });
 });

@@ -4,6 +4,7 @@ import uuid
 
 from app.auth import get_current_user as auth_get_current_user
 from app.database import SessionLocal
+from app.enum import MembershipStatus
 from app.models import User, OrganizationMembership
 
 
@@ -68,6 +69,7 @@ def require_org_roles(*roles: str):
             .filter(
                 OrganizationMembership.organization_id == active_org_id,
                 OrganizationMembership.user_id == current_user.id,
+                OrganizationMembership.status == MembershipStatus.ACTIVE,
             )
             .first()
         )

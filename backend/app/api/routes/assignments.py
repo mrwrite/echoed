@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_current_user, require_org_roles
 from app.models import Assignment, AssignmentSubmission
+from app.section_scope import require_scoped_section
 from app.enum import AssignmentTargetType, AssignmentSubmissionStatus
 from app.schemas import (
     AssignmentCreateRequest,
@@ -24,8 +25,9 @@ def create_assignment(
     current_user=Depends(get_current_user),
     membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
+    section = require_scoped_section(db, membership, section_id)
     assignment = Assignment(
-        section_id=section_id,
+        section_id=section.id,
         target_type=AssignmentTargetType(payload.target_type),
         target_id=payload.target_id,
         due_at=payload.due_at,
@@ -42,9 +44,10 @@ def create_assignment(
 def list_assignments(
     section_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
-    return db.query(Assignment).filter(Assignment.section_id == section_id).all()
+    section = require_scoped_section(db, membership, section_id)
+    return db.query(Assignment).filter(Assignment.section_id == section.id).all()
 
 
 @router.post("/assignments/{assignment_id}/submit", response_model=AssignmentSubmissionResponse)

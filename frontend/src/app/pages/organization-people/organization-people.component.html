@@ -1,0 +1,60 @@
+<main class="organization-page" [attr.aria-labelledby]="'organization-' + mode + '-title'">
+  <header class="organization-page__header">
+    <div>
+      <p class="organization-page__eyebrow">Organization people</p>
+      <h1 [id]="'organization-' + mode + '-title'">{{ title }}</h1>
+      <p class="organization-page__intro">{{ intro }}</p>
+    </div>
+    <a class="organization-link" routerLink="/organization/invitations">Invite a member</a>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" [title]="'Loading ' + title.toLowerCase()" body="Checking membership in the active organization."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" [title]="title + ' unavailable'" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <section class="organization-panel organization-toolbar" aria-label="Member filters">
+      <div class="organization-field">
+        <label for="organization-member-search">Search</label>
+        <input id="organization-member-search" class="organization-control" type="search" [(ngModel)]="searchTerm" placeholder="Search by name or username">
+      </div>
+      <div class="organization-field" *ngIf="mode === 'members'">
+        <label for="organization-role-filter">Organization role</label>
+        <select id="organization-role-filter" class="organization-control" [(ngModel)]="roleFilter">
+          <option value="">All roles</option>
+          <option *ngFor="let role of availableRoles" [value]="role">{{ label(role) }}</option>
+        </select>
+      </div>
+      <div class="organization-field">
+        <label for="organization-status-filter">Membership status</label>
+        <select id="organization-status-filter" class="organization-control" [(ngModel)]="statusFilter">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="invited">Invited</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <p class="organization-results" role="status" aria-live="polite">{{ filteredMembers.length }} {{ title.toLowerCase() }} shown</p>
+    </section>
+
+    <app-echo-state-panel *ngIf="!filteredMembers.length" variant="empty" [title]="'No ' + title.toLowerCase() + ' found'" body="Adjust the filters or review organization invitations."></app-echo-state-panel>
+
+    <section class="organization-records" [attr.aria-label]="title" *ngIf="filteredMembers.length">
+      <article class="organization-record" *ngFor="let member of filteredMembers">
+        <div class="organization-record__heading">
+          <h2>{{ member.display_name }}</h2>
+          <span class="organization-status" [class.organization-status--success]="member.status === 'active'">{{ label(member.status) }}</span>
+        </div>
+        <dl class="organization-meta">
+          <div><dt>Organization role</dt><dd>{{ label(member.role) }}</dd></div>
+          <div><dt>Username</dt><dd>{{ member.username }}</dd></div>
+          <div><dt>Member since</dt><dd>{{ member.joined_at | date:'mediumDate' }}</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <aside class="organization-callout">
+      <strong>Membership changes are read-only.</strong>
+      <p>The current API supports viewing organization membership and creating invitations. Removing members or changing organization roles is not supported.</p>
+    </aside>
+  </ng-container>
+</main>

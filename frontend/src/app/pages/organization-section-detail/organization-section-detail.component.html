@@ -1,0 +1,17 @@
+<main class="organization-page" aria-labelledby="organization-section-title">
+  <header class="organization-page__header"><div><p class="organization-page__eyebrow">Organization class</p><h1 id="organization-section-title">{{ section?.name || 'Class detail' }}</h1><p class="organization-page__intro">Review class membership and supported aggregate activity within the active organization.</p></div><a class="organization-link" routerLink="/organization/sections">Return to classes</a></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading class detail" body="Confirming organization scope before loading roster information."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Class unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+  <ng-container *ngIf="!loading && section">
+    <section class="organization-summary" aria-label="Class summary">
+      <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ summary?.totals?.enrolled || roster.length }}</p><p class="organization-metric__label">Enrolled members</p></article>
+      <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ summary?.totals?.lessons_completed || 0 }}</p><p class="organization-metric__label">Lessons completed</p></article>
+      <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ summary?.totals?.units_completed || 0 }}</p><p class="organization-metric__label">Units completed</p></article>
+    </section>
+    <section aria-labelledby="class-roster-title"><h2 id="class-roster-title">Class membership</h2>
+      <app-echo-state-panel *ngIf="!roster.length" variant="empty" title="No class members" body="This class does not currently contain enrolled members."></app-echo-state-panel>
+      <div class="organization-records" *ngIf="roster.length"><article class="organization-record" *ngFor="let enrollment of roster"><div class="organization-record__heading"><h3>{{ memberName(enrollment) }}</h3><span class="organization-status" [class.organization-status--success]="enrollment.status === 'active'">{{ label(enrollment.status) }}</span></div><dl class="organization-meta"><div><dt>Class role</dt><dd>{{ label(enrollment.role_in_section) }}</dd></div><div><dt>Enrolled</dt><dd>{{ enrollment.enrolled_at | date:'mediumDate' }}</dd></div></dl></article></div>
+    </section>
+    <aside class="organization-callout"><strong>Privacy boundary</strong><p>This page shows organization membership and class aggregates only. Individual assessment answers, feedback, and detailed learner progress remain in authorized teaching workflows.</p></aside>
+  </ng-container>
+</main>

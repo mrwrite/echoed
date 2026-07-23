@@ -1,6 +1,8 @@
 # Production Route Migration
 
-Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links. Phase 5 adds the guarded `/studio` family over the supported V2 content-operations APIs while retaining all `/workspace/**` routes.
+Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links. Phase 5 adds the guarded `/studio` family over the supported V2 content-operations APIs while retaining all `/workspace/**` routes. Phase 6 adds the active-organization-scoped `/organization` family while retaining all legacy routes.
+
+Phase 7 loading note (2026-07-23): all page components behind Public, Authentication, Onboarding, Learn, Teach, Studio, Organization, Admin, and retained legacy route records now use standalone `loadComponent` imports. Paths, child structure, redirects, role data, `HomeSessionGuard`, and `RoleGuard` behavior are unchanged. `/load-error` is a new lazy, accessible recovery destination used only for recognized route-chunk failures. This is a loading-architecture change, not a route or UX migration.
 
 | Current route | Canonical route | Role | Redirect behavior | Guard behavior | Migration phase | Removal criteria | Deep-link risk |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -45,6 +47,13 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 | `/home/certifications` | `/learn/certificates` for student-origin actions | student transitional | No redirect | Existing child route, no added guard | Phase 2 partial | Existing links aliased and achievements page redesigned | Medium |
 | `/home/lesson/:id` | `/learn/lesson/:id` for student-origin actions | student transitional, staff preview transitional | No redirect | Existing authenticated guard; governed segment restore unchanged | Phase 2 partial | Remove only after staff lesson preview route is explicit and student bookmarks have an alias | High |
 | `/home/me/preferences` | `/home/me/preferences` | all authenticated roles | No redirect | Existing authenticated shell | Phase 1 | Dedicated settings route aliases are implemented | Medium |
+| `/workspace/learners` | `/organization` | org_admin | Legacy route remains; canonical navigation uses `/organization` | `HomeSessionGuard` plus `RoleGuard`; APIs verify the active organization | Phase 6 | Remove after bookmark and usage validation | Medium |
+| No safe legacy member directory | `/organization/members`, `/organization/teachers`, `/organization/students` | org_admin | New canonical routes | Active membership guard plus minimized scoped member API | Phase 6 | None planned | Low |
+| `/workspace/settings/invites` | `/organization/invitations` | org_admin | Legacy route remains; canonical page omits secret tokens and unsupported actions | Canonical route is org-admin-only; backend validates requested organization | Phase 6 | Redirect after content-admin mismatch and bookmarks are resolved | High |
+| `/workspace/learners/cohorts` and `/home/sections` | `/organization/sections` | org_admin | Legacy teacher-oriented routes remain | Canonical route uses organization-scoped section reads | Phase 6 | Keep while Teach and Organization responsibilities differ | High |
+| `/workspace/learners/cohorts/:id` and `/home/sections/:id` | `/organization/sections/:sectionId` | org_admin | Legacy routes remain | Nested backend reads reject out-of-organization section IDs | Phase 6 | Keep while the teacher assignment workflow remains separate | High |
+| `/workspace/access` | `/organization/courses` | org_admin | Legacy grant screen remains; canonical availability is read-only | Organization guard plus workspace-scoped product/grant reads | Phase 6 | Replace after member-safe grant mutation exists | High |
+| `/workspace/settings` | `/organization/settings` | org_admin | Legacy mixed settings remain | Organization guard; backend permits active organization name update only | Phase 6 | Redirect after personal and organization settings are separated | Medium |
 
 ## Canonical Login Destinations
 
@@ -52,7 +61,7 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - `teacher`: `/teach`
 - `instructor`: `/teach`
 - `content_admin`: `/studio`
-- `org_admin`: `/workspace/learners`
+- `org_admin`: `/organization`
 - `admin`: `/admin`
 - `super_admin`: `/admin` with partial compatibility state
 
@@ -60,6 +69,8 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 
 - Browser bookmarks are preserved; no broad route deletion was performed.
 - Unauthorized routes remain protected by existing route guards. Hidden navigation is not treated as authorization.
+- Lazy loading does not replace authorization: route guards remain on protected records and backend authorization remains authoritative.
+- Recognized dynamic-import failures redirect to `/load-error`, where users can retry the requested route or return home.
 - `/workspace/commercial` remains the technical path in this phase, but visible navigation now uses `Community`.
 - Phase 2 updates student-origin actions from the legacy student dashboard to navigate into `/learn/**` while preserving `/home/**` deep links.
 - Phase 2 adds `/learn/courses/:courseId` as the canonical student course overview and keeps `/learn/products` as a transitional browse route.
@@ -71,3 +82,6 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 - Phase 5 keeps `/workspace/**` intact because those routes are shared by several creator roles and demo tooling.
 - Canonical Studio intentionally omits lesson, assessment, asset, upload, and curriculum-ordering routes because the current content-admin APIs do not safely support those workflows.
 - Studio draft preview reads only V2 artifact content and does not call learner runtime, enrollment, lesson-session, or progress APIs.
+- Phase 6 preserves workspace and Teach deep links; no broad route deletion was performed.
+- Organization member lists use a minimized scoped API, and class nested reads validate the requested section against the active organization.
+- Organization course availability is read-only until access-grant targeting can enforce active-organization membership.

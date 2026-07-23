@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CourseWizardService } from '../../course-wizard.service';
 import { UnitDraft } from '../../models/course-draft.model';
-import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'step2-add-units',
@@ -22,7 +21,7 @@ export class Step2AddUnitsComponent {
     if (!this.unitTitle.trim()) return; // Validation: ignore blank titles
 
     const newUnit: UnitDraft = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       title: this.unitTitle.trim(),
       content: this.unitDescription.trim(),
       order: this.courseWizardService.draftValue.units.length + 1,

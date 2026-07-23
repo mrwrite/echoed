@@ -7,20 +7,20 @@
         <p>For educators, families, and school leaders exploring the K-5 demo and beyond.</p>
       </div>
 
-      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-form" novalidate>
+      <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-form" novalidate [attr.aria-describedby]="errorMessage ? 'registration-error' : null">
         <div class="field-grid">
           <label class="field" for="firstName">
             <span>First name</span>
-            <input type="text" id="firstName" formControlName="firstName" required autocomplete="given-name" placeholder="First name" aria-required="true" />
-            <small class="field-error" *ngIf="registrationForm.get('firstName')?.hasError('required') && registrationForm.get('firstName')?.touched">
+            <input type="text" id="firstName" formControlName="firstName" required autocomplete="given-name" placeholder="First name" aria-required="true" aria-describedby="first-name-error" [attr.aria-invalid]="registrationForm.get('firstName')?.invalid && registrationForm.get('firstName')?.touched" />
+            <small id="first-name-error" class="field-error" *ngIf="registrationForm.get('firstName')?.hasError('required') && registrationForm.get('firstName')?.touched">
               First name is required.
             </small>
           </label>
 
           <label class="field" for="lastName">
             <span>Last name</span>
-            <input type="text" id="lastName" formControlName="lastName" required autocomplete="family-name" placeholder="Last name" aria-required="true" />
-            <small class="field-error" *ngIf="registrationForm.get('lastName')?.hasError('required') && registrationForm.get('lastName')?.touched">
+            <input type="text" id="lastName" formControlName="lastName" required autocomplete="family-name" placeholder="Last name" aria-required="true" aria-describedby="last-name-error" [attr.aria-invalid]="registrationForm.get('lastName')?.invalid && registrationForm.get('lastName')?.touched" />
+            <small id="last-name-error" class="field-error" *ngIf="registrationForm.get('lastName')?.hasError('required') && registrationForm.get('lastName')?.touched">
               Last name is required.
             </small>
           </label>
@@ -28,13 +28,13 @@
 
         <label class="field" for="email">
           <span>Email</span>
-          <input type="email" id="email" formControlName="email" required autocomplete="email" placeholder="you@example.com" aria-required="true" />
-          <small>We use this for secure sign-in and demo follow-ups.</small>
+          <input type="email" id="email" formControlName="email" required autocomplete="email" placeholder="you@example.com" aria-required="true" aria-describedby="email-hint email-error" [attr.aria-invalid]="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched" />
+          <small id="email-hint">We use this for secure sign-in and demo follow-ups.</small>
           <small class="field-error" *ngIf="registrationForm.get('email')?.hasError('required') && registrationForm.get('email')?.touched">
-            Email is required.
+            <span id="email-error">Email is required.</span>
           </small>
           <small class="field-error" *ngIf="registrationForm.get('email')?.hasError('email') && registrationForm.get('email')?.touched">
-            Enter a valid email address.
+            <span id="email-error">Enter a valid email address.</span>
           </small>
         </label>
 
@@ -93,10 +93,10 @@
           </label>
         </div>
 
-        <p class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+        <p id="registration-error" class="auth-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-        <button type="submit" class="registration-submit" [disabled]="registrationForm.invalid">
-          {{ submitLabel }} <span aria-hidden="true">-&gt;</span>
+        <button type="submit" class="registration-submit" [disabled]="registrationForm.invalid || loadingRoles || isSubmitting" [attr.aria-busy]="isSubmitting || null">
+          {{ isSubmitting ? 'Creating account…' : submitLabel }} <span *ngIf="!isSubmitting" aria-hidden="true">-&gt;</span>
         </button>
       </form>
 

@@ -22,16 +22,17 @@
       <p *ngIf="eyebrow" class="echo-state-panel__eyebrow">{{ eyebrow }}</p>
       <h3 class="echo-state-panel__title">{{ title }}</h3>
       <p *ngIf="body" class="echo-state-panel__body">{{ body }}</p>
+      <dl *ngIf="context || impact" class="echo-state-panel__details">
+        <div *ngIf="context"><dt>Current context</dt><dd>{{ context }}</dd></div>
+        <div *ngIf="impact"><dt>What changed</dt><dd>{{ impact }}</dd></div>
+      </dl>
 
-      <button
-        *ngIf="actionLabel"
-        type="button"
-        class="echo-state-panel__action"
-        [attr.aria-label]="actionAriaLabel || actionLabel"
-        (click)="action.emit()"
-      >
-        {{ actionLabel }}
-      </button>
+      <div *ngIf="actionLabel || secondaryActionLabel" class="echo-state-panel__actions">
+        <button *ngIf="actionLabel" type="button" class="echo-state-panel__action"
+          [attr.aria-label]="actionAriaLabel || actionLabel" (click)="action.emit()">{{ actionLabel }}</button>
+        <button *ngIf="secondaryActionLabel" type="button" class="echo-state-panel__action echo-state-panel__action--secondary"
+          [attr.aria-label]="secondaryActionAriaLabel || secondaryActionLabel" (click)="secondaryAction.emit()">{{ secondaryActionLabel }}</button>
+      </div>
     </div>
   </div>
 </section>

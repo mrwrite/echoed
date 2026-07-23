@@ -87,6 +87,16 @@ class OrganizationMembershipResponse(BaseModel):
         from_attributes = True
 
 
+class OrganizationMemberResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    display_name: str
+    username: str
+    role: str
+    status: str
+    joined_at: datetime
+
+
 class WorkspaceResponse(BaseModel):
     id: UUID
     organization_id: Optional[UUID] = None
@@ -504,6 +514,11 @@ class SectionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class OrganizationSectionResponse(SectionResponse):
+    learner_count: int = 0
+    teacher_count: int = 0
 
 
 class EnrollmentCreateRequest(BaseModel):

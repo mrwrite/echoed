@@ -6,7 +6,6 @@ import { CourseWizardService } from '../../course-wizard.service';
 import { ActivityDraft } from '../../models/course-draft.model';
 import { CoursesService } from '../../../../../services/courses.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { v4 as uuidv4 } from 'uuid';
 import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
@@ -114,7 +113,7 @@ export class Step4ReviewSaveComponent implements OnInit {
   }
 
   addStorybookPage() {
-    this.storybookPages.push({ id: uuidv4(), imageUrl: '', order: this.storybookPages.length + 1, file: null });
+    this.storybookPages.push({ id: crypto.randomUUID(), imageUrl: '', order: this.storybookPages.length + 1, file: null });
   }
 
   removeStorybookPage(id: string) {
@@ -157,7 +156,7 @@ export class Step4ReviewSaveComponent implements OnInit {
           const updatedLessons = unit.lessons.map(lesson => {
             if (lesson.id === this.addingActivityLessonId) {
               const newActivity: any = {
-                id: uuidv4(),
+                id: crypto.randomUUID(),
                 type: this.newActivityType,
                 title: this.newActivityTitle.trim(),
                 content: content,

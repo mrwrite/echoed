@@ -1,0 +1,62 @@
+<main class="organization-page" aria-labelledby="organization-overview-title">
+  <header class="organization-page__header">
+    <div>
+      <p class="organization-page__eyebrow">Organization</p>
+      <h1 id="organization-overview-title">{{ organization?.name || 'Organization overview' }}</h1>
+      <p class="organization-page__intro">Review your members, invitations, classes, and available learning content within the active organization.</p>
+    </div>
+    <a class="organization-link" routerLink="/organization/settings">Organization settings</a>
+  </header>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading organization overview" body="Checking organization members, invitations, classes, and learning availability."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Organization overview unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <section *ngIf="partialFailures.length" class="organization-callout" role="status">
+      <strong>Some summary information is unavailable.</strong>
+      <p>We could not load {{ partialFailures.join(', ') }}. Available counts remain scoped to {{ organization?.name }}.</p>
+    </section>
+
+    <section aria-labelledby="attention-title">
+      <h2 id="attention-title">Needs attention</h2>
+      <div class="organization-records">
+        <article class="organization-record" *ngIf="pendingInvites">
+          <div class="organization-record__heading"><h3>Pending invitations</h3><span class="organization-status organization-status--warning">{{ pendingInvites }}</span></div>
+          <p>Review invitations that have not yet been accepted.</p>
+          <a class="organization-link" routerLink="/organization/invitations">Review invitations</a>
+        </article>
+        <article class="organization-record" *ngFor="let section of emptySections.slice(0, 3)">
+          <div class="organization-record__heading"><h3>{{ section.name }}</h3><span class="organization-status organization-status--warning">No learners</span></div>
+          <p>This class currently has no learner enrollments.</p>
+          <a class="organization-link" [routerLink]="['/organization/sections', section.id]">Review class</a>
+        </article>
+        <article class="organization-record" *ngIf="!pendingInvites && !emptySections.length">
+          <div class="organization-record__heading"><h3>No supported attention items</h3><span class="organization-status organization-status--success">Current</span></div>
+          <p>Current invitations and class enrollment counts do not require review.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="summary-title">
+      <h2 id="summary-title">Organization summary</h2>
+      <div class="organization-summary">
+        <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ members.length }}</p><p class="organization-metric__label">Members</p></article>
+        <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ teachers }}</p><p class="organization-metric__label">Teachers</p></article>
+        <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ students }}</p><p class="organization-metric__label">Students</p></article>
+        <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ activeSections }}</p><p class="organization-metric__label">Active classes</p></article>
+        <article class="organization-panel organization-metric"><p class="organization-metric__value">{{ availableCourses }}</p><p class="organization-metric__label">Available learning offerings</p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="shortcuts-title">
+      <h2 id="shortcuts-title">Organization tasks</h2>
+      <nav class="organization-shortcuts" aria-label="Organization tasks">
+        <a class="organization-panel organization-link" routerLink="/organization/members">Review members</a>
+        <a class="organization-panel organization-link" routerLink="/organization/teachers">Review teachers</a>
+        <a class="organization-panel organization-link" routerLink="/organization/students">Review students</a>
+        <a class="organization-panel organization-link" routerLink="/organization/sections">Review classes</a>
+        <a class="organization-panel organization-link" routerLink="/organization/courses">Review course availability</a>
+      </nav>
+    </section>
+  </ng-container>
+</main>

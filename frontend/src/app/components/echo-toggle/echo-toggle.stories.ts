@@ -16,3 +16,7 @@ export const Default: Story = {
     checked: true,
   },
 };
+
+export const Disabled: Story = {
+  args: { label: 'Email notifications', checked: false, disabled: true, hint: 'Managed by your organization.' },
+};

@@ -7,9 +7,11 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     <label class="inline-flex items-center cursor-pointer">
       <input
         type="radio"
-        class="form-radio w-5 h-5 text-primary border-gray-300 focus:ring-primary"
+        class="ee-choice__control"
         [value]="value"
         [checked]="checked"
+        [disabled]="disabled"
+        [attr.aria-describedby]="describedBy || null"
         (change)="onSelectionChange()"
         name="{{ name }}"
       />
@@ -22,6 +24,8 @@ export class EchoRadioComponent {
   @Input() value!: string;
   @Input() checked: boolean = false;
   @Input() name: string = 'radio-group';
+  @Input() disabled = false;
+  @Input() describedBy = '';
   @Output() valueChange = new EventEmitter<string>();
 
   onSelectionChange() {

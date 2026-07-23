@@ -1,0 +1,22 @@
+<main class="organization-page" aria-labelledby="organization-sections-title">
+  <header class="organization-page__header"><div><p class="organization-page__eyebrow">Organization learning</p><h1 id="organization-sections-title">Classes</h1><p class="organization-page__intro">Review every class scoped to the active organization, including current learner and teacher enrollment counts.</p></div></header>
+  <app-echo-loading-state *ngIf="loading" title="Loading classes" body="Checking classes in the active organization."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="loadError" variant="error" title="Classes unavailable" [body]="loadError" actionLabel="Try again" (action)="load()"></app-echo-state-panel>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <section class="organization-panel organization-toolbar" aria-label="Class filters">
+      <div class="organization-field"><label for="organization-section-search">Search</label><input id="organization-section-search" class="organization-control" type="search" [(ngModel)]="searchTerm" placeholder="Search class names"></div>
+      <div class="organization-field"><label for="organization-section-mode">Class mode</label><select id="organization-section-mode" class="organization-control" [(ngModel)]="modeFilter"><option value="">All modes</option><option *ngFor="let mode of modes" [value]="mode">{{ label(mode) }}</option></select></div>
+      <p class="organization-results" role="status" aria-live="polite">{{ filteredSections.length }} classes shown</p>
+    </section>
+    <app-echo-state-panel *ngIf="!filteredSections.length" variant="empty" title="No classes found" body="Adjust the filters or create classes through the existing authorized teaching workflow."></app-echo-state-panel>
+    <section class="organization-records" aria-label="Organization classes" *ngIf="filteredSections.length">
+      <article class="organization-record" *ngFor="let section of filteredSections">
+        <div class="organization-record__heading"><h2>{{ section.name }}</h2><span class="organization-status">{{ label(section.mode) }}</span></div>
+        <dl class="organization-meta"><div><dt>Learners</dt><dd>{{ section.learner_count || 0 }}</dd></div><div><dt>Teachers</dt><dd>{{ section.teacher_count || 0 }}</dd></div><div><dt>Schedule</dt><dd>{{ section.start_date ? (section.start_date | date:'mediumDate') : 'No start date' }} to {{ section.end_date ? (section.end_date | date:'mediumDate') : 'No end date' }}</dd></div></dl>
+        <a class="organization-link" [routerLink]="['/organization/sections', section.id]" [attr.aria-label]="'Review ' + section.name">Review class</a>
+      </article>
+    </section>
+    <aside class="organization-callout"><strong>Class editing remains in Teach.</strong><p>Organization provides scoped oversight. Assignment creation and detailed learner-progress work remain teacher responsibilities.</p></aside>
+  </ng-container>
+</main>

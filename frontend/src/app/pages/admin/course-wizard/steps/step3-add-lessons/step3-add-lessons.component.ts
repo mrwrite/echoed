@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CourseWizardService } from '../../course-wizard.service';
 import { LessonDraft } from '../../models/course-draft.model';
-import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'step3-add-lessons',
@@ -27,7 +26,7 @@ export class Step3AddLessonsComponent {
     const draft = this.courseWizardService.draftValue;
 
     const newLesson: LessonDraft = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       title: this.lessonTitle.trim(),
       objective: this.lessonObjective.trim(),
       order: (draft.units.find(unit => unit.id === this.selectedUnitId)?.lessons.length || 0) + 1,

@@ -69,6 +69,8 @@ curriculum/   Seed curriculum and package material
 
 For a deeper overview, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
+Platform maturity evidence, including the measured frontend bundle work and the security, observability, operations, dependency, and backend-capability baselines, is indexed in [docs/platform-maturity](docs/platform-maturity/phase-7-baseline.md). These documents are readiness inputs; they do not claim that EchoEd 1.0 is production-ready.
+
 ## Local Development
 
 ### Backend
@@ -81,6 +83,8 @@ pip install -r requirements.txt
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+The backend exposes `/health/live` for process liveness and `/health/ready` for database readiness. Deployment systems should use the readiness endpoint before sending traffic.
 
 ### Frontend
 

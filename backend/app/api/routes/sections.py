@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.deps import get_current_user, require_org_roles
-from app.models import Section, Enrollment, User
+from app.models import Section, Enrollment, OrganizationMembership, User
 from app.enum import SectionMode
 from app.schemas import SectionCreateRequest, SectionResponse, EnrollmentCreateRequest, EnrollmentResponse
+from app.section_scope import require_scoped_section
 
 router = APIRouter()
 
@@ -56,7 +57,8 @@ def section_roster(
     db: Session = Depends(get_db),
     membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
-    return db.query(Enrollment).filter(Enrollment.section_id == section_id).all()
+    section = require_scoped_section(db, membership, section_id)
+    return db.query(Enrollment).filter(Enrollment.section_id == section.id).all()
 
 
 @router.post("/sections/{section_id}/enrollments", response_model=EnrollmentResponse)
@@ -66,6 +68,7 @@ def add_enrollment(
     db: Session = Depends(get_db),
     membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
+    section = require_scoped_section(db, membership, section_id)
     if not payload.user_id and not payload.email:
         raise HTTPException(status_code=400, detail="Provide a user_id or email")
 
@@ -78,7 +81,19 @@ def add_enrollment(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    enrollment = Enrollment(section_id=section_id, user_id=user.id)
+    active_membership = (
+        db.query(OrganizationMembership)
+        .filter(
+            OrganizationMembership.organization_id == membership.organization_id,
+            OrganizationMembership.user_id == user.id,
+            OrganizationMembership.status == "active",
+        )
+        .first()
+    )
+    if active_membership is None:
+        raise HTTPException(status_code=400, detail="User is not an active member of this organization")
+
+    enrollment = Enrollment(section_id=section.id, user_id=user.id)
     db.add(enrollment)
     db.commit()
     db.refresh(enrollment)

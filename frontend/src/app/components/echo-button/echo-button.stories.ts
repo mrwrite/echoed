@@ -15,7 +15,7 @@ const meta: Meta<EchoButtonComponent> = {
   argTypes: {
     color: {
       control: 'select',
-      options: ['primary', 'accent', 'tertiary', 'warn'],
+      options: ['primary', 'accent', 'secondary', 'tertiary', 'warn'],
     },
     disabled: {
       control: 'boolean',
@@ -60,4 +60,12 @@ export const Disabled: Story = {
     color: 'primary',
     disabled: true,
   },
+};
+
+export const Loading: Story = {
+  args: { label: 'Save changes', loading: true, loadingLabel: 'Saving' },
+};
+
+export const IconOnly: Story = {
+  args: { label: 'Add', icon: '+', iconOnly: true, ariaLabel: 'Add learner', tooltip: 'Add learner' },
 };

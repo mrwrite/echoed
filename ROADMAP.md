@@ -59,6 +59,10 @@ These are not Phase 1 requirements:
 - Production user onboarding.
 - Payments, marketplace, or monetization.
 
+## Phase 7: Platform Maturity Foundation
+
+Phase 7 preserves the completed role-based experience while reducing initial frontend loading cost and establishing evidence-based security, observability, operational, dependency, and backend-capability baselines. Larger product capabilities remain independent future OpenSpec changes. See the [platform-maturity roadmap](docs/platform-maturity/future-openspec-roadmap.md) for priorities and dependencies; passing this foundation does not make EchoEd 1.0 production-ready.
+
 ## Roadmap Principles
 
 - Trust before scale.

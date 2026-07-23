@@ -13,6 +13,12 @@ Security reports may cover:
 - Cross-site scripting, injection, or data exposure concerns.
 - Vulnerabilities in documented setup or deployment instructions.
 
+## Current Baseline
+
+The focused [Phase 7 security baseline](docs/platform-maturity/security-baseline.md) records repository evidence, severity, narrow remediations, and deferred security work. Phase 7 adds privacy-safe authentication logging, authenticated diagnostic access, active organization-membership enforcement, bounded image-upload validation, request correlation, baseline response headers, and patched Angular runtime packages. It is not a penetration test.
+
+The unauthenticated forum mutation boundary, administrative response minimization, rate limiting, comprehensive audit events, and production security policy remain explicit future work. Do not use the current demo with real learner or production data.
+
 ## Reporting a Vulnerability
 
 Send security reports to:

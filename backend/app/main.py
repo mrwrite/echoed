@@ -1,8 +1,13 @@
 import os
+import re
+import time
+import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes import (
     activities,
@@ -31,6 +36,8 @@ from app.api.routes import (
     meta,
     v2_platform,
 )
+from app.database import engine
+from app.log import logger
 
 app = FastAPI()
 
@@ -67,6 +74,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+
+
+@app.middleware("http")
+async def add_operational_context(request: Request, call_next):
+    incoming_request_id = request.headers.get("X-Request-ID", "")
+    request_id = (
+        incoming_request_id
+        if REQUEST_ID_PATTERN.fullmatch(incoming_request_id)
+        else str(uuid.uuid4())
+    )
+    started_at = time.perf_counter()
+    request.state.request_id = request_id
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception(
+            "request_failed request_id=%s method=%s path=%s",
+            request_id,
+            request.method,
+            request.url.path,
+        )
+        raise
+
+    duration_ms = (time.perf_counter() - started_at) * 1000
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    logger.info(
+        "request_complete request_id=%s method=%s path=%s status=%s duration_ms=%.2f",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
 app.include_router(progress.router, prefix="/api", tags=["Progress"])
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
 app.include_router(enroll.router, prefix="/api", tags=["Enrollment"])
@@ -98,3 +145,21 @@ app.include_router(v2_platform.router, prefix="/api", tags=["V2 Platform"])
 @app.get("/api")
 def read_root():
     return {"message": "Echoed API is running"}
+
+
+@app.get("/health/live", include_in_schema=False)
+def liveness():
+    return {"status": "live"}
+
+
+@app.get("/health/ready", include_in_schema=False)
+def readiness():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database is unavailable.",
+        ) from exc
+    return {"status": "ready", "database": "available"}

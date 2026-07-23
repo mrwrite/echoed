@@ -43,6 +43,8 @@ Important paths:
 
 Local frontend API calls use `frontend/proxy.conf.json` to reach the backend at `http://127.0.0.1:8000`.
 
+Page components are loaded through explicit standalone `loadComponent` route boundaries. Public, authentication, onboarding, Learn, Teach, Studio, Organization, Admin, and legacy compatibility routes keep their existing guards and URLs while downloading feature code on demand. Recognized dynamic-import failures use the lazy `/load-error` recovery route.
+
 ## Backend
 
 Location: `backend/`
@@ -64,6 +66,8 @@ Important paths:
 - `backend/app/crud/` contains domain helper functions where present.
 - `backend/alembic/versions/` contains database migrations.
 - `backend/tests/` contains the backend test suite.
+
+The application exposes `/health/live` and database-backed `/health/ready`. HTTP responses include a privacy-safe request ID and baseline security headers; backend request logs record method, path, status, duration, and correlation ID without logging bearer tokens. These are foundations rather than a complete metrics, tracing, or deployment platform; see [docs/platform-maturity](docs/platform-maturity/observability-baseline.md).
 
 ## Existing Domain Boundaries
 

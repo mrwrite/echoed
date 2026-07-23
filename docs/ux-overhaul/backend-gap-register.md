@@ -2,6 +2,8 @@
 
 Date: 2026-07-13
 
+Phase 7 verification note (2026-07-23): this Phase 6 register remains the historical UI-overhaul record. The evidence-based [backend capability audit](../platform-maturity/backend-capability-audit.md) is authoritative for current classifications and the [future OpenSpec roadmap](../platform-maturity/future-openspec-roadmap.md) owns sequencing. In particular, curriculum CRUD, review state, version history, assets, and reporting were reclassified as partially supported rather than wholly absent; unauthenticated forum mutation remains a confirmed critical security gap.
+
 | Role | User need | Current frontend behavior | API limitation | Privacy/security implication | Blocks current workflow | Future OpenSpec change | Priority |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Teacher/instructor | Scoped learner review | Read-only/scoped UI | No complete class-scoped review/feedback persistence | Avoid global learner disclosure | Yes for persistent feedback | Educator review and feedback contract | High |

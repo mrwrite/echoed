@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.auth import (
     authenticate_user,
     create_access_token,
+    get_current_user,
     hash_password,
     resolve_active_organization,
 )
@@ -116,5 +117,5 @@ def login(
 
 
 @router.get("/auth/protected")
-def protected_route():
+def protected_route(current_user: User = Depends(get_current_user)):
     return {"message": "Authenticated"}

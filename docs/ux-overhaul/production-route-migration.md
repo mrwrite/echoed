@@ -2,6 +2,8 @@
 
 Phase 1 preserves route compatibility and establishes canonical role destinations without deleting deep links. Phase 2 begins the student `/learn` migration while keeping legacy student deep links available. Phase 3 adds canonical teacher `/teach` routes while preserving `/home` and workspace cohort deep links. Phase 4 adds the guarded `/admin` family and retains legacy Admin deep links. Phase 5 adds the guarded `/studio` family over the supported V2 content-operations APIs while retaining all `/workspace/**` routes. Phase 6 adds the active-organization-scoped `/organization` family while retaining all legacy routes.
 
+Phase 7 loading note (2026-07-23): all page components behind Public, Authentication, Onboarding, Learn, Teach, Studio, Organization, Admin, and retained legacy route records now use standalone `loadComponent` imports. Paths, child structure, redirects, role data, `HomeSessionGuard`, and `RoleGuard` behavior are unchanged. `/load-error` is a new lazy, accessible recovery destination used only for recognized route-chunk failures. This is a loading-architecture change, not a route or UX migration.
+
 | Current route | Canonical route | Role | Redirect behavior | Guard behavior | Migration phase | Removal criteria | Deep-link risk |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `/home` | `/teach` for teacher/instructor; `/admin` for admin/super_admin-compatible | teacher, instructor, admin, super_admin-compatible | No redirect; legacy role dashboard remains | `HomeSessionGuard`; child guards unchanged | Phase 4 Admin canonical landing added | Remove role-dashboard reliance only after compatibility redirect and usage validation | High |
@@ -67,6 +69,8 @@ Phase 1 preserves route compatibility and establishes canonical role destination
 
 - Browser bookmarks are preserved; no broad route deletion was performed.
 - Unauthorized routes remain protected by existing route guards. Hidden navigation is not treated as authorization.
+- Lazy loading does not replace authorization: route guards remain on protected records and backend authorization remains authoritative.
+- Recognized dynamic-import failures redirect to `/load-error`, where users can retry the requested route or return home.
 - `/workspace/commercial` remains the technical path in this phase, but visible navigation now uses `Community`.
 - Phase 2 updates student-origin actions from the legacy student dashboard to navigate into `/learn/**` while preserving `/home/**` deep links.
 - Phase 2 adds `/learn/courses/:courseId` as the canonical student course overview and keeps `/learn/products` as a transitional browse route.

@@ -110,6 +110,58 @@ def test_http_metrics_use_normalized_routes_and_forbid_personal_labels():
         registry.increment("echoed_bad_metric_total", user_id="user-1")
 
 
+def test_route_template_preserves_nested_router_prefix_across_starlette_versions():
+    from types import SimpleNamespace
+
+    from fastapi import Request
+
+    request = Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/api/users/example",
+            "raw_path": b"/api/users/example",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 12345),
+            "server": ("testserver", 80),
+            "root_path": "/api",
+            "route": SimpleNamespace(path="/users/{user_id}"),
+        }
+    )
+
+    assert main._route_template(request) == "/api/users/{user_id}"
+
+
+def test_route_template_recovers_prefix_when_nested_root_path_is_empty():
+    from types import SimpleNamespace
+
+    from fastapi import Request
+
+    user_id = uuid.uuid4()
+    request = Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "scheme": "http",
+            "path": f"/api/users/{user_id}",
+            "raw_path": f"/api/users/{user_id}".encode(),
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 12345),
+            "server": ("testserver", 80),
+            "root_path": "",
+            "path_params": {"user_id": user_id},
+            "route": SimpleNamespace(path="/users/{user_id}"),
+        }
+    )
+
+    template = main._route_template(request)
+    assert template == "/api/users/{user_id}"
+    assert str(user_id) not in template
+
+
 def test_metrics_endpoint_is_concealed_then_token_protected(monkeypatch):
     metrics.clear()
     metrics.increment("echoed_test_total", result="success")

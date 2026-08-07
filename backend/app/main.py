@@ -122,7 +122,34 @@ def _safe_incoming(value: str, pattern: re.Pattern[str]) -> str | None:
 def _route_template(request: Request) -> str:
     route = request.scope.get("route")
     path = getattr(route, "path", None)
-    return path if isinstance(path, str) else "unmatched"
+    if not isinstance(path, str):
+        return "unmatched"
+    root_path = request.scope.get("root_path", "")
+    if (
+        isinstance(root_path, str)
+        and root_path not in {"", "/"}
+        and path != root_path
+        and not path.startswith(f"{root_path.rstrip('/')}/")
+    ):
+        return f"{root_path.rstrip('/')}/{path.lstrip('/')}"
+    rendered_path = path
+    for name, value in request.path_params.items():
+        rendered_path = re.sub(
+            rf"{{{re.escape(name)}(?::[^}}]+)?}}",
+            str(value),
+            rendered_path,
+        )
+    actual_path = request.scope.get("path", "")
+    if (
+        isinstance(actual_path, str)
+        and rendered_path != path
+        and actual_path != rendered_path
+        and actual_path.endswith(rendered_path)
+    ):
+        prefix = actual_path[: -len(rendered_path)].rstrip("/")
+        if prefix:
+            return f"{prefix}/{path.lstrip('/')}"
+    return path
 
 
 @app.middleware("http")

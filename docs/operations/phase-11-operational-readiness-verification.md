@@ -49,7 +49,7 @@ The Alembic history contains PostgreSQL-specific DDL. A disposable SQLite upgrad
 
 | Gate | Final result |
 | --- | --- |
-| Backend complete suite | **PASS — 297 passed**, 4169 existing deprecation warnings, 127.31 s. Baseline increased by 19 targeted tests. |
+| Backend complete suite | **PASS — 299 passed**, 4169 existing deprecation warnings, 133.80 s. Baseline increased by 21 targeted tests, including both cross-version nested-route normalization representations. |
 | Backend compile/static syntax | **PASS** — `compileall` over app, scripts, and tests. |
 | Backend lint/format | Not configured in repository/venv; no pass claimed. |
 | Angular complete suite | **PASS — 308 passed**. Final run used one build worker after an initial local Node memory failure. No baseline reduction. |
@@ -61,7 +61,7 @@ The Alembic history contains PostgreSQL-specific DDL. A disposable SQLite upgrad
 | Strict OpenSpec | **PASS** — `openspec validate establish-operational-readiness --strict`. |
 | `git diff --check` | **PASS**; line-ending notices only. |
 
-Phase 8/10 regressions are covered by the 297 backend, 308 Angular, and 23 Playwright suites, including forum fail-closed behavior, role/org boundaries, accessible throttling, safe references, health, metrics, redaction, uploads, and Course Studio behavior.
+Phase 8/10 regressions are covered by the 299 backend, 308 Angular, and 23 Playwright suites, including forum fail-closed behavior, role/org boundaries, accessible throttling, safe references, health, metrics, redaction, uploads, and Course Studio behavior.
 
 ## Cleanup
 

@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection } from '@angular/core';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -12,6 +12,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { authInterceptor } from './services/auth.interceptor';
 import { orgInterceptor } from './services/org.interceptor';
 import { localeInterceptor } from './services/locale.interceptor';
+import { diagnosticInterceptor } from './services/diagnostic.interceptor';
+import { GlobalErrorHandler } from './services/global-error.handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,7 +23,8 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withNavigationErrorHandler(recoverFromNavigationError),
     ),
-    provideHttpClient(withInterceptors([authInterceptor, orgInterceptor, localeInterceptor])),
-    provideAnimationsAsync()
+    provideHttpClient(withInterceptors([authInterceptor, orgInterceptor, localeInterceptor, diagnosticInterceptor])),
+    provideAnimationsAsync(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
   ]
 };

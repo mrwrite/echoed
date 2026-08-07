@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.deps import get_current_user, require_org_roles
-from app.models import Section, Enrollment, OrganizationMembership, User
+from app.models import Course, CourseVersion, Section, Enrollment, OrganizationMembership, User
 from app.enum import SectionMode
 from app.schemas import SectionCreateRequest, SectionResponse, EnrollmentCreateRequest, EnrollmentResponse
 from app.section_scope import require_scoped_section
@@ -18,6 +18,18 @@ def create_section(
     current_user=Depends(get_current_user),
     membership=Depends(require_org_roles("teacher", "org_admin", "instructor")),
 ):
+    course_version = (
+        db.query(CourseVersion)
+        .join(Course, Course.id == CourseVersion.course_id)
+        .filter(
+            CourseVersion.id == payload.course_version_id,
+            (Course.organization_id.is_(None))
+            | (Course.organization_id == membership.organization_id),
+        )
+        .first()
+    )
+    if course_version is None:
+        raise HTTPException(status_code=404, detail="Course version not found")
     section = Section(
         organization_id=membership.organization_id,
         course_version_id=payload.course_version_id,

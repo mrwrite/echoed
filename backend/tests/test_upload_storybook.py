@@ -30,7 +30,7 @@ def test_upload_storybook_page(db_session, tmp_path, monkeypatch):
     app.dependency_overrides[get_current_user] = lambda: teacher_user
 
     try:
-        content = b"\x89PNG\r\n\x1a\n"
+        content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
         files = {"file": ("page.png", content, "image/png")}
         response = client.post("/api/upload/storybook", files=files)
         assert response.status_code == 200

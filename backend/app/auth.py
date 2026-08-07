@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import os
 from typing import Iterable
 from uuid import UUID
 
@@ -8,17 +7,19 @@ import bcrypt
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from fastapi import Depends, HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.enum import MembershipStatus, OrganizationType
 from app.models import Organization, OrganizationMembership, User
 from app.database import SessionLocal
 from app.log import logger
+from app.observability import emit_event, metrics
+from app.operational_config import load_operational_settings
 
-SECRET_KEY = os.getenv("JWT_SECRET")
-if not SECRET_KEY:
-    raise RuntimeError("JWT_SECRET environment variable not set")
+operational_settings = load_operational_settings()
+SECRET_KEY = operational_settings.jwt_secret
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
@@ -77,6 +78,11 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    except SQLAlchemyError:
+        db.rollback()
+        metrics.increment("echoed_database_operations_total", operation="auth_session", result="failure")
+        emit_event("database.operation_failed", level=40, component="database", operation="auth_session", result="failure")
+        raise
     finally:
         db.close()
 
@@ -143,6 +149,7 @@ def authenticate_user(db: Session, username: str, password: str):
 
 # Dependency to get the current user from JWT token
 def get_current_user(
+    request: Request,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
@@ -178,6 +185,12 @@ def get_current_user(
             logger.warning("Authentication rejected: subject not found")
             raise HTTPException(status_code=401, detail="User not found")
 
+        request.state.actor_class = "authenticated"
+        request.state.actor_id = str(user.id)
+        request.state.actor_role = user.role
+        active_org_id = payload.get("active_org_id")
+        if active_org_id:
+            request.state.organization_id = "present"
         return user
     except JWTError as e:
         logger.warning("Authentication rejected: token decode failed")

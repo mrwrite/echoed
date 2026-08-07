@@ -67,7 +67,9 @@ Important paths:
 - `backend/alembic/versions/` contains database migrations.
 - `backend/tests/` contains the backend test suite.
 
-The application exposes `/health/live` and database-backed `/health/ready`. HTTP responses include a privacy-safe request ID and baseline security headers; backend request logs record method, path, status, duration, and correlation ID without logging bearer tokens. These are foundations rather than a complete metrics, tracing, or deployment platform; see [docs/platform-maturity](docs/platform-maturity/observability-baseline.md).
+The application exposes process-only `/health/live` and database-backed `/health/ready`. HTTP responses include a privacy-safe request ID and optional bounded correlation ID. Backend middleware records normalized route, method, status family, and duration through the structured/redacted logging and in-process metrics foundation. Optional Prometheus text export at `/internal/metrics` is disabled by default and token protected when enabled. These are vendor-neutral operational foundations, not distributed tracing, a durable audit ledger, or a production hosting architecture; see [the observability policy](docs/observability/logging-policy.md) and [runbook](docs/operations/observability-runbook.md).
+
+Backend authorization uses explicit platform/organization role allowlists plus reusable organization, section, course-content, forum-ownership, and learner-progress scope checks. Sensitive routes use a configurable process-local fixed-window limiter; it is suitable only for the checked-in single-Uvicorn-process topology and must be replaced by shared storage before horizontal scaling. The canonical policy and limitations are in [docs/security/role-authorization-policy.md](docs/security/role-authorization-policy.md) and [docs/security/rate-limiting-policy.md](docs/security/rate-limiting-policy.md).
 
 ## Existing Domain Boundaries
 
@@ -140,3 +142,7 @@ cmd /c .\node_modules\.bin\playwright.cmd test tests/demo/student-flagship-smoke
 ## Contribution Guidance
 
 Changes should be small, scoped, and aligned with existing boundaries. Documentation-only changes do not need backend migrations or frontend tests, but they should still pass OpenSpec validation when tied to an OpenSpec change.
+
+## Operational lifecycle
+
+`app.operational_config` validates environment, database, secret, host/proxy, origin, release, storage, migration, and observability decisions before route/database initialization. `TrustedHostMiddleware` and peer-CIDR forwarding resolution define the application network boundary; Uvicorn implicit proxy processing is disabled. Schema migration is a one-shot pre-start operation, health separates process liveness from database readiness, and the FastAPI lifespan disposes the SQLAlchemy engine during bounded shutdown. See [deployment architecture and limits](docs/operations/deployment-runbook.md).

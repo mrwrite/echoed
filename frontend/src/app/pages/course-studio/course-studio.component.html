@@ -1,0 +1,106 @@
+<main class="studio" *ngIf="!loading && !accessDenied && !notFound && !loadFailure; else routeState">
+  <header class="studio-header">
+    <div><a routerLink="/workspace/product-studio/courses">Courses</a><h1>{{ draft.title || 'Untitled course' }}</h1><p>{{ draft.revision_status || 'Draft' }} · Revision {{ draft.revision_number || 0 }}</p></div>
+    <div class="save-actions"><span class="save-status" role="status" aria-live="polite">{{ saveState === 'saved' && savedAt ? 'Saved ' + (savedAt | date:'shortTime') : (saveState | titlecase) }}</span><button type="button" (click)="save()" [disabled]="saveState === 'saving' || saveState === 'saved'">Save now</button></div>
+  </header>
+
+  <div class="mode-tabs" role="tablist" aria-label="Course Studio modes">
+    <button *ngFor="let item of modes" type="button" role="tab" [attr.aria-selected]="mode === item.id" [class.active]="mode === item.id" (click)="selectMode(item.id)">{{ item.label }}</button>
+  </div>
+
+  <section class="conflict" *ngIf="saveState === 'conflict'" role="alert"><strong>This course changed elsewhere.</strong><p>Your local content is still here. Reload the latest server version or save this work as a recovered copy.</p><button (click)="reloadServer()">Reload server version</button><button (click)="preserveLocalCopy()">Save recovered copy</button></section>
+  <section class="conflict" *ngIf="saveState === 'failed' || saveState === 'offline'" role="alert"><strong>{{ saveState === 'offline' ? 'You are offline.' : 'Draft save failed.' }}</strong><p>Your changes remain in this browser.</p><button (click)="retry()">Retry save</button></section>
+
+  <div class="studio-grid">
+    <aside class="outline" aria-label="Course outline">
+      <div class="outline-heading"><h2>Outline</h2><button *ngIf="draft.capabilities?.can_edit" type="button" (click)="addUnit()">+ Unit</button></div>
+      <p *ngIf="!draft.units.length" class="empty">No units yet. Add one to start building.</p>
+      <ol>
+        <li *ngFor="let unit of draft.units; let ui = index" [draggable]="!!draft.capabilities?.can_edit" (dragstart)="startDrag('unit', ui, $event)" (dragover)="$event.preventDefault()" (drop)="dropUnit(ui, $event)">
+          <button class="outline-item" [class.selected]="selectedUnit === ui" (click)="selectedUnit = ui; selectedLesson = 0; mode = 'build'">{{ ui + 1 }}. {{ unit.title }}</button>
+          <div class="compact-actions" *ngIf="draft.capabilities?.can_edit"><button title="Move unit up" [disabled]="ui === 0" (click)="moveUnit(ui,-1)">↑</button><button title="Move unit down" [disabled]="ui === draft.units.length-1" (click)="moveUnit(ui,1)">↓</button><button (click)="duplicateUnit(ui)">Copy</button><button (click)="removeUnit(ui)">Remove</button></div>
+          <ol><li *ngFor="let lesson of unit.lessons; let li = index"><button class="outline-item lesson" [class.selected]="selectedUnit === ui && selectedLesson === li" (click)="selectedUnit = ui; selectedLesson = li; mode = 'build'">{{ li + 1 }}. {{ lesson.title }}</button></li></ol>
+        </li>
+      </ol>
+    </aside>
+
+    <section class="editor">
+      <ng-container *ngIf="mode === 'setup'">
+        <h2>Course setup</h2><p class="lede">Start with the learner promise. You can build the outline before every detail is final.</p>
+        <fieldset [disabled]="draft.capabilities && !draft.capabilities.can_edit">
+        <div class="form-grid">
+          <label class="wide" *ngIf="!courseId && templates.length">Start from a template <select (ngModelChange)="applyTemplate($event)" [ngModel]="draft.template_id || ''"><option value="">Blank course</option><option *ngFor="let template of templates" [value]="template.id">{{ template.name }} — {{ template.description }}</option></select></label>
+          <label class="wide">Title <input id="field-title" [(ngModel)]="draft.title" (ngModelChange)="changed()" required /></label>
+          <label class="wide">Description <textarea id="field-description" [(ngModel)]="draft.description" (ngModelChange)="changed()" rows="4"></textarea></label>
+          <label>Subject <input [(ngModel)]="draft.subject" (ngModelChange)="changed()" /></label>
+          <label>Locale <input [(ngModel)]="draft.default_locale" (ngModelChange)="changed()" /></label>
+          <label>Minimum age <input type="number" min="0" [(ngModel)]="draft.age_band_min" (ngModelChange)="changed()" /></label>
+          <label>Maximum age <input type="number" min="0" [(ngModel)]="draft.age_band_max" (ngModelChange)="changed()" /></label>
+          <label class="wide">Learning objectives <textarea id="field-learning_objectives" [(ngModel)]="draft.learning_objectives" (ngModelChange)="changed()" rows="4" aria-describedby="objective-help"></textarea><small id="objective-help">Use measurable outcomes, one per line.</small></label>
+          <label class="wide">Skills (comma separated) <input [ngModel]="draft.skill_tags.join(', ')" (ngModelChange)="draft.skill_tags = $event.split(',').map(trim); changed()" /></label>
+          <label class="wide">Standards notes <textarea [ngModel]="draft.standards_metadata['notes'] || ''" (ngModelChange)="draft.standards_metadata['notes'] = $event; changed()" rows="3"></textarea></label>
+          <label class="wide">Course assessment references (IDs, comma separated) <input [ngModel]="(draft.assessment_ids || []).join(', ')" (ngModelChange)="setAssessmentIds(draft, $event)" /></label>
+        </div>
+        </fieldset>
+      </ng-container>
+
+      <ng-container *ngIf="mode === 'build'">
+        <fieldset [disabled]="draft.capabilities && !draft.capabilities.can_edit">
+        <div *ngIf="activeUnit() as unit; else buildEmpty">
+          <div class="editor-heading"><h2>Unit {{ selectedUnit + 1 }}</h2><button (click)="addLesson()">+ Lesson</button></div>
+          <label>Unit title <input [id]="'entity-' + unit.id" [(ngModel)]="unit.title" (ngModelChange)="changed()" /></label>
+          <label>Unit overview <textarea [(ngModel)]="unit.content" (ngModelChange)="changed()" rows="3"></textarea></label>
+          <label>Unit assessment references <input [ngModel]="(unit.assessment_ids || []).join(', ')" (ngModelChange)="setAssessmentIds(unit, $event)" /></label>
+          <div class="lesson-list" *ngIf="unit.lessons.length">
+            <button *ngFor="let lesson of unit.lessons; let li=index" [draggable]="!!draft.capabilities?.can_edit" (dragstart)="startDrag('lesson', li, $event)" (dragover)="$event.preventDefault()" (drop)="dropLesson(unit, li, $event)" [class.active]="selectedLesson === li" (click)="selectedLesson=li">{{ li + 1 }}. {{ lesson.title }}</button>
+          </div>
+          <article class="lesson-editor" *ngIf="activeLesson() as lesson">
+            <div class="editor-heading"><h3>Lesson {{ selectedLesson + 1 }}</h3><div><button [disabled]="selectedLesson===0" (click)="moveLesson(selectedUnit,selectedLesson,-1)">Move up</button><button [disabled]="selectedLesson===unit.lessons.length-1" (click)="moveLesson(selectedUnit,selectedLesson,1)">Move down</button><button (click)="duplicateLesson(selectedUnit,selectedLesson)">Duplicate</button><button (click)="removeLesson(selectedUnit,selectedLesson)">Remove</button></div></div>
+            <label>Lesson title <input [id]="'entity-' + lesson.id" [(ngModel)]="lesson.title" (ngModelChange)="changed()" /></label>
+            <label>Learning objective <textarea [(ngModel)]="lesson.objective" (ngModelChange)="changed()" rows="2"></textarea></label>
+            <label>Teacher notes <textarea [(ngModel)]="lesson.teacher_notes" (ngModelChange)="changed()" rows="3"></textarea></label>
+            <label>Lesson assessment references <input [ngModel]="(lesson.assessment_ids || []).join(', ')" (ngModelChange)="setAssessmentIds(lesson, $event)" /></label>
+            <section class="activities"><div class="editor-heading"><h4>Activities</h4><button (click)="addActivity(lesson)">+ Activity</button></div>
+              <article class="activity" *ngFor="let activity of lesson.activities; let ai=index" [draggable]="!!draft.capabilities?.can_edit" (dragstart)="startDrag('activity', ai, $event)" (dragover)="$event.preventDefault()" (drop)="dropActivity(lesson, ai, $event)">
+                <div class="editor-heading"><strong>Activity {{ ai + 1 }}</strong><div><button [disabled]="ai===0" (click)="moveActivity(lesson,ai,-1)">↑</button><button [disabled]="ai===lesson.activities.length-1" (click)="moveActivity(lesson,ai,1)">↓</button><button (click)="duplicateActivity(lesson,ai)">Copy</button><button (click)="removeActivity(lesson,ai)">Remove</button></div></div>
+                <div class="form-grid"><label>Type <select [(ngModel)]="activity.type" (ngModelChange)="changed()"><option *ngFor="let type of activityTypes" [value]="type">{{ type | titlecase }}</option></select></label><label>Title <input [id]="'entity-' + activity.id" [(ngModel)]="activity.title" (ngModelChange)="changed()" /></label><label class="wide">Instructions / content <textarea [(ngModel)]="activity.content" (ngModelChange)="changed()" rows="4"></textarea></label><label *ngIf="activity.type === 'storybook' || activity.type === 'coloring'" class="wide">{{ activity.type === 'storybook' ? 'Add storybook page' : 'Add coloring asset' }} <input type="file" accept="image/*" (change)="uploadActivityAsset($event, activity)" /></label></div>
+                <ol *ngIf="activity.pages.length"><li *ngFor="let page of activity.pages">Page {{ page.order || 'new' }}: {{ page.image_url }}</li></ol>
+              </article>
+            </section>
+            <p role="status" aria-live="polite">{{ uploadMessage }}</p>
+            <section><div class="editor-heading"><h4>Sources</h4><button (click)="addSource(lesson)">+ Source</button></div><div class="form-grid source" *ngFor="let source of lesson.sources"><label>Citation <input [id]="'entity-' + source.id" data-authoring-field="citation" [(ngModel)]="source.citation" (ngModelChange)="changed()" /></label><label>URL <input type="url" [(ngModel)]="source.url" (ngModelChange)="changed()" /></label></div></section>
+          </article>
+        </div>
+        <ng-template #buildEmpty><div class="empty-state"><h2>Build your outline</h2><p>Add a unit, then organize lessons and activities within it.</p><button (click)="addUnit()">Add first unit</button></div></ng-template>
+        </fieldset>
+      </ng-container>
+
+      <ng-container *ngIf="mode === 'quality'">
+        <h2>Quality check</h2><p class="lede">Blocking issues must be fixed before review. Warnings are useful prompts, not hidden gates.</p>
+        <div class="quality-summary"><strong>{{ localIssues.length }} authoring findings</strong><span>{{ governance?.publish_readiness?.blocking_issue_count || 0 }} governance blockers</span></div>
+        <ul class="issues"><li *ngFor="let issue of localIssues" [class.blocking]="issue.severity==='blocking'"><span>{{ issue.severity | titlecase }}</span><div><strong>{{ issue.message }}</strong><p>{{ issue.corrective_context }}</p></div><button (click)="focusIssue(issue)">Fix</button></li></ul>
+        <ng-container *ngIf="governance as summary"><h3>Governance findings</h3><ul class="issues"><li class="blocking" *ngFor="let issue of summary.safe_publish_validation.blocking_issues"><span>Blocking</span><div><strong>{{ issue.message }}</strong><p>{{ issue.entity_title }}</p></div></li><li *ngFor="let issue of summary.safe_publish_validation.warnings"><span>Warning</span><div><strong>{{ issue.message }}</strong><p>{{ issue.entity_title }}</p></div></li></ul></ng-container>
+        <div *ngIf="!localIssues.length" class="success">No authoring issues found. Human review is still required before publishing.</div>
+      </ng-container>
+
+      <ng-container *ngIf="mode === 'preview'">
+        <h2>Learner preview</h2><p class="lede">This preview uses draft content for staff only and does not make the course available to learners.</p>
+        <article class="preview-card"><h3>{{ learnerPreview?.title || draft.title || 'Untitled course' }}</h3><p>{{ learnerPreview?.description || draft.description }}</p><section *ngFor="let unit of (learnerPreview?.units || [])"><h4>{{ unit.title }}</h4><div *ngFor="let lesson of unit.lessons"><h5>{{ lesson.title }}</h5><p>{{ lesson.objective || lesson.learning_objectives }}</p><div *ngFor="let activity of lesson.activities"><strong>{{ activity.title }}</strong><p>{{ activity.content }}</p></div></div></section><p *ngIf="!courseId">Save the course once to load its learner-safe server preview.</p></article>
+      </ng-container>
+
+      <ng-container *ngIf="mode === 'release'">
+        <h2>Review and release</h2><p class="lede">Publishing requires an independent human approval and a successful safe-publish check.</p>
+        <dl><div><dt>Status</dt><dd>{{ draft.revision_status || 'draft' | titlecase }}</dd></div><div><dt>Revision</dt><dd>{{ draft.revision_number || 0 }}</dd></div></dl>
+        <button *ngIf="draft.capabilities?.can_submit_review" [disabled]="localIssues.some(blocking) || dirty" (click)="submitForReview()">Submit for review</button>
+        <button *ngIf="draft.capabilities?.can_review" (click)="recordReview()">Record review decision</button>
+        <button *ngIf="draft.capabilities?.can_publish" [disabled]="draft.revision_status !== 'approved'" (click)="publish()">Publish approved version</button>
+        <p *ngIf="dirty">Save all changes before a lifecycle action.</p>
+        <p role="status" aria-live="polite">{{ lifecycleMessage }}</p>
+        <h3>Version history</h3><ol><li *ngFor="let version of versions">Version {{ version.version_number }} — {{ version.status | titlecase }}<span *ngIf="version.published_at">, published {{ version.published_at | date:'medium' }}</span></li></ol>
+        <button *ngIf="courseId" (click)="exportCourse()">Export EchoEd JSON</button><p>Common Cartridge and QTI import are not supported in this release; validation adapters reserve that boundary.</p>
+      </ng-container>
+    </section>
+  </div>
+</main>
+
+<ng-template #routeState><main class="route-state" tabindex="-1"><ng-container *ngIf="loading"><h1>Opening Course Studio…</h1></ng-container><ng-container *ngIf="accessDenied"><h1>You don’t have course authoring access</h1><p>Your organization role does not allow this action. Ask an organization administrator if you need access.</p><a routerLink="/workspace/product-studio/courses">Back to courses</a></ng-container><ng-container *ngIf="notFound"><h1>Course not found</h1><p>It may have been removed or belong to another organization.</p><a routerLink="/workspace/product-studio/courses">Back to courses</a></ng-container><ng-container *ngIf="loadFailure"><h1>Course Studio could not load</h1><p>Your work has not been changed.</p><button (click)="courseId ? reloadServer() : ngOnInit()">Try again</button></ng-container></main></ng-template>

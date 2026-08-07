@@ -24,6 +24,22 @@ describe('CoursesService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('creates an authoring draft with an idempotency key', () => {
+    service.createAuthoringDraft({ title: 'Course', description: '', default_locale: 'en', skill_tags: [], standards_metadata: {}, units: [] }, 'retry-safe-key').subscribe();
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/courses/authoring`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.headers.get('Idempotency-Key')).toBe('retry-safe-key');
+    request.flush({});
+  });
+
+  it('sends the optimistic revision in an aggregate save', () => {
+    service.saveAuthoringDraft('course-1', { title: 'Course', description: '', default_locale: 'en', skill_tags: [], standards_metadata: {}, units: [], revision_number: 7 }).subscribe();
+    const request = httpMock.expectOne(`${environment.apiUrl}/api/courses/course-1/authoring-draft`);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body.revision_number).toBe(7);
+    request.flush({});
+  });
+
   it('calls the publish-readiness endpoint for a course', () => {
     service.getCoursePublishReadiness('course-1').subscribe((response) => {
       expect(response.course_id).toBe('course-1');

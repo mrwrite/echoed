@@ -10,6 +10,7 @@ import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-
 import { User } from '../../models/user';
 import { PermissionsService } from '../../services/permissions.service';
 import { UsersService } from '../../services/users.service';
+import { securityErrorMessage } from '../../services/security-error';
 
 @Component({
   selector: 'admin-users-page',
@@ -74,9 +75,9 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         this.deleting = false;
         this.pendingDelete = undefined;
       },
-      error: () => {
+      error: error => {
         this.deleting = false;
-        this.deleteError = 'The user was not deleted. No local changes were made.';
+        this.deleteError = securityErrorMessage(error, 'The user was not deleted. No local changes were made.');
       },
     }));
   }

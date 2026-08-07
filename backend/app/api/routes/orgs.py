@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.auth import ActiveOrganizationContext, create_access_token
 from app.database import get_db
 from app.deps import get_current_user
-from app.enum import OrganizationType, OrganizationRole
+from app.enum import MembershipStatus, OrganizationType, OrganizationRole
 from app.models import Enrollment, Organization, OrganizationMembership, Section, User
 from app.schemas import (
     OrganizationCreate,
@@ -38,7 +38,10 @@ def list_orgs(
 ):
     memberships = (
         db.query(OrganizationMembership)
-        .filter(OrganizationMembership.user_id == current_user.id)
+        .filter(
+            OrganizationMembership.user_id == current_user.id,
+            OrganizationMembership.status == MembershipStatus.ACTIVE,
+        )
         .all()
     )
     org_ids = [membership.organization_id for membership in memberships]
@@ -167,6 +170,7 @@ def update_org(
             .filter(
                 OrganizationMembership.organization_id == org_uuid,
                 OrganizationMembership.user_id == current_user.id,
+                OrganizationMembership.status == MembershipStatus.ACTIVE,
             )
             .first()
         )
@@ -201,6 +205,7 @@ def switch_org(
         .filter(
             OrganizationMembership.organization_id == org_uuid,
             OrganizationMembership.user_id == current_user.id,
+            OrganizationMembership.status == MembershipStatus.ACTIVE,
         )
         .first()
     )

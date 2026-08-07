@@ -1,13 +1,23 @@
+import asyncio
+from contextlib import asynccontextmanager
 import os
 import re
+import secrets
 import time
 import uuid
 
-from fastapi import FastAPI, HTTPException, Request, status
+from app.operational_config import load_operational_settings
+
+operational_settings = load_operational_settings()
+
+from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.concurrency import run_in_threadpool
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.routes import (
     activities,
@@ -37,13 +47,40 @@ from app.api.routes import (
     v2_platform,
 )
 from app.database import engine
-from app.log import logger
+from app.network_trust import resolve_network_context
+from app.observability import (
+    correlation_id_context,
+    emit_event,
+    metrics,
+    request_id_context,
+    settings,
+)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    application.state.accepting_requests = True
+    emit_event(
+        "application.started",
+        component="lifecycle",
+        environment=operational_settings.environment,
+        release_version=operational_settings.release_version,
+        deployment_id=operational_settings.deployment_id,
+        result="success",
+    )
+    try:
+        yield
+    finally:
+        application.state.accepting_requests = False
+        emit_event("application.shutdown.started", component="lifecycle", result="started")
+        await run_in_threadpool(engine.dispose)
+        emit_event("application.shutdown.completed", component="lifecycle", result="success")
 
-STORYBOOK_PATH = os.getenv("STORYBOOK_PATH", "./storybook")
-COLORINGS_PATH = os.getenv("COLORINGS_PATH", "./colorings")
-BADGES_PATH = os.getenv("BADGES_PATH", "./badges")
+
+app = FastAPI(lifespan=lifespan)
+
+STORYBOOK_PATH = str(operational_settings.storybook_path)
+COLORINGS_PATH = str(operational_settings.colorings_path)
+BADGES_PATH = str(operational_settings.badges_path)
 
 os.makedirs(STORYBOOK_PATH, exist_ok=True)
 os.makedirs(COLORINGS_PATH, exist_ok=True)
@@ -62,9 +99,9 @@ def _parse_allowed_origins(raw_origins: str) -> list[str]:
     ]
 
 
-allowed_origins = _parse_allowed_origins(
-    os.getenv("FRONTEND_URL", "http://localhost:4200,http://127.0.0.1:4200")
-)
+allowed_origins = list(operational_settings.allowed_origins)
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(operational_settings.allowed_hosts))
 
 app.add_middleware(
     CORSMiddleware,
@@ -75,44 +112,138 @@ app.add_middleware(
 )
 
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
+CORRELATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,64}$")
+
+
+def _safe_incoming(value: str, pattern: re.Pattern[str]) -> str | None:
+    return value if pattern.fullmatch(value) else None
+
+
+def _route_template(request: Request) -> str:
+    route = request.scope.get("route")
+    path = getattr(route, "path", None)
+    if not isinstance(path, str):
+        return "unmatched"
+    root_path = request.scope.get("root_path", "")
+    if (
+        isinstance(root_path, str)
+        and root_path not in {"", "/"}
+        and path != root_path
+        and not path.startswith(f"{root_path.rstrip('/')}/")
+    ):
+        return f"{root_path.rstrip('/')}/{path.lstrip('/')}"
+    rendered_path = path
+    for name, value in request.path_params.items():
+        rendered_path = re.sub(
+            rf"{{{re.escape(name)}(?::[^}}]+)?}}",
+            str(value),
+            rendered_path,
+        )
+    actual_path = request.scope.get("path", "")
+    if (
+        isinstance(actual_path, str)
+        and rendered_path != path
+        and actual_path != rendered_path
+        and actual_path.endswith(rendered_path)
+    ):
+        prefix = actual_path[: -len(rendered_path)].rstrip("/")
+        if prefix:
+            return f"{prefix}/{path.lstrip('/')}"
+    return path
 
 
 @app.middleware("http")
 async def add_operational_context(request: Request, call_next):
     incoming_request_id = request.headers.get("X-Request-ID", "")
-    request_id = (
-        incoming_request_id
-        if REQUEST_ID_PATTERN.fullmatch(incoming_request_id)
-        else str(uuid.uuid4())
-    )
+    request_id = _safe_incoming(incoming_request_id, REQUEST_ID_PATTERN) or str(uuid.uuid4())
+    incoming_correlation_id = request.headers.get(settings.correlation_header, "")
+    correlation_id = _safe_incoming(incoming_correlation_id, CORRELATION_ID_PATTERN)
     started_at = time.perf_counter()
     request.state.request_id = request_id
+    request.state.correlation_id = correlation_id
+    request.state.actor_class = "anonymous"
+    network_context = resolve_network_context(request, operational_settings)
+    request.state.client_ip = network_context.client_ip
+    request.state.authoritative_scheme = network_context.scheme
+    request.state.authoritative_host = network_context.host
+    request.state.proxy_trusted = network_context.proxy_trusted
+    request_token = request_id_context.set(request_id)
+    correlation_token = correlation_id_context.set(correlation_id)
+    metrics.gauge_add("echoed_http_active_requests", 1)
 
     try:
         response = await call_next(request)
-    except Exception:
-        logger.exception(
-            "request_failed request_id=%s method=%s path=%s",
-            request_id,
-            request.method,
-            request.url.path,
+    except Exception as exc:
+        emit_event(
+            "request.unhandled_exception",
+            level=40,
+            component="http",
+            message="Unexpected request failure",
+            exc_info=exc,
+            method=request.method,
+            route=_route_template(request),
+            result="error",
         )
-        raise
+        metrics.increment("echoed_request_failures_total", category="unhandled_exception")
+        response = JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Something went wrong.", "request_id": request_id},
+        )
+    finally:
+        metrics.gauge_add("echoed_http_active_requests", -1)
 
-    duration_ms = (time.perf_counter() - started_at) * 1000
-    response.headers["X-Request-ID"] = request_id
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    logger.info(
-        "request_complete request_id=%s method=%s path=%s status=%s duration_ms=%.2f",
-        request_id,
-        request.method,
-        request.url.path,
-        response.status_code,
-        duration_ms,
-    )
-    return response
+    try:
+        duration_ms = (time.perf_counter() - started_at) * 1000
+        route = _route_template(request)
+        status_family = f"{response.status_code // 100}xx"
+        metrics.increment("echoed_http_requests_total", method=request.method, route=route, status_family=status_family)
+        metrics.observe("echoed_http_request_duration_ms", duration_ms, method=request.method, route=route)
+        if response.status_code in {401, 403}:
+            category = "authentication" if response.status_code == 401 else "authorization"
+            metrics.increment("echoed_request_denials_total", category=category, route=route)
+            emit_event(
+                "authorization.denied" if response.status_code == 403 else "authentication.required",
+                component="http",
+                method=request.method,
+                route=route,
+                status=response.status_code,
+                actor_class=request.state.actor_class,
+                result="denied",
+            )
+        elif response.status_code == 422:
+            metrics.increment("echoed_request_failures_total", category="validation")
+            emit_event("request.validation_failed", component="http", method=request.method, route=route, result="denied")
+        if settings.request_logging:
+            emit_event(
+                "request.completed",
+                component="http",
+                method=request.method,
+                route=route,
+                status=response.status_code,
+                duration_ms=round(duration_ms, 2),
+                actor_class=request.state.actor_class,
+                organization_context=bool(request.headers.get("X-Org-Id")),
+                result="success" if response.status_code < 400 else "failure",
+            )
+        if duration_ms >= settings.slow_request_threshold_ms:
+            emit_event(
+                "request.slow",
+                level=30,
+                component="http",
+                method=request.method,
+                route=route,
+                duration_ms=round(duration_ms, 2),
+            )
+        response.headers["X-Request-ID"] = request_id
+        if correlation_id:
+            response.headers[settings.correlation_header] = correlation_id
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
+    finally:
+        request_id_context.reset(request_token)
+        correlation_id_context.reset(correlation_token)
 
 app.include_router(progress.router, prefix="/api", tags=["Progress"])
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
@@ -152,14 +283,37 @@ def liveness():
     return {"status": "live"}
 
 
+def _database_ready() -> None:
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
+
 @app.get("/health/ready", include_in_schema=False)
-def readiness():
+async def readiness():
+    started_at = time.perf_counter()
     try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-    except SQLAlchemyError as exc:
-        raise HTTPException(
+        await asyncio.wait_for(run_in_threadpool(_database_ready), timeout=settings.readiness_timeout_seconds)
+    except (SQLAlchemyError, TimeoutError):
+        duration_ms = (time.perf_counter() - started_at) * 1000
+        metrics.increment("echoed_database_operations_total", operation="readiness", result="failure")
+        metrics.observe("echoed_database_operation_duration_ms", duration_ms, operation="readiness")
+        emit_event("database.connection.failed", level=40, component="database", operation="readiness", result="failure")
+        return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database is unavailable.",
-        ) from exc
-    return {"status": "ready", "database": "available"}
+            content={"status": "not_ready", "dependencies": {"database": "unavailable"}},
+        )
+    duration_ms = (time.perf_counter() - started_at) * 1000
+    metrics.increment("echoed_database_operations_total", operation="readiness", result="success")
+    metrics.observe("echoed_database_operation_duration_ms", duration_ms, operation="readiness")
+    return {"status": "ready", "dependencies": {"database": "available"}}
+
+
+@app.get("/internal/metrics", include_in_schema=False, response_class=PlainTextResponse)
+def operational_metrics(x_metrics_token: str | None = Header(default=None, alias="X-Metrics-Token")):
+    if not settings.metrics_endpoint_enabled:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if not x_metrics_token or not settings.metrics_access_token or not secrets.compare_digest(
+        x_metrics_token, settings.metrics_access_token
+    ):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Metrics access denied")
+    return PlainTextResponse(metrics.render(), media_type="text/plain; version=0.0.4; charset=utf-8")

@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ShellNavigationService } from '../../services/shell-navigation.service';
+import { securityErrorMessage } from '../../services/security-error';
 
 @Component({
   selector: 'echo-login',
@@ -61,7 +62,7 @@ export class LoginComponent {
           return;
       }
     } catch (error: any) {
-      this.errorMessage = error?.error?.detail || error?.message || 'Unable to login. Please check your credentials.';
+      this.errorMessage = securityErrorMessage(error, 'Unable to login. Please check your credentials.');
     } finally {
       this.isSubmitting = false;
     }

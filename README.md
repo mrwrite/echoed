@@ -71,6 +71,10 @@ For a deeper overview, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Platform maturity evidence, including the measured frontend bundle work and the security, observability, operations, dependency, and backend-capability baselines, is indexed in [docs/platform-maturity](docs/platform-maturity/phase-7-baseline.md). These documents are readiness inputs; they do not claim that EchoEd 1.0 is production-ready.
 
+Phase 10 adds vendor-neutral structured logging, request correlation, liveness/readiness, protected optional metrics export, safe frontend support references, and operational guidance. Configuration and endpoint policy are documented under [docs/observability](docs/observability/logging-policy.md); this is not a commercial monitoring integration or durable audit system.
+
+Phase 8 security-hardening evidence and operator-facing limitations are indexed in [docs/security/phase-8-security-baseline.md](docs/security/phase-8-security-baseline.md). Configure rate limits with the documented `RATE_LIMIT_<GROUP>_LIMIT` and `RATE_LIMIT_<GROUP>_WINDOW_SECONDS` variables; the current store is process-local and forwarded client-IP headers are intentionally ignored.
+
 ## Local Development
 
 ### Backend
@@ -150,6 +154,10 @@ Student demo smoke test:
 cd frontend
 cmd /c .\node_modules\.bin\playwright.cmd test tests/demo/student-flagship-smoke.spec.ts
 ```
+
+## Operations
+
+Production startup is governed by the [production configuration contract](docs/operations/production-configuration.md). Migrations are an explicit release step; normal backend startup does not change schema. Start with the [deployment runbook](docs/operations/deployment-runbook.md), [backup/restore procedure](docs/operations/backup-and-restore.md), and [operational drills](docs/operations/operational-drills.md). Passing local readiness drills is not by itself a production-readiness claim.
 
 ## Contributing
 

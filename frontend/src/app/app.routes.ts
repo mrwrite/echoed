@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { RoleGuard } from './guards/role.guard';
 import { HomeSessionGuard } from './guards/home-session.guard';
+import { environment } from '../environments/environment';
+import { courseStudioExitGuard } from './guards/course-studio-exit.guard';
 
 const AccessDeniedComponent = () => import('./pages/access-denied/access-denied.component').then((m) => m.AccessDeniedComponent);
 const AccessGrantsComponent = () => import('./pages/access-grants/access-grants.component').then((m) => m.AccessGrantsComponent);
@@ -17,6 +19,8 @@ const AvailableCoursesComponent = () => import('./pages/available-courses/availa
 const CertificationsComponent = () => import('./pages/certifications/certifications.component').then((m) => m.CertificationsComponent);
 const CommercialDashboardComponent = () => import('./pages/commercial-dashboard/commercial-dashboard.component').then((m) => m.CommercialDashboardComponent);
 const CourseWizardComponent = () => import('./pages/admin/course-wizard/course-wizard.component').then((m) => m.CourseWizardComponent);
+const CourseStudioComponent = () => import('./pages/course-studio/course-studio.component').then((m) => m.CourseStudioComponent);
+const CanonicalCourseAuthorComponent = environment.courseAuthoringStudioEnabled ? CourseStudioComponent : CourseWizardComponent;
 const DemoReadinessComponent = () => import('./pages/demo-readiness/demo-readiness.component').then((m) => m.DemoReadinessComponent);
 const EchoedRoleSelectorComponent = () => import('./pages/user-dashboard/echoed-role-selector/echoed-role-selector.component').then((m) => m.EchoedRoleSelectorComponent);
 const GenerationRunDetailComponent = () => import('./pages/generation-run-detail/generation-run-detail.component').then((m) => m.GenerationRunDetailComponent);
@@ -66,7 +70,6 @@ const WorkspaceAnalyticsComponent = () => import('./pages/workspace-analytics/wo
 const WorkspaceDashboardComponent = () => import('./pages/workspace-dashboard/workspace-dashboard.component').then((m) => m.WorkspaceDashboardComponent);
 
 const creatorRoles = ['admin', 'teacher', 'content_admin', 'org_admin', 'instructor'];
-const studioRoles = ['content_admin', 'org_admin'];
 const sectionRoles = ['teacher', 'org_admin', 'instructor'];
 
 export const routes: Routes = [
@@ -78,6 +81,20 @@ export const routes: Routes = [
   { path: 'onboarding/organization', loadComponent: OnboardingOrganizationComponent },
   { path: 'access-denied', loadComponent: AccessDeniedComponent },
   { path: 'load-error', loadComponent: RouteLoadErrorComponent },
+  {
+    path: 'workspace/product-studio/courses/new',
+    loadComponent: CanonicalCourseAuthorComponent,
+    canActivate: [HomeSessionGuard],
+    canDeactivate: [courseStudioExitGuard],
+    pathMatch: 'full',
+  },
+  {
+    path: 'workspace/product-studio/courses/:courseId',
+    loadComponent: CanonicalCourseAuthorComponent,
+    canActivate: [HomeSessionGuard],
+    canDeactivate: [courseStudioExitGuard],
+    pathMatch: 'full',
+  },
   {
     path: 'admin',
     loadComponent: HomeComponent,
@@ -193,15 +210,13 @@ export const routes: Routes = [
           { path: '', loadComponent: EchoedRoleSelectorComponent },
           {
             path: 'courses/new',
-            loadComponent: CourseWizardComponent,
-            canActivate: [RoleGuard],
-            data: { roles: ['admin', 'teacher'] }
+            redirectTo: '/workspace/product-studio/courses/new',
+            pathMatch: 'full'
           },
           {
             path: 'courses/:courseId/edit',
-            loadComponent: CourseWizardComponent,
-            canActivate: [RoleGuard],
-            data: { roles: ['admin', 'teacher'] }
+            redirectTo: '/workspace/product-studio/courses/:courseId',
+            pathMatch: 'full'
           },
           { path: 'courses', loadComponent: AvailableCoursesComponent },
           { path: 'programs', loadComponent: ProgramsComponent },
@@ -264,7 +279,8 @@ export const routes: Routes = [
         path: '',
         loadComponent: WorkspaceDashboardComponent,
         canActivate: [RoleGuard],
-        data: { roles: creatorRoles }
+        data: { roles: creatorRoles },
+        pathMatch: 'full'
       },
       {
         path: 'projects',
@@ -289,13 +305,15 @@ export const routes: Routes = [
         path: 'product-studio',
         loadComponent: ProductStudioComponent,
         canActivate: [RoleGuard],
-        data: { roles: creatorRoles }
+        data: { roles: creatorRoles },
+        pathMatch: 'full'
       },
       {
         path: 'product-studio/create',
         loadComponent: ProductStudioComponent,
         canActivate: [RoleGuard],
-        data: { roles: creatorRoles }
+        data: { roles: creatorRoles },
+        pathMatch: 'full'
       },
       {
         path: 'product-studio/generation-runs',
@@ -319,20 +337,12 @@ export const routes: Routes = [
       {
         path: 'product-studio/courses',
         loadComponent: StudioCoursesComponent,
-        canActivate: [RoleGuard],
-        data: { roles: studioRoles }
-      },
-      {
-        path: 'product-studio/courses/new',
-        loadComponent: CourseWizardComponent,
-        canActivate: [RoleGuard],
-        data: { roles: ['admin', 'teacher'] }
+        pathMatch: 'full'
       },
       {
         path: 'product-studio/courses/:courseId/edit',
-        loadComponent: CourseWizardComponent,
-        canActivate: [RoleGuard],
-        data: { roles: ['admin', 'teacher'] }
+        redirectTo: '/workspace/product-studio/courses/:courseId',
+        pathMatch: 'full'
       },
       {
         path: 'products',

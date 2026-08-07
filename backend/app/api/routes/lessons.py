@@ -12,6 +12,7 @@ from app.lesson_governance import (
     serialize_lesson,
 )
 from app.models import Lesson, Source
+from app.content_scope import course_for_lesson, course_for_unit, require_course_edit
 from app.schemas import LessonResponse
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -73,8 +74,9 @@ def _lesson_readiness_for_payload(lesson: LessonCreate) -> object:
 def create_lesson(
     lesson: LessonCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
+    require_course_edit(db, current_user, course_for_unit(db, lesson.unit_id))
     readiness = _lesson_readiness_for_payload(lesson)
     review_status, reviewed_by = resolve_review_fields(
         db=db,
@@ -112,7 +114,7 @@ def create_lesson(
 @router.get('/lessons', response_model=list[LessonResponse])
 def list_lessons(
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     return [
         serialize_lesson(lesson, viewer_role=current_user.role)
@@ -123,7 +125,7 @@ def list_lessons(
 def get_lesson(
     lesson_id: UUID,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher", "student")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin", "student")),
 ):
     lesson = db.query(Lesson).filter_by(id=lesson_id).first()
     if not lesson:
@@ -140,11 +142,13 @@ def update_lesson(
     lesson_id: UUID,
     lesson: LessonUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     db_lesson = db.query(Lesson).filter_by(id=lesson_id).first()
     if not db_lesson:
         raise HTTPException(status_code=404, detail='Lesson not found')
+    require_course_edit(db, current_user, course_for_lesson(db, db_lesson.id))
+    require_course_edit(db, current_user, course_for_unit(db, lesson.unit_id))
     readiness = _lesson_readiness_for_payload(lesson)
     review_status, reviewed_by = resolve_review_fields(
         db=db,
@@ -181,11 +185,12 @@ def update_lesson(
 def delete_lesson(
     lesson_id: UUID,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     db_lesson = db.query(Lesson).filter_by(id=lesson_id).first()
     if not db_lesson:
         raise HTTPException(status_code=404, detail='Lesson not found')
+    require_course_edit(db, current_user, course_for_lesson(db, db_lesson.id))
     db.delete(db_lesson)
     db.commit()
     return {'message': 'Lesson deleted'}

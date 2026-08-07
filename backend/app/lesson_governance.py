@@ -1722,19 +1722,30 @@ def _serialize_media(media: Media | None) -> MediaResponse | None:
     )
 
 
-def serialize_course(course: Course, *, viewer_role: str) -> CourseResponse:
+def serialize_course(course: Course, *, viewer_role: str, learner_preview: bool = False) -> CourseResponse:
     learner_view = viewer_role == "student"
+    published_versions = [version for version in course.versions or [] if getattr(version.status, "value", version.status) == "published"]
+    published_version = max(published_versions, key=lambda item: item.version_number, default=None)
+    draft_versions = [version for version in course.versions or [] if getattr(version.status, "value", version.status) == "draft"]
+    preview_version = max(draft_versions, key=lambda item: item.version_number, default=None)
+    delivery_units = (
+        [unit for unit in course.units or [] if unit.course_version_id == preview_version.id]
+        if learner_preview and preview_version is not None
+        else ([unit for unit in course.units or [] if unit.course_version_id == published_version.id]
+              if learner_view and published_version is not None else list(course.units or []))
+    )
+    published_snapshot = (course.revision_metadata or {}).get("published_snapshot", {}) if learner_view and not learner_preview else {}
     return CourseResponse(
         id=course.id,
-        title=course.title,
-        description=course.description,
-        learning_objectives=course.learning_objectives,
-        skill_tags=course.skill_tags or [],
-        standards_metadata=course.standards_metadata or {},
-        revision_number=course.revision_number,
+        title=published_snapshot.get("title", course.title),
+        description=published_snapshot.get("description", course.description),
+        learning_objectives=published_snapshot.get("learning_objectives", course.learning_objectives),
+        skill_tags=published_snapshot.get("skill_tags", course.skill_tags or []),
+        standards_metadata=published_snapshot.get("standards_metadata", course.standards_metadata or {}),
+        revision_number=published_snapshot.get("revision_number", course.revision_number),
         revision_label=course.revision_label,
         revision_status=course.revision_status,
-        revision_metadata=course.revision_metadata or {},
+        revision_metadata={} if learner_view else course.revision_metadata or {},
         previous_revision_id=course.previous_revision_id,
         superseded_by_id=course.superseded_by_id,
         lineage_status=course.lineage_status,
@@ -1761,17 +1772,17 @@ def serialize_course(course: Course, *, viewer_role: str) -> CourseResponse:
                     serialize_lesson(lesson, viewer_role=viewer_role)
                     for lesson in (
                         governed_lessons_for_unit(unit).lessons
-                        if learner_view
+                        if learner_view and not learner_preview
                         else _sort_lessons_for_delivery(unit.lessons or [])
                     )
                 ],
                 learner_availability=(
-                    governed_lessons_for_unit(unit).state if learner_view else None
+                    governed_lessons_for_unit(unit).state if learner_view and not learner_preview else None
                 ),
                 learner_availability_detail=(
-                    governed_lessons_for_unit(unit).detail if learner_view else None
+                    governed_lessons_for_unit(unit).detail if learner_view and not learner_preview else None
                 ),
             )
-            for unit in course.units or []
+            for unit in delivery_units
         ],
     )

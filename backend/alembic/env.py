@@ -8,7 +8,8 @@ from sqlalchemy import pool
 from alembic import context
 from app.models import Base
 
-load_dotenv()
+if os.getenv("APP_ENV", "development").strip().lower() != "production":
+    load_dotenv()
 
 db_url = os.getenv("DATABASE_URL")
 

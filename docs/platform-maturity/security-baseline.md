@@ -39,3 +39,7 @@ This is a focused repository review, not a penetration test. Severity reflects p
 ## Required next actions
 
 Before beta, either secure or disable the forum routes, finish privileged user mutation constraints, establish rate limits appropriate to the deployment topology, retain patched production dependencies, and implement durable audit events for high-impact actions. Before general availability, complete session/revocation policy, asset scanning/storage isolation, CSP/HSTS at the serving edge, retention/privacy review, and a formal threat model.
+
+## Phase 8 follow-up
+
+The `harden-platform-security` change addresses the first three actions with authenticated owner-scoped forum writes, explicit privileged-user schemas/invariants, and configurable single-process rate limits. The current threat model and residual risks are canonical in [docs/security](../security/phase-8-threat-model.md). Durable audit storage, distributed limiter storage, session revocation, private/scanned assets, and serving-edge policy remain open.

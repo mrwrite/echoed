@@ -1,6 +1,6 @@
 # Future OpenSpec Roadmap
 
-Date: 2026-07-23
+Date: 2026-08-06
 
 ## Prioritization
 
@@ -8,25 +8,27 @@ Priority weighs release criticality, security/privacy risk, architectural depend
 
 ## Recommended sequence
 
-1. `harden-platform-security`
-2. `establish-platform-observability`
-3. `establish-operational-readiness`
-4. `implement-platform-audit-events`
-5. `implement-curriculum-authoring`
-6. `implement-activity-and-assessment-authoring`
-7. `implement-content-review-workflow`
-8. `implement-content-publishing-lifecycle`
-9. `implement-asset-library`
-10. `implement-teacher-feedback-and-review`
-11. `implement-content-version-history`
-12. `implement-notification-infrastructure`
-13. `implement-content-search`
-14. `implement-community-collaboration`
-15. `prepare-echoed-1-0-release`
+Completed foundation changes: `harden-platform-security` (Phase 8), `establish-platform-observability` (Phase 10), and repository-scoped `establish-operational-readiness` (Phase 11).
+
+1. `establish-operational-readiness`
+2. `implement-platform-audit-events`
+3. `implement-curriculum-authoring`
+4. `implement-activity-and-assessment-authoring`
+5. `implement-content-review-workflow`
+6. `implement-content-publishing-lifecycle`
+7. `implement-asset-library`
+8. `implement-teacher-feedback-and-review`
+9. `implement-content-version-history`
+10. `implement-notification-infrastructure`
+11. `implement-content-search`
+12. `implement-community-collaboration`
+13. `prepare-echoed-1-0-release`
 
 ## Candidate proposals
 
 ### `harden-platform-security`
+
+Phase 8 implementation adds the scoped controls and evidence under `docs/security/`. Remaining distributed rate limiting, durable audit persistence, session revocation, and private/scanned assets stay assigned to later changes; passing this phase does not establish production readiness.
 
 - **Problem/users/value:** Maintainers and every role need authenticated, object-scoped APIs and safe uploads; current forum CRUD is unauthenticated and several administrative/user contracts need minimization and lifecycle invariants.
 - **Current limitation/support:** `auth.py`, `deps.py`, Phase 6 section scoping, and upload roles provide a base, but `posts.py`/`threads.py` trust caller IDs, rate limiting is absent, and user mutations are broad.
@@ -37,17 +39,21 @@ Priority weighs release criticality, security/privacy risk, architectural depend
 
 ### `establish-platform-observability`
 
+Phase 10 implements structured/redacted logs, request/correlation IDs, bounded process-local metrics with protected optional export, database readiness/failure signals, Course Studio events, safe Angular diagnostics, and operational guidance. It does not add distributed tracing infrastructure, alert routing, a commercial vendor, or durable audit persistence.
+
 - **Problem/users/value:** Operators cannot reliably correlate failures or measure availability.
-- **Current limitation/support:** Phase 7 adds request IDs, structured key/value request completion logs, and liveness/readiness endpoints; no metrics, tracing, exception aggregation, or privacy-redaction contract exists.
+- **Current limitation/support:** The Phase 10 foundation is implemented; external aggregation/alerts, multi-process metric continuity, and distributed traces remain deployment work.
 - **Required work:** Backend logging schema, auth/authorization outcome events, metrics interfaces, trace propagation, frontend error envelope/reporting hook, redaction tests, and runbooks. No commercial provider is assumed.
-- **Authorization/migrations:** Observability endpoints require operator protection; no domain migration expected unless durable incident/event storage is chosen.
+- **Authorization/migrations:** Metrics export is disabled by default and token protected; no database migration was required.
 - **Dependencies/security/privacy:** Follows security threat classification; logs must exclude tokens, learner content, and unnecessary identifiers.
-- **Testing/complexity/priority:** Middleware/health failure tests, redaction fixtures, metric cardinality tests; **M / P0 / beta blocker**.
+- **Testing/complexity/priority:** Middleware/health failure, redaction, metric cardinality, frontend reference, and domain-event tests provide the Phase 10 gate; **implemented M / P0 foundation**.
 
 ### `establish-operational-readiness`
 
+Phase 11 adds fail-closed runtime configuration, explicit host/proxy trust, non-mutating startup, explicit migration/head gates, health/shutdown integration, initial SLO/alert policy, safe backup/restore tooling, storage/rotation ownership, and evidence-driven local drills. Provider-specific alert delivery, backup scheduling, PostgreSQL production recovery measurement, and object storage remain infrastructure dependencies.
+
 - **Problem/users/value:** Maintainers need reproducible deployment, rollback, backup, restore, migration, and secret-rotation procedures.
-- **Current limitation/support:** Docker Compose, Alembic, environment files, deterministic demo seed, and health endpoints exist; production hosting, backup/restore, and rollback are unspecified.
+- **Current limitation/support:** The repository-owned operational contract is implemented; hosting selection and externally scheduled/aggregated operations remain unresolved.
 - **Required work:** Select deployment assumptions, validate production config, migration gate, backup/restore drill, static asset ownership, secret rotation, rollback and post-deploy verification.
 - **Authorization/migrations:** No product authorization change; may add migration safety metadata or operator-only tooling.
 - **Dependencies/security/privacy:** Depends on hosting decision and security secret policy; backups contain learner data.
@@ -59,7 +65,7 @@ Priority weighs release criticality, security/privacy risk, architectural depend
 - **Current limitation/support:** Request logs and assessment attempt events exist, but no durable actor/action/resource audit model covers role, access, publish, invite, moderation, or destructive actions.
 - **Required work:** Append-only event model, service interface, minimized read API/UI, retention/export policy, and instrumentation of approved actions.
 - **Authorization/migrations:** New audit-event table and indexes; platform/org-scoped reads with immutable writes.
-- **Dependencies/security/privacy:** Depends on security event taxonomy and observability correlation; metadata must avoid secrets/content leakage.
+- **Dependencies/security/privacy:** Depends on the implemented security event taxonomy and request correlation. It must define durable append-only persistence, atomic action/event semantics, actor/action/target/organization, minimized before/after state, retention, restricted operator search/export, privacy, and tamper resistance without treating ephemeral logs as evidence.
 - **Testing/complexity/priority:** Atomic event/action tests, scope tests, tamper constraints, retention tests; **L / P0 / beta blocker for high-impact admin actions**.
 
 ### `implement-curriculum-authoring`

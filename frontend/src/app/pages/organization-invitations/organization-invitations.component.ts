@@ -9,6 +9,7 @@ import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-
 import { OrganizationInvite } from '../../models/organization';
 import { InvitesService } from '../../services/invites.service';
 import { OrganizationService } from '../../services/organization.service';
+import { securityErrorMessage } from '../../services/security-error';
 
 @Component({
   selector: 'app-organization-invitations',
@@ -86,7 +87,7 @@ export class OrganizationInvitationsComponent implements OnInit {
         this.confirmationOpen = false;
       },
       error: error => {
-        this.formError = error?.error?.detail || 'We could not create this invitation. No membership was added.';
+        this.formError = securityErrorMessage(error, 'We could not create this invitation. No membership was added.');
       },
     });
   }

@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { NavigationError, RedirectCommand, Router } from '@angular/router';
+import { DiagnosticService } from '../services/diagnostic.service';
 
 const LAZY_CHUNK_ERROR_PATTERNS = [
   /ChunkLoadError/i,
@@ -28,6 +29,7 @@ export function recoverFromNavigationError(error: NavigationError): RedirectComm
   }
 
   const router = inject(Router);
+  inject(DiagnosticService).record('navigation.lazy_chunk', error.error);
   return new RedirectCommand(router.parseUrl('/load-error'), {
     replaceUrl: true,
     state: { retryUrl: error.url },

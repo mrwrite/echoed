@@ -15,7 +15,14 @@ async function expectSinglePageHeading(page: Page) {
 }
 
 async function expectVisibleKeyboardFocus(page: Page) {
-  await page.keyboard.press('Tab');
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await page.keyboard.press('Tab');
+    const hasFocusedControl = await page.evaluate(() => {
+      const active = document.activeElement as HTMLElement | null;
+      return !!active && active !== document.body && active.getClientRects().length > 0;
+    });
+    if (hasFocusedControl) break;
+  }
   const focused = page.locator(':focus');
   await expect(focused).toBeVisible();
   const hasFocusIndicator = await focused.evaluate(element => {

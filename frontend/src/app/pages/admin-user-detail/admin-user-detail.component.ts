@@ -10,6 +10,7 @@ import { EchoStatePanelComponent } from '../../components/echo-state-panel/echo-
 import { User } from '../../models/user';
 import { PermissionsService } from '../../services/permissions.service';
 import { UsersService } from '../../services/users.service';
+import { securityErrorMessage } from '../../services/security-error';
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -19,7 +20,7 @@ import { UsersService } from '../../services/users.service';
   styleUrl: './admin-user-detail.component.scss',
 })
 export class AdminUserDetailComponent implements OnInit, OnDestroy {
-  readonly assignableRoles = ['student', 'teacher', 'admin'];
+  assignableRoles = ['student', 'teacher'];
   user?: User;
   selectedRole = '';
   currentUserId = '';
@@ -38,7 +39,12 @@ export class AdminUserDetailComponent implements OnInit, OnDestroy {
     readonly router: Router,
     private readonly users: UsersService,
     permissions: PermissionsService,
-  ) { this.subscriptions.add(permissions.user$.subscribe(user => this.currentUserId = user?.user_id ?? '')); }
+  ) { this.subscriptions.add(permissions.user$.subscribe(user => {
+    this.currentUserId = user?.user_id ?? '';
+    this.assignableRoles = user?.role === 'super_admin'
+      ? ['student', 'teacher', 'instructor', 'parent', 'content_admin', 'org_admin', 'admin', 'super_admin']
+      : ['student', 'teacher', 'instructor', 'parent', 'content_admin', 'org_admin'];
+  })); }
 
   ngOnInit(): void { this.load(); }
   ngOnDestroy(): void { this.subscriptions.unsubscribe(); }
@@ -69,7 +75,7 @@ export class AdminUserDetailComponent implements OnInit, OnDestroy {
         this.saving = false; this.confirmRole = false;
         this.successMessage = `Role updated to ${this.roleLabel(this.selectedRole)}.`;
       },
-      error: () => { this.saving = false; this.actionError = 'The role was not changed. Review the account and try again.'; },
+      error: error => { this.saving = false; this.actionError = securityErrorMessage(error, 'The role was not changed. Review the account and try again.'); },
     }));
   }
 
@@ -78,7 +84,7 @@ export class AdminUserDetailComponent implements OnInit, OnDestroy {
     this.deleting = true; this.actionError = '';
     this.subscriptions.add(this.users.deleteUser(this.user.id).subscribe({
       next: () => this.router.navigate(['/admin/users']),
-      error: () => { this.deleting = false; this.actionError = 'The user was not deleted. No local changes were made.'; },
+      error: error => { this.deleting = false; this.actionError = securityErrorMessage(error, 'The user was not deleted. No local changes were made.'); },
     }));
   }
 

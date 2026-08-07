@@ -23,14 +23,7 @@ export class UsersService {
   }
 
   updateUserRole(user: User, role: string): Observable<{ message: string }> {
-    return this.http.put<{ message: string }>(`${this.apiUrl}/${user.id}`, {
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      email: user.email,
-      password: '',
-      role,
-    });
+    return this.http.put<{ message: string }>(`${this.apiUrl}/${user.id}`, { role });
   }
 
   deleteUser(userId: string): Observable<any> {

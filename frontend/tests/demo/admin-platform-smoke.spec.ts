@@ -4,7 +4,7 @@ const ADMIN_USERNAME = process.env['DEMO_ADMIN_USERNAME'] || 'orgadmin';
 const ADMIN_PASSWORD = process.env['DEMO_ADMIN_PASSWORD'] || 'password';
 
 async function signIn(page: import('@playwright/test').Page, username: string, password: string) {
-  await page.goto('/login');
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Email or Username').fill(username);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();

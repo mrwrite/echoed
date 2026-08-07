@@ -1,12 +1,10 @@
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
+from app.operational_config import load_operational_settings
 
-# Load environment variables
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://echoed_user:your_secure_password@localhost/echoed")
+operational_settings = load_operational_settings()
+DATABASE_URL = operational_settings.database_url
 
 connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
@@ -26,11 +24,17 @@ if DATABASE_URL.startswith("sqlite"):
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 from app.models import Base
+from app.observability import emit_event, metrics
 
 # Dependency to get DB session
 def get_db():
     db = SessionLocal()
     try:
         yield db
+    except SQLAlchemyError:
+        db.rollback()
+        metrics.increment("echoed_database_operations_total", operation="session", result="failure")
+        emit_event("database.operation_failed", level=40, component="database", operation="session", result="failure")
+        raise
     finally:
         db.close()

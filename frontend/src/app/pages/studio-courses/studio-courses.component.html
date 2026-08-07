@@ -4,13 +4,12 @@
     <p class="text-sm text-slate-600">Create course-backed product drafts and manage published learning paths.</p>
   </div>
 
-  <div class="surface-card p-6 space-y-4">
-    <h3 class="text-lg font-semibold text-ink">New product draft</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="title" placeholder="Product title" />
-      <input class="border border-slate-200 rounded-xl px-3 py-2" [(ngModel)]="description" placeholder="Short description" />
-      <button class="bg-primary text-white rounded-xl px-4 py-2 font-semibold" (click)="createCourse()">Create draft</button>
+  <div class="surface-card p-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" *ngIf="capabilities?.can_create">
+    <div>
+      <h3 class="text-lg font-semibold text-ink">Create a course</h3>
+      <p class="text-sm text-slate-600">Build setup, units, lessons, activities, quality checks, and release readiness in one studio.</p>
     </div>
+    <button type="button" class="bg-primary text-white rounded-xl px-4 py-3 font-semibold min-h-11" (click)="createCourse()">Create course</button>
   </div>
 
   <div class="surface-card p-6">
@@ -18,14 +17,16 @@
       <h3 class="text-lg font-semibold text-ink">Product library</h3>
       <span class="text-xs text-slate-500">Drafts + published</span>
     </div>
-    <div *ngIf="courses.length === 0" class="text-sm text-slate-500">No products yet. Start with a draft above.</div>
+    <div *ngIf="loadFailed" role="alert" class="text-sm text-slate-500">The course library could not be loaded. Try again shortly.</div>
+    <div *ngIf="courses.length === 0 && !loadFailed" class="text-sm text-slate-500">No products yet.<span *ngIf="capabilities?.can_create"> Start with a draft above.</span></div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="courses.length > 0">
       <div *ngFor="let course of courses" class="border border-slate-200 rounded-2xl p-4 bg-white">
         <h4 class="text-lg font-semibold text-ink">{{ course.title }}</h4>
         <p class="text-sm text-slate-600">{{ course.description }}</p>
         <div class="flex items-center gap-2 mt-3">
           <span class="pill">Draft</span>
-          <button class="text-sm text-primary font-semibold">Open editor</button>
+          <a class="text-sm text-primary font-semibold" [routerLink]="['/workspace/product-studio/courses', course.id]">Open studio</a>
+          <button *ngIf="capabilities?.can_duplicate" type="button" class="text-sm text-primary font-semibold" (click)="duplicateCourse(course)">Duplicate</button>
         </div>
       </div>
     </div>

@@ -15,9 +15,9 @@ Security reports may cover:
 
 ## Current Baseline
 
-The focused [Phase 7 security baseline](docs/platform-maturity/security-baseline.md) records repository evidence, severity, narrow remediations, and deferred security work. Phase 7 adds privacy-safe authentication logging, authenticated diagnostic access, active organization-membership enforcement, bounded image-upload validation, request correlation, baseline response headers, and patched Angular runtime packages. It is not a penetration test.
+The focused [Phase 7 security baseline](docs/platform-maturity/security-baseline.md) records the prior evidence. The [Phase 8 security baseline](docs/security/phase-8-security-baseline.md), [threat model](docs/security/phase-8-threat-model.md), and linked policies document backend-enforced forum ownership, privileged-user invariants, role allowlists, configurable rate limits, upload signature checks, minimized responses, and expanded object/organization tests. These are scoped hardening controls, not a penetration test or production-readiness certification.
 
-The unauthenticated forum mutation boundary, administrative response minimization, rate limiting, comprehensive audit events, and production security policy remain explicit future work. Do not use the current demo with real learner or production data.
+Durable audit events, distributed rate-limit storage, private/scanned asset delivery, session revocation, production proxy/host/CSP/HSTS validation, and formal privacy/retention work remain explicit future work. Do not use the current demo with real learner or production data.
 
 ## Reporting a Vulnerability
 
@@ -60,6 +60,12 @@ This is a no-budget early project, so response time may vary. The intended respo
 ## Public Disclosure
 
 Please do not publicly disclose a suspected vulnerability until there has been a reasonable opportunity to investigate and mitigate it.
+
+## Diagnostic References and Sensitive Evidence
+
+Unexpected API failures may display a bounded request reference. It is safe to include that reference, the approximate time, the action, and a non-sensitive page name in a report. Do not provide passwords, tokens, cookies, authorization headers, invitation/reset links, uploaded files, learner records, assessment responses, or private course content. Backend operational logs and metrics are privacy-redacted diagnostics; they are not a durable or tamper-resistant audit record. See the [observability runbook](docs/operations/observability-runbook.md).
+
+Production configuration fails closed and never loads dotenv. Allowed hosts are enforced, and forwarded client/protocol/host metadata is ignored unless the direct peer belongs to an explicitly configured CIDR. Operators must never attach secrets, database URLs, backup contents, or raw environment dumps to issues; share only setting categories, safe request references, release identifiers, timestamps, and pass/fail results. See the [production configuration contract](docs/operations/production-configuration.md).
 
 ## Out of Scope
 

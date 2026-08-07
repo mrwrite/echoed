@@ -5,6 +5,7 @@ from uuid import UUID
 from app.database import get_db
 from app.deps import require_roles
 from app.models import Activity
+from app.content_scope import course_for_activity, course_for_lesson, require_course_edit
 from app.schemas import ActivityResponse
 from pydantic import BaseModel
 
@@ -24,8 +25,9 @@ router = APIRouter()
 def create_activity(
     activity: ActivityCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
+    require_course_edit(db, current_user, course_for_lesson(db, activity.lesson_id))
     new_activity = Activity(
         lesson_id=activity.lesson_id,
         type=activity.type,
@@ -41,7 +43,7 @@ def create_activity(
 @router.get('/activities', response_model=list[ActivityResponse])
 def list_activities(
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     return db.query(Activity).all()
 
@@ -49,7 +51,7 @@ def list_activities(
 def get_activity(
     activity_id: UUID,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher", "student")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin", "student")),
 ):
     activity = db.query(Activity).filter_by(id=activity_id).first()
     if not activity:
@@ -61,11 +63,13 @@ def update_activity(
     activity_id: UUID,
     activity: ActivityUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     db_activity = db.query(Activity).filter_by(id=activity_id).first()
     if not db_activity:
         raise HTTPException(status_code=404, detail='Activity not found')
+    require_course_edit(db, current_user, course_for_activity(db, db_activity.id))
+    require_course_edit(db, current_user, course_for_lesson(db, activity.lesson_id))
     db_activity.lesson_id = activity.lesson_id
     db_activity.type = activity.type
     db_activity.title = activity.title
@@ -79,11 +83,12 @@ def update_activity(
 def delete_activity(
     activity_id: UUID,
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("admin", "teacher")),
+    current_user=Depends(require_roles("admin", "super_admin", "teacher", "instructor", "content_admin", "org_admin")),
 ):
     db_activity = db.query(Activity).filter_by(id=activity_id).first()
     if not db_activity:
         raise HTTPException(status_code=404, detail='Activity not found')
+    require_course_edit(db, current_user, course_for_activity(db, db_activity.id))
     db.delete(db_activity)
     db.commit()
     return {'message': 'Activity deleted'}

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict, AliasChoices, model_validator
 from app.enum import ProgressStatus 
-from typing import Any, List, Optional
+from typing import Any, List, Literal, Optional
 from uuid import UUID
 from datetime import datetime
 
@@ -23,9 +23,37 @@ class UserDto(BaseModel):
     username: str
     email: str
     password: str
-    role: str
+    role: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class PlatformUserSummary(BaseModel):
+    id: UUID
+    firstname: str
+    lastname: str
+    username: str
+    email: Optional[str] = None
+    role: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StudentUserSummary(BaseModel):
+    id: UUID
+    firstname: str
+    lastname: str
+    username: str
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PlatformUserRoleUpdate(BaseModel):
+    role: str
+
+    model_config = ConfigDict(extra="forbid")
 
 class AuthOrganizationResponse(BaseModel):
     id: UUID
@@ -414,13 +442,14 @@ class OrganizationInviteCreate(BaseModel):
     role: str
     expires_at: Optional[datetime] = None
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class OrganizationInviteResponse(BaseModel):
     id: UUID
     organization_id: UUID
     email: str
     role: str
-    token: str
     expires_at: datetime
     accepted_at: Optional[datetime]
     invited_by_user_id: UUID
@@ -514,6 +543,24 @@ class SectionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class OrganizationInviteCreatedResponse(OrganizationInviteResponse):
+    token: str
+
+
+class CourseReviewDecisionRequest(BaseModel):
+    decision: Literal["approved", "changes_requested"]
+    feedback: str = Field(min_length=1, max_length=4000)
+
+
+class CourseLifecycleResponse(BaseModel):
+    course_id: UUID
+    lifecycle_state: str
+    revision_number: int
+    version_id: Optional[UUID] = None
+    feedback: Optional[str] = None
+    changed_at: datetime
 
 
 class OrganizationSectionResponse(SectionResponse):
@@ -754,6 +801,152 @@ class CourseResponse(RevisionMetadataResponseMixin):
 
     class Config:
         from_attributes = True
+
+
+class CourseAuthoringCapabilitiesResponse(BaseModel):
+    can_create: bool = False
+    can_view_draft: bool = False
+    can_edit: bool = False
+    can_duplicate: bool = False
+    can_preview: bool = False
+    can_submit_review: bool = False
+    can_review: bool = False
+    can_publish: bool = False
+
+
+class CourseAuthoringCapabilityEnvelope(BaseModel):
+    organization_id: Optional[UUID] = None
+    course_id: Optional[UUID] = None
+    capabilities: CourseAuthoringCapabilitiesResponse
+
+
+class CourseAuthoringValidationIssue(BaseModel):
+    severity: str
+    entity_type: str
+    entity_id: Optional[UUID] = None
+    field: str
+    message: str
+    corrective_context: str
+
+
+class AuthoringStorybookPageInput(BaseModel):
+    id: Optional[UUID] = None
+    image_url: str
+    order: Optional[int] = None
+
+
+class AuthoringActivityInput(BaseModel):
+    id: Optional[UUID] = None
+    type: str
+    title: str
+    content: str = ""
+    order: Optional[int] = None
+    media_id: Optional[UUID] = None
+    pages: List[AuthoringStorybookPageInput] = Field(default_factory=list)
+
+
+class AuthoringSourceInput(BaseModel):
+    id: Optional[UUID] = None
+    citation: str
+    url: Optional[str] = None
+
+
+class AuthoringLessonInput(BaseModel):
+    id: Optional[UUID] = None
+    title: str
+    objective: Optional[str] = None
+    learning_objectives: Optional[str] = None
+    key_concepts: List[str] = Field(default_factory=list)
+    teacher_notes: Optional[str] = None
+    discussion_questions: List[str] = Field(default_factory=list)
+    hook: Optional[str] = None
+    content: Optional[str] = None
+    guided_practice: Optional[str] = None
+    independent_practice: Optional[str] = None
+    assessment: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
+    order: Optional[int] = None
+    duration_minutes: Optional[int] = None
+    activities: List[AuthoringActivityInput] = Field(default_factory=list)
+    sources: List[AuthoringSourceInput] = Field(default_factory=list)
+    assessment_ids: List[UUID] = Field(default_factory=list)
+
+
+class AuthoringUnitInput(BaseModel):
+    id: Optional[UUID] = None
+    title: str
+    content: Optional[str] = None
+    order: Optional[int] = None
+    lessons: List[AuthoringLessonInput] = Field(default_factory=list)
+    assessment_ids: List[UUID] = Field(default_factory=list)
+
+
+class CourseAuthoringDraftRequest(BaseModel):
+    title: str
+    description: str = ""
+    subject: Optional[str] = None
+    age_band_min: Optional[int] = None
+    age_band_max: Optional[int] = None
+    default_locale: str = "en"
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
+    revision_number: Optional[int] = None
+    template_id: Optional[str] = None
+    units: List[AuthoringUnitInput] = Field(default_factory=list)
+    assessment_ids: List[UUID] = Field(default_factory=list)
+
+
+class CourseDuplicateRequest(BaseModel):
+    title: Optional[str] = None
+
+
+class CourseAuthoringDraftResponse(BaseModel):
+    id: UUID
+    title: str
+    description: str
+    subject: Optional[str] = None
+    age_band_min: Optional[int] = None
+    age_band_max: Optional[int] = None
+    default_locale: str
+    learning_objectives: Optional[str] = None
+    skill_tags: List[str] = Field(default_factory=list)
+    standards_metadata: dict[str, Any] = Field(default_factory=dict)
+    organization_id: Optional[UUID] = None
+    created_by: Optional[UUID] = None
+    revision_number: int
+    revision_status: str
+    revision_metadata: dict[str, Any] = Field(default_factory=dict)
+    updated_at: datetime
+    current_version_id: Optional[UUID] = None
+    units: List[dict[str, Any]] = Field(default_factory=list)
+    assessment_ids: List[UUID] = Field(default_factory=list)
+    capabilities: CourseAuthoringCapabilitiesResponse
+
+
+class CourseTemplateResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    course: dict[str, Any]
+
+
+class CourseExchangeValidationIssue(BaseModel):
+    severity: str
+    path: str
+    code: str
+    message: str
+
+
+class CourseExchangeValidationReport(BaseModel):
+    format: str
+    can_import: bool
+    issues: List[CourseExchangeValidationIssue] = Field(default_factory=list)
+
+
+class CourseImportRequest(BaseModel):
+    document: dict[str, Any]
 
 class EnrollRequest(BaseModel):
     course_id: UUID

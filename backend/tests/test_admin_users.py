@@ -54,14 +54,7 @@ def test_admin_can_update_user_role_by_uuid_without_changing_password(db_session
     try:
         response = client.put(
             f"/api/users/{student.id}",
-            json={
-                "firstname": student.firstname,
-                "lastname": student.lastname,
-                "username": student.username,
-                "email": student.email,
-                "password": "",
-                "role": "teacher",
-            },
+            json={"role": "teacher"},
         )
     finally:
         app.dependency_overrides.clear()

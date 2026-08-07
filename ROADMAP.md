@@ -63,6 +63,12 @@ These are not Phase 1 requirements:
 
 Phase 7 preserves the completed role-based experience while reducing initial frontend loading cost and establishing evidence-based security, observability, operational, dependency, and backend-capability baselines. Larger product capabilities remain independent future OpenSpec changes. See the [platform-maturity roadmap](docs/platform-maturity/future-openspec-roadmap.md) for priorities and dependencies; passing this foundation does not make EchoEd 1.0 production-ready.
 
+Phase 8 (`harden-platform-security`) hardens the evidenced forum, privileged-user, role, rate-limit, upload, response-minimization, and object/organization authorization boundaries. Its verification evidence lives under [docs/security](docs/security/phase-8-security-verification.md). Remaining platform-maturity work continues as independent OpenSpec changes.
+
+Phase 10 (`establish-platform-observability`) establishes privacy-conscious structured logs, request references, operational metrics, dependency readiness, Course Studio diagnostics, and operator/incident guidance without selecting a monitoring vendor. Durable, access-controlled, tamper-resistant administrative history remains the separate `implement-platform-audit-events` change. Operational readiness is the recommended next platform phase; observability alone is not a production-readiness claim.
+
+Phase 11 (`establish-operational-readiness`) builds directly on Phase 10 with fail-closed production configuration, trusted host/proxy boundaries, explicit migrations, deployment/rollback gates, graceful shutdown, initial SLO/alert contracts, backup/restore tooling, storage ownership, secret rotation, and evidence-driven drills. Hosting selection, external alert delivery, distributed state/telemetry, and durable audit events remain separate work.
+
 ## Roadmap Principles
 
 - Trust before scale.

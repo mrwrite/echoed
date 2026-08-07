@@ -37,4 +37,12 @@ describe('AdminUserDetailComponent', () => {
     fixture.componentInstance.selectedRole = 'admin'; fixture.componentInstance.requestRoleChange(); fixture.componentInstance.applyRoleChange();
     expect(fixture.componentInstance.user?.role).toBe('student'); expect(fixture.componentInstance.actionError).toContain('not changed');
   });
+
+  it('announces final-administrator conflict details returned by the hardened API', () => {
+    users.updateUserRole.and.returnValue(throwError(() => ({ status: 409, error: { detail: 'This action would remove the final platform super administrator.' } })));
+    fixture.componentInstance.selectedRole = 'teacher'; fixture.componentInstance.requestRoleChange(); fixture.componentInstance.applyRoleChange();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.actionError).toContain('final platform super administrator');
+    expect(fixture.nativeElement.textContent).toContain('final platform super administrator');
+  });
 });

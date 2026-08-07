@@ -32,3 +32,7 @@ Before beta: choose hosting assumptions, validate production config, protect see
 Before general availability: disaster-recovery targets and drill, capacity/load evidence, maintenance windows, incident ownership, dependency update SLA, and storage lifecycle must be approved.
 
 `establish-operational-readiness` should own these actions. This audit does not invent a cloud provider, container orchestrator, managed database, or commercial service.
+
+## Phase 11 disposition
+
+The active `establish-operational-readiness` change implements the repository-owned portions of this baseline. Canonical behavior and evidence now live under `docs/operations/`, beginning with `phase-11-baseline.md` and `phase-11-operational-readiness-verification.md`. Provider selection, external alert delivery/aggregation, production backup scheduling, production-scale recovery measurement, and object-storage infrastructure remain explicit dependencies rather than implied application capabilities.

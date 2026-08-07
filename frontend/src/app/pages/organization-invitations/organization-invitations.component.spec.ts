@@ -39,7 +39,7 @@ describe('OrganizationInvitationsComponent', () => {
   });
 
   it('preserves form input when invitation creation fails', () => {
-    invites.createInvite.and.returnValue(throwError(() => ({ error: { detail: 'Invite failed' } })));
+    invites.createInvite.and.returnValue(throwError(() => ({ status: 422, error: { detail: 'Invite failed' } })));
     fixture.detectChanges();
     const component = fixture.componentInstance;
     component.email = 'retry@example.com';

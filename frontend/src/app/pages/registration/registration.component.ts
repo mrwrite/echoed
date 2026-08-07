@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { RegisterDto } from '../../models/register-dto';
 import { MetaService, EnumOption } from '../../services/meta.service';
 import { finalize } from 'rxjs';
+import { securityErrorMessage } from '../../services/security-error';
 import {
   normalizePendingOrganizationSetup,
   writePendingOrganizationSetup,
@@ -140,9 +141,10 @@ export class RegistrationComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        this.errorMessage =
-          error?.error?.detail ||
-          'Registration failed. Please check your details and try again.';
+        this.errorMessage = securityErrorMessage(
+          error,
+          'Registration failed. Please check your details and try again.',
+        );
       },
     });
   }

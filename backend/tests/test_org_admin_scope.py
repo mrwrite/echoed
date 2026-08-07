@@ -11,9 +11,12 @@ from app.models import (
     Course,
     CourseVersion,
     Enrollment,
+    Lesson,
+    LessonSession,
     Organization,
     OrganizationMembership,
     Section,
+    Unit,
     User,
 )
 
@@ -177,4 +180,74 @@ def test_section_enrollment_requires_active_organization_member(db_session):
 
     assert response.status_code == 400
     assert response.json()["detail"] == "User is not an active member of this organization"
+    app.dependency_overrides.clear()
+
+
+def test_lesson_sessions_reject_cross_organization_and_parent_mismatch(db_session):
+    teacher = _user("Teacher", "teacher")
+    own_org = _organization(db_session, "Own School")
+    other_org = _organization(db_session, "Other School")
+    db_session.add(teacher)
+    db_session.flush()
+    _membership(db_session, own_org, teacher, OrganizationRole.TEACHER)
+    own_section = _section(db_session, own_org, teacher, "Own Class")
+    other_section = _section(db_session, other_org, teacher, "Other Class")
+    other_version = other_section.course_version
+    other_unit = Unit(
+        id=uuid.uuid4(), course_id=other_version.course_id,
+        course_version_id=other_version.id, title="Other Unit",
+    )
+    db_session.add(other_unit)
+    db_session.flush()
+    other_lesson = Lesson(id=uuid.uuid4(), unit_id=other_unit.id, title="Other Lesson")
+    db_session.add(other_lesson)
+    db_session.flush()
+    other_session = LessonSession(
+        id=uuid.uuid4(), section_id=other_section.id,
+        lesson_id=other_lesson.id, started_by=teacher.id,
+    )
+    db_session.add(other_session)
+    db_session.commit()
+
+    client = _client(db_session, teacher)
+    headers = {"X-Org-Id": str(own_org.id)}
+
+    assert client.post(
+        f"/api/sections/{other_section.id}/lessons/{other_lesson.id}/start",
+        headers=headers,
+    ).status_code == 404
+    assert client.post(
+        f"/api/sections/{own_section.id}/lessons/{other_lesson.id}/start",
+        headers=headers,
+    ).status_code == 404
+    assert client.post(
+        f"/api/lesson-sessions/{other_session.id}/end",
+        headers=headers,
+        json={},
+    ).status_code == 404
+    app.dependency_overrides.clear()
+
+
+def test_section_creation_conceals_another_organizations_course_version(db_session):
+    teacher = _user("Teacher", "teacher")
+    own_org = _organization(db_session, "Own School")
+    other_org = _organization(db_session, "Other School")
+    db_session.add(teacher)
+    db_session.flush()
+    _membership(db_session, own_org, teacher, OrganizationRole.TEACHER)
+    other_section = _section(db_session, other_org, teacher, "Other Class")
+    db_session.commit()
+
+    client = _client(db_session, teacher)
+    response = client.post(
+        "/api/sections",
+        headers={"X-Org-Id": str(own_org.id)},
+        json={
+            "course_version_id": str(other_section.course_version_id),
+            "name": "Cross-org class",
+            "mode": "remote",
+        },
+    )
+
+    assert response.status_code == 404
     app.dependency_overrides.clear()

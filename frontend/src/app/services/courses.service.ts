@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Course } from '../models/course';
@@ -16,6 +16,13 @@ import {
   CourseRuntimeInterventionRecommendation,
   CourseSafePublishValidation,
 } from '../models/course-publish-readiness.model';
+import {
+  CourseAuthoringCapabilityEnvelope,
+  CourseAuthoringDraft,
+  CourseLifecycleResponse,
+  CourseVersionSummary,
+  CourseTemplate,
+} from '../models/course-authoring.model';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -105,6 +112,79 @@ export class CoursesService {
 
   createCourse(course: CourseDraft): Observable<any> {
     return this.http.post(`${this.apiUrl}`, course);
+  }
+
+  getAuthoringCapabilities(): Observable<CourseAuthoringCapabilityEnvelope> {
+    return this.http.get<CourseAuthoringCapabilityEnvelope>(
+      `${environment.apiUrl}/api/course-authoring/capabilities`,
+    );
+  }
+
+  getCourseAuthoringCapabilities(courseId: string): Observable<CourseAuthoringCapabilityEnvelope> {
+    return this.http.get<CourseAuthoringCapabilityEnvelope>(
+      `${this.apiUrl}/${courseId}/authoring-capabilities`,
+    );
+  }
+
+  createAuthoringDraft(
+    draft: CourseAuthoringDraft,
+    idempotencyKey: string,
+  ): Observable<CourseAuthoringDraft> {
+    return this.http.post<CourseAuthoringDraft>(`${this.apiUrl}/authoring`, draft, {
+      headers: new HttpHeaders({ 'Idempotency-Key': idempotencyKey }),
+    });
+  }
+
+  getAuthoringDraft(courseId: string): Observable<CourseAuthoringDraft> {
+    return this.http.get<CourseAuthoringDraft>(`${this.apiUrl}/${courseId}/authoring-draft`);
+  }
+
+  saveAuthoringDraft(courseId: string, draft: CourseAuthoringDraft): Observable<CourseAuthoringDraft> {
+    return this.http.put<CourseAuthoringDraft>(`${this.apiUrl}/${courseId}/authoring-draft`, draft);
+  }
+
+  duplicateAuthoringCourse(
+    courseId: string,
+    title: string,
+    idempotencyKey: string,
+  ): Observable<CourseAuthoringDraft> {
+    return this.http.post<CourseAuthoringDraft>(
+      `${this.apiUrl}/${courseId}/duplicate`,
+      { title },
+      { headers: new HttpHeaders({ 'Idempotency-Key': idempotencyKey }) },
+    );
+  }
+
+  getAuthoringPreview(courseId: string): Observable<Course> {
+    return this.http.get<Course>(`${this.apiUrl}/${courseId}/authoring-preview`);
+  }
+
+  submitCourseForReview(courseId: string): Observable<CourseLifecycleResponse> {
+    return this.http.post<CourseLifecycleResponse>(`${this.apiUrl}/${courseId}/submit-review`, {});
+  }
+
+  reviewCourse(
+    courseId: string,
+    decision: 'approved' | 'changes_requested',
+    feedback: string,
+  ): Observable<CourseLifecycleResponse> {
+    return this.http.post<CourseLifecycleResponse>(`${this.apiUrl}/${courseId}/review`, { decision, feedback });
+  }
+
+  getCourseVersions(courseId: string): Observable<CourseVersionSummary[]> {
+    return this.http.get<CourseVersionSummary[]>(`${this.apiUrl}/${courseId}/versions`);
+  }
+
+  publishCourseVersion(versionId: string): Observable<CourseVersionSummary> {
+    return this.http.post<CourseVersionSummary>(`${environment.apiUrl}/api/course-versions/${versionId}/publish`, {});
+  }
+
+  getCourseTemplates(): Observable<CourseTemplate[]> {
+    return this.http.get<CourseTemplate[]>(`${environment.apiUrl}/api/course-authoring/templates`);
+  }
+
+  exportCourse(courseId: string): Observable<Record<string, unknown>> {
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/${courseId}/export`);
   }
 
   startCourse(request: StartCourseRequest): Observable<SegmentResponse> {

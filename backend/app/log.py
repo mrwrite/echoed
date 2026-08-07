@@ -1,13 +1,4 @@
-import logging
-import os
+from app.observability import emit_event, logger, metrics, record_outcome, redact
 
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
-level = getattr(logging, LOG_LEVEL, logging.INFO)
-
-logging.basicConfig(
-    level=level,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-logger = logging.getLogger('echoed')
+__all__ = ["emit_event", "logger", "metrics", "record_outcome", "redact"]
 

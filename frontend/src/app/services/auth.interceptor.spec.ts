@@ -12,7 +12,7 @@ describe('authInterceptor', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj<AuthService>('AuthService', ['getToken']);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['getToken', 'logout']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -48,5 +48,12 @@ describe('authInterceptor', () => {
     const req = httpMock.expectOne('/api/test');
     expect(req.request.headers.has('Authorization')).toBeFalse();
     req.flush({});
+  });
+
+  it('clears an expired authenticated session after a 401 response', () => {
+    authService.getToken.and.returnValue('expired-token');
+    http.get('/api/protected').subscribe({ error: () => undefined });
+    httpMock.expectOne('/api/protected').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(authService.logout).toHaveBeenCalled();
   });
 });

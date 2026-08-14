@@ -34,10 +34,10 @@ Recorded 2026-08-13 for `implement-platform-audit-events`.
 | Backup/restore drill | Test SQLite backup, manifest verification, isolated restore, row usability, and restored audit-chain verification passed in backend tests |
 | Angular application typecheck | `tsc --noEmit -p tsconfig.app.json` passed |
 | Angular spec typecheck | `tsc --noEmit -p tsconfig.spec.json` passed; five new audit specs compile |
-| Angular browser tests | Not completed locally: Angular bundle setup exhausted the Windows process memory limit before assertions; an isolated Docker retry ended with Docker transport exit 255 during `npm ci` |
-| Production Angular build | Not completed locally: build exhausted the same constrained Node process heap; application typecheck passed |
+| Angular browser tests | 313 passed in GitHub Actions run 81 at commit `28f009ff675d5f4c4c8b5f7644e573506c795d21`; the stale Super Admin navigation expectation was corrected before the passing rerun |
+| Production Angular build | Passed in the final operator-confirmed verification rerun; application typecheck also passed locally |
 | Playwright collection | 23 tests in 9 files compile and enumerate, including authorized audit review and denied direct-route assertions |
-| Playwright execution | Not rerun because the full seeded frontend/backend demo stack was not active; prior verified baseline remains 23 |
+| Playwright execution | 23 passed in the final operator-confirmed verification rerun; no baseline reduction |
 | Production dependency audit | `npm audit --omit=dev`: 0 vulnerabilities |
 | Strict OpenSpec | `openspec validate implement-platform-audit-events --strict`: valid |
 | Diff whitespace | `git diff --check`: passed before this evidence update and rerun at final handoff |
@@ -50,8 +50,8 @@ Tests prove sensitive or nested state fails closed; explicit responses omit hash
 
 The integrity chain is not externally anchored. A fully privileged database operator can rewrite rows and hashes, and deliberate guarded retention can remove an old prefix that cannot subsequently be proven without an independent anchor. Production database permissions, encrypted backup storage, legal retention decisions, and external/WORM anchoring remain operator/infrastructure responsibilities.
 
-## Remaining gate
+## Completion gate
 
-Implementation, backend verification, migration/restore drills, documentation, strict validation, and static frontend checks are complete. The phase remains partially complete until the unchanged CI-class Angular browser suite, production build, and seeded Playwright execution pass in a runner with adequate memory and the demo stack. No result is represented as passed when its runner did not execute.
+Implementation, backend verification, migration/restore drills, documentation, strict validation, static frontend checks, the 313-test Angular browser suite, production build, and the 23-test seeded Playwright suite are complete. GitHub Actions run 81 passed both configured backend and frontend jobs. The final verification gate is closed without a test-baseline reduction.
 
 Recommended follow-up after those verification gates pass: archive `implement-platform-audit-events`, then reassess the roadmap for `implement-curriculum-authoring` versus a narrowly scoped beta-release readiness change. External audit anchoring should remain an infrastructure/security follow-up, not be folded into product authoring.

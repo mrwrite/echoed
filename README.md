@@ -71,7 +71,7 @@ For a deeper overview, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Platform maturity evidence, including the measured frontend bundle work and the security, observability, operations, dependency, and backend-capability baselines, is indexed in [docs/platform-maturity](docs/platform-maturity/phase-7-baseline.md). These documents are readiness inputs; they do not claim that EchoEd 1.0 is production-ready.
 
-Phase 10 adds vendor-neutral structured logging, request correlation, liveness/readiness, protected optional metrics export, safe frontend support references, and operational guidance. Configuration and endpoint policy are documented under [docs/observability](docs/observability/logging-policy.md); this is not a commercial monitoring integration or durable audit system.
+Phase 10 adds vendor-neutral structured logging, request correlation, liveness/readiness, protected optional metrics export, safe frontend support references, and operational guidance. Configuration and endpoint policy are documented under [docs/observability](docs/observability/logging-policy.md). High-impact administrative mutations are separately captured under [the audit-event policy](docs/audit/audit-event-policy.md).
 
 Phase 8 security-hardening evidence and operator-facing limitations are indexed in [docs/security/phase-8-security-baseline.md](docs/security/phase-8-security-baseline.md). Configure rate limits with the documented `RATE_LIMIT_<GROUP>_LIMIT` and `RATE_LIMIT_<GROUP>_WINDOW_SECONDS` variables; the current store is process-local and forwarded client-IP headers are intentionally ignored.
 

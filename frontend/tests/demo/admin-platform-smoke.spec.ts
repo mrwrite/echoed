@@ -42,6 +42,9 @@ test.describe('seeded platform administrator smoke', () => {
     await page.getByRole('link', { name: 'Badges', exact: true }).first().click();
     await expect(page.getByRole('heading', { name: 'Badge administration' })).toBeVisible();
 
+    await page.getByRole('link', { name: 'Audit events', exact: true }).first().click();
+    await expect(page.getByRole('heading', { name: 'Audit events' })).toBeVisible();
+
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole('heading', { name: 'Badge administration' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
@@ -53,5 +56,8 @@ test.describe('seeded platform administrator smoke', () => {
     await page.goto('/admin/users');
     await expect(page).toHaveURL(/\/access-denied$/);
     await expect(page.getByText(/permission|access/i).first()).toBeVisible();
+
+    await page.goto('/admin/audit-events');
+    await expect(page).toHaveURL(/\/access-denied$/);
   });
 });

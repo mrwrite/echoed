@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.database import get_db
+from app.audit import append_audit_event
 from app.deps import get_current_user
 from app.models import Thread, User
 from app.rate_limit import enforce_rate_limit
@@ -80,6 +81,16 @@ def delete_thread(
         actor_id=current_user.id, actor_role=current_user.role, owner_id=db_thread.user_id
     )
     if current_user.id != db_thread.user_id:
+        append_audit_event(
+            db,
+            action="forum.thread.moderated",
+            actor_id=current_user.id,
+            actor_role=current_user.role,
+            target_type="thread",
+            target_id=db_thread.id,
+            after={"moderator_override": True},
+            request_id=getattr(request.state, "request_id", None),
+        )
         security_event(
             action="forum_thread_delete",
             result="allowed",

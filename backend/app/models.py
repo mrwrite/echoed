@@ -9,7 +9,9 @@ from sqlalchemy import (
     Text,
     Float,
     JSON,
+    Index,
     UniqueConstraint,
+    event,
 )
 from sqlalchemy.orm import relationship, declarative_base, validates
 from sqlalchemy.dialects.postgresql import UUID
@@ -192,6 +194,54 @@ class OrganizationInvite(Base):
 
     organization = relationship("Organization", back_populates="invites")
     invited_by = relationship("User")
+
+
+class AuditEvent(Base):
+    """Durable, append-only record of an approved high-impact action.
+
+    Actor and target identifiers deliberately are not foreign keys: account or
+    resource deletion must not erase historical attribution.
+    """
+
+    __tablename__ = "audit_events"
+    __table_args__ = (
+        UniqueConstraint("scope_key", "scope_sequence", name="uq_audit_events_scope_sequence"),
+        Index("ix_audit_events_scope_created", "scope_key", "created_at", "id"),
+        Index("ix_audit_events_action_created", "action", "created_at"),
+        Index("ix_audit_events_actor_created", "actor_id", "created_at"),
+        Index("ix_audit_events_target_created", "target_type", "target_id", "created_at"),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    schema_version = Column(Integer, nullable=False, default=1)
+    scope_key = Column(String(80), nullable=False)
+    scope_sequence = Column(Integer, nullable=False)
+    organization_id = Column(UUID(as_uuid=True), nullable=True)
+    actor_id = Column(UUID(as_uuid=True), nullable=True)
+    actor_role = Column(String(40), nullable=False)
+    action = Column(String(100), nullable=False)
+    category = Column(String(40), nullable=False)
+    outcome = Column(String(24), nullable=False)
+    target_type = Column(String(60), nullable=False)
+    target_id = Column(String(100), nullable=False)
+    request_id = Column(String(128), nullable=True)
+    correlation_id = Column(String(64), nullable=True)
+    reason_code = Column(String(80), nullable=True)
+    before_state = Column(JSON, nullable=False, default=dict)
+    after_state = Column(JSON, nullable=False, default=dict)
+    previous_hash = Column(String(64), nullable=False)
+    event_hash = Column(String(64), nullable=False, unique=True)
+
+
+@event.listens_for(AuditEvent, "before_update")
+def _reject_audit_event_update(_mapper, _connection, _target):
+    raise RuntimeError("Audit events are append-only")
+
+
+@event.listens_for(AuditEvent, "before_delete")
+def _reject_audit_event_delete(_mapper, _connection, _target):
+    raise RuntimeError("Audit events are append-only")
 
 
 class UserPreferences(Base):

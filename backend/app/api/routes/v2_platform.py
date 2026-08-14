@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
+from app.audit import append_audit_event
 from app.deps import get_current_user
 from app.enum import MembershipStatus
 from app.lesson_governance import evaluate_course_publish_readiness
@@ -519,8 +520,21 @@ def update_artifact_review_status(
     artifact = _get_visible_artifact(db, current_user, artifact_id)
     _require_manage_platform_record(db, current_user, artifact.workspace_id)
 
+    previous_state = artifact.review_state
     artifact.status = payload.status
     artifact.review_state = payload.status
+    workspace = db.query(Workspace).filter(Workspace.id == artifact.workspace_id).first()
+    append_audit_event(
+        db,
+        action="product.review.changed",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="artifact",
+        target_id=artifact.id,
+        organization_id=workspace.organization_id if workspace else None,
+        before={"review_state": previous_state},
+        after={"review_state": payload.status},
+    )
     db.commit()
     db.refresh(artifact)
     return artifact
@@ -539,8 +553,21 @@ def update_product_review_status(
     product = _get_visible_product(db, current_user, product_id)
     _require_manage_platform_record(db, current_user, product.workspace_id)
 
+    previous_state = product.review_state
     product.status = payload.status
     product.review_state = payload.status
+    workspace = db.query(Workspace).filter(Workspace.id == product.workspace_id).first()
+    append_audit_event(
+        db,
+        action="product.review.changed",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="product",
+        target_id=product.id,
+        organization_id=workspace.organization_id if workspace else None,
+        before={"review_state": previous_state},
+        after={"review_state": payload.status},
+    )
     db.commit()
     db.refresh(product)
     return product
@@ -947,6 +974,8 @@ def publish_product_wrapper(
 
     product = _get_visible_product(db, current_user, product_id)
     _require_manage_platform_record(db, current_user, product.workspace_id)
+    previous_status = product.status
+    previous_visibility = product.visibility
     product.status = "published"
     product.review_state = "approved" if product.review_state in {"not_reviewed", "draft", "in_review"} else product.review_state
     product.visibility = payload.visibility
@@ -955,6 +984,18 @@ def publish_product_wrapper(
     product.published_at = product.published_at or now
     product.last_updated = now
     product.updated_at = now
+    workspace = db.query(Workspace).filter(Workspace.id == product.workspace_id).first()
+    append_audit_event(
+        db,
+        action="product.published",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="product",
+        target_id=product.id,
+        organization_id=workspace.organization_id if workspace else None,
+        before={"status": previous_status, "visibility": previous_visibility},
+        after={"status": "published", "visibility": payload.visibility},
+    )
     db.commit()
     db.refresh(product)
     return product

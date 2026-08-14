@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.database import get_db
+from app.audit import append_audit_event
 from app.deps import get_active_org_id, get_current_user, require_roles, require_org_roles
 from app.enum import MembershipStatus
 from app.enum import CourseVersionStatus
@@ -861,6 +862,17 @@ def review_course_authoring_draft(
             for lesson in unit.lessons:
                 lesson.review_status = "approved"
                 lesson.reviewed_by = current_user.id
+    append_audit_event(
+        db,
+        action="course.review.changed",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="course",
+        target_id=course.id,
+        organization_id=course.organization_id,
+        before={"review_state": "submitted"},
+        after={"review_state": payload.decision},
+    )
     db.commit()
     _course_studio_event("review_transition", "success", actor=current_user, course_id=course.id)
     return CourseLifecycleResponse(course_id=course.id, lifecycle_state=payload.decision, revision_number=course.revision_number, feedback=payload.feedback, changed_at=changed_at)
@@ -1125,6 +1137,17 @@ def publish_course_version(
         for lesson in unit.lessons:
             lesson.revision_status = "current"
             lesson.published_at = changed_at
+    append_audit_event(
+        db,
+        action="course.version.published",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="course_version",
+        target_id=version.id,
+        organization_id=course.organization_id,
+        before={"version_status": CourseVersionStatus.DRAFT.value},
+        after={"version_status": CourseVersionStatus.PUBLISHED.value},
+    )
     db.commit()
     db.refresh(version)
     _course_studio_event("publish", "success", actor=current_user, course_id=course.id)

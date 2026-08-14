@@ -119,7 +119,7 @@ describe('ShellNavigationService', () => {
     expect(adminLabels).toContain('Badges');
     expect(adminLabels).toContain('Reports');
     expect(adminLabels).not.toContain('Community');
-    expect(superAdminLabels).toEqual(['Admin Overview', 'Organizations', 'Badges']);
+    expect(superAdminLabels).toEqual(['Admin Overview', 'Organizations', 'Badges', 'Audit events']);
   });
 
   it('does not expose navigation for unsupported parent or viewer roles', () => {

@@ -7,6 +7,7 @@ import { courseStudioExitGuard } from './guards/course-studio-exit.guard';
 const AccessDeniedComponent = () => import('./pages/access-denied/access-denied.component').then((m) => m.AccessDeniedComponent);
 const AccessGrantsComponent = () => import('./pages/access-grants/access-grants.component').then((m) => m.AccessGrantsComponent);
 const AdminBadgesComponent = () => import('./pages/admin-badges/admin-badges.component').then((m) => m.AdminBadgesComponent);
+const AdminAuditEventsComponent = () => import('./pages/admin-audit-events/admin-audit-events.component').then((m) => m.AdminAuditEventsComponent);
 const AdminCoursesComponent = () => import('./pages/admin-courses/admin-courses.component').then((m) => m.AdminCoursesComponent);
 const AdminOrganizationsComponent = () => import('./pages/admin-organizations/admin-organizations.component').then((m) => m.AdminOrganizationsComponent);
 const AdminOverviewComponent = () => import('./pages/admin-overview/admin-overview.component').then((m) => m.AdminOverviewComponent);
@@ -109,6 +110,7 @@ export const routes: Routes = [
       { path: 'courses/:courseId', loadComponent: AdminCoursesComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
       { path: 'badges', loadComponent: AdminBadgesComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
       { path: 'reports', loadComponent: AdminReportsComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+      { path: 'audit-events', loadComponent: AdminAuditEventsComponent, canActivate: [RoleGuard], data: { roles: ['admin', 'super_admin'] } },
     ],
   },
   {

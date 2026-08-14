@@ -26,6 +26,7 @@ _DEFAULTS: Final[dict[str, RateLimitPolicy]] = {
     "upload": RateLimitPolicy(20, 60),
     "forum_mutation": RateLimitPolicy(30, 60),
     "user_management": RateLimitPolicy(20, 60),
+    "audit_export": RateLimitPolicy(5, 300),
 }
 
 

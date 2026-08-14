@@ -125,6 +125,7 @@ describe('app routes', () => {
       'admin/courses/:courseId',
       'admin/badges',
       'admin/reports',
+      'admin/audit-events',
       'home/admin/users',
       'home/admin/courses',
       'home/admin/badges',
@@ -133,9 +134,11 @@ describe('app routes', () => {
     await expectLazyComponent(findRoute(routes, 'admin/'), 'AdminOverviewComponent');
     await expectLazyComponent(findRoute(routes, 'admin/users'), 'AdminUsersComponent');
     await expectLazyComponent(findRoute(routes, 'admin/organizations'), 'AdminOrganizationsComponent');
+    await expectLazyComponent(findRoute(routes, 'admin/audit-events'), 'AdminAuditEventsComponent');
     expect(findRoute(routes, 'admin/users')?.canActivate).toContain(RoleGuard);
     expect(findRoute(routes, 'admin/users')?.data?.['roles']).toEqual(['admin']);
     expect(findRoute(routes, 'admin/organizations')?.data?.['roles']).toEqual(['admin', 'super_admin']);
+    expect(findRoute(routes, 'admin/audit-events')?.data?.['roles']).toEqual(['admin', 'super_admin']);
   });
 
   it('adds guarded canonical Studio routes while preserving workspace deep links', async () => {

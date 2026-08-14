@@ -39,4 +39,4 @@
 - [x] 6.2 Update backup/restore tooling and drills to preserve audit rows/integrity metadata and verify the restored chain
 - [x] 6.3 Add stable Playwright coverage for authorized review and denied direct-route access where practical without exposing internal event contents
 - [x] 6.4 Publish audit architecture, privacy/access, retention/export, integrity, incident/backup, operator runbook, baseline, and exact verification evidence; update canonical security/operations/roadmap documents
-- [ ] 6.5 Run complete backend, Angular, Playwright, production build, dependency audit, configured lint/format/static checks, strict OpenSpec validation, secret/artifact checks, and `git diff --check` without baseline regression
+- [x] 6.5 Run complete backend, Angular, Playwright, production build, dependency audit, configured lint/format/static checks, strict OpenSpec validation, secret/artifact checks, and `git diff --check` without baseline regression

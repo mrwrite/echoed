@@ -55,6 +55,33 @@ class PlatformUserRoleUpdate(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+
+class AuditEventResponse(BaseModel):
+    id: UUID
+    created_at: datetime
+    schema_version: int
+    actor_id: Optional[UUID] = None
+    actor_role: str
+    action: str
+    category: str
+    outcome: str
+    target_type: str
+    target_id: str
+    organization_id: Optional[UUID] = None
+    request_id: Optional[str] = None
+    correlation_id: Optional[str] = None
+    reason_code: Optional[str] = None
+    before_state: dict[str, str | int | float | bool | None]
+    after_state: dict[str, str | int | float | bool | None]
+    integrity_verified: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditEventPage(BaseModel):
+    items: list[AuditEventResponse]
+    next_cursor: Optional[str] = None
+
 class AuthOrganizationResponse(BaseModel):
     id: UUID
     role: str

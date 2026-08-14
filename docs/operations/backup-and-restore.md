@@ -2,7 +2,7 @@
 
 ## Production policy
 
-- PostgreSQL: daily encrypted logical or provider-native backup, plus provider-supported continuous recovery if selected. Retain 7 daily and 4 weekly recovery points; store in a separate failure domain/account with access logs and least privilege.
+- PostgreSQL: daily encrypted logical or provider-native backup of application tables, audit events and integrity fields, and migration metadata, plus provider-supported continuous recovery if selected. Retain 7 daily and 4 weekly recovery points; store in a separate failure domain/account with access logs and least privilege.
 - Uploads: daily versioned backup of `STORYBOOK_PATH`, `COLORINGS_PATH`, and `BADGES_PATH`, coordinated closely enough with the database to preserve ownership references. Apply the same 7-daily/4-weekly retention.
 - Configuration: version non-secret templates and immutable release metadata. Back up secrets only within the approved secret manager; never in repository bundles.
 - Angular/static application assets: rebuild from the immutable release; they are not mutable backup state.
@@ -20,4 +20,4 @@ python -m scripts.operational_backup verify --bundle .pytest_tmp/backup
 python -m scripts.operational_backup restore --bundle .pytest_tmp/backup --database-target .pytest_tmp/restored.db --storage-target .pytest_tmp/restored-uploads --acknowledge-test-data
 ```
 
-For PostgreSQL, use the selected provider's consistent snapshot or `pg_dump`/`pg_restore` with credentials supplied out of band. Restore into isolation, verify schema heads, database consistency, upload checksums/ownership, readiness, and representative role workflows before cutover. Never overwrite a live database as a rehearsal.
+For PostgreSQL, use the selected provider's consistent snapshot or `pg_dump`/`pg_restore` with credentials supplied out of band. Restore into isolation, verify schema heads, database consistency, audit-event chains, upload checksums/ownership, readiness, and representative role workflows before cutover. Never overwrite a live database as a rehearsal. The local SQLite restore helper performs the audit-chain check automatically when the audit table exists.

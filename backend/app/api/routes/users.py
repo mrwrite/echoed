@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.audit import append_audit_event
 from app.deps import require_roles
 from app.models import User, Post, Thread, StudentBadge, user_units
 from app.rate_limit import enforce_rate_limit
@@ -117,6 +118,17 @@ def update_user(
         raise
     previous_role = db_user.role
     db_user.role = requested_role
+    append_audit_event(
+        db,
+        action="platform.role.changed",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="user",
+        target_id=db_user.id,
+        before={"role": previous_role},
+        after={"role": requested_role},
+        request_id=_request_id(request),
+    )
     db.commit()
     security_event(
         action="platform_role_change",
@@ -172,7 +184,19 @@ def delete_user(
 
     db.execute(user_units.delete().where(user_units.c.user_id == uid))
 
+    deleted_role = db_user.role
     db.delete(db_user)
+    append_audit_event(
+        db,
+        action="platform.user.deleted",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="user",
+        target_id=uid,
+        before={"role": deleted_role},
+        after={},
+        request_id=_request_id(request),
+    )
     db.commit()
     security_event(
         action="platform_user_delete",

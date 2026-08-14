@@ -14,6 +14,6 @@ This is focused incident-readiness guidance, not a complete incident-response pr
 | Publishing failures | Publish attempt/blocked/success and HTTP failures | Keep current learner availability unchanged; resolve validation/dependency cause | State appears partially published or learners see unapproved content |
 | Worker failures | Not applicable: no executing worker exists | Do not infer queue health from generation-run metadata | A worker is introduced without lifecycle instrumentation |
 
-For suspected data exposure or privilege compromise, prioritize containment and preservation over diagnostic verbosity. Use the security escalation process; operational logs are not a tamper-resistant audit ledger.
+For suspected data exposure, privilege compromise, or audit-chain verification failure, prioritize containment and preservation over diagnostic verbosity. Pause retention, preserve database backups and correlated logs, and follow the [audit-events runbook](audit-events-runbook.md). Operational logs remain diagnostics; the database audit chain is application-level evidence, not externally anchored tamper-proof storage.
 
 Phase 11 release containment, application/configuration/database rollback boundaries, recovery ownership, and alert thresholds are defined in the [deployment runbook](deployment-runbook.md), [migration and rollback policy](migration-and-rollback-policy.md), [alerting policy](alerting-and-escalation.md), and [backup/restore procedure](backup-and-restore.md). Do not attempt an application-only rollback when schema compatibility is unknown.

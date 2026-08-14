@@ -11,7 +11,7 @@ Priority weighs release criticality, security/privacy risk, architectural depend
 Completed foundation changes: `harden-platform-security` (Phase 8), `establish-platform-observability` (Phase 10), and repository-scoped `establish-operational-readiness` (Phase 11).
 
 1. `establish-operational-readiness`
-2. `implement-platform-audit-events`
+2. `implement-platform-audit-events` (implemented; archive after verification)
 3. `implement-curriculum-authoring`
 4. `implement-activity-and-assessment-authoring`
 5. `implement-content-review-workflow`
@@ -60,6 +60,8 @@ Phase 11 adds fail-closed runtime configuration, explicit host/proxy trust, non-
 - **Testing/complexity/priority:** Ephemeral environment deploy/rollback and restore rehearsal; **L / P0 / beta blocker**.
 
 ### `implement-platform-audit-events`
+
+The active OpenSpec change implements transaction-bound, privacy-minimized records for the supported high-impact action catalog, per-scope integrity chains, scoped administrative review/export, retention tooling, and backup/restore verification. External anchoring, WORM storage, legal-retention guarantees, and general business activity analytics remain out of scope.
 
 - **Problem/users/value:** Administrators, organization stewards, reviewers, and security responders need attributable high-impact action history.
 - **Current limitation/support:** Request logs and assessment attempt events exist, but no durable actor/action/resource audit model covers role, access, publish, invite, moderation, or destructive actions.

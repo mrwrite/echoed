@@ -102,6 +102,7 @@ export class ShellNavigationService {
         { label: 'Courses', route: '/admin/courses', icon: 'BookOpen', permission: 'nav:admin-courses', roles: ['admin'] },
         { label: 'Badges', route: '/admin/badges', icon: 'Award', roles: ['admin', 'super_admin'] },
         { label: 'Reports', route: '/admin/reports', icon: 'SlidersHorizontal', permission: 'nav:admin-reports', roles: ['admin'] },
+        { label: 'Audit events', route: '/admin/audit-events', icon: 'ClipboardList', roles: ['admin', 'super_admin'] },
       ],
     },
   ];

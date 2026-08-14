@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.audit import append_audit_event
 from app.deps import get_current_user, require_org_roles
 from app.enum import MembershipStatus, OrganizationRole
 from app.models import OrganizationInvite, OrganizationMembership, Organization
@@ -48,6 +49,7 @@ def create_invite(
         )
     expires_at = payload.expires_at or (datetime.utcnow() + timedelta(days=7))
     invite = OrganizationInvite(
+        id=uuid.uuid4(),
         organization_id=org_uuid,
         email=payload.email,
         role=OrganizationRole(payload.role),
@@ -56,6 +58,17 @@ def create_invite(
         invited_by_user_id=current_user.id,
     )
     db.add(invite)
+    append_audit_event(
+        db,
+        action="organization.invite.created",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="organization_invite",
+        target_id=invite.id,
+        organization_id=org_uuid,
+        after={"role": payload.role, "status": "pending"},
+        request_id=getattr(request.state, "request_id", None),
+    )
     db.commit()
     db.refresh(invite)
     security_event(
@@ -117,12 +130,15 @@ def accept_invite(
         )
         .first()
     )
+    previous_role = existing_membership.role.value if existing_membership else None
+    previous_status = existing_membership.status.value if existing_membership else None
     if existing_membership:
         existing_membership.role = invite.role
         existing_membership.status = MembershipStatus.ACTIVE
         membership = existing_membership
     else:
         membership = OrganizationMembership(
+            id=uuid.uuid4(),
             organization_id=invite.organization_id,
             user_id=current_user.id,
             role=invite.role,
@@ -132,5 +148,17 @@ def accept_invite(
     invite.accepted_at = datetime.utcnow()
     if not existing_membership:
         db.add(membership)
+    append_audit_event(
+        db,
+        action="organization.invite.accepted",
+        actor_id=current_user.id,
+        actor_role=current_user.role,
+        target_type="organization_membership",
+        target_id=membership.id,
+        organization_id=invite.organization_id,
+        before={"role": previous_role, "status": previous_status},
+        after={"role": invite.role.value, "status": MembershipStatus.ACTIVE.value},
+        request_id=getattr(request.state, "request_id", None),
+    )
     db.commit()
     return {"message": "Invite accepted"}

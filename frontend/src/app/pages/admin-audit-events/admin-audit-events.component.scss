@@ -1,0 +1,5 @@
+@use '../../../styles/admin-production';
+
+.audit-state { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+.audit-state > div { padding: 1rem; border: 1px solid var(--echo-border, #d8dee8); border-radius: .75rem; }
+.audit-state dl div { display: grid; grid-template-columns: minmax(7rem, auto) 1fr; gap: .75rem; }

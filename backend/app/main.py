@@ -21,6 +21,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.routes import (
     activities,
+    audit_events,
     analytics,
     assessments,
     assignments,
@@ -261,6 +262,7 @@ app.include_router(posts.router, prefix="/api/forum", tags=["Posts"])
 app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
 app.include_router(auth.router, prefix="/api", tags=["Auth"])
 app.include_router(users.router, prefix="/api", tags=["Users"])
+app.include_router(audit_events.router, prefix="/api", tags=["Audit Events"])
 app.include_router(courses.router, prefix="/api", tags=["Courses"])
 app.include_router(orgs.router, prefix="/api", tags=["Organizations"])
 app.include_router(invites.router, prefix="/api", tags=["Invites"])

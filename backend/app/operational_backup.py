@@ -149,5 +149,37 @@ def restore_test_backup(
         integrity = restored.execute("PRAGMA integrity_check").fetchone()
         if not integrity or integrity[0] != "ok":
             raise BackupSafetyError("Restored SQLite database failed integrity verification")
+        table_exists = restored.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'audit_events'"
+        ).fetchone()
+    if table_exists:
+        _verify_restored_audit_chains(database_target)
     files = manifest["files"]
     return BackupResult(bundle, len(files), sum(int(item["bytes"]) for item in files))
+
+
+def _verify_restored_audit_chains(database_path: Path) -> None:
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.audit import verify_audit_chain
+    from app.models import AuditEvent
+
+    engine = create_engine(f"sqlite:///{database_path.as_posix()}")
+    restored_session = sessionmaker(bind=engine)()
+    try:
+        organization_ids = [
+            row[0]
+            for row in restored_session.query(AuditEvent.organization_id)
+            .filter(AuditEvent.organization_id.isnot(None))
+            .distinct()
+            .all()
+        ]
+        scopes = [None, *organization_ids]
+        for organization_id in scopes:
+            result = verify_audit_chain(restored_session, organization_id=organization_id)
+            if not result.valid:
+                raise BackupSafetyError("Restored audit-event integrity verification failed")
+    finally:
+        restored_session.close()
+        engine.dispose()

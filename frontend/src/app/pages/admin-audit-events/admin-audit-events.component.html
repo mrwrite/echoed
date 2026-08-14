@@ -1,0 +1,29 @@
+<main class="admin-page" aria-labelledby="admin-audit-title">
+  <header class="admin-page__header"><div><p class="admin-page__eyebrow">Admin / Audit events</p><h1 id="admin-audit-title">Audit events</h1><p class="admin-page__intro">Review durable, privacy-minimized evidence of high-impact platform actions.</p></div></header>
+
+  <section class="admin-panel" aria-label="Audit filters">
+    <div class="admin-toolbar">
+      <div class="admin-field"><label for="audit-action">Action</label><input id="audit-action" class="admin-control" [(ngModel)]="action" placeholder="platform.role.changed" /></div>
+      <div class="admin-field"><label for="audit-category">Category</label><select id="audit-category" class="admin-control" [(ngModel)]="category"><option value="">All categories</option><option value="access">Access</option><option value="identity">Identity</option><option value="membership">Membership</option><option value="moderation">Moderation</option><option value="content_governance">Content governance</option><option value="audit">Audit</option></select></div>
+      <div class="admin-field"><label for="audit-outcome">Outcome</label><select id="audit-outcome" class="admin-control" [(ngModel)]="outcome"><option value="">All outcomes</option><option value="succeeded">Succeeded</option><option value="failed">Failed</option></select></div>
+    </div>
+    <div class="admin-toolbar"><button class="admin-button" type="button" (click)="load()">Apply filters</button><button class="admin-button admin-button--secondary" type="button" (click)="clearFilters()">Clear</button><button class="admin-button admin-button--secondary" type="button" [disabled]="exporting" (click)="export()">{{ exporting ? 'Preparing export...' : 'Export CSV' }}</button></div>
+    <p class="admin-results" aria-live="polite">{{ exportStatus }}</p>
+  </section>
+
+  <app-echo-loading-state *ngIf="loading" title="Loading audit events" body="The protected audit history is being verified."></app-echo-loading-state>
+  <app-echo-state-panel *ngIf="!loading && error" variant="error" title="Audit events unavailable" [body]="error" actionLabel="Retry" (action)="load()"></app-echo-state-panel>
+  <app-echo-state-panel *ngIf="!loading && !error && events.length === 0" variant="empty" title="No audit events found" body="No durable events match the current filters."></app-echo-state-panel>
+
+  <section *ngIf="!loading && !error && events.length" class="admin-panel" aria-labelledby="audit-results-title">
+    <h2 id="audit-results-title">Event history</h2><p class="admin-results" aria-live="polite">{{ events.length }} events loaded</p>
+    <div class="admin-table-wrap"><table class="admin-table"><caption class="sr-only">Durable platform audit events</caption><thead><tr><th scope="col">When</th><th scope="col">Action</th><th scope="col">Actor role</th><th scope="col">Target</th><th scope="col">Outcome</th><th scope="col">Details</th></tr></thead><tbody><tr *ngFor="let event of events"><td>{{ event.created_at | date:'medium' }}</td><td>{{ label(event.action) }}</td><td>{{ label(event.actor_role) }}</td><td>{{ label(event.target_type) }}</td><td><span class="admin-pill">{{ label(event.outcome) }}</span></td><td><button class="admin-link" type="button" (click)="selected=event" [attr.aria-label]="'Review audit event ' + event.id">Review</button></td></tr></tbody></table></div>
+    <button *ngIf="nextCursor" class="admin-button admin-button--secondary" type="button" [disabled]="loadingMore" (click)="load(nextCursor || undefined)">{{ loadingMore ? 'Loading...' : 'Load more' }}</button>
+  </section>
+
+  <section *ngIf="selected" class="admin-panel" aria-labelledby="audit-detail-title">
+    <div class="admin-page__header"><div><h2 id="audit-detail-title">Event detail</h2><p class="admin-results">{{ selected.id }}</p></div><button class="admin-button admin-button--secondary" type="button" (click)="selected=undefined">Close detail</button></div>
+    <dl class="admin-definition"><div><dt>Action</dt><dd>{{ label(selected.action) }}</dd></div><div><dt>Outcome</dt><dd>{{ label(selected.outcome) }}</dd></div><div><dt>Actor role</dt><dd>{{ label(selected.actor_role) }}</dd></div><div><dt>Target</dt><dd>{{ label(selected.target_type) }} &middot; {{ selected.target_id }}</dd></div><div><dt>Organization scope</dt><dd>{{ selected.organization_id || 'Platform' }}</dd></div><div><dt>Request reference</dt><dd>{{ selected.request_id || 'Not available' }}</dd></div></dl>
+    <h3>State change</h3><div class="audit-state"><div><h4>Before</h4><dl><div *ngFor="let item of stateEntries(selected.before_state)"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] ?? 'None' }}</dd></div></dl></div><div><h4>After</h4><dl><div *ngFor="let item of stateEntries(selected.after_state)"><dt>{{ label(item[0]) }}</dt><dd>{{ item[1] ?? 'None' }}</dd></div></dl></div></div>
+  </section>
+</main>

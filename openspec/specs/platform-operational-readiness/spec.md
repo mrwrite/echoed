@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define EchoEd's evidence-backed contract for safe production configuration, deployment, migration, health checking, shutdown, monitoring, backup, restore, rollback, and operational recovery without expanding into hosting infrastructure or durable audit events.
+Define EchoEd's evidence-backed contract for safe production configuration, deployment, migration, health checking, shutdown, monitoring, backup, restore, rollback, and operational recovery, including durable audit-event recovery, without expanding into hosting infrastructure.
 
 ## Requirements
 
@@ -73,15 +73,19 @@ The system documentation SHALL define measurable initial availability, successfu
 - **THEN** the indicator formula, target, window, data limitations, owner, and related response are unambiguous
 
 ### Requirement: Persistent-state backup and verified restore
-The operational contract MUST identify all persistent state and define backup scope, cadence, retention, encryption, separation, integrity verification, and restore testing. A backup SHALL NOT be considered valid until an isolated restore proves database and supported uploaded-asset usability.
+The operational contract MUST identify all persistent state, including durable audit events and their integrity metadata, and define backup scope, cadence, retention, encryption, separation, integrity verification, and restore testing. A backup SHALL NOT be considered valid until an isolated restore proves database, audit-chain, and supported uploaded-asset usability. Audit retention MUST NOT remove the only recoverable copy required by incident or preservation policy.
 
 #### Scenario: Safe recovery drill
-- **WHEN** an operator backs up disposable database and upload data, verifies the manifest, restores to isolated targets, and runs usability checks
-- **THEN** the restored records and asset bytes match the originals without exposing sensitive data
+- **WHEN** an operator backs up disposable database and upload data, verifies the manifest, restores to isolated targets, verifies the restored audit chain, and runs usability checks
+- **THEN** the restored records, audit integrity metadata, and asset bytes match the originals without exposing sensitive data
 
 #### Scenario: Corrupted backup
 - **WHEN** a backup file no longer matches its integrity manifest
 - **THEN** restore fails closed before replacing the target state
+
+#### Scenario: Audit-event recovery
+- **WHEN** an operator restores a database containing durable audit events
+- **THEN** audit-chain verification succeeds before the restored service is accepted for operational use
 
 ### Requirement: Storage ownership and recovery targets
 Documentation MUST identify the source of truth, persistence boundary, backup owner, restore owner, deployment behavior, and loss consequences for database, uploaded assets, generated static assets, configuration, and secrets. It SHALL define defensible initial RPO and RTO targets and their prerequisites and limitations.
